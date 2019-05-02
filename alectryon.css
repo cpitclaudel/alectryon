@@ -1,0 +1,146 @@
+.alectryon-io {
+    background: white;
+    font-family: 'Fira Code', monospace;
+    max-width: 50rem;
+    position: relative;
+    white-space: pre-wrap;
+}
+
+.alectryon-io .coq-toggle {
+    display: none;
+}
+
+.alectryon-io .coq-sentence[for] {
+    padding-right: 1rem; /* Prevent wraps before the bubble */
+}
+
+.alectryon-io .coq-sentence[for]:after {
+    border: 1px solid #d3d7cf;
+    border-radius: 1rem;
+    content: '';
+    display: inline-block;
+    font-weight: bold;
+    height: 0.15rem;
+    margin-bottom: 0.15rem;
+    margin-left: 0.25rem;
+    margin-right: -1rem; /* Compensate for the anti-wrapping space */
+    vertical-align: middle;
+    width: 0.5rem;
+}
+
+.alectryon-io .coq-fragment:hover .coq-sentence[for]
+{
+    font-weight: 500;
+    text-decoration: underline dotted #babdb6;
+}
+
+.alectryon-io .coq-toggle:checked + .coq-sentence[for]:after {
+    background-color: #babdb6;
+    border-color: #babdb6;
+}
+
+/*
+.alectryon-io .coq-fragment:hover .coq-sentence[for] {
+    text-shadow: 0rem 0rem 0.5rem #888a85;
+}
+*/
+
+.alectryon-io .coq-output {
+    border-width: 1px 0;
+    display: none;
+    left: 0;
+    margin: 0.25rem 0;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 1;
+}
+
+.alectryon-io .coq-goals:not(:empty),
+.alectryon-io .coq-responses:not(:empty) {
+    background: #eeeeec;
+    display: block;
+    margin: 0.25rem 0;
+    padding: 0.25rem;
+}
+
+.alectryon-io .coq-fragment:hover .coq-output,
+.alectryon-io .coq-toggle:checked + .coq-sentence + .coq-output {
+    display: block;
+}
+
+.alectryon-io .coq-toggle:checked + .coq-sentence + .coq-output {
+    position: unset;
+}
+
+.alectryon-io .coq-toggle:checked ~ .coq-wsp {
+    display: none;
+}
+
+.alectryon-io .coq-responses,
+.alectryon-io .coq-response,
+.alectryon-io .coq-goals,
+.alectryon-io .coq-goal,
+.alectryon-io .goal-hyp,
+.alectryon-io .goal-conclusion {
+    border-radius: 0.15rem;
+}
+
+.alectryon-io .coq-goal,
+.alectryon-io .coq-response {
+    align-items: center;
+    background: #d3d7cf;
+    display: block;
+    flex-direction: column;
+    margin: 0.25rem;
+    padding: 0.5rem;
+    position: relative;
+}
+
+.alectryon-io .goal-name {
+    position: absolute;
+    right: 0.5rem;
+    top: 0.5rem;
+}
+
+.alectryon-io .goal-hyps {
+    align-content: space-around;
+    align-items: baseline;
+    display: flex;
+    flex-flow: column; /* row wrap? */
+    justify-content: space-around;
+    margin: -0.15rem -1rem;
+}
+
+.alectryon-io .goal-hyp,
+.alectryon-io .goal-conclusion {
+    background: #eeeeec;
+    display: inline-block;
+    padding: 0.15rem 0.35rem;
+}
+
+.alectryon-io .goal-hyp {
+    display: inline-flex;
+    margin: 0.15rem 1rem;
+    z-index: 1;
+}
+
+.alectryon-io .hyp-punct {
+    font-weight: bold;
+    margin: 0 0.5rem;
+}
+
+.alectryon-io .hyp-body,
+.alectryon-io .hyp-type {
+    display: flex;
+    vertical-align: top;
+}
+
+.alectryon-io .goal-separator {
+    background: #555753;
+    border: none;
+    display: block;
+    height: 1px;
+    margin: 0.55rem 0;
+    width: 100%;
+}
