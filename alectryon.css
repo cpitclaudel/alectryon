@@ -1,9 +1,9 @@
 .alectryon-io {
-    background: white;
     font-family: 'Fira Code', monospace;
-    max-width: 50rem;
     position: relative;
     white-space: pre-wrap;
+    line-height: initial;
+    overflow: visible;
 }
 
 .alectryon-io .coq-toggle {
