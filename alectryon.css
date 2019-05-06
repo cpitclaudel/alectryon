@@ -11,6 +11,7 @@
 }
 
 .alectryon-io .coq-sentence[for] {
+    cursor: pointer;
     padding-right: 1rem; /* Prevent wraps before the bubble */
 }
 
