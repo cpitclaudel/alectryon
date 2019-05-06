@@ -153,7 +153,7 @@ class SerAPI():
             if response[0] == 'Answer':
                 contents = response[2]
                 if contents[0] == 'ObjList':
-                    return dict(contents[1])["CoqString"]
+                    return str(dict(contents[1])["CoqString"])
         raise ValueError("No ObjList found in Print answer")
 
     def _exec_collect_messages(self):
@@ -188,14 +188,14 @@ class SerAPI():
     def _deserialize_hyp(sexp):
         meta, body, htype = sexp
         assert len(body) <= 1
-        name = dict(meta)["Id"]
+        name = str(dict(meta)["Id"])
         body = body[0] if body else None
         return CoqHypothesis(name, body, htype)
 
     @staticmethod
     def _deserialize_goal(sexp):
         hyps = [SerAPI._deserialize_hyp(h) for h in reversed(sexp["hyp"])]
-        return CoqGoal(sexp["name"], sexp["ty"], hyps)
+        return CoqGoal(str(sexp["name"]), sexp["ty"], hyps)
 
     def _collect_goals(self):
         for response in self._collect_responses():
