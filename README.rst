@@ -24,7 +24,7 @@ As a standalone program
 - One output file is written per input file:
 
   * With ``--writer webpage``, output is written to ``<input>.html`` as a standalone webpage.  This is useful for debugging and to get a quick sense of how Alectryon works.
-  * With ``--writer html``, output is written to ``<input>.snippets.html`` as a sequence of ``<div class="alectryon-io">`` blocks, separated by ``<!-- alectryon-block-end -->`` markers (there will be only one block if ``input`` is a ``.v`` file, and as many blocks as entries in the input list if ``input`` is a ``.json`` file).
+  * With ``--writer html``, output is written to ``<input>.snippets.html`` as a sequence of ``<pre class="alectryon-io">`` blocks, separated by ``<!-- alectryon-block-end -->`` markers (there will be only one block if ``input`` is a ``.v`` file, and as many blocks as entries in the input list if ``input`` is a ``.json`` file).
   * With ``--writer json``, output is written to ``<input>.io.json`` as a JSON-encoded list of Coq fragments (only on if ``input`` is a ``.v`` file, and as many as in ``input`` if ``input`` is a ``.json`` file).  Each fragment is a list of records, each with a ``_type`` and some type-specific fields.  here is an example:
 
     Input (``minimal.json``):

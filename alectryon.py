@@ -315,7 +315,7 @@ def isolate_leading_blanks(txt):
 
 def gen_fragments_html(fragments):
     """Serialize a list of `fragments` to HTML."""
-    with tags.div(cls="alectryon-io") as div:
+    with tags.pre(cls="alectryon-io") as div:
         for fr in fragments:
             if isinstance(fr, CoqText):
                 tags.span(highlight(fr.string), cls="coq-nc")
