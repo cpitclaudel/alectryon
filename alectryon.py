@@ -336,12 +336,14 @@ ARGDOC = ".\n".join([
     ".v or .json files, and create one .io.json file per input file."
 ])
 
+COQ_SPLIT_RE = re.compile(r"(\n(?:[ \t]*\n)+)")
+
 def read_input(fpath):
     _fdir, fname = os.path.split(fpath)
     _fn, fext = os.path.splitext(fname)
     if fext == '.v':
         with open(fpath) as src:
-            return fname, [src.read()]
+            return fname, COQ_SPLIT_RE.split(src.read())
     elif fext == '.json':
         with open(fpath) as src:
             return fname, json.load(src)

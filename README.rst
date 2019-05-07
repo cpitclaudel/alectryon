@@ -19,7 +19,7 @@ As a standalone program
 
 ``python3 alectryon.py [-h] [--writer {json,html,webpage}] input [input ...]``
 
-- Each ``input`` file can be ``.v`` (a Coq source file) or ``.json`` (a list of Coq fragments).  All code is run in a single Coq session.
+- Each ``input`` file can be ``.v`` (a Coq source file, which Alectryon will split into fragments delimited by one or more blank lines) or ``.json`` (a list of Coq fragments).  Each fragment is split into individual sentences, which are executed one by one (all code is run in a single Coq session).
 
 - One output file is written per input file:
 
