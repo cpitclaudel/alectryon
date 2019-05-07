@@ -426,12 +426,12 @@ def write_html(fname, js):
             out.write('\n')
 
 def write_webpage(fname, js):
-    doc = document()
+    doc = document(title=fname)
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.link(rel="stylesheet", href="alectryon.css"))
-    doc.head.add(
-        tags.link(rel="stylesheet",
-                  href="https://unpkg.com/firacode/distr/fira_code.css"))
+
+    FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
+    doc.head.add(tags.link(rel="stylesheet", href=FIRA_CODE_CDN))
 
     pygments_css = FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
