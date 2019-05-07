@@ -336,13 +336,14 @@ ARGDOC = ".\n".join([
     ".v or .json files, and create one .io.json file per input file."
 ])
 
-def read_input(fname):
+def read_input(fpath):
+    _fdir, fname = os.path.split(fpath)
     _fn, fext = os.path.splitext(fname)
     if fext == '.v':
-        with open(fname) as src:
+        with open(fpath) as src:
             return fname, [src.read()]
     elif fext == '.json':
-        with open(fname) as src:
+        with open(fpath) as src:
             return fname, json.load(src)
     else:
         msg = "Input files must have extension .v or .json ({})."
