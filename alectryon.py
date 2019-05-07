@@ -68,6 +68,14 @@ def sexp_loads(s):
 def sexp_dumps(sexp):
     return sexpdata.dumps(sexp)
 
+def sexp_hd(sexp):
+    if isinstance(sexp, (int, str)):
+        return sexp
+    if not sexp:
+        return None
+    assert isinstance(sexp, list)
+    return sexp[0]
+
 class InlineHtmlFormatter(pygments.formatters.HtmlFormatter):  # pylint: disable=no-member
     def wrap(self, source, _outfile):
         return self._wrap_code(source)
@@ -86,6 +94,13 @@ def highlight(coqstr):
     before, code, after = WHITESPACE_RE.match(coqstr).groups()
     highlighted = pygments.highlight(code, LEXER, FORMATTER).strip()
     return tags.span(before, dom_raw(highlighted), after, cls="highlight")
+
+ApiAck = namedtuple("ApiAck", "")
+ApiCompleted = namedtuple("ApiCompleted", "")
+ApiAdded = namedtuple("ApiAdded", "sid loc")
+ApiExn = namedtuple("ApiExn", "exn loc")
+ApiMessage = namedtuple("ApiMessage", "sid level msg")
+ApiString = namedtuple("ApiString", "string")
 
 class SerAPI():
     SERTOP_BIN = "sertop"
@@ -132,62 +147,6 @@ class SerAPI():
         debug(s, '<< ')
         return self.sertop.sendline(s)
 
-    def _collect_responses(self):
-        skip = True
-        while True:
-            response = self.next_sexp()
-            answer = response[2] if response[0] == 'Answer' else None
-            if answer == 'Ack':
-                skip = False
-                continue
-            if answer == 'Completed':
-                break
-            yield response
-
-    def _pprint(self, sexp, sid, kind=None):
-        if sexp is None:
-            return None
-        if kind is not None:
-            sexp = [kind, sexp]
-        meta = [['pp_format', 'PpStr']]  # FIXME ['sid', sid]
-        self._send(['Print', meta, sexp])
-        for response in list(self._collect_responses()):
-            if response[0] == 'Answer':
-                contents = response[2]
-                if contents[0] == 'ObjList':
-                    return str(dict(contents[1])["CoqString"])
-        raise ValueError("No ObjList found in Print answer")
-
-    def _exec_collect_messages(self):
-        for response in self._collect_responses():
-            if response[0] == 'Feedback':
-                meta = dict(response[1])
-                contents = meta['contents']
-                if isinstance(contents, list) and contents[0] == 'Message':
-                    yield meta['span_id'], contents[3]
-
-    def _exec(self, n):
-        self._send(['Exec', n])
-        messages = list(self._exec_collect_messages())
-        return [self._pprint(msg, sid, 'CoqPp') for sid, msg in messages]
-
-    def _add(self, sentence):
-        self._send(['Add', (), sentence])
-        prev_end = 0
-        for response in self._collect_responses():
-            if response[0] == 'Answer':
-                contents = response[2]
-                if contents[0] == 'Added':
-                    span_id = contents[1]
-                    meta = dict(contents[2])
-                    start, end = meta['bp'], meta['ep']
-                    if start != prev_end:
-                        yield None, sentence[prev_end:start]
-                    yield span_id, sentence[start:end]
-                    prev_end = end
-        if prev_end != len(sentence):
-            yield None, sentence[prev_end:]
-
     @staticmethod
     def _deserialize_hyp(sexp):
         meta, body, htype = sexp
@@ -201,16 +160,95 @@ class SerAPI():
         hyps = [SerAPI._deserialize_hyp(h) for h in reversed(sexp["hyp"])]
         return CoqGoal(str(sexp["name"]), sexp["ty"], hyps)
 
-    def _collect_goals(self):
-        for response in self._collect_responses():
-            if response[0] == 'Answer':
-                contents = response[2]
-                if contents[0] == 'ObjList':
-                    objs = dict(contents[1])
-                    goals = dict(objs.get("CoqExtGoal", ()))
-                    for fg in map(dict, goals.get("fg_goals", ())):
-                        yield self._deserialize_goal(fg)
-        # raise ValueError("No ObjList found in Print answer") # FIXME dedup
+    @staticmethod
+    def _deserialize_answer(sexp):
+        tag = sexp_hd(sexp)
+        if tag == 'Ack':
+            yield ApiAck()
+        elif tag == 'Completed':
+            yield ApiCompleted()
+        elif tag == 'Added':
+            meta = dict(sexp[2])
+            yield ApiAdded(sexp[1], (meta['bp'], meta['ep']))
+        elif tag == 'ObjList':
+            for tag, *obj in sexp[1]:
+                if tag == "CoqString":
+                    yield ApiString(obj[0])
+                elif tag == "CoqExtGoal":
+                    goal = dict(obj[0])
+                    for fg in map(dict, goal.get("fg_goals", ())):
+                        yield SerAPI._deserialize_goal(fg)
+        elif tag == 'CoqExn':
+            _, opt_loc, _opt_sids, _bt, exn = sexp
+            if opt_loc:
+                d = dict(opt_loc[0])
+                loc = d['bp'], d['ep']
+            else:
+                loc = None
+            yield ApiExn(exn, loc)
+        else:
+            raise ValueError("Unexpected answer: {}".format(sexp))
+
+    @staticmethod
+    def _deserialize_feedback(sexp):
+        meta = dict(sexp)
+        contents = meta['contents']
+        tag = sexp_hd(contents)
+        if tag == 'Message':
+            yield ApiMessage(meta['span_id'], contents[1], contents[3])
+        elif tag in ('FileLoaded', 'ProcessingIn', 'Processed'):
+            pass
+        else:
+            raise ValueError("Unexpected feedback: {}".format(sexp))
+
+    @staticmethod
+    def _deserialize_response(sexp):
+        tag = sexp_hd(sexp)
+        if tag == 'Answer':
+            yield from SerAPI._deserialize_answer(sexp[2])
+        elif tag == 'Feedback':
+            yield from SerAPI._deserialize_feedback(sexp[1])
+        else:
+            raise ValueError("Unexpected response: {}".format(sexp))
+
+    def _collect_responses(self, types=None):
+        while True:
+            for response in self._deserialize_response(self.next_sexp()):
+                if isinstance(response, ApiAck):
+                    continue
+                if isinstance(response, ApiCompleted):
+                    return
+                if types is None or isinstance(response, types):
+                    yield response
+
+    def _pprint(self, sexp, sid, kind=None):
+        if sexp is None:
+            return None
+        if kind is not None:
+            sexp = [kind, sexp]
+        meta = [['pp_format', 'PpStr']]  # FIXME ['sid', sid]
+        self._send(['Print', meta, sexp])
+        strings = list(self._collect_responses(ApiString))
+        if strings:
+            return strings[0].string
+        raise ValueError("No string found in Print answer")
+
+    def _exec(self, n):
+        self._send(['Exec', n])
+        messages = list(self._collect_responses(ApiMessage))
+        return [self._pprint(msg.msg, msg.sid, 'CoqPp') for msg in messages]
+
+    def _add(self, sentence):
+        self._send(['Add', (), sentence])
+        prev_end = 0
+        for response in self._collect_responses(ApiAdded):
+            start, end = response.loc
+            if start != prev_end:
+                yield None, sentence[prev_end:start]
+            yield response.sid, sentence[start:end]
+            prev_end = end
+        if prev_end != len(sentence):
+            yield None, sentence[prev_end:]
 
     def _pprint_hyp(self, hyp, sid):
         body = self._pprint(hyp.body, sid, 'CoqExpr')
@@ -225,8 +263,8 @@ class SerAPI():
     def _goals(self, span_id):
         # FIXME Goals instead and CoqGoal and CoqConstr?
         self._send(['Query', [['sid', span_id]], 'EGoals'])
-        yield from (self._pprint_goal(g, span_id)
-                    for g in list(self._collect_goals()))
+        goals = list(self._collect_responses(CoqGoal))
+        yield from (self._pprint_goal(g, span_id) for g in goals)
 
     def run(self, chunk):
         """Send a `chunk` to sertop.

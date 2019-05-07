@@ -8,7 +8,7 @@ Setup
 =====
 
 Dependencies (OCaml, Python 3):
-    ``opam install coq-serapi=8.9.0+0.6.0``
+    ``opam install coq-serapi=8.9.0+0.6.1``
     ``pip3 install --user pexpect==4.7.0 pygments==2.3.1 dominate==2.3.5 sexpdata==0.0.3``
 
 Usage
