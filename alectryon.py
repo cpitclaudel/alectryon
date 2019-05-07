@@ -188,6 +188,8 @@ class SerAPI():
                         yield None, sentence[prev_end:start]
                     yield span_id, sentence[start:end]
                     prev_end = end
+        if prev_end != len(sentence):
+            yield None, sentence[prev_end:]
 
     @staticmethod
     def _deserialize_hyp(sexp):
