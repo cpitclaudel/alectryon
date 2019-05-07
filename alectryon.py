@@ -22,6 +22,9 @@
 
 """Annotate segments of Coq code with responses and goals."""
 
+__version__ = "0.1"
+__author__ = 'Clément Pit-Claudel'
+
 import argparse
 from collections import namedtuple
 import json
@@ -39,6 +42,7 @@ import pygments.lexers
 import pygments.formatters
 
 DEBUG = False
+GENERATOR = "Alectryon v{}".format(__version__)
 
 def debug(text, prefix):
     if DEBUG:
@@ -64,14 +68,15 @@ def sexp_loads(s):
 def sexp_dumps(sexp):
     return sexpdata.dumps(sexp)
 
-class InlineHtmlFormatter(pygments.formatters.HtmlFormatter):
+class InlineHtmlFormatter(pygments.formatters.HtmlFormatter):  # pylint: disable=no-member
     def wrap(self, source, _outfile):
         return self._wrap_code(source)
 
-    def _wrap_code(self, source):
+    @staticmethod
+    def _wrap_code(source):
         yield from source
 
-LEXER = pygments.lexers.CoqLexer(ensurenl=False)
+LEXER = pygments.lexers.CoqLexer(ensurenl=False)  # pylint: disable=no-member
 FORMATTER = InlineHtmlFormatter(nobackground=True)
 WHITESPACE_RE = re.compile(r"^(\s*)((?:.*\S)?)(\s*)$", re.DOTALL)
 
@@ -79,19 +84,15 @@ def highlight(coqstr):
     # Pygments HTML formatter adds an unconditional newline, so we pass it only
     # the code, and we restore the spaces after highlighting.
     before, code, after = WHITESPACE_RE.match(coqstr).groups()
-    highlighted = pygments.highlight(code, LEXER, FORMATTER)
-    return tags.span(before,
-                     dom_raw(highlighted.strip()),
-                     after,
-                     cls="highlight")
+    highlighted = pygments.highlight(code, LEXER, FORMATTER).strip()
+    return tags.span(before, dom_raw(highlighted), after, cls="highlight")
 
 class SerAPI():
     SERTOP_BIN = "sertop"
     SERTOP_PROMPT = re.compile("\0")
+    DEFAULT_ARGS = ("--printer=sertop", "--print0", "--implicit")
 
-    def __init__(self,
-                 args=("--printer=sertop", "--print0", "--implicit"),
-                 sertop_bin=SERTOP_BIN):
+    def __init__(self, args=DEFAULT_ARGS, sertop_bin=SERTOP_BIN):
         """Configure and start a ``sertop`` instance."""
         self.args, self.sertop_bin = args, sertop_bin
         self.sertop = None
@@ -112,13 +113,9 @@ class SerAPI():
     def reset(self):
         path = which(self.sertop_bin)
         if not path:
-            raise ValueError("sertop executable ({}) not found".format(
-                self.sertop_bin))
+            raise ValueError("sertop ({}) not found".format(self.sertop_bin))
         self.kill()
-        self.sertop = PopenSpawn(
-            [path, *self.args],
-            # echo=False,
-            encoding="utf-8")
+        self.sertop = PopenSpawn([path, *self.args], encoding="utf-8")
         self.sertop.delaybeforesend = 0
 
     def next_sexp(self):
@@ -323,6 +320,7 @@ def isolate_leading_blanks(txt):
 def gen_fragments_html(fragments):
     """Serialize a list of `fragments` to HTML."""
     with tags.pre(cls="alectryon-io") as div:
+        tags.comment(" Generator: {} ".format(GENERATOR))
         for fr in fragments:
             if isinstance(fr, CoqText):
                 tags.span(highlight(fr.string), cls="coq-nc")
@@ -366,7 +364,8 @@ def parse_arguments():
         choices=WRITER_CHOICES,
         help=WRITER_HELP)
 
-    add("--debug", default=False, help="Print communications with SerAPI.")
+    DEBUG_HELP = "Print communications with SerAPI."
+    add("--debug", action="store_true", default=False, help=DEBUG_HELP)
 
     return parser.parse_args()
 
@@ -428,6 +427,7 @@ def write_html(fname, js):
 def write_webpage(fname, js):
     doc = document(title=fname)
     doc.head.add(tags.meta(charset="utf-8"))
+    doc.head.add(tags.meta(name="generator", content=GENERATOR))
     doc.head.add(tags.link(rel="stylesheet", href="alectryon.css"))
 
     FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
