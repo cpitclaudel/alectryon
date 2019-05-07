@@ -16,17 +16,17 @@
 }
 
 .alectryon-io .coq-sentence[for]:after {
-    border: 1px solid #d3d7cf;
+    border: 1px solid #babdb6;
     border-radius: 1rem;
     content: '';
     display: inline-block;
     font-weight: bold;
-    height: 0.15rem;
+    height: 0.25rem;
     margin-bottom: 0.15rem;
     margin-left: 0.25rem;
     margin-right: -1rem; /* Compensate for the anti-wrapping space */
     vertical-align: middle;
-    width: 0.5rem;
+    width: 0.75rem;
 }
 
 .alectryon-io .coq-fragment:hover .coq-sentence[for]
