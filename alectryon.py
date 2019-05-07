@@ -27,10 +27,12 @@ __author__ = 'Clément Pit-Claudel'
 
 import argparse
 from collections import namedtuple
+from collections.abc import Iterable
 import json
 import os.path
 import re
 from textwrap import indent
+from sys import stderr
 
 from dominate import tags, document
 from dominate.util import raw as dom_raw
@@ -211,14 +213,31 @@ class SerAPI():
         else:
             raise ValueError("Unexpected response: {}".format(sexp))
 
-    def _collect_responses(self, types=None):
+    @staticmethod
+    def _warn_on_exn(response, chunk):
+        ERR_FMT = ("Coq raised an exception ({})\n"
+                   "Results past this point may be unreliable.\n"
+                   "The offending chunk is delimited by >>>.<<< below:\n{}\n")
+        loc = response.loc or (0, len(chunk))
+        beg, end = max(0, loc[0]), min(len(chunk), loc[1])
+        src = chunk[:beg] + ">>>" + chunk[beg:end] + "<<<" + chunk[end:]
+        err = ERR_FMT.format(response.exn, indent(src, '    '))
+        stderr.write(indent(err, "!! "))
+
+    def _collect_responses(self, types, chunk):
+        if isinstance(types, Iterable):
+            warn_on_exn = ApiExn not in types
+        else:
+            warn_on_exn = ApiExn != types
         while True:
             for response in self._deserialize_response(self.next_sexp()):
                 if isinstance(response, ApiAck):
                     continue
                 if isinstance(response, ApiCompleted):
                     return
-                if types is None or isinstance(response, types):
+                if warn_on_exn and isinstance(response, ApiExn):
+                    SerAPI._warn_on_exn(response, chunk)
+                if (not types) or isinstance(response, types):
                     yield response
 
     def _pprint(self, sexp, sid, kind=None):
@@ -228,27 +247,27 @@ class SerAPI():
             sexp = [kind, sexp]
         meta = [['pp_format', 'PpStr']]  # FIXME ['sid', sid]
         self._send(['Print', meta, sexp])
-        strings = list(self._collect_responses(ApiString))
+        strings = list(self._collect_responses(ApiString, None))
         if strings:
             return strings[0].string
         raise ValueError("No string found in Print answer")
 
-    def _exec(self, n):
-        self._send(['Exec', n])
-        messages = list(self._collect_responses(ApiMessage))
+    def _exec(self, sid, chunk):
+        self._send(['Exec', sid])
+        messages = list(self._collect_responses(ApiMessage, chunk))
         return [self._pprint(msg.msg, msg.sid, 'CoqPp') for msg in messages]
 
-    def _add(self, sentence):
-        self._send(['Add', (), sentence])
+    def _add(self, chunk):
+        self._send(['Add', (), chunk])
         prev_end = 0
-        for response in self._collect_responses(ApiAdded):
+        for response in self._collect_responses(ApiAdded, chunk):
             start, end = response.loc
             if start != prev_end:
-                yield None, sentence[prev_end:start]
-            yield response.sid, sentence[start:end]
+                yield None, chunk[prev_end:start]
+            yield response.sid, chunk[start:end]
             prev_end = end
-        if prev_end != len(sentence):
-            yield None, sentence[prev_end:]
+        if prev_end != len(chunk):
+            yield None, chunk[prev_end:]
 
     def _pprint_hyp(self, hyp, sid):
         body = self._pprint(hyp.body, sid, 'CoqExpr')
@@ -260,10 +279,10 @@ class SerAPI():
         hyps = [self._pprint_hyp(h, sid) for h in goal.hypotheses]
         return CoqGoal(goal.name, conclusion, hyps)
 
-    def _goals(self, span_id):
+    def _goals(self, span_id, chunk):
         # FIXME Goals instead and CoqGoal and CoqConstr?
         self._send(['Query', [['sid', span_id]], 'EGoals'])
-        goals = list(self._collect_responses(CoqGoal))
+        goals = list(self._collect_responses(CoqGoal, chunk))
         yield from (self._pprint_goal(g, span_id) for g in goals)
 
     def run(self, chunk):
@@ -279,8 +298,8 @@ class SerAPI():
             if span_id is None:
                 fragments.append(CoqText(contents))
             else:
-                responses = self._exec(span_id)
-                goals = list(self._goals(span_id))
+                responses = self._exec(span_id, chunk)
+                goals = list(self._goals(span_id, chunk))
                 fragment = CoqSentence(contents, responses, goals)
                 fragments.append(fragment)
         return fragments
