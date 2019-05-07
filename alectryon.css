@@ -31,8 +31,11 @@
 
 .alectryon-io .coq-fragment:hover .coq-sentence[for]
 {
-    font-weight: 500;
     text-decoration: underline dotted #babdb6;
+}
+
+.alectryon-io .coq-fragment:hover .coq-sentence[for] * {
+    font-weight: bold;
 }
 
 .alectryon-io .coq-toggle:checked + .coq-sentence[for]:after {
