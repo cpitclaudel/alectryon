@@ -38,6 +38,12 @@ import pygments
 import pygments.lexers
 import pygments.formatters
 
+DEBUG = False
+
+def debug(text, prefix):
+    if DEBUG:
+        print(indent(text, prefix))
+
 CoqHypothesis = namedtuple("CoqHypothesis", "name body type")
 CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
 CoqSentence = namedtuple("CoqSentence", "sentence responses goals")
@@ -108,7 +114,6 @@ class SerAPI():
         if not path:
             raise ValueError("sertop executable ({}) not found".format(
                 self.sertop_bin))
-        print(path)
         self.kill()
         self.sertop = PopenSpawn(
             [path, *self.args],
@@ -121,13 +126,13 @@ class SerAPI():
         self.sertop.expect(SerAPI.SERTOP_PROMPT, timeout=2)
         response = self.sertop.before
         sexp = sexp_loads(response)
-        print(indent(response, '>> '))
+        debug(response, '>> ')
         return sexp
 
     def _send(self, sexp):
         s = sexp_dumps(["query{}".format(self.tag), sexp])
         self.tag += 1
-        print(indent(s, '<< '))
+        debug(s, '<< ')
         return self.sertop.sendline(s)
 
     def _collect_responses(self):
@@ -356,6 +361,8 @@ def parse_arguments():
         choices=WRITER_CHOICES,
         help=WRITER_HELP)
 
+    add("--debug", default=False, help="Print communications with SerAPI.")
+
     return parser.parse_args()
 
 COQ_TYPES = (CoqSentence, CoqGoal, CoqHypothesis, CoqText)
@@ -434,6 +441,10 @@ WRITERS = {'json': write_json, 'html': write_html, 'webpage': write_webpage}
 
 def main():
     args = parse_arguments()
+
+    global DEBUG
+    DEBUG = args.debug
+
     for fname, chunks in args.input:
         annotated = annotate(chunks)
         WRITERS[args.writer](fname, annotated)
