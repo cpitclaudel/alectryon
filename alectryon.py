@@ -474,14 +474,14 @@ def gen_html(annotated):
             yield tags.comment(" alectryon-block-end ")
         yield gen_fragments_html(group_whitespace_with_code(fragments))
 
-def write_html(fname, js):
-    ts = list(gen_html(js))
+def write_html(fname, annotated):
+    ts = list(gen_html(annotated))
     with open("{}.snippets.html".format(fname), mode="w") as out:
         for t in ts:
             out.write(t.render(pretty=False))
             out.write('\n')
 
-def write_webpage(fname, js):
+def write_webpage(fname, annotated):
     doc = document(title=fname)
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
@@ -493,7 +493,7 @@ def write_webpage(fname, js):
     pygments_css = FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
 
-    for t in gen_html(js):
+    for t in gen_html(annotated):
         doc.body.add(t)
 
     with open("{}.html".format(fname), mode="w") as out:
