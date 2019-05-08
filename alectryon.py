@@ -175,7 +175,7 @@ class SerAPI():
         elif tag == 'ObjList':
             for tag, *obj in sexp[1]:
                 if tag == "CoqString":
-                    yield ApiString(obj[0])
+                    yield ApiString(str(obj[0]))
                 elif tag == "CoqExtGoal":
                     goal = dict(obj[0])
                     for fg in map(dict, goal.get("fg_goals", ())):
