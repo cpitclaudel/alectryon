@@ -104,3 +104,8 @@ Use ``alectryon.annotate(chunks: List[str])``, which returns an object with the 
                      responses=['xyz = fun _ : False => I\n     : False -> True'],
                  goals=[])]
     ]
+
+Tips
+====
+
+- Programming fonts with ligatures are a good way to display prettified symbols without resorting to complex hacks.  Good candidates include *Fira Code* and *Iosevka* (with the later, add ``.alectryon-io { font-feature-settings: 'XV00' 1; }`` to your CSS to pick Coq-specific ligatures).
