@@ -26,6 +26,17 @@ Alectryon::
        .. coq::
 
            Example test: nat.
+
+To use it, call ``docutils_support.register()`` before running your
+reStructuredText to HTML converter.  The generated code relies on CSS classes
+defined in the ``alectryon.css`` file.
+
+A checkbox and an accompanying label (with classes ``alectryon-toggle`` and
+``alectryon-toggle-label``) allowing users to reveal all goals and responses at
+once is automatically added right before the document's first paragraph.  You
+can change its location by inserting an explicit ``.. alectryon-toggle::``
+directive in your document, and you can ommit it entirely by setting
+``AlectryonTransform.insert_toggle`` to ``False``.
 """
 
 from docutils.nodes import raw, docinfo, Special, Invisible, Element
