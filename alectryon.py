@@ -365,7 +365,7 @@ def gen_sentence_html(fr):
                     gen_goal_html(goal)
             with tags.span(cls="coq-responses"):
                 for response in fr.responses:
-                    tags.span(response, cls="coq-response")
+                    tags.span(highlight(response), cls="coq-response")
         for wsp in getattr(fr, 'wsp', ()):
             tags.span(wsp.string, cls="coq-wsp")
 
