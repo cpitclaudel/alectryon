@@ -1,7 +1,9 @@
 .alectryon-io {
-    font-family: 'Fira Code', monospace;
+    font-family: 'Iosevka Slab Web', 'Iosevka Web', 'Fira Code', monospace;
+    font-feature-settings: "XV00" 1; /* Use Coq ligatures when Iosevka is available */
     position: relative;
     white-space: pre-wrap;
+    overflow-wrap: break-word;
     line-height: initial;
     overflow: visible;
 }
