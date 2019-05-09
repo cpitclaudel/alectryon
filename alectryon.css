@@ -31,28 +31,28 @@
     width: 0.75rem;
 }
 
-.alectryon-io .coq-sentence[for]:hover:after {
-    background: #eeeeec;
-}
+@media (any-hover: hover) {
+    .alectryon-io .coq-sentence[for]:hover:after {
+        background: #eeeeec;
+    }
 
-.alectryon-io .coq-fragment .coq-sentence[for]:hover {
-    text-decoration: underline dotted #babdb6;
-}
+    .alectryon-io .coq-fragment .coq-sentence[for]:hover {
+        text-decoration: underline dotted #babdb6;
+    }
 
-.alectryon-io .coq-fragment .coq-sentence[for]:hover * {
-    font-weight: bold;
+    .alectryon-io .coq-fragment .coq-sentence[for]:hover * {
+        font-weight: bold;
+    }
+
+    .alectryon-io .coq-fragment:hover .coq-output:not(:hover) {
+        display: block;
+    }
 }
 
 .alectryon-io .coq-toggle:checked + .coq-sentence[for]:after {
     background-color: #babdb6;
     border-color: #babdb6;
 }
-
-/*
-.alectryon-io .coq-fragment .coq-sentence[for]:hover {
-    text-shadow: 0rem 0rem 0.5rem #888a85;
-}
-*/
 
 .alectryon-io .coq-output {
     border-width: 1px 0;
@@ -72,12 +72,8 @@
     padding: 0.25rem;
 }
 
-.alectryon-io .coq-fragment:hover .coq-output:not(:hover),
 .alectryon-io .coq-toggle:checked + .coq-sentence + .coq-output {
     display: block;
-}
-
-.alectryon-io .coq-toggle:checked + .coq-sentence + .coq-output {
     position: unset;
 }
 
