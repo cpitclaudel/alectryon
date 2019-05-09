@@ -1,22 +1,30 @@
-.alectryon-io {
+.alectryon-io, .alectryon-toggle-label {
     font-family: 'Iosevka Slab Web', 'Iosevka Web', 'Fira Code', monospace;
     font-feature-settings: "XV00" 1; /* Use Coq ligatures when Iosevka is available */
-    position: relative;
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
     line-height: initial;
     overflow: visible;
+    overflow-wrap: break-word;
+    position: relative;
+    white-space: pre-wrap;
 }
 
+.alectryon-toggle,
 .alectryon-io .coq-toggle {
     display: none;
 }
 
+.alectryon-toggle-label,
 .alectryon-io .coq-sentence[for] {
     cursor: pointer;
     padding-right: 1rem; /* Prevent wraps before the bubble */
 }
 
+.alectryon-toggle-label {
+    display: block;
+    font-size: 0.8rem;
+}
+
+.alectryon-toggle-label:before,
 .alectryon-io .coq-sentence[for]:after {
     border: 1px solid #babdb6;
     border-radius: 1rem;
@@ -25,13 +33,21 @@
     font-weight: bold;
     height: 0.25rem;
     margin-bottom: 0.15rem;
-    margin-left: 0.25rem;
-    margin-right: -1rem; /* Compensate for the anti-wrapping space */
     vertical-align: middle;
     width: 0.75rem;
 }
 
+.alectryon-toggle-label:before {
+    margin-right: 0.25rem;
+}
+
+.alectryon-io .coq-sentence[for]:after {
+    margin-left: 0.25rem;
+    margin-right: -1rem; /* Compensate for the anti-wrapping space */
+}
+
 @media (any-hover: hover) {
+    .alectryon-toggle-label:hover:before,
     .alectryon-io .coq-sentence[for]:hover:after {
         background: #eeeeec;
     }
@@ -49,6 +65,8 @@
     }
 }
 
+.alectryon-toggle:checked + .alectryon-toggle-label:before,
+.alectryon-toggle:checked ~ .alectryon-io .coq-toggle + .coq-sentence[for]:after,
 .alectryon-io .coq-toggle:checked + .coq-sentence[for]:after {
     background-color: #babdb6;
     border-color: #babdb6;
@@ -72,11 +90,13 @@
     padding: 0.25rem;
 }
 
+.alectryon-toggle:checked ~ .alectryon-io .coq-sentence + .coq-output,
 .alectryon-io .coq-toggle:checked + .coq-sentence + .coq-output {
     display: block;
     position: unset;
 }
 
+.alectryon-toggle:checked ~ .alectryon-io .coq-toggle ~ .coq-wsp,
 .alectryon-io .coq-toggle:checked ~ .coq-wsp {
     display: none;
 }

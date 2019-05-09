@@ -28,9 +28,9 @@ Alectryon::
            Example test: nat.
 """
 
-from docutils.nodes import raw, Special, Invisible, Element
+from docutils.nodes import raw, docinfo, Special, Invisible, Element
 from docutils.parsers.rst import directives, Directive
-from docutils.transforms import TransformError, Transform
+from docutils.transforms import Transform
 
 from alectryon import annotate, gen_fragments_html, group_whitespace_with_code
 
@@ -39,21 +39,46 @@ class alectryon_pending(Special, Invisible, Element):
         super().__init__()
         self.content = content
 
+class alectryon_pending_toggle(Special, Invisible, Element):
+    pass
+
+TOGGLE_HTML = """
+<input type="checkbox" class="alectryon-toggle" id="alectryon-toggle-{id}" />
+<label for="alectryon-toggle-{id}" class="alectryon-toggle-label">
+Display all goals and responses
+</label>""".replace('\n', '')
+
 class AlectryonTransform(Transform):
     default_priority = 995
+    auto_toggle = True
 
-    def apply(self, **_kwargs):
-        assert self.startnode is None
+    def apply_coq(self):
         nodes = list(self.document.traverse(alectryon_pending))
         chunks = [n.content for n in nodes]
         for node, fragments in zip(nodes, annotate(chunks)):
             fragments = group_whitespace_with_code(fragments)
             html = gen_fragments_html(fragments).render(pretty=False)
             node.replace_self(raw(node.content, html, format='html'))
-            # FIXME handle errors
+
+    def apply_toggle(self):
+        toggle = lambda id: raw('', TOGGLE_HTML.format(id=id), format='html')
+        nodes = self.document.traverse(alectryon_pending_toggle)
+        for idx, node in enumerate(nodes):
+            node.replace_self(toggle(idx))
+            self.auto_toggle = False
+        if self.auto_toggle:
+            p = self.document.next_node(docinfo)
+            if p:
+                p.parent.insert(p.parent.index(p) + 1, toggle(0))
+
+    def apply(self, **_kwargs):
+        assert self.startnode is None
+        self.apply_coq()
+        self.apply_toggle()
 
 class Alectryon(Directive):
     """Highlight and annotate a Coq snippet."""
+    name = "coq"
 
     required_arguments = 0
     optional_arguments = 0
@@ -72,5 +97,25 @@ class Alectryon(Directive):
         content = '\n'.join(self.content)
         return [alectryon_pending(content)]
 
+class AlectryonToggle(Directive):
+    """Display a checkbox allowing readers to show all output at once."""
+    name = "alectryon-toggle"
+
+    required_arguments = 0
+    optional_arguments = 0
+    option_spec = {}
+    has_content = False
+
+    def run(self):
+        return [alectryon_pending_toggle()]
+
 def register():
-    directives.register_directive('coq', Alectryon)
+    """Tell Docutils about our directives (.. coq and .. alectryon-toggle).
+
+    If `auto_toggle` is true, also register a transform to add a top-level
+
+    You can customize the name under which these are registered by adjusting the
+    ``name`` field of ``Alectryon`` and ``AlectryonToggle``.
+    """
+    for directive in [Alectryon, AlectryonToggle]:
+        directives.register_directive(directive.name, directive)
