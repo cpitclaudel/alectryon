@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Copyright © 2019 Clément Pit-Claudel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,5 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from .core import *
-from .core import __version__, __author__
+from alectryon.cli import main
+
+if __name__ == '__main__':
+    main()

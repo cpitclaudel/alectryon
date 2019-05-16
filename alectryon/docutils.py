@@ -43,7 +43,9 @@ from docutils.nodes import raw, docinfo, Special, Invisible, Element
 from docutils.parsers.rst import directives, Directive
 from docutils.transforms import Transform
 
-from alectryon import annotate, gen_fragments_html, group_whitespace_with_code
+from .core import annotate, group_whitespace_with_code
+from .html import HtmlWriter
+from .pygments import highlight
 
 class alectryon_pending(Special, Invisible, Element):
     def __init__(self, content):
@@ -64,11 +66,12 @@ class AlectryonTransform(Transform):
     auto_toggle = True
 
     def apply_coq(self):
+        writer = HtmlWriter(highlight)
         nodes = list(self.document.traverse(alectryon_pending))
         chunks = [n.content for n in nodes]
         for node, fragments in zip(nodes, annotate(chunks)):
             fragments = group_whitespace_with_code(fragments)
-            html = gen_fragments_html(fragments).render(pretty=False)
+            html = writer.gen_fragments_html(fragments).render(pretty=False)
             node.replace_self(raw(node.content, html, format='html'))
 
     def apply_toggle(self):

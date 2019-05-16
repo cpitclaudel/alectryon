@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # Copyright © 2019 Clément Pit-Claudel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,23 +23,15 @@
 __version__ = "0.1"
 __author__ = 'Clément Pit-Claudel'
 
-import argparse
 from collections import namedtuple
 from collections.abc import Iterable
-import json
-import os.path
-import re
 from textwrap import indent
+import re
 from sys import stderr
 
-from dominate import tags, document
-from dominate.util import raw as dom_raw
 from pexpect.utils import which
 from pexpect.popen_spawn import PopenSpawn
 import sexpdata
-import pygments
-import pygments.lexers
-import pygments.formatters
 
 DEBUG = False
 GENERATOR = "Alectryon v{}".format(__version__)
@@ -92,25 +82,6 @@ class BS(sexpdata.String):
 
     def __getitem__(self, idx):
         return self.bs[idx].decode("utf-8")
-
-class InlineHtmlFormatter(pygments.formatters.HtmlFormatter):  # pylint: disable=no-member
-    def wrap(self, source, _outfile):
-        return self._wrap_code(source)
-
-    @staticmethod
-    def _wrap_code(source):
-        yield from source
-
-LEXER = pygments.lexers.CoqLexer(ensurenl=False)  # pylint: disable=no-member
-FORMATTER = InlineHtmlFormatter(nobackground=True)
-WHITESPACE_RE = re.compile(r"^(\s*)((?:.*\S)?)(\s*)$", re.DOTALL)
-
-def highlight(coqstr):
-    # Pygments HTML formatter adds an unconditional newline, so we pass it only
-    # the code, and we restore the spaces after highlighting.
-    before, code, after = WHITESPACE_RE.match(coqstr).groups()
-    highlighted = pygments.highlight(code, LEXER, FORMATTER).strip()
-    return tags.span(before, dom_raw(highlighted), after, cls="highlight")
 
 ApiAck = namedtuple("ApiAck", "")
 ApiCompleted = namedtuple("ApiCompleted", "")
@@ -336,135 +307,10 @@ def annotate(chunks):
     with SerAPI() as api:
         return list(annotate_chunks(api, chunks))
 
-def gen_goal_html(goal):
-    """Serialize a goal to HTML."""
-    with tags.span(cls="coq-goal"):
-        if goal.name:
-            tags.span(goal.name, cls="goal-name")
-        with tags.span(cls="goal-hyps"):
-            for hyp in goal.hypotheses:
-                with tags.span(cls="goal-hyp"):
-                    tags.span(hyp.name, cls="hyp-name")
-                    with tags.span():
-                        if hyp.body:
-                            with tags.span(cls="hyp-body"):
-                                tags.span(":=", cls="hyp-punct")
-                                highlight(hyp.body)
-                        with tags.span(cls="hyp-type"):
-                            tags.span(":", cls="hyp-punct")
-                            highlight(hyp.type)
-        tags.span(cls="goal-separator")
-        tags.span(highlight(goal.conclusion), cls="goal-conclusion")
-
-class Gensym():
-    def __init__(self):
-        self.counter = -1
-
-    def next(self, prefix):
-        self.counter += 1
-        return hex(self.counter).replace("0x", prefix)
-
-GENSYM = Gensym()
-
-def gen_sentence_html(fr):
-    with tags.span(cls="coq-fragment"):
-        if fr.goals or fr.responses:
-            nm = GENSYM.next("chk")
-            tags.input(type="checkbox", id=nm, cls="coq-toggle")
-            args = {'for': nm}
-        else:
-            args = {}
-        tags.label(highlight(fr.sentence), cls="coq-sentence", **args)
-        with tags.span(cls="coq-output"):
-            with tags.span(cls="coq-goals"):
-                for goal in fr.goals:
-                    gen_goal_html(goal)
-            with tags.span(cls="coq-responses"):
-                for response in fr.responses:
-                    tags.span(highlight(response), cls="coq-response")
-        for wsp in getattr(fr, 'wsp', ()):
-            tags.span(wsp.string, cls="coq-wsp")
-
 LEADING_BLANKS_RE = re.compile(r'^([ \t]*(?:\n|$))?(.*)$', flags=re.DOTALL)
 
 def isolate_leading_blanks(txt):
     return LEADING_BLANKS_RE.match(txt).groups()
-
-def gen_fragments_html(fragments):
-    """Serialize a list of `fragments` to HTML."""
-    with tags.pre(cls="alectryon-io") as div:
-        tags.comment(" Generator: {} ".format(GENERATOR))
-        for fr in fragments:
-            if isinstance(fr, CoqText):
-                tags.span(highlight(fr.string), cls="coq-nc")
-            else:
-                assert isinstance(fr, (CoqSentence, HTMLSentence))
-                gen_sentence_html(fr)
-        return div
-
-ARGDOC = ".\n".join([
-    __doc__, "When run as a standalone application, take input as multiple "
-    ".v or .json files, and create one .io.json file per input file."
-])
-
-COQ_SPLIT_RE = re.compile(r"(\n(?:[ \t]*\n)+)")
-
-def read_input(fpath):
-    _fdir, fname = os.path.split(fpath)
-    _fn, fext = os.path.splitext(fname)
-    if fext == '.v':
-        with open(fpath) as src:
-            return fname, COQ_SPLIT_RE.split(src.read())
-    elif fext == '.json':
-        with open(fpath) as src:
-            return fname, json.load(src)
-    else:
-        msg = "Input files must have extension .v or .json ({})."
-        raise argparse.ArgumentTypeError(msg.format(fname))
-
-def parse_arguments():
-    parser = argparse.ArgumentParser(description=ARGDOC)
-    add = parser.add_argument
-
-    INPUT_HELP = """Input file.  Can be either .v (plain Coq code) or \
-.json (a list of Coq fragments)."""
-    add("input", nargs="+", type=read_input, help=INPUT_HELP)
-
-    WRITER_HELP = """Output type"""
-    WRITER_CHOICES = ("json", "html", "webpage")
-    add("--writer",
-        default="webpage",
-        choices=WRITER_CHOICES,
-        help=WRITER_HELP)
-
-    DEBUG_HELP = "Print communications with SerAPI."
-    add("--debug", action="store_true", default=False, help=DEBUG_HELP)
-
-    return parser.parse_args()
-
-COQ_TYPES = (CoqSentence, CoqGoal, CoqHypothesis, CoqText)
-COQ_TYPE_NAMES = {
-    "CoqHypothesis": "hypothesis",
-    "CoqGoal": "goal",
-    "CoqSentence": "sentence",
-    "HTMLSentence": "html_sentence",
-    "CoqText": "text",
-}
-
-def prepare_json(obj):
-    if isinstance(obj, list):
-        return [prepare_json(x) for x in obj]
-    if isinstance(obj, dict):
-        return {k: prepare_json(v) for k, v in obj.items()}
-    if isinstance(obj, COQ_TYPES):
-        d = {k: prepare_json(v) for k, v in zip(obj._fields, obj)}
-        nm = COQ_TYPE_NAMES[type(obj).__name__]
-        return {"_type": nm, **d}
-    return obj
-
-def write_json(fname, annotated):
-    with open("{}.io.json".format(fname), mode="w") as out:
-        json.dump(prepare_json(annotated), out, indent=4)
 
 def group_whitespace_with_code(fragments):
     # Move all spaces following a code fragment, up to the first newline, into
@@ -483,49 +329,3 @@ def group_whitespace_with_code(fragments):
             fr = HTMLSentence(fr.sentence, fr.responses, fr.goals, wsp=[])
         grouped.append(fr)
     return grouped
-
-def gen_html(annotated):
-    for idx, fragments in enumerate(annotated):
-        if idx > 0:
-            yield tags.comment(" alectryon-block-end ")
-        yield gen_fragments_html(group_whitespace_with_code(fragments))
-
-def write_html(fname, annotated):
-    ts = list(gen_html(annotated))
-    with open("{}.snippets.html".format(fname), mode="w") as out:
-        for t in ts:
-            out.write(t.render(pretty=False))
-            out.write('\n')
-
-def write_webpage(fname, annotated):
-    doc = document(title=fname)
-    doc.head.add(tags.meta(charset="utf-8"))
-    doc.head.add(tags.meta(name="generator", content=GENERATOR))
-    doc.head.add(tags.link(rel="stylesheet", href="alectryon.css"))
-
-    FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
-    doc.head.add(tags.link(rel="stylesheet", href=FIRA_CODE_CDN))
-
-    pygments_css = FORMATTER.get_style_defs('.highlight')
-    doc.head.add(tags.style(pygments_css, type="text/css"))
-
-    for t in gen_html(annotated):
-        doc.body.add(t)
-
-    with open("{}.html".format(fname), mode="w") as out:
-        out.write(doc.render(pretty=False))
-
-WRITERS = {'json': write_json, 'html': write_html, 'webpage': write_webpage}
-
-def main():
-    args = parse_arguments()
-
-    global DEBUG
-    DEBUG = args.debug
-
-    for fname, chunks in args.input:
-        annotated = annotate(chunks)
-        WRITERS[args.writer](fname, annotated)
-
-if __name__ == '__main__':
-    main()
