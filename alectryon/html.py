@@ -20,28 +20,7 @@
 
 from dominate import tags
 
-from . import GENERATOR, CoqText, CoqSentence, HTMLSentence, group_whitespace_with_code
-from .pygments import highlight
-
-def gen_goal_html(goal):
-    """Serialize a goal to HTML."""
-    with tags.span(cls="coq-goal"):
-        if goal.name:
-            tags.span(goal.name, cls="goal-name")
-        with tags.span(cls="goal-hyps"):
-            for hyp in goal.hypotheses:
-                with tags.span(cls="goal-hyp"):
-                    tags.span(hyp.name, cls="hyp-name")
-                    with tags.span():
-                        if hyp.body:
-                            with tags.span(cls="hyp-body"):
-                                tags.span(":=", cls="hyp-punct")
-                                highlight(hyp.body)
-                        with tags.span(cls="hyp-type"):
-                            tags.span(":", cls="hyp-punct")
-                            highlight(hyp.type)
-        tags.span(cls="goal-separator")
-        tags.span(highlight(goal.conclusion), cls="goal-conclusion")
+from .core import GENERATOR, CoqText, CoqSentence, HTMLSentence, group_whitespace_with_code
 
 class Gensym():
     def __init__(self):
@@ -51,41 +30,64 @@ class Gensym():
         self.counter += 1
         return hex(self.counter).replace("0x", prefix)
 
-GENSYM = Gensym()
+class HtmlWriter():
+    def __init__(self, highlighter):
+        self.highlight = highlighter
+        self.gensym = Gensym()
 
-def gen_sentence_html(fr):
-    with tags.span(cls="coq-fragment"):
-        if fr.goals or fr.responses:
-            nm = GENSYM.next("chk")
-            tags.input(type="checkbox", id=nm, cls="coq-toggle")
-            args = {'for': nm}
-        else:
-            args = {}
-        tags.label(highlight(fr.sentence), cls="coq-sentence", **args)
-        with tags.span(cls="coq-output"):
-            with tags.span(cls="coq-goals"):
-                for goal in fr.goals:
-                    gen_goal_html(goal)
-            with tags.span(cls="coq-responses"):
-                for response in fr.responses:
-                    tags.span(highlight(response), cls="coq-response")
-        for wsp in getattr(fr, 'wsp', ()):
-            tags.span(wsp.string, cls="coq-wsp")
+    def gen_goal_html(self, goal):
+        """Serialize a goal to HTML."""
+        with tags.span(cls="coq-goal"):
+            if goal.name:
+                tags.span(goal.name, cls="goal-name")
+            with tags.span(cls="goal-hyps"):
+                for hyp in goal.hypotheses:
+                    with tags.span(cls="goal-hyp"):
+                        tags.span(hyp.name, cls="hyp-name")
+                        with tags.span():
+                            if hyp.body:
+                                with tags.span(cls="hyp-body"):
+                                    tags.span(":=", cls="hyp-punct")
+                                    self.highlight(hyp.body)
+                            with tags.span(cls="hyp-type"):
+                                tags.span(":", cls="hyp-punct")
+                                self.highlight(hyp.type)
+            tags.span(cls="goal-separator")
+            tags.span(self.highlight(goal.conclusion), cls="goal-conclusion")
 
-def gen_fragments_html(fragments):
-    """Serialize a list of `fragments` to HTML."""
-    with tags.pre(cls="alectryon-io") as div:
-        tags.comment(" Generator: {} ".format(GENERATOR))
-        for fr in fragments:
-            if isinstance(fr, CoqText):
-                tags.span(highlight(fr.string), cls="coq-nc")
+    def gen_sentence_html(self, fr):
+        with tags.span(cls="coq-fragment"):
+            if fr.goals or fr.responses:
+                nm = self.gensym.next("chk")
+                tags.input(type="checkbox", id=nm, cls="coq-toggle")
+                args = {'for': nm}
             else:
-                assert isinstance(fr, (CoqSentence, HTMLSentence))
-                gen_sentence_html(fr)
-        return div
+                args = {}
+            tags.label(self.highlight(fr.sentence), cls="coq-sentence", **args)
+            with tags.span(cls="coq-output"):
+                with tags.span(cls="coq-goals"):
+                    for goal in fr.goals:
+                        self.gen_goal_html(goal)
+                with tags.span(cls="coq-responses"):
+                    for response in fr.responses:
+                        tags.span(self.highlight(response), cls="coq-response")
+            for wsp in getattr(fr, 'wsp', ()):
+                tags.span(wsp.string, cls="coq-wsp")
 
-def gen_html(annotated):
-    for idx, fragments in enumerate(annotated):
-        if idx > 0:
-            yield tags.comment(" alectryon-block-end ")
-        yield gen_fragments_html(group_whitespace_with_code(fragments))
+    def gen_fragments_html(self, fragments):
+        """Serialize a list of `fragments` to HTML."""
+        with tags.pre(cls="alectryon-io") as div:
+            tags.comment(" Generator: {} ".format(GENERATOR))
+            for fr in fragments:
+                if isinstance(fr, CoqText):
+                    tags.span(self.highlight(fr.string), cls="coq-nc")
+                else:
+                    assert isinstance(fr, (CoqSentence, HTMLSentence))
+                    self.gen_sentence_html(fr)
+            return div
+
+    def gen_html(self, annotated):
+        for idx, fragments in enumerate(annotated):
+            if idx > 0:
+                yield tags.comment(" alectryon-block-end ")
+            yield self.gen_fragments_html(group_whitespace_with_code(fragments))

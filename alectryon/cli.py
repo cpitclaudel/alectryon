@@ -27,8 +27,8 @@ from dominate import tags, document
 
 from . import core
 from .core import CoqSentence, CoqGoal, CoqHypothesis, CoqText, annotate, GENERATOR, __version__
-from .html import gen_html
-from .pygments import FORMATTER
+from .html import HtmlWriter
+from .pygments import highlight, FORMATTER
 
 ARGDOC = ".\n".join([
     core.__doc__, "When run as a standalone application, take input as multiple "
@@ -93,6 +93,9 @@ def prepare_json(obj):
 def write_json(fname, annotated):
     with open("{}.io.json".format(fname), mode="w") as out:
         json.dump(prepare_json(annotated), out, indent=4)
+
+def gen_html(annotated):
+    return HtmlWriter(highlight).gen_html(annotated)
 
 def write_html(fname, annotated):
     ts = list(gen_html(annotated))
