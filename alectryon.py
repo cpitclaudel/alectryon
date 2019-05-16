@@ -78,6 +78,21 @@ def sexp_hd(sexp):
     assert isinstance(sexp, list)
     return sexp[0]
 
+class BS(sexpdata.String):
+    """Like a string, but slicing uses UTF-8 bytes offsets.
+
+    This is needed because SerAPI returns offsets in bytes.
+    """
+    def __init__(self, s):
+        super().__init__(s)
+        self.bs = s.encode('utf-8')
+
+    def __len__(self):
+        return len(self.bs)
+
+    def __getitem__(self, idx):
+        return self.bs[idx].decode("utf-8")
+
 class InlineHtmlFormatter(pygments.formatters.HtmlFormatter):  # pylint: disable=no-member
     def wrap(self, source, _outfile):
         return self._wrap_code(source)
@@ -292,6 +307,7 @@ class SerAPI():
         split, sent to Coq, and returned as a list of ``CoqText`` instances
         (for whitespace and comments) and ``CoqSentence`` instances (for code).
         """
+        chunk = BS(chunk)
         spans = list(self._add(chunk))
         fragments = []
         for span_id, contents in spans:
