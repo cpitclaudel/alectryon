@@ -22,23 +22,16 @@ import re
 
 import pygments
 import pygments.lexers
-import pygments.formatters
+from pygments.formatters import HtmlFormatter
 
 from dominate import tags
 from dominate.util import raw as dom_raw
 
 from .pygments_lexer import CoqLexer
-
-class InlineHtmlFormatter(pygments.formatters.HtmlFormatter):  # pylint: disable=no-member
-    def wrap(self, source, _outfile):
-        return self._wrap_code(source)
-
-    @staticmethod
-    def _wrap_code(source):
-        yield from source
+from .pygments_style import TangoSubtleStyle
 
 LEXER = CoqLexer(ensurenl=False)  # pylint: disable=no-member
-FORMATTER = InlineHtmlFormatter(nobackground=True)
+FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
 WHITESPACE_RE = re.compile(r"^(\s*)((?:.*\S)?)(\s*)$", re.DOTALL)
 
 def highlight(coqstr):
