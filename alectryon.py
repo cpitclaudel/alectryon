@@ -59,7 +59,7 @@ CoqText = namedtuple("CoqText", "string")
 def remove_symbols(sexp):
     if isinstance(sexp, sexpdata.SExpBase):
         return sexp.value()
-    if isinstance(sexp, (int, str)):
+    if isinstance(sexp, (int, float, str)):
         return sexp
     assert isinstance(sexp, list)
     return [remove_symbols(s) for s in sexp]
