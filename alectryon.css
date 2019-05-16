@@ -90,8 +90,8 @@
     padding: 0.25rem;
 }
 
-.alectryon-toggle:checked ~ .alectryon-io .coq-sentence + .coq-output,
-.alectryon-io .coq-toggle:checked + .coq-sentence + .coq-output {
+.alectryon-toggle:checked ~ .alectryon-io .coq-sentence[for] + .coq-output,
+.alectryon-io .coq-toggle:checked + .coq-sentence[for] + .coq-output {
     display: block;
     position: unset;
 }
