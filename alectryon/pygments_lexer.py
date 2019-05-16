@@ -696,7 +696,8 @@ class CoqLexer(RegexLexer):
         (":", Operator, '#pop'),
         (name_re, Name.Variable),
         (r"\(", Operator, ('in parens', 'type annot')),
-        include('_gallina'),
+        include('_basic'),
+        default('#pop'),
     ]
 
     # Names starting with '_' are not real states; they are just intended to be
