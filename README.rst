@@ -9,7 +9,9 @@ Setup
 
 Dependencies (OCaml, Python 3):
     ``opam install coq-serapi=8.9.0+0.6.1``
-    ``pip3 install --user pexpect==4.7.0 pygments==2.3.1 dominate==2.3.5 sexpdata==0.0.3``
+    ``pip3 install --user pexpect==4.7.0 sexpdata==0.0.3 dominate==2.3.5 pygments==2.3.1``
+
+The core library only depends on ``pexpect`` and ``sexpdata``.  ``dominate`` is used is ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.
 
 Usage
 =====
@@ -104,6 +106,8 @@ Use ``alectryon.annotate(chunks: List[str])``, which returns an object with the 
                      responses=['xyz = fun _ : False => I\n     : False -> True'],
                  goals=[])]
     ]
+
+The results of ``annotate`` can be fed to ``alectryon.html.HtmlWriter(highlighter)`` to generate HTML.  Pass ``highlighter=alectryon.pygments.highlight`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
 
 Tips
 ====
