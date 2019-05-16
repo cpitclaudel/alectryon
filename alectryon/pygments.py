@@ -27,6 +27,8 @@ import pygments.formatters
 from dominate import tags
 from dominate.util import raw as dom_raw
 
+from .pygments_lexer import CoqLexer
+
 class InlineHtmlFormatter(pygments.formatters.HtmlFormatter):  # pylint: disable=no-member
     def wrap(self, source, _outfile):
         return self._wrap_code(source)
@@ -35,7 +37,7 @@ class InlineHtmlFormatter(pygments.formatters.HtmlFormatter):  # pylint: disable
     def _wrap_code(source):
         yield from source
 
-LEXER = pygments.lexers.CoqLexer(ensurenl=False)  # pylint: disable=no-member
+LEXER = CoqLexer(ensurenl=False)  # pylint: disable=no-member
 FORMATTER = InlineHtmlFormatter(nobackground=True)
 WHITESPACE_RE = re.compile(r"^(\s*)((?:.*\S)?)(\s*)$", re.DOTALL)
 
