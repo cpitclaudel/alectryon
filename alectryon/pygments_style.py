@@ -72,7 +72,7 @@ class TangoSubtleStyle(Style):
         Keyword.Constant:          "bold #204a87",           # class: 'kc'
         Keyword.Declaration:       "bold #4e9a06",           # class: 'kd'
         Keyword.Namespace:         "bold #4e9a06",           # class: 'kn'
-        Keyword.Pseudo:            "bold #204a87",           # class: 'kp'
+        Keyword.Pseudo:            "#204a87",                # class: 'kp'
         Keyword.Reserved:          "#8f5902",                # class: 'kr'
         Keyword.Type:              "#204a87",                # class: 'kt'
 
@@ -89,7 +89,7 @@ class TangoSubtleStyle(Style):
         Name.Constant:             "#ce5c00",                # class: 'no'
         Name.Decorator:            "bold #3465a4",           # class: 'nd'
         Name.Entity:               "underline #c4a000",      # class: 'ni'
-        Name.Exception:            "#cc0000",           # class: 'ne'
+        Name.Exception:            "#cc0000",                # class: 'ne'
         Name.Function:             "#a40000",                # class: 'nf'
         Name.Label:                "bold #3465a4",           # class: 'nl'
         Name.Namespace:            "#000000",                # class: 'nn'
