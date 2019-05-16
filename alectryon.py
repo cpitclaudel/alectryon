@@ -213,7 +213,7 @@ class SerAPI():
         tag = sexp_hd(contents)
         if tag == 'Message':
             yield ApiMessage(meta['span_id'], contents[1], contents[3])
-        elif tag in ('FileLoaded', 'ProcessingIn', 'Processed'):
+        elif tag in ('FileLoaded', 'ProcessingIn', 'Processed', 'AddedAxiom'):
             pass
         else:
             raise ValueError("Unexpected feedback: {}".format(sexp))
