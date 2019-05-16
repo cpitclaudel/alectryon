@@ -8,6 +8,24 @@
     white-space: pre-wrap;
 }
 
+/*
+CoqIDE doesn't turn off the unicode bidirectional algorithm (and PG simply
+respects the user's `bidi-display-reordering` setting), so don't turn it off
+here either.  But beware unexpected results like `Definition test_אב := 0.`
+
+.alectryon-io span {
+    direction: ltr;
+    unicode-bidi: bidi-override;
+}
+
+In any case, make an exception for comments:
+
+.highlight .c {
+    direction: embed;
+    unicode-bidi: initial;
+}
+*/
+
 .alectryon-toggle,
 .alectryon-io .coq-toggle {
     display: none;
