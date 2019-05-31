@@ -408,6 +408,7 @@ class CoqLexer(RegexLexer):
         (":", Operator, '#pop'),
         (name_re, Name.Variable),
         (r"\(", Operator, ('in parens', 'type annot')),
+        (r"\{", Operator, ('in curly', 'type annot')),
         include('_basic'),
         default('#pop'),
     ]
@@ -478,6 +479,11 @@ class CoqLexer(RegexLexer):
         'in parens': [
             (r"\(", Operator, '#push'),
             (r"\)", Operator, '#pop'),
+            include('_gallina'),
+        ],
+        'in curly': [
+            (r"\{", Operator, '#push'),
+            (r"\}", Operator, '#pop'),
             include('_gallina'),
         ],
         'type annot': [
