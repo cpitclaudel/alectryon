@@ -29,8 +29,8 @@ from textwrap import indent
 import re
 from sys import stderr
 
-from pexpect.utils import which
-from pexpect.popen_spawn import PopenSpawn
+from shutil import which #from pexpect.utils
+from subprocess import Popen, PIPE, STDOUT
 import sexpdata
 
 DEBUG = False
@@ -92,8 +92,7 @@ ApiString = namedtuple("ApiString", "string")
 
 class SerAPI():
     SERTOP_BIN = "sertop"
-    SERTOP_PROMPT = re.compile("\0")
-    DEFAULT_ARGS = ("--printer=sertop", "--print0", "--implicit")
+    DEFAULT_ARGS = ("--printer=sertop", "--implicit")
 
     def __init__(self, args=DEFAULT_ARGS, sertop_bin=SERTOP_BIN):
         """Configure and start a ``sertop`` instance."""
@@ -111,20 +110,20 @@ class SerAPI():
 
     def kill(self):
         if self.sertop:
-            self.sertop.kill(9)
+            self.sertop.kill()
 
     def reset(self):
         path = which(self.sertop_bin)
-        if not path:
+        if path is None:
             raise ValueError("sertop ({}) not found".format(self.sertop_bin))
         self.kill()
-        self.sertop = PopenSpawn([path, *self.args], encoding="utf-8")
-        self.sertop.delaybeforesend = 0
+        self.sertop = Popen([path, *self.args],
+                          encoding="utf-8", #universal_newlines=True,
+                          stdin=PIPE, stderr=STDOUT, stdout=PIPE)
 
     def next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceeding it."""
-        self.sertop.expect(SerAPI.SERTOP_PROMPT, timeout=2)
-        response = self.sertop.before
+        response = self.sertop.stdout.readline()
         sexp = sexp_loads(response)
         debug(response, '>> ')
         return sexp
@@ -133,7 +132,8 @@ class SerAPI():
         s = sexp_dumps(["query{}".format(self.tag), sexp])
         self.tag += 1
         debug(s, '<< ')
-        return self.sertop.sendline(s)
+        self.sertop.stdin.write(s + '\n')
+        self.sertop.stdin.flush()
 
     @staticmethod
     def _deserialize_hyp(sexp):
