@@ -84,10 +84,14 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle:checked + .alectryon-toggle-label:before,
-.alectryon-toggle:checked ~ .alectryon-io .coq-toggle + .coq-sentence[for]:after,
 .alectryon-io .coq-toggle:checked + .coq-sentence[for]:after {
     background-color: #babdb6;
     border-color: #babdb6;
+}
+
+/* Hide individual checkboxes when the document-wide toggle is set */
+.alectryon-toggle:checked ~ .alectryon-io .coq-toggle + .coq-sentence[for]:after {
+    display: none;
 }
 
 .alectryon-io .coq-output {
