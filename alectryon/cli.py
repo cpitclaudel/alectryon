@@ -35,7 +35,7 @@ ARGDOC = ".\n".join([
     ".v or .json files, and create one .io.json file per input file."
 ])
 
-COQ_SPLIT_RE = re.compile(r"(\n(?:[ \t]*\n)+)")
+COQ_SPLIT_RE = re.compile(r"\n(?:[ \t]*\n)+")
 
 def read_input(fpath):
     _fdir, fname = os.path.split(fpath)
