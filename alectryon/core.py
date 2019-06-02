@@ -31,14 +31,16 @@ from sys import stderr
 
 from shutil import which #from pexpect.utils
 from subprocess import Popen, PIPE, STDOUT
-import sexpdata
+from . import sexp as sx
 
 DEBUG = False
 GENERATOR = "Alectryon v{}".format(__version__)
 
 def debug(text, prefix):
+    if isinstance(text, (bytes, bytearray)):
+        text = text.decode("utf-8")
     if DEBUG:
-        print(indent(text, prefix))
+        print(indent(text, prefix), flush=True)
 
 CoqHypothesis = namedtuple("CoqHypothesis", "name body type")
 CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
@@ -46,42 +48,10 @@ CoqSentence = namedtuple("CoqSentence", "sentence responses goals")
 HTMLSentence = namedtuple("HTMLSentence", "sentence responses goals wsp")
 CoqText = namedtuple("CoqText", "string")
 
-def remove_symbols(sexp):
-    if isinstance(sexp, sexpdata.SExpBase):
-        return sexp.value()
-    if isinstance(sexp, (int, float, str)):
-        return sexp
-    assert isinstance(sexp, list)
-    return [remove_symbols(s) for s in sexp]
-
-def sexp_loads(s):
-    return remove_symbols(sexpdata.loads(s, nil=None, true=None, false=None))
-
-def sexp_dumps(sexp):
-    return sexpdata.dumps(sexp)
-
 def sexp_hd(sexp):
-    if isinstance(sexp, (int, str)):
-        return sexp
-    if not sexp:
-        return None
-    assert isinstance(sexp, list)
-    return sexp[0]
-
-class BS(sexpdata.String):
-    """Like a string, but slicing uses UTF-8 bytes offsets.
-
-    This is needed because SerAPI returns offsets in bytes.
-    """
-    def __init__(self, s):
-        super().__init__(s)
-        self.bs = s.encode('utf-8')
-
-    def __len__(self):
-        return len(self.bs)
-
-    def __getitem__(self, idx):
-        return self.bs[idx].decode("utf-8")
+    if isinstance(sexp, list):
+        return sexp[0]
+    return sexp
 
 ApiAck = namedtuple("ApiAck", "")
 ApiCompleted = namedtuple("ApiCompleted", "")
@@ -118,59 +88,61 @@ class SerAPI():
             raise ValueError("sertop ({}) not found".format(self.sertop_bin))
         self.kill()
         self.sertop = Popen([path, *self.args],
-                          encoding="utf-8", #universal_newlines=True,
                           stdin=PIPE, stderr=STDOUT, stdout=PIPE)
 
     def next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceeding it."""
         response = self.sertop.stdout.readline()
-        sexp = sexp_loads(response)
-        debug(response, '>> ')
+        sexp = sx.load(response)
+        debug(response, '<< ')
         return sexp
 
     def _send(self, sexp):
-        s = sexp_dumps(["query{}".format(self.tag), sexp])
+        s = sx.dump([b'query%d' % self.tag, sexp])
         self.tag += 1
-        debug(s, '<< ')
-        self.sertop.stdin.write(s + '\n')
+        debug(s, '>> ')
+        self.sertop.stdin.write(s + b'\n')
         self.sertop.stdin.flush()
+
+    @staticmethod
+    def _deserialize_loc(locd):
+        return int(locd[b'bp']), int(locd[b'ep'])
 
     @staticmethod
     def _deserialize_hyp(sexp):
         meta, body, htype = sexp
         assert len(body) <= 1
-        name = str(dict(meta)["Id"])
+        name = dict(meta)[b'Id']
         body = body[0] if body else None
         return CoqHypothesis(name, body, htype)
 
     @staticmethod
     def _deserialize_goal(sexp):
-        hyps = [SerAPI._deserialize_hyp(h) for h in reversed(sexp["hyp"])]
-        return CoqGoal(str(sexp["name"]), sexp["ty"], hyps)
+        hyps = [SerAPI._deserialize_hyp(h) for h in reversed(sexp[b'hyp'])]
+        return CoqGoal(sexp[b'name'], sexp[b'ty'], hyps)
 
     @staticmethod
     def _deserialize_answer(sexp):
         tag = sexp_hd(sexp)
-        if tag == 'Ack':
+        if tag == b'Ack':
             yield ApiAck()
-        elif tag == 'Completed':
+        elif tag == b'Completed':
             yield ApiCompleted()
-        elif tag == 'Added':
+        elif tag == b'Added':
             meta = dict(sexp[2])
-            yield ApiAdded(sexp[1], (meta['bp'], meta['ep']))
-        elif tag == 'ObjList':
+            yield ApiAdded(sexp[1], SerAPI._deserialize_loc(meta))
+        elif tag == b'ObjList':
             for tag, *obj in sexp[1]:
-                if tag == "CoqString":
-                    yield ApiString(str(obj[0]))
-                elif tag == "CoqExtGoal":
+                if tag == b'CoqString':
+                    yield ApiString(sx.tostr(obj[0]))
+                elif tag == b'CoqExtGoal':
                     goal = dict(obj[0])
-                    for fg in map(dict, goal.get("fg_goals", ())):
+                    for fg in map(dict, goal.get(b'fg_goals', [])):
                         yield SerAPI._deserialize_goal(fg)
-        elif tag == 'CoqExn':
+        elif tag == b'CoqExn':
             _, opt_loc, _opt_sids, _bt, exn = sexp
             if opt_loc:
-                d = dict(opt_loc[0])
-                loc = d['bp'], d['ep']
+                loc = SerAPI._deserialize_loc(dict(opt_loc[0]))
             else:
                 loc = None
             yield ApiExn(exn, loc)
@@ -180,11 +152,12 @@ class SerAPI():
     @staticmethod
     def _deserialize_feedback(sexp):
         meta = dict(sexp)
-        contents = meta['contents']
+        contents = meta[b'contents']
         tag = sexp_hd(contents)
-        if tag == 'Message':
-            yield ApiMessage(meta['span_id'], contents[1], contents[3])
-        elif tag in ('FileLoaded', 'ProcessingIn', 'Processed', 'AddedAxiom'):
+        if tag == b'Message':
+            yield ApiMessage(meta[b'span_id'], contents[1], contents[3])
+        elif tag in (b'FileLoaded', b'ProcessingIn',
+                    b'Processed', b'AddedAxiom'):
             pass
         else:
             raise ValueError("Unexpected feedback: {}".format(sexp))
@@ -192,9 +165,9 @@ class SerAPI():
     @staticmethod
     def _deserialize_response(sexp):
         tag = sexp_hd(sexp)
-        if tag == 'Answer':
+        if tag == b'Answer':
             yield from SerAPI._deserialize_answer(sexp[2])
-        elif tag == 'Feedback':
+        elif tag == b'Feedback':
             yield from SerAPI._deserialize_feedback(sexp[1])
         else:
             raise ValueError("Unexpected response: {}".format(sexp))
@@ -202,13 +175,17 @@ class SerAPI():
     @staticmethod
     def _warn_on_exn(response, chunk):
         ERR_FMT = ("Coq raised an exception ({})\n"
-                   "Results past this point may be unreliable.\n"
-                   "The offending chunk is delimited by >>>.<<< below:\n{}\n")
-        loc = response.loc or (0, len(chunk))
-        beg, end = max(0, loc[0]), min(len(chunk), loc[1])
-        src = chunk[:beg] + ">>>" + chunk[beg:end] + "<<<" + chunk[end:]
-        err = ERR_FMT.format(response.exn, indent(src, '    '))
-        stderr.write(indent(err, "!! "))
+                   "Results past this point may be unreliable.\n")
+        LOC_FMT = "The offending chunk is delimited by >>>.<<< below:\n{}\n"
+        err = ERR_FMT.format(response.exn)
+        if chunk:
+            loc = response.loc or (0, len(chunk))
+            beg, end = max(0, loc[0]), min(len(chunk), loc[1])
+            src = b"%b>>>%b<<<%b" % (chunk[:beg], chunk[beg:end], chunk[end:])
+            locstr = LOC_FMT.format(indent(src.decode('utf-8'), '    '))
+        else:
+            locstr = ""
+        stderr.write(indent(err + locstr, "!! "))
 
     def _collect_responses(self, types, chunk):
         if isinstance(types, Iterable):
@@ -231,20 +208,20 @@ class SerAPI():
             return None
         if kind is not None:
             sexp = [kind, sexp]
-        meta = [['pp_format', 'PpStr']]  # FIXME ['sid', sid]
-        self._send(['Print', meta, sexp])
+        meta = [[b'pp_format', b'PpStr']]  # FIXME [b'sid', sid]
+        self._send([b'Print', meta, sexp])
         strings = list(self._collect_responses(ApiString, None))
         if strings:
             return strings[0].string
         raise ValueError("No string found in Print answer")
 
     def _exec(self, sid, chunk):
-        self._send(['Exec', sid])
+        self._send([b'Exec', sid])
         messages = list(self._collect_responses(ApiMessage, chunk))
-        return [self._pprint(msg.msg, msg.sid, 'CoqPp') for msg in messages]
+        return [self._pprint(msg.msg, msg.sid, b'CoqPp') for msg in messages]
 
     def _add(self, chunk):
-        self._send(['Add', (), chunk])
+        self._send([b'Add', [], sx.escape(chunk)])
         prev_end = 0
         for response in self._collect_responses(ApiAdded, chunk):
             start, end = response.loc
@@ -256,18 +233,18 @@ class SerAPI():
             yield None, chunk[prev_end:]
 
     def _pprint_hyp(self, hyp, sid):
-        body = self._pprint(hyp.body, sid, 'CoqExpr')
-        htype = self._pprint(hyp.type, sid, 'CoqExpr')
-        return CoqHypothesis(hyp.name, body, htype)
+        body = self._pprint(hyp.body, sid, b'CoqExpr')
+        htype = self._pprint(hyp.type, sid, b'CoqExpr')
+        return CoqHypothesis(sx.tostr(hyp.name), body, htype)
 
     def _pprint_goal(self, goal, sid):
-        conclusion = self._pprint(goal.conclusion, sid, 'CoqExpr')
+        conclusion = self._pprint(goal.conclusion, sid, b'CoqExpr')
         hyps = [self._pprint_hyp(h, sid) for h in goal.hypotheses]
-        return CoqGoal(goal.name, conclusion, hyps)
+        return CoqGoal(sx.tostr(goal.name), conclusion, hyps)
 
     def _goals(self, span_id, chunk):
         # FIXME Goals instead and CoqGoal and CoqConstr?
-        self._send(['Query', [['sid', span_id]], 'EGoals'])
+        self._send([b'Query', [[b'sid', span_id]], b'EGoals'])
         goals = list(self._collect_responses(CoqGoal, chunk))
         yield from (self._pprint_goal(g, span_id) for g in goals)
 
@@ -278,10 +255,13 @@ class SerAPI():
         split, sent to Coq, and returned as a list of ``CoqText`` instances
         (for whitespace and comments) and ``CoqSentence`` instances (for code).
         """
-        chunk = BS(chunk)
+        if isinstance(chunk, str):
+            chunk = chunk.encode("utf-8")
+        chunk = memoryview(chunk)
         spans = list(self._add(chunk))
         fragments = []
         for span_id, contents in spans:
+            contents = str(contents, encoding='utf-8')
             if span_id is None:
                 fragments.append(CoqText(contents))
             else:
