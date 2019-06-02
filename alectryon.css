@@ -104,6 +104,27 @@ In any case, make an exception for comments:
     z-index: 1;
 }
 
+/* If there's space, display goals to the right of the code, not below it. */
+@media (any-hover: hover) {
+    @media screen and (min-width: 60rem) {
+        .alectryon-io .coq-output {
+            left: 100%;
+            right: unset;
+            top: 0;
+            width: 100%;
+        }
+
+        .alectryon-io {
+            width: 50%;
+        }
+
+        /* No need for a side margin when all goals are displayed inline */
+        .alectryon-toggle:checked ~ .alectryon-io {
+            width: unset;
+        }
+    }
+}
+
 .alectryon-io .coq-goals:not(:empty),
 .alectryon-io .coq-responses:not(:empty) {
     background: #eeeeec;
