@@ -213,6 +213,7 @@ class SerAPI():
         self._send([b'Print', meta, sexp])
         strings = list(self._collect_responses(ApiString, None))
         if strings:
+            assert len(strings) == 1
             return CoqPrettyPrinted(sid, strings[0].string)
         raise ValueError("No string found in Print answer")
 
