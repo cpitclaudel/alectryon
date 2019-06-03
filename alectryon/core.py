@@ -185,7 +185,7 @@ class SerAPI():
             locstr = LOC_FMT.format(indent(src.decode('utf-8'), '    '))
         else:
             locstr = ""
-        stderr.write(indent(err + locstr, "!! "))
+        stderr.write(indent(err + locstr, "!! ", predicate=lambda _: True))
 
     def _collect_responses(self, types, chunk):
         if isinstance(types, Iterable):
