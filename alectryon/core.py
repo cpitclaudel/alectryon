@@ -46,6 +46,7 @@ CoqHypothesis = namedtuple("CoqHypothesis", "name body type")
 CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
 CoqSentence = namedtuple("CoqSentence", "sentence responses goals")
 HTMLSentence = namedtuple("HTMLSentence", "sentence responses goals wsp")
+CoqPrettyPrinted = namedtuple("CoqPrettyPrinted", "sid pp")
 CoqText = namedtuple("CoqText", "string")
 
 def sexp_hd(sexp):
@@ -205,40 +206,47 @@ class SerAPI():
 
     def _pprint(self, sexp, sid, kind=None):
         if sexp is None:
-            return None
+            return CoqPrettyPrinted(sid, None)
         if kind is not None:
             sexp = [kind, sexp]
         meta = [[b'pp_format', b'PpStr']]  # FIXME [b'sid', sid]
         self._send([b'Print', meta, sexp])
         strings = list(self._collect_responses(ApiString, None))
         if strings:
-            return strings[0].string
+            return CoqPrettyPrinted(sid, strings[0].string)
         raise ValueError("No string found in Print answer")
+
+    def _pprint_message(self, msg):
+        return self._pprint(msg.msg, msg.sid, b'CoqPp')
 
     def _exec(self, sid, chunk):
         self._send([b'Exec', sid])
         messages = list(self._collect_responses(ApiMessage, chunk))
-        return [self._pprint(msg.msg, msg.sid, b'CoqPp') for msg in messages]
+        return [self._pprint_message(msg) for msg in messages]
 
     def _add(self, chunk):
         self._send([b'Add', [], sx.escape(chunk)])
-        prev_end = 0
-        for response in self._collect_responses(ApiAdded, chunk):
-            start, end = response.loc
-            if start != prev_end:
-                yield None, chunk[prev_end:start]
-            yield response.sid, chunk[start:end]
-            prev_end = end
+        prev_end, spans, messages = 0, [], []
+        for response in self._collect_responses((ApiAdded, ApiMessage), chunk):
+            if isinstance(response, ApiAdded):
+                start, end = response.loc
+                if start != prev_end:
+                    spans.append((None, chunk[prev_end:start]))
+                spans.append((response.sid, chunk[start:end]))
+                prev_end = end
+            elif isinstance(response, ApiMessage):
+                messages.append(response)
         if prev_end != len(chunk):
-            yield None, chunk[prev_end:]
+            spans.append((None, chunk[prev_end:]))
+        return spans, [self._pprint_message(msg) for msg in messages]
 
     def _pprint_hyp(self, hyp, sid):
-        body = self._pprint(hyp.body, sid, b'CoqExpr')
-        htype = self._pprint(hyp.type, sid, b'CoqExpr')
+        body = self._pprint(hyp.body, sid, b'CoqExpr').pp
+        htype = self._pprint(hyp.type, sid, b'CoqExpr').pp
         return CoqHypothesis(sx.tostr(hyp.name), body, htype)
 
     def _pprint_goal(self, goal, sid):
-        conclusion = self._pprint(goal.conclusion, sid, b'CoqExpr')
+        conclusion = self._pprint(goal.conclusion, sid, b'CoqExpr').pp
         hyps = [self._pprint_hyp(h, sid) for h in goal.hypotheses]
         return CoqGoal(sx.tostr(goal.name), conclusion, hyps)
 
@@ -258,17 +266,22 @@ class SerAPI():
         if isinstance(chunk, str):
             chunk = chunk.encode("utf-8")
         chunk = memoryview(chunk)
-        spans = list(self._add(chunk))
-        fragments = []
+        spans, messages = self._add(chunk)
+        fragments, fragments_by_id = [], {}
         for span_id, contents in spans:
             contents = str(contents, encoding='utf-8')
             if span_id is None:
                 fragments.append(CoqText(contents))
             else:
-                responses = self._exec(span_id, chunk)
+                messages.extend(self._exec(span_id, chunk))
                 goals = list(self._goals(span_id, chunk))
-                fragment = CoqSentence(contents, responses, goals)
+                fragment = CoqSentence(contents, [], goals)
                 fragments.append(fragment)
+                fragments_by_id[span_id] = fragment
+        # Messages for span n + δ can arrive during processing of span n or
+        # during _add, so we delay message processing until the very end.
+        for message in messages:
+            fragments_by_id[message.sid].responses.append(message.pp)
         return fragments
 
 def annotate_chunks(api, chunks):
