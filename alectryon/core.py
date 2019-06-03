@@ -40,7 +40,7 @@ def debug(text, prefix):
     if isinstance(text, (bytes, bytearray)):
         text = text.decode("utf-8")
     if DEBUG:
-        print(indent(text, prefix), flush=True)
+        print(indent(text.rstrip(), prefix), flush=True)
 
 CoqHypothesis = namedtuple("CoqHypothesis", "name body type")
 CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
