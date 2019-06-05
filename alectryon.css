@@ -34,6 +34,7 @@ In any case, make an exception for comments:
 .alectryon-toggle-label,
 .alectryon-io .coq-sentence[for] {
     cursor: pointer;
+    padding: 0.1em 0; /* Enlarge the hitbox slightly to fill interline gaps */
     padding-right: 1rem; /* Prevent wraps before the bubble */
 }
 
