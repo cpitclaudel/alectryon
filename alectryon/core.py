@@ -175,11 +175,19 @@ class SerAPI():
             raise ValueError("Unexpected response: {}".format(sexp))
 
     @staticmethod
+    def _exn_to_string(exn):
+        try:
+            return "\n".join(map(sx.tostr, exn))
+        except TypeError:
+            return repr(exn)
+
+    @staticmethod
     def _warn_on_exn(response, chunk):
-        ERR_FMT = ("!! Coq raised an exception: {}\n"
+        ERR_FMT = ("!! Coq raised an exception:\n{}\n"
                    "!! Results past this point may be unreliable.\n")
         LOC_FMT = "!! The offending chunk is delimited by >>>.<<< below:\n{}\n"
-        err = ERR_FMT.format(response.exn)
+        msg = SerAPI._exn_to_string(response.exn)
+        err = ERR_FMT.format(indent(msg, ' ' * 7))
         if chunk:
             loc = response.loc or (0, len(chunk))
             beg, end = max(0, loc[0]), min(len(chunk), loc[1])
