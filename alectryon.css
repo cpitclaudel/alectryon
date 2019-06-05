@@ -27,15 +27,15 @@ In any case, make an exception for comments:
 */
 
 .alectryon-toggle,
-.alectryon-io .coq-toggle {
+.alectryon-io .coq-toggle,
+.alectryon-io .coq-extra-goals-toggle {
     display: none;
 }
 
 .alectryon-toggle-label,
-.alectryon-io .coq-sentence[for] {
+.alectryon-io .coq-sentence[for],
+.alectryon-io .coq-extra-goals-label {
     cursor: pointer;
-    padding: 0.1em 0; /* Enlarge the hitbox slightly to fill interline gaps */
-    padding-right: 1rem; /* Prevent line wraps before the checkbox bubble */
 }
 
 .alectryon-toggle-label {
@@ -43,8 +43,19 @@ In any case, make an exception for comments:
     font-size: 0.8rem;
 }
 
+.alectryon-io .coq-sentence[for] {
+    padding: 0.1em 0; /* Enlarge the hitbox slightly to fill interline gaps */
+    padding-right: 1rem; /* Prevent line wraps before the checkbox bubble */
+}
+
+.alectryon-io .coq-extra-goals-label {
+    display: block;
+    text-align: right;
+}
+
 .alectryon-toggle-label:before,
-.alectryon-io .coq-sentence[for]:after {
+.alectryon-io .coq-sentence[for]:after,
+.alectryon-io .coq-extra-goals-label:before {
     border: 1px solid #babdb6;
     border-radius: 1rem;
     content: '';
@@ -56,7 +67,8 @@ In any case, make an exception for comments:
     width: 0.75rem;
 }
 
-.alectryon-toggle-label:before {
+.alectryon-toggle-label:before,
+.alectryon-io .coq-extra-goals-label:before {
     margin-right: 0.25rem;
 }
 
@@ -85,7 +97,8 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle:checked + .alectryon-toggle-label:before,
-.alectryon-io .coq-toggle:checked + .coq-sentence[for]:after {
+.alectryon-io .coq-toggle:checked + .coq-sentence[for]:after,
+.alectryon-io .coq-extra-goals-toggle:checked + .coq-extra-goals-label:before {
     background-color: #babdb6;
     border-color: #babdb6;
 }
@@ -109,6 +122,10 @@ In any case, make an exception for comments:
     right: 0;
     top: 100%;
     z-index: 1;
+}
+
+.alectryon-io .coq-extra-goals {
+    display: none;
 }
 
 /* If there's space, display goals to the right of the code, not below it. */
@@ -155,7 +172,8 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle:checked ~ .alectryon-io .coq-sentence[for] + .coq-output,
-.alectryon-io .coq-toggle:checked + .coq-sentence[for] + .coq-output {
+.alectryon-io .coq-toggle:checked + .coq-sentence[for] + .coq-output,
+.alectryon-io .coq-extra-goals-toggle:checked ~ .coq-extra-goals {
     display: block;
     position: unset;
     margin: unset;
@@ -184,12 +202,17 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .coq-goal,
+.alectryon-io .coq-response,
+.alectryon-io .coq-extra-goals-label {
+    margin: 0.25rem;
+}
+
+.alectryon-io .coq-goal,
 .alectryon-io .coq-response {
     align-items: center;
     background: #d3d7cf;
     display: block;
     flex-direction: column;
-    margin: 0.25rem;
     padding: 0.5rem;
     position: relative;
 }

@@ -55,6 +55,17 @@ class HtmlWriter():
             tags.span(cls="goal-separator")
             tags.span(self.highlight(goal.conclusion), cls="goal-conclusion")
 
+    def gen_goals_html(self, first, more):
+        self.gen_goal_html(first)
+        if more:
+            nm = self.gensym.next("chk")
+            tags.input(type="checkbox", id=nm, cls="coq-extra-goals-toggle")
+            lbl = "{} more goal{}".format(len(more), "s" * (len(more) > 1))
+            tags.label(lbl, cls="coq-extra-goals-label", **{'for': nm})
+            with tags.div(cls='coq-extra-goals'):
+                for goal in more:
+                    self.gen_goal_html(goal)
+
     def gen_sentence_html(self, fr):
         with tags.span(cls="coq-fragment"):
             if fr.goals or fr.responses:
@@ -69,8 +80,8 @@ class HtmlWriter():
                     for response in fr.responses:
                         tags.span(self.highlight(response), cls="coq-response")
                 with tags.span(cls="coq-goals"):
-                    for goal in fr.goals:
-                        self.gen_goal_html(goal)
+                    if fr.goals:
+                        self.gen_goals_html(fr.goals[0], fr.goals[1:])
             for wsp in getattr(fr, 'wsp', ()):
                 tags.span(wsp.string, cls="coq-wsp")
 
