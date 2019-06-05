@@ -64,7 +64,7 @@ class HtmlWriter():
             else:
                 args = {}
             tags.label(self.highlight(fr.sentence), cls="coq-sentence", **args)
-            with tags.span(cls="coq-output"):
+            with tags.span(cls="coq-output").add(tags.div()):
                 with tags.span(cls="coq-goals"):
                     for goal in fr.goals:
                         self.gen_goal_html(goal)

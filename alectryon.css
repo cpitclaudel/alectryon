@@ -106,23 +106,33 @@ In any case, make an exception for comments:
 }
 
 /* If there's space, display goals to the right of the code, not below it. */
-@media (any-hover: hover) {
-    @media screen and (min-width: 60rem) {
-        .alectryon-io .coq-output {
-            left: 100%;
-            right: unset;
-            top: 0;
-            width: 100%;
-        }
+@media screen and (any-hover: hover) and (min-width: 90rem) {
+    .alectryon-io {
+        box-sizing: border-box; /* Needed so .coq-output won't overflow */
+        width: 55%;
+    }
 
-        .alectryon-io {
-            width: 50%;
-        }
+    .alectryon-io .coq-output {
+        bottom: 0;
+        left: 100%;
+        margin-top: -0.25rem;
+        padding-left: 0.25rem;
+        right: unset;
+        top: 0;
+        width: 81%; /* 81% of .alectryion-io's 55% is ~45% */
+    }
 
-        /* No need for a side margin when all goals are displayed inline */
-        .alectryon-toggle:checked ~ .alectryon-io {
-            width: unset;
-        }
+    .alectryon-io .coq-output > div {
+        /* This odd margin-bottom property prevents the sticky div from bumping
+           against the bottom of its container (.coq-output).  The alternative
+           would be enlarging .coq-output, but that would cause overflows,
+           enlarging scrollbars and yielding scrolling towards the bottom of the
+           page.  Doing things this way instead makes it possible to restrict
+           .coq-output to a reasonable size (100%, through top = bottom = 0).
+           See also https://stackoverflow.com/questions/43909940/. */
+        margin-bottom: -200%;
+        position: sticky;
+        top: 0;
     }
 }
 
@@ -138,6 +148,15 @@ In any case, make an exception for comments:
 .alectryon-io .coq-toggle:checked + .coq-sentence[for] + .coq-output {
     display: block;
     position: unset;
+    margin: unset;
+    padding: unset;
+    width: unset;
+}
+
+.alectryon-toggle:checked ~ .alectryon-io .coq-sentence[for] + .coq-output > div,
+.alectryon-io .coq-toggle:checked + .coq-sentence[for] + .coq-output > div {
+    display: block;
+    margin-bottom: unset;
 }
 
 .alectryon-toggle:checked ~ .alectryon-io .coq-toggle ~ .coq-wsp,
