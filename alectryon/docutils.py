@@ -50,9 +50,7 @@ from .html import HtmlWriter
 from .pygments import highlight
 
 class alectryon_pending(Special, Invisible, Element):
-    def __init__(self, content):
-        super().__init__()
-        self.content = content
+    pass
 
 class alectryon_pending_toggle(Special, Invisible, Element):
     pass
@@ -70,11 +68,14 @@ class AlectryonTransform(Transform):
     def apply_coq(self):
         writer = HtmlWriter(highlight)
         nodes = list(self.document.traverse(alectryon_pending))
-        chunks = [n.content for n in nodes]
-        for node, fragments in zip(nodes, annotate(chunks)):
-            fragments = group_whitespace_with_code(fragments)
-            html = writer.gen_fragments_html(fragments).render(pretty=False)
-            node.replace_self(raw(node.content, html, format='html'))
+        annotated = annotate(n['content'] for n in nodes)
+        for node, fragments in zip(nodes, annotated):
+            if node['display'] == 'none':
+                node.parent.remove(node)
+            else:
+                fragments = group_whitespace_with_code(fragments)
+                html = writer.gen_fragments_html(fragments).render(pretty=False)
+                node.replace_self(raw(node['content'], html, format='html'))
 
     def apply_toggle(self):
         toggle = lambda id: raw('', TOGGLE_HTML.format(id=id), format='html')
@@ -131,7 +132,7 @@ class CoqDirective(Directive):
     required_arguments = 0
     optional_arguments = 0
     final_argument_whitespace = True
-    option_spec = {}
+    option_spec = {'silent': directives.flag}
     has_content = True
 
     EXPECTED_INDENTATION = 3
@@ -144,8 +145,9 @@ class CoqDirective(Directive):
             document.alectryon_transform_added = True
             document.transformer.add_transform(AlectryonTransform)
 
+        display = 'none' if 'silent' in self.options else 'visible'
         lines = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
-        return [alectryon_pending("\n".join(lines))]
+        return [alectryon_pending(content="\n".join(lines), display=display)]
 
 class AlectryonToggleDirective(Directive):
     """Display a checkbox allowing readers to show all output at once."""

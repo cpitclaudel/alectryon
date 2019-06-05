@@ -114,12 +114,12 @@ As a docutils or Sphinx module
 
 Add the following code to your Sphinx ``config.py`` file or to your Pelican
 setup to register a special ``.. coq::`` directive that feeds its contents to
-alectryon and displays the results::
+alectryon and displays the results interleaved with the input::
 
     import alectryon.docutils
     alectryon.docutils.register()
 
-See |help(docutils)|_ for more information.
+See |help(docutils)|_ for more information.  The ``.. coq::`` directive accepts a single option, ``:silent:``, which causes it to run its contents without displaying anything.
 
 .. |help(docutils)| replace:: ``help(alectryon.docutils)``
 .. _help(docutils): alectryon/docutils.py
