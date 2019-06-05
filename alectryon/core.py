@@ -183,7 +183,7 @@ class SerAPI():
             loc = response.loc or (0, len(chunk))
             beg, end = max(0, loc[0]), min(len(chunk), loc[1])
             src = b"%b>>>%b<<<%b" % (chunk[:beg], chunk[beg:end], chunk[end:])
-            locstr = LOC_FMT.format(indent(src.decode('utf-8'), '    '))
+            locstr = LOC_FMT.format(indent(src.decode('utf-8', 'ignore'), '    '))
         else:
             locstr = ""
         stderr.write(indent(err + locstr, "!! ", predicate=lambda _: True))
