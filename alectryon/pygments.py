@@ -22,7 +22,7 @@ import re
 
 import pygments
 import pygments.lexers
-from pygments.filters import TokenMergeFilter
+from pygments.filters import TokenMergeFilter, NameHighlightFilter
 from pygments.formatters import HtmlFormatter
 
 from dominate import tags
@@ -35,6 +35,28 @@ LEXER = CoqLexer(ensurenl=False)  # pylint: disable=no-member
 LEXER.add_filter(TokenMergeFilter())
 FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
 WHITESPACE_RE = re.compile(r"^(\s*)((?:.*\S)?)(\s*)$", re.DOTALL)
+
+def add_tokens(tokens):
+    """Register additional `tokens` to add custom syntax highlighting.
+
+    `tokens` should be a dictionary, whose keys indicate a type of token and
+    whose values are lists of strings to highlight with that token type.
+
+    This is particularly useful to highlight custom tactics or symbols.  For
+    example, if your code defines a tactic ``map_eq`` to decide map equalities,
+    and two tactics ``map_simplify`` and ``map_subst`` to simplify map
+    expressions, you might write the following:
+
+    >>> add_tokens({
+    ...     'tacn-solve': ['map_eq'],
+    ...     'tacn': ['map_simplify', 'map_subst']
+    ... })
+    """
+    for kind, names in tokens.items():
+        tokentype = LEXER.TOKEN_TYPES.get(kind)
+        if not tokentype:
+            raise ValueError("Unknown token kind: {}".format(kind))
+        LEXER.add_filter(NameHighlightFilter(names=names, tokentype=tokentype))
 
 def highlight(coqstr):
     # Pygments HTML formatter adds an unconditional newline, so we pass it only

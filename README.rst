@@ -109,6 +109,15 @@ Use ``alectryon.annotate(chunks: List[str])``, which returns an object with the 
 
 The results of ``annotate`` can be fed to ``alectryon.html.HtmlWriter(highlighter)`` to generate HTML.  Pass ``highlighter=alectryon.pygments.highlight`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
 
+Adding custom keywords
+----------------------
+
+You can use ``alectryon.pygments.add_tokens`` to specify additional highlighting
+rules, such as custom tactic names.  See |help(add_tokens)|_ for more details.
+
+.. |help(add_tokens)| replace:: ``help(alectryon.pygments.add_tokens)``
+.. _help(add_tokens): alectryon/pygments.py
+
 Tips
 ====
 
