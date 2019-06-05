@@ -28,7 +28,8 @@ TABLES = [
      [
          UNICODETABLE['sm'],           # Symbol, maths.
          UNICODETABLE['sc'],           # Symbol, currency.
-         UNICODETABLE['so'],           # Symbol, modifier.
+         UNICODETABLE['so'],           # Symbol, other.
+         UNICODETABLE['sk'],           # Symbol, modifier. ## Added in Alectryon
          UNICODETABLE['pd'],           # Punctuation, dash.
          UNICODETABLE['pc'],           # Punctuation, connector.
          UNICODETABLE['pe'],           # Punctuation, open.
