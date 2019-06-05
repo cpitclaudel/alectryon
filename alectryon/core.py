@@ -175,18 +175,16 @@ class SerAPI():
 
     @staticmethod
     def _warn_on_exn(response, chunk):
-        ERR_FMT = ("Coq raised an exception ({})\n"
-                   "Results past this point may be unreliable.\n")
-        LOC_FMT = "The offending chunk is delimited by >>>.<<< below:\n{}\n"
+        ERR_FMT = ("!! Coq raised an exception: {}\n"
+                   "!! Results past this point may be unreliable.\n")
+        LOC_FMT = "!! The offending chunk is delimited by >>>.<<< below:\n{}\n"
         err = ERR_FMT.format(response.exn)
         if chunk:
             loc = response.loc or (0, len(chunk))
             beg, end = max(0, loc[0]), min(len(chunk), loc[1])
             src = b"%b>>>%b<<<%b" % (chunk[:beg], chunk[beg:end], chunk[end:])
-            locstr = LOC_FMT.format(indent(src.decode('utf-8', 'ignore'), '    '))
-        else:
-            locstr = ""
-        stderr.write(indent(err + locstr, "!! ", predicate=lambda _: True))
+            err += LOC_FMT.format(indent(src.decode('utf-8', 'ignore'), ' ' * 7))
+        stderr.write(err)
 
     def _collect_responses(self, types, chunk):
         if isinstance(types, Iterable):
