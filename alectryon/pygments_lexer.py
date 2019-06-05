@@ -493,9 +493,15 @@ class CoqLexer(RegexLexer):
             default("#pop"),
         ],
 
+        # The symbol regexp below consumes symbol chars one by one.  Without
+        # this, expressions like ``("x", y)`` would be incorrectly parsed as
+        # ``("``, ``x``, and ``", y)``, with the first ``"`` coalesced with the
+        # preceding ``(`` and the second ``"`` lexed as a string opener.
+        # Clients can reconstitute multi-character symbols later (e.g. before
+        # running other filters) using a ``TokenMergeFilter``.
         '_other': [
             (name_re, Name),
-            (r"[{}]+".format(symbol), Operator),
+            (r"[{}]".format(symbol), Operator),
         ],
     }
 

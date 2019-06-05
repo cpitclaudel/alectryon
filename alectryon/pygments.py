@@ -22,6 +22,7 @@ import re
 
 import pygments
 import pygments.lexers
+from pygments.filters import TokenMergeFilter
 from pygments.formatters import HtmlFormatter
 
 from dominate import tags
@@ -31,6 +32,7 @@ from .pygments_lexer import CoqLexer
 from .pygments_style import TangoSubtleStyle
 
 LEXER = CoqLexer(ensurenl=False)  # pylint: disable=no-member
+LEXER.add_filter(TokenMergeFilter())
 FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
 WHITESPACE_RE = re.compile(r"^(\s*)((?:.*\S)?)(\s*)$", re.DOTALL)
 
