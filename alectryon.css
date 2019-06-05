@@ -185,6 +185,7 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .goal-name {
+    display: none; /* Hidden by default */
     position: absolute;
     right: 0.5rem;
     top: 0.5rem;
