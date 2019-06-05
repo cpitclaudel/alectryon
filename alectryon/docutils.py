@@ -39,6 +39,8 @@ directive in your document, and you can ommit it entirely by setting
 ``AlectryonTransform.insert_toggle`` to ``False``.
 """
 
+import re
+
 from docutils.nodes import raw, docinfo, Special, Invisible, Element
 from docutils.parsers.rst import directives, Directive
 from docutils.transforms import Transform
@@ -90,6 +92,38 @@ class AlectryonTransform(Transform):
         self.apply_coq()
         self.apply_toggle()
 
+INDENTATION_RE = re.compile("^ *")
+def measure_indentation(line):
+    return INDENTATION_RE.match(line).end()
+
+def recompute_contents(directive, real_indentation):
+    """Compute the contents of `directive` relative to `real_indentation`.
+
+    This undoes the automatic gobbling performed by the reST parser, which is
+    useful when a Coq fragment is split across multiple code blocks; in these
+    cases reST's automatic gobbling would unindent all lines.  Here is a
+    concrete example (reST renders it with all lines flushed left)::
+
+    .. code::
+
+       int main() {
+
+    .. code::
+
+           return 0;
+
+    .. code::
+
+       }
+    """
+
+    block_lines = directive.block_text.splitlines()
+    block_header_len = directive.content_offset - directive.lineno + 1
+    block_indentation = measure_indentation(directive.block_text)
+    code_indentation = block_indentation + real_indentation
+    lines = [ln[code_indentation:] for ln in block_lines[block_header_len:]]
+    return lines
+
 class Alectryon(Directive):
     """Highlight and annotate a Coq snippet."""
     name = "coq"
@@ -100,6 +134,8 @@ class Alectryon(Directive):
     option_spec = {}
     has_content = True
 
+    EXPECTED_INDENTATION = 3
+
     def run(self):
         self.assert_has_content()
 
@@ -108,8 +144,8 @@ class Alectryon(Directive):
             document.alectryon_transform_added = True
             document.transformer.add_transform(AlectryonTransform)
 
-        content = '\n'.join(self.content)
-        return [alectryon_pending(content)]
+        lines = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
+        return [alectryon_pending("\n".join(lines))]
 
 class AlectryonToggle(Directive):
     """Display a checkbox allowing readers to show all output at once."""
