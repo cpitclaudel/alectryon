@@ -35,7 +35,7 @@ In any case, make an exception for comments:
 .alectryon-io .coq-sentence[for] {
     cursor: pointer;
     padding: 0.1em 0; /* Enlarge the hitbox slightly to fill interline gaps */
-    padding-right: 1rem; /* Prevent wraps before the bubble */
+    padding-right: 1rem; /* Prevent line wraps before the checkbox bubble */
 }
 
 .alectryon-toggle-label {
@@ -90,7 +90,13 @@ In any case, make an exception for comments:
     border-color: #babdb6;
 }
 
-/* Hide individual checkboxes when the document-wide toggle is set */
+/* Disable clicks on sentences when the document-wide toggle is set. */
+.alectryon-toggle:checked ~ .alectryon-io .coq-toggle + .coq-sentence[for] {
+    cursor: unset;
+    pointer-events: none;
+}
+
+/* Hide individual checkboxes when the document-wide toggle is set. */
 .alectryon-toggle:checked ~ .alectryon-io .coq-toggle + .coq-sentence[for]:after {
     display: none;
 }
