@@ -329,6 +329,16 @@ class CoqLexer(RegexLexer):
                        'setoid_reflexivity', 'tauto', 'vm_cast_no_check']
     }
 
+    TOKEN_TYPES = {
+        'cmd': Keyword.Namespace,
+        'gallina-constants': Keyword.Type,
+        'gallina-keywords': Keyword.Reserved,
+        'ltac-builtins': Keyword.Pseudo,
+        'ltac-keywords': Keyword.Reserved,
+        'tacn': Name.Builtin,
+        'tacn-solve': Name.Builtin.Pseudo,
+    }
+
     # This is auto-generated from Coq's source code
     identstart = ('A-Z_a-z\xa0ªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶ-ͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆ'
                   'ՙա-ևא-תװ-ײؠ-يٮ-ٯٱ-ۓەۥ-ۦۮ-ۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴ-ߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࢠ-ࢴࢶ'
@@ -461,19 +471,19 @@ class CoqLexer(RegexLexer):
              bygroups(Keyword.Namespace, Text, Name.Function)),
             (opts_re, Keyword.Namespace),
             (tables_re, Keyword.Namespace),
-            (ws(cmd), Keyword.Namespace),
+            (ws(cmd), TOKEN_TYPES['cmd']),
         ],
         'binders': binders(r":=|[.]", name_re),
 
         '_keywords': [
             (r"\bforall\b|\bexists\b|∀|∃", Keyword.Reserved, 'quantifier args'),
             (r"\bfun\b", Keyword.Reserved, 'fun args'),
-            (ws(kwds['ltac-keywords']), Keyword.Reserved),
-            (ws(kwds['ltac-builtins']), Keyword.Pseudo),
-            (ws(kwds['gallina-keywords']), Keyword.Reserved),
-            (ws(kwds['gallina-constants']), Keyword.Type),
-            (ws(kwds['tacn-solve']), Name.Builtin.Pseudo),
-            (ws(kwds['tacn']), Name.Builtin),
+            (ws(kwds['ltac-keywords']), TOKEN_TYPES['ltac-keywords']),
+            (ws(kwds['ltac-builtins']), TOKEN_TYPES['ltac-builtins']),
+            (ws(kwds['gallina-keywords']), TOKEN_TYPES['gallina-keywords']),
+            (ws(kwds['gallina-constants']), TOKEN_TYPES['gallina-constants']),
+            (ws(kwds['tacn-solve']), TOKEN_TYPES['tacn-solve']),
+            (ws(kwds['tacn']), TOKEN_TYPES['tacn']),
         ],
         'quantifier args': binders(",", name_re),
         'fun args': binders("=>", name_re),
