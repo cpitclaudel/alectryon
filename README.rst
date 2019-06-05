@@ -118,6 +118,22 @@ rules, such as custom tactic names.  See |help(add_tokens)|_ for more details.
 .. |help(add_tokens)| replace:: ``help(alectryon.pygments.add_tokens)``
 .. _help(add_tokens): alectryon/pygments.py
 
+As a docutils or Sphinx module
+==============================
+
+Add the following code to your Sphinx ``config.py`` file or to your Pelican
+setup to register a special ``.. coq::`` directive that feeds its contents to
+alectryon and displays the results::
+
+    import alectryon.docutils
+    alectryon.docutils.register()
+
+See |help(docutils)|_ for more information, and |help(add_tokens)|_ for
+highlighting customization.
+
+.. |help(docutils)| replace:: ``help(alectryon.docutils)``
+.. _help(docutils): alectryon/docutils.py
+
 Tips
 ====
 

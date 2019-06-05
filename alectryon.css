@@ -97,7 +97,7 @@ In any case, make an exception for comments:
 
 .alectryon-io .coq-output {
     border-width: 1px 0;
-    display: none;
+    display: none; /* Displayed by the hover rule */
     left: 0;
     position: absolute;
     right: 0;

@@ -124,7 +124,7 @@ def recompute_contents(directive, real_indentation):
     lines = [ln[code_indentation:] for ln in block_lines[block_header_len:]]
     return lines
 
-class Alectryon(Directive):
+class CoqDirective(Directive):
     """Highlight and annotate a Coq snippet."""
     name = "coq"
 
@@ -147,7 +147,7 @@ class Alectryon(Directive):
         lines = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
         return [alectryon_pending("\n".join(lines))]
 
-class AlectryonToggle(Directive):
+class AlectryonToggleDirective(Directive):
     """Display a checkbox allowing readers to show all output at once."""
     name = "alectryon-toggle"
 
@@ -165,7 +165,7 @@ def register():
     If `auto_toggle` is true, also register a transform to add a top-level
 
     You can customize the name under which these are registered by adjusting the
-    ``name`` field of ``Alectryon`` and ``AlectryonToggle``.
+    ``name`` field of ``CoqDirective`` and ``AlectryonToggleDirective``.
     """
-    for directive in [Alectryon, AlectryonToggle]:
+    for directive in [CoqDirective, AlectryonToggleDirective]:
         directives.register_directive(directive.name, directive)

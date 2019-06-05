@@ -48,6 +48,7 @@ class CoqLexer(RegexLexer):
     filenames = ['*.v']
     mimetypes = ['text/x-coq']
 
+    # This is auto-generated from Coq's Manual
     kwds = {
         'cmd': ['Abort All', 'About', 'Add', 'Add LoadPath', 'Add ML Path',
                 'Add Rec LoadPath', 'Add Rec ML Path', 'Add Relation',
