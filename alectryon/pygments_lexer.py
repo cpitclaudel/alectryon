@@ -407,6 +407,7 @@ class CoqLexer(RegexLexer):
         (regex, Operator, '#pop'),
         (":", Operator, '#pop'),
         (name_re, Name.Variable),
+        (r"'\(", Operator, ('in parens')), # pattern matching
         (r"\(", Operator, ('in parens', 'type annot')),
         (r"\{", Operator, ('in curly', 'type annot')),
         include('_basic'),
