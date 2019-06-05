@@ -150,6 +150,10 @@ In any case, make an exception for comments:
     padding: 0.25rem;
 }
 
+.alectryon-toggle:checked ~ .alectryon-io {
+    width: unset;
+}
+
 .alectryon-toggle:checked ~ .alectryon-io .coq-sentence[for] + .coq-output,
 .alectryon-io .coq-toggle:checked + .coq-sentence[for] + .coq-output {
     display: block;
