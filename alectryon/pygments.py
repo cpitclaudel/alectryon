@@ -19,10 +19,13 @@
 # SOFTWARE.
 
 import re
+from collections import deque
+from textwrap import indent
 
+# import pygments
 import pygments
-import pygments.lexers
-from pygments.filters import TokenMergeFilter, NameHighlightFilter
+from pygments.token import Error
+from pygments.filters import Filter, TokenMergeFilter, NameHighlightFilter
 from pygments.formatters import HtmlFormatter
 
 from dominate import tags
@@ -80,3 +83,22 @@ def highlight(coqstr):
     before, code, after = WHITESPACE_RE.match(coqstr).groups()
     highlighted = pygments.highlight(code, LEXER, FORMATTER).strip()
     return tags.span(before, dom_raw(highlighted), after, cls="highlight")
+
+
+class WarnOnErrorTokenFilter(Filter):
+    """Print a warning when the lexer generates an error token."""
+
+    def filter(self, _lexer, stream):
+        history = deque(maxlen=69)
+        for typ, val in stream:
+            history.extend(val)
+            if typ is Error:
+                ell = '...' if len(history) == history.maxlen else ''
+                context = ell + ''.join(history).lstrip()
+                MSG = ("!! Unexpected token: {!r}\n"
+                       "!! This is a bug in Alectryon. Please report it!\n"
+                       "!! Context:\n{}")
+                print(MSG.format(val, indent(context, ' ' * 8)))
+            yield typ, val
+
+LEXER.add_filter(WarnOnErrorTokenFilter())
