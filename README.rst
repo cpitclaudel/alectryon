@@ -109,15 +109,6 @@ Use ``alectryon.annotate(chunks: List[str])``, which returns an object with the 
 
 The results of ``annotate`` can be fed to ``alectryon.html.HtmlWriter(highlighter)`` to generate HTML.  Pass ``highlighter=alectryon.pygments.highlight`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
 
-Adding custom keywords
-----------------------
-
-You can use ``alectryon.pygments.add_tokens`` to specify additional highlighting
-rules, such as custom tactic names.  See |help(add_tokens)|_ for more details.
-
-.. |help(add_tokens)| replace:: ``help(alectryon.pygments.add_tokens)``
-.. _help(add_tokens): alectryon/pygments.py
-
 As a docutils or Sphinx module
 ==============================
 
@@ -128,8 +119,7 @@ alectryon and displays the results::
     import alectryon.docutils
     alectryon.docutils.register()
 
-See |help(docutils)|_ for more information, and |help(add_tokens)|_ for
-highlighting customization.
+See |help(docutils)|_ for more information.
 
 .. |help(docutils)| replace:: ``help(alectryon.docutils)``
 .. _help(docutils): alectryon/docutils.py
@@ -137,4 +127,16 @@ highlighting customization.
 Tips
 ====
 
-- Programming fonts with ligatures are a good way to display prettified symbols without resorting to complex hacks.  Good candidates include *Fira Code* and *Iosevka* (with the later, add ``.alectryon-io { font-feature-settings: 'XV00' 1; }`` to your CSS to pick Coq-specific ligatures).
+Prettification
+--------------
+
+Programming fonts with ligatures are a good way to display prettified symbols without resorting to complex hacks.  Good candidates include *Fira Code* and *Iosevka* (with the later, add ``.alectryon-io { font-feature-settings: 'XV00' 1; }`` to your CSS to pick Coq-specific ligatures).
+
+Adding custom keywords
+----------------------
+
+You can use ``alectryon.pygments.add_tokens`` to specify additional highlighting
+rules, such as custom tactic names.  See |help(add_tokens)|_ for more details.
+
+.. |help(add_tokens)| replace:: ``help(alectryon.pygments.add_tokens)``
+.. _help(add_tokens): alectryon/pygments.py
