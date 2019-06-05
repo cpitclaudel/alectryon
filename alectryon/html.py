@@ -65,12 +65,12 @@ class HtmlWriter():
                 args = {}
             tags.label(self.highlight(fr.sentence), cls="coq-sentence", **args)
             with tags.span(cls="coq-output").add(tags.div()):
-                with tags.span(cls="coq-goals"):
-                    for goal in fr.goals:
-                        self.gen_goal_html(goal)
                 with tags.span(cls="coq-responses"):
                     for response in fr.responses:
                         tags.span(self.highlight(response), cls="coq-response")
+                with tags.span(cls="coq-goals"):
+                    for goal in fr.goals:
+                        self.gen_goal_html(goal)
             for wsp in getattr(fr, 'wsp', ()):
                 tags.span(wsp.string, cls="coq-wsp")
 
