@@ -213,8 +213,12 @@ In any case, make an exception for comments:
     z-index: 1;
 }
 
+.alectryon-io .hyp-name,
 .alectryon-io .hyp-punct {
-    font-weight: bold;
+    font-weight: 600;
+}
+
+.alectryon-io .hyp-punct {
     margin: 0 0.5rem;
 }
 
