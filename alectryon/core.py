@@ -57,7 +57,7 @@ def sexp_hd(sexp):
 ApiAck = namedtuple("ApiAck", "")
 ApiCompleted = namedtuple("ApiCompleted", "")
 ApiAdded = namedtuple("ApiAdded", "sid loc")
-ApiExn = namedtuple("ApiExn", "exn loc")
+ApiExn = namedtuple("ApiExn", "sids exn loc")
 ApiMessage = namedtuple("ApiMessage", "sid level msg")
 ApiString = namedtuple("ApiString", "string")
 
@@ -141,12 +141,13 @@ class SerAPI():
                     for fg in map(dict, goal.get(b'fg_goals', [])):
                         yield SerAPI._deserialize_goal(fg)
         elif tag == b'CoqExn':
-            _, opt_loc, _opt_sids, _bt, exn = sexp
+            _, opt_loc, opt_sids, _bt, exn = sexp
             if opt_loc:
                 loc = SerAPI._deserialize_loc(dict(opt_loc[0]))
             else:
                 loc = None
-            yield ApiExn(exn, loc)
+            sids = opt_sids[0] if opt_sids else None
+            yield ApiExn(sids, exn, loc)
         else:
             raise ValueError("Unexpected answer: {}".format(sexp))
 
@@ -186,7 +187,7 @@ class SerAPI():
             err += LOC_FMT.format(indent(src.decode('utf-8', 'ignore'), ' ' * 7))
         stderr.write(err)
 
-    def _collect_responses(self, types, chunk):
+    def _collect_responses(self, types, chunk, sid):
         if isinstance(types, Iterable):
             warn_on_exn = ApiExn not in types
         else:
@@ -198,7 +199,8 @@ class SerAPI():
                 if isinstance(response, ApiCompleted):
                     return
                 if warn_on_exn and isinstance(response, ApiExn):
-                    SerAPI._warn_on_exn(response, chunk)
+                    if sid is None or response.sids is None or sid in response.sids:
+                        SerAPI._warn_on_exn(response, chunk)
                 if (not types) or isinstance(response, types):
                     yield response
 
@@ -209,7 +211,7 @@ class SerAPI():
             sexp = [kind, sexp]
         meta = [[b'pp_format', b'PpStr']]  # FIXME [b'sid', sid]
         self._send([b'Print', meta, sexp])
-        strings = list(self._collect_responses(ApiString, None))
+        strings = list(self._collect_responses(ApiString, None, sid))
         if strings:
             assert len(strings) == 1
             return CoqPrettyPrinted(sid, strings[0].string)
@@ -220,13 +222,13 @@ class SerAPI():
 
     def _exec(self, sid, chunk):
         self._send([b'Exec', sid])
-        messages = list(self._collect_responses(ApiMessage, chunk))
+        messages = list(self._collect_responses(ApiMessage, chunk, sid))
         return [self._pprint_message(msg) for msg in messages]
 
     def _add(self, chunk):
         self._send([b'Add', [], sx.escape(chunk)])
         prev_end, spans, messages = 0, [], []
-        for response in self._collect_responses((ApiAdded, ApiMessage), chunk):
+        for response in self._collect_responses((ApiAdded, ApiMessage), chunk, None):
             if isinstance(response, ApiAdded):
                 start, end = response.loc
                 if start != prev_end:
@@ -249,11 +251,11 @@ class SerAPI():
         hyps = [self._pprint_hyp(h, sid) for h in goal.hypotheses]
         return CoqGoal(sx.tostr(goal.name), conclusion, hyps)
 
-    def _goals(self, span_id, chunk):
+    def _goals(self, sid, chunk):
         # FIXME Goals instead and CoqGoal and CoqConstr?
-        self._send([b'Query', [[b'sid', span_id]], b'EGoals'])
-        goals = list(self._collect_responses(CoqGoal, chunk))
-        yield from (self._pprint_goal(g, span_id) for g in goals)
+        self._send([b'Query', [[b'sid', sid]], b'EGoals'])
+        goals = list(self._collect_responses(CoqGoal, chunk, sid))
+        yield from (self._pprint_goal(g, sid) for g in goals)
 
     def run(self, chunk):
         """Send a `chunk` to sertop.
@@ -280,7 +282,12 @@ class SerAPI():
         # Messages for span n + δ can arrive during processing of span n or
         # during _add, so we delay message processing until the very end.
         for message in messages:
-            fragments_by_id[message.sid].responses.append(message.pp)
+            fragment = fragments_by_id.get(message.sid)
+            if fragment is None:
+                MSG = "!! Orphaned message for sid {}: {}\n"
+                stderr.write(MSG.format(message.sid, message.pp))
+            else:
+                fragment.responses.append(message.pp)
         return fragments
 
 def annotate_chunks(api, chunks):
