@@ -123,13 +123,13 @@ In any case, make an exception for comments:
 }
 
 /* Disable clicks on sentences when the document-wide toggle is set. */
-.alectryon-toggle:checked ~ .alectryon-io label.coq-input {
+.alectryon-toggle:checked ~ .alectryon-container label.coq-input {
     cursor: unset;
     pointer-events: none;
 }
 
 /* Hide individual checkboxes when the document-wide toggle is set. */
-.alectryon-toggle:checked ~ .alectryon-io label.coq-input:after {
+.alectryon-toggle:checked ~ .alectryon-container label.coq-input:after {
     display: none;
 }
 
@@ -186,27 +186,27 @@ In any case, make an exception for comments:
     padding: 0.25rem;
 }
 
-.alectryon-toggle:checked ~ .alectryon-io {
+.alectryon-toggle:checked ~ .alectryon-container {
     width: unset;
 }
 
-.alectryon-toggle:checked ~ .alectryon-io label.coq-input + .coq-output,
+.alectryon-toggle:checked ~ .alectryon-container label.coq-input + .coq-output,
 .alectryon-io .coq-toggle:checked + label.coq-input + .coq-output,
 .alectryon-io .coq-extra-goals-toggle:checked ~ .coq-extra-goals {
     display: block;
-    position: unset;
     margin: unset;
     padding: unset;
+    position: unset;
     width: unset;
 }
 
-.alectryon-toggle:checked ~ .alectryon-io .coq-output > div,
+.alectryon-toggle:checked ~ .alectryon-container .coq-output > div,
 .alectryon-io .coq-toggle:checked ~ .coq-output > div {
     display: block;
     margin-bottom: unset;
 }
 
-.alectryon-toggle:checked ~ .alectryon-io .coq-toggle ~ .coq-wsp,
+.alectryon-toggle:checked ~ .alectryon-container .coq-toggle ~ .coq-wsp,
 .alectryon-io .coq-toggle:checked ~ .coq-wsp {
     display: none;
 }

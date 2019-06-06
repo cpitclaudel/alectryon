@@ -36,12 +36,14 @@ A checkbox and an accompanying label (with classes ``alectryon-toggle`` and
 once is automatically added right before the document's first paragraph.  You
 can change its location by inserting an explicit ``.. alectryon-toggle::``
 directive in your document, and you can ommit it entirely by setting
-``AlectryonTransform.insert_toggle`` to ``False``.
+``AlectryonTransform.insert_toggle`` to ``False`` (to make styling easier, all
+contents following the checkbox are wrapped in a container with class
+``alectryon-container``).
 """
 
 import re
 
-from docutils.nodes import raw, docinfo, Special, Invisible, Element
+from docutils.nodes import raw, docinfo, Special, Invisible, Element, container
 from docutils.parsers.rst import directives, Directive
 from docutils.transforms import Transform
 
@@ -77,16 +79,31 @@ class AlectryonTransform(Transform):
                 html = writer.gen_fragments_html(fragments).render(pretty=False)
                 node.replace_self(raw(node['content'], html, format='html'))
 
+    @staticmethod
+    def split_around(node):
+        parent = node.parent
+        idx = node.parent.index(node)
+        return parent.children[:idx], node, parent.children[idx + 1:]
+
+    @staticmethod
+    def insert_toggle_after(node, toggle, keep_node):
+        before, node, after = AlectryonTransform.split_around(node)
+        if keep_node:
+            before.append(node)
+        before.append(toggle)
+        before.append(container('', *after, classes=['alectryon-container']))
+        node.parent.children = before
+
     def apply_toggle(self):
         toggle = lambda id: raw('', TOGGLE_HTML.format(id=id), format='html')
-        nodes = self.document.traverse(alectryon_pending_toggle)
+        nodes = list(self.document.traverse(alectryon_pending_toggle))
         for idx, node in enumerate(nodes):
-            node.replace_self(toggle(idx))
+            self.insert_toggle_after(node, toggle(idx), False)
             self.auto_toggle = False
         if self.auto_toggle:
             p = self.document.next_node(docinfo)
             if p:
-                p.parent.insert(p.parent.index(p) + 1, toggle(0))
+                self.insert_toggle_after(p, toggle(0), True)
 
     def apply(self, **_kwargs):
         assert self.startnode is None
