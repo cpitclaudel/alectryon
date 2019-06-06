@@ -21,10 +21,10 @@
 import re
 from collections import deque
 from textwrap import indent
+from contextlib import contextmanager
 
-# import pygments
 import pygments
-from pygments.token import Error
+from pygments.token import Error, STANDARD_TYPES, Name, Operator
 from pygments.filters import Filter, TokenMergeFilter, NameHighlightFilter
 from pygments.formatters import HtmlFormatter
 
@@ -81,9 +81,18 @@ def highlight(coqstr):
     # Pygments HTML formatter adds an unconditional newline, so we pass it only
     # the code, and we restore the spaces after highlighting.
     before, code, after = WHITESPACE_RE.match(coqstr).groups()
-    highlighted = pygments.highlight(code, LEXER, FORMATTER).strip()
+    # See https://bitbucket.org/birkenfeld/pygments-main/issues/1522/ to
+    # understand why we munge the STANDARD_TYPES dictionary
+    with munged_dict(STANDARD_TYPES, {Name: '', Operator: ''}):
+        highlighted = pygments.highlight(code, LEXER, FORMATTER).strip()
     return tags.span(before, dom_raw(highlighted), after, cls="highlight")
 
+@contextmanager
+def munged_dict(d, updates):
+    saved = d.copy()
+    d.update(updates)
+    yield
+    d.update(saved)
 
 class WarnOnErrorTokenFilter(Filter):
     """Print a warning when the lexer generates an error token."""
