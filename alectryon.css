@@ -265,12 +265,15 @@ In any case, make an exception for comments:
     z-index: 1;
 }
 
-.alectryon-io .hyp-name,
-.alectryon-io .hyp-punct {
+.alectryon-io .hyp-names {
     font-weight: 600;
+    /* Shrink the list of names, but let it grow as long as space is available. */
+    flex-basis: min-content;
+    flex-grow: 1;
 }
 
 .alectryon-io .hyp-punct {
+    font-weight: 600;
     margin: 0 0.5rem;
 }
 
