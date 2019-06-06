@@ -55,7 +55,7 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle-label,
-.alectryon-io .coq-sentence[for],
+.alectryon-io label.coq-input,
 .alectryon-io .coq-extra-goals-label {
     cursor: pointer;
 }
@@ -65,7 +65,7 @@ In any case, make an exception for comments:
     font-size: 0.8rem;
 }
 
-.alectryon-io .coq-sentence[for] {
+.alectryon-io label.coq-input {
     padding: 0.1em 0; /* Enlarge the hitbox slightly to fill interline gaps */
     padding-right: 1rem; /* Prevent line wraps before the checkbox bubble */
 }
@@ -76,7 +76,7 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle-label:before,
-.alectryon-io .coq-sentence[for]:after,
+.alectryon-io label.coq-input:after,
 .alectryon-io .coq-extra-goals-label:before {
     border: 1px solid #babdb6;
     border-radius: 1rem;
@@ -94,23 +94,20 @@ In any case, make an exception for comments:
     margin-right: 0.25rem;
 }
 
-.alectryon-io .coq-sentence[for]:after {
+.alectryon-io label.coq-input:after {
     margin-left: 0.25rem;
     margin-right: -1rem; /* Compensate for the anti-wrapping space */
 }
 
 @media (any-hover: hover) {
     .alectryon-toggle-label:hover:before,
-    .alectryon-io .coq-sentence[for]:hover:after {
+    .alectryon-io label.coq-input:hover:after {
         background: #eeeeec;
     }
 
-    .alectryon-io .coq-fragment .coq-sentence[for]:hover {
+    .alectryon-io label.coq-input:hover {
+        font-weight: bold !important; /* Use !important to avoid a * selector */
         text-decoration: underline dotted #babdb6;
-    }
-
-    .alectryon-io .coq-fragment .coq-sentence[for]:hover * {
-        font-weight: bold;
     }
 
     .alectryon-io .coq-fragment:hover .coq-output:not(:hover) {
@@ -119,20 +116,20 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle:checked + .alectryon-toggle-label:before,
-.alectryon-io .coq-toggle:checked + .coq-sentence[for]:after,
+.alectryon-io .coq-toggle:checked + label.coq-input:after,
 .alectryon-io .coq-extra-goals-toggle:checked + .coq-extra-goals-label:before {
     background-color: #babdb6;
     border-color: #babdb6;
 }
 
 /* Disable clicks on sentences when the document-wide toggle is set. */
-.alectryon-toggle:checked ~ .alectryon-io .coq-toggle + .coq-sentence[for] {
+.alectryon-toggle:checked ~ .alectryon-io label.coq-input {
     cursor: unset;
     pointer-events: none;
 }
 
 /* Hide individual checkboxes when the document-wide toggle is set. */
-.alectryon-toggle:checked ~ .alectryon-io .coq-toggle + .coq-sentence[for]:after {
+.alectryon-toggle:checked ~ .alectryon-io label.coq-input:after {
     display: none;
 }
 
@@ -181,8 +178,8 @@ In any case, make an exception for comments:
     }
 }
 
-.alectryon-io .coq-goals:not(:empty),
-.alectryon-io .coq-responses:not(:empty) {
+.alectryon-io .coq-goals,
+.alectryon-io .coq-responses {
     background: #eeeeec;
     display: block;
     margin: 0.25rem 0;
@@ -193,8 +190,8 @@ In any case, make an exception for comments:
     width: unset;
 }
 
-.alectryon-toggle:checked ~ .alectryon-io .coq-sentence[for] + .coq-output,
-.alectryon-io .coq-toggle:checked + .coq-sentence[for] + .coq-output,
+.alectryon-toggle:checked ~ .alectryon-io label.coq-input + .coq-output,
+.alectryon-io .coq-toggle:checked + label.coq-input + .coq-output,
 .alectryon-io .coq-extra-goals-toggle:checked ~ .coq-extra-goals {
     display: block;
     position: unset;
@@ -203,8 +200,8 @@ In any case, make an exception for comments:
     width: unset;
 }
 
-.alectryon-toggle:checked ~ .alectryon-io .coq-sentence[for] + .coq-output > div,
-.alectryon-io .coq-toggle:checked + .coq-sentence[for] + .coq-output > div {
+.alectryon-toggle:checked ~ .alectryon-io .coq-output > div,
+.alectryon-io .coq-toggle:checked ~ .coq-output > div {
     display: block;
     margin-bottom: unset;
 }

@@ -66,22 +66,30 @@ class HtmlWriter():
                 for goal in more:
                     self.gen_goal_html(goal)
 
-    def gen_sentence_html(self, fr):
-        with tags.span(cls="coq-fragment"):
-            if fr.goals or fr.responses:
-                nm = self.gensym.next("chk")
-                tags.input(type="checkbox", id=nm, cls="coq-toggle")
-                args = {'for': nm}
-            else:
-                args = {}
-            tags.label(self.highlight(fr.sentence), cls="coq-sentence", **args)
-            with tags.span(cls="coq-output").add(tags.div()):
+    def gen_input_html(self, fr):
+        if fr.goals or fr.responses:
+            nm = self.gensym.next("chk")
+            tags.input(type="checkbox", id=nm, cls="coq-toggle")
+            tag, args = tags.label, {'for': nm}
+        else:
+            tag, args = tags.span, {}
+        tag(self.highlight(fr.sentence), cls="coq-input", **args)
+
+    def gen_output_html(self, fr):
+        with tags.span(cls="coq-output").add(tags.div()):
+            if fr.responses:
                 with tags.span(cls="coq-responses"):
                     for response in fr.responses:
                         tags.span(self.highlight(response), cls="coq-response")
+            if fr.goals:
                 with tags.span(cls="coq-goals"):
-                    if fr.goals:
-                        self.gen_goals_html(fr.goals[0], fr.goals[1:])
+                    self.gen_goals_html(fr.goals[0], fr.goals[1:])
+
+    def gen_sentence_html(self, fr):
+        with tags.span(cls="coq-fragment"):
+            self.gen_input_html(fr)
+            if fr.responses or fr.goals:
+                self.gen_output_html(fr)
             for wsp in getattr(fr, 'wsp', ()):
                 tags.span(wsp.string, cls="coq-wsp")
 
