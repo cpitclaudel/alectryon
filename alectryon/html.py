@@ -67,16 +67,17 @@ class HtmlWriter():
                     self.gen_goal_html(goal)
 
     def gen_input_html(self, fr):
+        sentence, cls = self.highlight(fr.sentence), "coq-input"
         if fr.goals or fr.responses:
             nm = self.gensym.next("chk")
             tags.input(type="checkbox", id=nm, cls="coq-toggle")
-            tag, args = tags.label, {'for': nm}
+            tags.label(sentence, cls=cls, **{'for': nm})
         else:
-            tag, args = tags.span, {}
-        tag(self.highlight(fr.sentence), cls="coq-input", **args)
+            tags.span(sentence, cls=cls)
 
     def gen_output_html(self, fr):
-        with tags.span(cls="coq-output").add(tags.div()):
+        wrapper = tags.div(cls="coq-output-sticky-wrapper")
+        with tags.span(cls="coq-output").add(wrapper):
             if fr.responses:
                 with tags.span(cls="coq-responses"):
                     for response in fr.responses:

@@ -123,13 +123,13 @@ In any case, make an exception for comments:
 }
 
 /* Disable clicks on sentences when the document-wide toggle is set. */
-.alectryon-toggle:checked ~ .alectryon-container label.coq-input {
+.alectryon-toggle:checked + label + .alectryon-container label.coq-input {
     cursor: unset;
     pointer-events: none;
 }
 
 /* Hide individual checkboxes when the document-wide toggle is set. */
-.alectryon-toggle:checked ~ .alectryon-container label.coq-input:after {
+.alectryon-toggle:checked + label + .alectryon-container label.coq-input:after {
     display: none;
 }
 
@@ -164,7 +164,7 @@ In any case, make an exception for comments:
         width: 81%; /* 81% of .alectryion-io's 55% is ~45% */
     }
 
-    .alectryon-io .coq-output > div {
+    .alectryon-io .coq-output-sticky-wrapper {
         /* This odd margin-bottom property prevents the sticky div from bumping
            against the bottom of its container (.coq-output).  The alternative
            would be enlarging .coq-output, but that would cause overflows,
@@ -186,13 +186,12 @@ In any case, make an exception for comments:
     padding: 0.25rem;
 }
 
-.alectryon-toggle:checked ~ .alectryon-container {
+.alectryon-toggle:checked + label + .alectryon-container {
     width: unset;
 }
 
-.alectryon-toggle:checked ~ .alectryon-container label.coq-input + .coq-output,
-.alectryon-io .coq-toggle:checked + label.coq-input + .coq-output,
-.alectryon-io .coq-extra-goals-toggle:checked ~ .coq-extra-goals {
+.alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output,
+.alectryon-io .coq-toggle:checked + label.coq-input + .coq-output {
     display: block;
     margin: unset;
     padding: unset;
@@ -200,13 +199,13 @@ In any case, make an exception for comments:
     width: unset;
 }
 
-.alectryon-toggle:checked ~ .alectryon-container .coq-output > div,
-.alectryon-io .coq-toggle:checked ~ .coq-output > div {
+.alectryon-toggle:checked + label + .alectryon-container .coq-output > .coq-output-sticky-wrapper,
+.alectryon-io .coq-toggle:checked + label + .coq-output > .coq-output-sticky-wrapper {
     display: block;
     margin-bottom: unset;
 }
 
-.alectryon-toggle:checked ~ .alectryon-container .coq-toggle ~ .coq-wsp,
+.alectryon-toggle:checked + label + .alectryon-container .coq-toggle ~ .coq-wsp,
 .alectryon-io .coq-toggle:checked ~ .coq-wsp {
     display: none;
 }
