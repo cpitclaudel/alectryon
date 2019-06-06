@@ -1,4 +1,5 @@
 import re
+from collections import deque
 
 SEXP_SPECIAL = re.compile(rb'[ ()"]')
 STR_SPECIAL = re.compile(rb'[\\"]')
@@ -77,34 +78,21 @@ def parse(tokens):
 def load(bs):
     return parse(tokenize(bs))
 
-def unparse_bytes(bs, buf):
-    buf.append(QUOTE)
-    buf.extend(bs)
-    buf.append(QUOTE)
-
-def unparse_(sexp, buf):
-    if isinstance(sexp, (bytes, bytearray, memoryview)):
-        unparse_bytes(sexp, buf)
-    elif isinstance(sexp, str):
-        unparse_bytes(escape(sexp.encode('utf-8')), buf)
-    else:
-        assert isinstance(sexp, (list, tuple))
-        buf.append(OPEN)
-        for subexp in sexp:
-            unparse(subexp, buf)
-        buf.append(CLOSE)
-
 def unparse(sexp, buf):
-    if isinstance(sexp, list):
-        buf.append(OPEN)
-        for subexp in sexp:
-            unparse(subexp, buf)
-        buf.append(CLOSE)
-    else:
-        assert isinstance(sexp, bytes)
-        buf.append(QUOTE)
-        buf.extend(sexp)
-        buf.append(QUOTE)
+    stack = [sexp]
+    while stack:
+        top = stack.pop()
+        if isinstance(top, list):
+            buf.append(OPEN)
+            stack.append(CLOSE)
+            stack.extend(reversed(top))
+        elif isinstance(top, bytes):
+            buf.append(QUOTE)
+            buf.extend(top)
+            buf.append(QUOTE)
+        else:
+            assert isinstance(top, int)
+            buf.append(top)
 
 def dump(sexp):
     buf = bytearray()
