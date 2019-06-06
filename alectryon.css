@@ -60,7 +60,8 @@ In any case, make an exception for comments:
     cursor: pointer;
 }
 
-.alectryon-toggle-label {
+.alectryon-toggle-label,
+.coq-extra-goals-label {
     display: block;
     font-size: 0.8rem;
 }
@@ -71,7 +72,6 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .coq-extra-goals-label {
-    display: block;
     text-align: right;
 }
 
@@ -134,7 +134,6 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .coq-output {
-    border-width: 1px 0;
     display: none; /* Displayed by the hover rule */
     left: 0;
     position: absolute;
@@ -143,8 +142,17 @@ In any case, make an exception for comments:
     z-index: 1;
 }
 
-.alectryon-io .coq-extra-goals {
+.alectryon-io .coq-extra-goals .goal-hyps,
+.alectryon-io .coq-extra-goals .goal-separator {
     display: none;
+}
+
+.alectryon-io .coq-extra-goals .goal-conclusion {
+    max-height: 5.2em;
+    overflow-y: auto;
+    /* Combining ‘overflow-y: auto’ with ‘display: inline-block’ causes extra space
+       to be added below the box. ‘vertical-align: bottom’ gets rid of it. */
+    vertical-align: bottom;
 }
 
 /* If there's space, display goals to the right of the code, not below it. */
@@ -203,6 +211,19 @@ In any case, make an exception for comments:
 .alectryon-io .coq-toggle:checked + label + .coq-output > .coq-output-sticky-wrapper {
     display: block;
     margin-bottom: unset;
+}
+
+.alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-hyps {
+    display: flex;
+}
+
+.alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-separator {
+    display: block;
+}
+
+.alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-conclusion {
+    max-height: unset;
+    overflow-y: unset;
 }
 
 .alectryon-toggle:checked + label + .alectryon-container .coq-toggle ~ .coq-wsp,
