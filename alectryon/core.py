@@ -54,6 +54,9 @@ def sexp_hd(sexp):
         return sexp[0]
     return sexp
 
+def utf8(x):
+    return str(x).encode('utf-8')
+
 ApiAck = namedtuple("ApiAck", "")
 ApiCompleted = namedtuple("ApiCompleted", "")
 ApiAdded = namedtuple("ApiAdded", "sid loc")
@@ -65,11 +68,17 @@ class SerAPI():
     SERTOP_BIN = "sertop"
     DEFAULT_ARGS = ("--printer=sertop", "--implicit")
 
-    def __init__(self, args=DEFAULT_ARGS, sertop_bin=SERTOP_BIN):
+    MIN_PP_MARGIN = 20
+    DEFAULT_PP_ARGS = {'pp_depth': 30, 'pp_margin': 55}
+
+    def __init__(self, args=DEFAULT_ARGS, # pylint: disable=dangerous-default-value
+                 sertop_bin=SERTOP_BIN,
+                 pp_args=DEFAULT_PP_ARGS):
         """Configure and start a ``sertop`` instance."""
         self.args, self.sertop_bin = args, sertop_bin
         self.sertop = None
-        self.tag = 0
+        self.next_qid = 0
+        self.pp_args = {**SerAPI.DEFAULT_PP_ARGS, **pp_args}
 
     def __enter__(self):
         self.reset()
@@ -99,8 +108,8 @@ class SerAPI():
         return sexp
 
     def _send(self, sexp):
-        s = sx.dump([b'query%d' % self.tag, sexp])
-        self.tag += 1
+        s = sx.dump([b'query%d' % self.next_qid, sexp])
+        self.next_qid += 1
         debug(s, '>> ')
         self.sertop.stdin.write(s + b'\n')
         self.sertop.stdin.flush()
@@ -119,7 +128,8 @@ class SerAPI():
 
     @staticmethod
     def _deserialize_goal(sexp):
-        hyps = [SerAPI._deserialize_hyp(h) for h in reversed(sexp[b'hyp'])]
+        hyps = [h for hs in reversed(sexp[b'hyp'])
+                for h in SerAPI._deserialize_hyp(hs)]
         return CoqGoal(sexp[b'name'], sexp[b'ty'], hyps)
 
     @staticmethod
@@ -212,12 +222,14 @@ class SerAPI():
                 if (not types) or isinstance(response, types):
                     yield response
 
-    def _pprint(self, sexp, sid, kind=None):
+    def _pprint(self, sexp, sid, kind, pp_depth, pp_margin):
         if sexp is None:
             return CoqPrettyPrinted(sid, None)
         if kind is not None:
             sexp = [kind, sexp]
-        meta = [[b'pp_format', b'PpStr']]  # FIXME [b'sid', sid]
+        meta = [[b'pp_format', b'PpStr'], # FIXME [b'sid', sid]
+                [b'pp_depth', utf8(pp_depth)],
+                [b'pp_margin', utf8(pp_margin)]]
         self._send([b'Print', meta, sexp])
         strings = list(self._collect_responses(ApiString, None, sid))
         if strings:
@@ -226,7 +238,7 @@ class SerAPI():
         raise ValueError("No string found in Print answer")
 
     def _pprint_message(self, msg):
-        return self._pprint(msg.msg, msg.sid, b'CoqPp')
+        return self._pprint(msg.msg, msg.sid, b'CoqPp', **self.pp_args)
 
     def _exec(self, sid, chunk):
         self._send([b'Exec', sid])
@@ -250,14 +262,16 @@ class SerAPI():
         return spans, [self._pprint_message(msg) for msg in messages]
 
     def _pprint_hyp(self, hyp, sid):
-        body = self._pprint(hyp.body, sid, b'CoqExpr').pp
-        htype = self._pprint(hyp.type, sid, b'CoqExpr').pp
+        d = self.pp_args['pp_depth']
+        w = max(self.pp_args['pp_margin'] - len(hyp.name), SerAPI.MIN_PP_MARGIN)
+        body = self._pprint(hyp.body, sid, b'CoqExpr', d, w).pp
+        htype = self._pprint(hyp.type, sid, b'CoqExpr', d, w - 1).pp
         return CoqHypothesis(sx.tostr(hyp.name), body, htype)
 
     def _pprint_goal(self, goal, sid):
-        conclusion = self._pprint(goal.conclusion, sid, b'CoqExpr').pp
+        ccl = self._pprint(goal.conclusion, sid, b'CoqExpr', **self.pp_args).pp
         hyps = [self._pprint_hyp(h, sid) for h in goal.hypotheses]
-        return CoqGoal(sx.tostr(goal.name), conclusion, hyps)
+        return CoqGoal(sx.tostr(goal.name), ccl, hyps)
 
     def _goals(self, sid, chunk):
         # FIXME Goals instead and CoqGoal and CoqConstr?
