@@ -54,6 +54,7 @@ In any case, make an exception for comments:
     display: none;
 }
 
+.alectryon-bubble,
 .alectryon-toggle-label,
 .alectryon-io label.coq-input,
 .alectryon-io .coq-extra-goals-label {
@@ -75,6 +76,7 @@ In any case, make an exception for comments:
     text-align: right;
 }
 
+.alectryon-bubble:before,
 .alectryon-toggle-label:before,
 .alectryon-io label.coq-input:after,
 .alectryon-io .coq-extra-goals-label:before {
@@ -100,6 +102,7 @@ In any case, make an exception for comments:
 }
 
 @media (any-hover: hover) {
+    .alectryon-bubble:hover:before,
     .alectryon-toggle-label:hover:before,
     .alectryon-io label.coq-input:hover:after {
         background: #eeeeec;
@@ -151,8 +154,8 @@ In any case, make an exception for comments:
     max-height: 5.2em;
     overflow-y: auto;
     /* Combining ‘overflow-y: auto’ with ‘display: inline-block’ causes extra space
-       to be added below the box. ‘vertical-align: bottom’ gets rid of it. */
-    vertical-align: bottom;
+       to be added below the box. ‘vertical-align: middle’ gets rid of it. */
+    vertical-align: middle;
 }
 
 /* If there's space, display goals to the right of the code, not below it. */

@@ -43,8 +43,8 @@ contents following the checkbox are wrapped in a container with class
 
 import re
 
-from docutils.nodes import raw, docinfo, Special, Invisible, Element, container
-from docutils.parsers.rst import directives, Directive
+from docutils.nodes import raw, inline, docinfo, Special, Invisible, Element, container
+from docutils.parsers.rst import directives, roles, Directive
 from docutils.transforms import Transform
 
 from .core import annotate, group_whitespace_with_code
@@ -178,6 +178,10 @@ class AlectryonToggleDirective(Directive):
     def run(self):
         return [alectryon_pending_toggle()]
 
+def alectryon_bubble(# pylint: disable=dangerous-default-value
+        _name, rawtext, _text, _lineno, _inliner, _options={}, _content=[]):
+    return [inline(rawtext, classes=['alectryon-bubble'])], []
+
 def register():
     """Tell Docutils about our directives (.. coq and .. alectryon-toggle).
 
@@ -188,3 +192,4 @@ def register():
     """
     for directive in [CoqDirective, AlectryonToggleDirective]:
         directives.register_directive(directive.name, directive)
+    roles.register_canonical_role('alectryon-bubble', alectryon_bubble)
