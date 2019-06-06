@@ -43,7 +43,7 @@ class HtmlWriter():
             with tags.span(cls="goal-hyps"):
                 for hyp in goal.hypotheses:
                     with tags.span(cls="goal-hyp"):
-                        tags.span(hyp.name, cls="hyp-name")
+                        tags.span(", ".join(hyp.names), cls="hyp-name")
                         with tags.span():
                             if hyp.body:
                                 with tags.span(cls="hyp-body"):

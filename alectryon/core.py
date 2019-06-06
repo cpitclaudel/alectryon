@@ -42,7 +42,7 @@ def debug(text, prefix):
     if DEBUG:
         print(indent(text.rstrip(), prefix), flush=True)
 
-CoqHypothesis = namedtuple("CoqHypothesis", "name body type")
+CoqHypothesis = namedtuple("CoqHypothesis", "names body type")
 CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
 CoqSentence = namedtuple("CoqSentence", "sentence responses goals")
 HTMLSentence = namedtuple("HTMLSentence", "sentence responses goals wsp")
@@ -122,9 +122,9 @@ class SerAPI():
     def _deserialize_hyp(sexp):
         meta, body, htype = sexp
         assert len(body) <= 1
-        name = dict(meta)[b'Id']
         body = body[0] if body else None
-        return CoqHypothesis(name, body, htype)
+        ids = [sx.tostr(p[1]) for p in meta if p[0] == b'Id']
+        yield CoqHypothesis(ids, body, htype)
 
     @staticmethod
     def _deserialize_goal(sexp):
@@ -263,10 +263,11 @@ class SerAPI():
 
     def _pprint_hyp(self, hyp, sid):
         d = self.pp_args['pp_depth']
-        w = max(self.pp_args['pp_margin'] - len(hyp.name), SerAPI.MIN_PP_MARGIN)
-        body = self._pprint(hyp.body, sid, b'CoqExpr', d, w).pp
-        htype = self._pprint(hyp.type, sid, b'CoqExpr', d, w - 1).pp
-        return CoqHypothesis(sx.tostr(hyp.name), body, htype)
+        name_w = max(len(n) for n in hyp.names)
+        w = max(self.pp_args['pp_margin'] - name_w, SerAPI.MIN_PP_MARGIN)
+        body = self._pprint(hyp.body, sid, b'CoqExpr', d, w - 2).pp
+        htype = self._pprint(hyp.type, sid, b'CoqExpr', d, w - 3).pp
+        return CoqHypothesis(hyp.names, body, htype)
 
     def _pprint_goal(self, goal, sid):
         ccl = self._pprint(goal.conclusion, sid, b'CoqExpr', **self.pp_args).pp
