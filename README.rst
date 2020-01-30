@@ -8,8 +8,8 @@ Setup
 =====
 
 Dependencies (OCaml, Python 3):
-    ``opam install coq-serapi=8.9.0+0.6.1``
-    ``pip3 install --user dominate==2.3.5 pygments==2.3.1``
+    ``opam install coq-serapi=8.10.0+0.7.0``
+    ``python3 -m pip install --user pygments==2.5.2 dominate==2.4.0``
 
 The core library only depends on ``coq-serapi``.  ``dominate`` is used is ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.
 

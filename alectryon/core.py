@@ -20,7 +20,7 @@
 
 """Annotate segments of Coq code with responses and goals."""
 
-__version__ = "0.1"
+__version__ = "0.2"
 __author__ = 'Clément Pit-Claudel'
 
 from collections import namedtuple
@@ -29,7 +29,7 @@ from textwrap import indent
 import re
 from sys import stderr
 
-from shutil import which #from pexpect.utils
+from shutil import which  #from pexpect.utils
 from subprocess import Popen, PIPE, STDOUT
 from . import sexp as sx
 
@@ -115,7 +115,8 @@ class SerAPI():
         self.sertop.stdin.flush()
 
     @staticmethod
-    def _deserialize_loc(locd):
+    def _deserialize_loc(loc):
+        locd = dict(loc)
         return int(locd[b'bp']), int(locd[b'ep'])
 
     @staticmethod
@@ -130,7 +131,8 @@ class SerAPI():
     def _deserialize_goal(sexp):
         hyps = [h for hs in reversed(sexp[b'hyp'])
                 for h in SerAPI._deserialize_hyp(hs)]
-        return CoqGoal(sexp[b'name'], sexp[b'ty'], hyps)
+        opt_name = dict(sexp[b'info'])[b'name']
+        return CoqGoal(opt_name[0] if opt_name else None, sexp[b'ty'], hyps)
 
     @staticmethod
     def _deserialize_answer(sexp):
@@ -140,24 +142,21 @@ class SerAPI():
         elif tag == b'Completed':
             yield ApiCompleted()
         elif tag == b'Added':
-            meta = dict(sexp[2])
-            yield ApiAdded(sexp[1], SerAPI._deserialize_loc(meta))
+            yield ApiAdded(sexp[1], SerAPI._deserialize_loc(sexp[2]))
         elif tag == b'ObjList':
             for tag, *obj in sexp[1]:
                 if tag == b'CoqString':
                     yield ApiString(sx.tostr(obj[0]))
                 elif tag == b'CoqExtGoal':
-                    goal = dict(obj[0])
-                    for fg in map(dict, goal.get(b'fg_goals', [])):
-                        yield SerAPI._deserialize_goal(fg)
+                    gobj = dict(obj[0])
+                    for goal in gobj.get(b'goals', []):
+                        yield SerAPI._deserialize_goal(dict(goal))
         elif tag == b'CoqExn':
-            _, opt_loc, opt_sids, _bt, exn = sexp
-            if opt_loc:
-                loc = SerAPI._deserialize_loc(dict(opt_loc[0]))
-            else:
-                loc = None
+            exndata = dict(sexp[1])
+            opt_loc, opt_sids = exndata.get(b'loc'), exndata.get(b'stm_ids')
+            loc = SerAPI._deserialize_loc(opt_loc[0]) if opt_loc else None
             sids = opt_sids[0] if opt_sids else None
-            yield ApiExn(sids, exn, loc)
+            yield ApiExn(sids, exndata[b'str'], loc)
         else:
             raise ValueError("Unexpected answer: {}".format(sexp))
 
@@ -167,7 +166,9 @@ class SerAPI():
         contents = meta[b'contents']
         tag = sexp_hd(contents)
         if tag == b'Message':
-            yield ApiMessage(meta[b'span_id'], contents[1], contents[3])
+            mdata = dict(contents[1:])
+            # LATER: use the 'str' field directly instead of a Pp call
+            yield ApiMessage(meta[b'span_id'], mdata[b'level'], mdata[b'pp'])
         elif tag in (b'FileLoaded', b'ProcessingIn',
                     b'Processed', b'AddedAxiom'):
             pass
@@ -185,18 +186,11 @@ class SerAPI():
             raise ValueError("Unexpected response: {}".format(sexp))
 
     @staticmethod
-    def _exn_to_string(exn):
-        try:
-            return "\n".join(map(sx.tostr, exn))
-        except TypeError:
-            return repr(exn)
-
-    @staticmethod
     def _warn_on_exn(response, chunk):
         ERR_FMT = ("!! Coq raised an exception:\n{}\n"
                    "!! Results past this point may be unreliable.\n")
         LOC_FMT = "!! The offending chunk is delimited by >>>.<<< below:\n{}\n"
-        msg = SerAPI._exn_to_string(response.exn)
+        msg = sx.tostr(response.exn)
         err = ERR_FMT.format(indent(msg, ' ' * 7))
         if chunk:
             loc = response.loc or (0, len(chunk))
@@ -227,9 +221,11 @@ class SerAPI():
             return CoqPrettyPrinted(sid, None)
         if kind is not None:
             sexp = [kind, sexp]
-        meta = [[b'pp_format', b'PpStr'], # FIXME [b'sid', sid]
-                [b'pp_depth', utf8(pp_depth)],
-                [b'pp_margin', utf8(pp_margin)]]
+        meta = [[b'sid', sid],
+                [b'pp',
+                 [[b'pp_format', b'PpStr'],
+                  [b'pp_depth', utf8(pp_depth)],
+                  [b'pp_margin', utf8(pp_margin)]]]]
         self._send([b'Print', meta, sexp])
         strings = list(self._collect_responses(ApiString, None, sid))
         if strings:
@@ -272,7 +268,7 @@ class SerAPI():
     def _pprint_goal(self, goal, sid):
         ccl = self._pprint(goal.conclusion, sid, b'CoqExpr', **self.pp_args).pp
         hyps = [self._pprint_hyp(h, sid) for h in goal.hypotheses]
-        return CoqGoal(sx.tostr(goal.name), ccl, hyps)
+        return CoqGoal(sx.tostr(goal.name) if goal.name else None, ccl, hyps)
 
     def _goals(self, sid, chunk):
         # FIXME Goals instead and CoqGoal and CoqConstr?
