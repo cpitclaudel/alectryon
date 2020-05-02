@@ -107,7 +107,7 @@ Use ``alectryon.annotate(chunks: List[str])``, which returns an object with the 
                  goals=[])]
     ]
 
-The results of ``annotate`` can be fed to ``alectryon.html.HtmlWriter(highlighter)`` to generate HTML.  Pass ``highlighter=alectryon.pygments.highlight`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
+The results of ``annotate`` can be fed to ``alectryon.html.HtmlWriter(highlighter)`` to generate HTML (with CSS classes defined in ``alectryon.css``).  Pass ``highlighter=alectryon.pygments.highlight`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
 
 As a docutils or Sphinx module
 ==============================
@@ -120,6 +120,8 @@ alectryon and displays the results interleaved with the input::
     alectryon.docutils.register()
 
 See |help(docutils)|_ for more information.  The ``.. coq::`` directive accepts a single option, ``:silent:``, which causes it to run its contents without displaying anything.
+
+To ensure that Coq blocks render properly, you'll need to tell your blogging platform to include ``alectryon.css``.  Using a git submodule or vendoring a copy of Alectryon is an easy way to ensure that this stylesheet is accessible to your blogging software.
 
 .. |help(docutils)| replace:: ``help(alectryon.docutils)``
 .. _help(docutils): alectryon/docutils.py
