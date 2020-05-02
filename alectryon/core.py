@@ -95,7 +95,9 @@ class SerAPI():
     def reset(self):
         path = which(self.sertop_bin)
         if path is None:
-            raise ValueError("sertop ({}) not found".format(self.sertop_bin))
+            msg = ("sertop not found (sertop_bin={});" +
+                   " please run `opam install coq-serapi`")
+            raise ValueError(msg.format(self.sertop_bin))
         self.kill()
         self.sertop = Popen([path, *self.args],
                           stdin=PIPE, stderr=STDOUT, stdout=PIPE)
