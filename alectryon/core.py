@@ -71,11 +71,11 @@ class SerAPI():
     MIN_PP_MARGIN = 20
     DEFAULT_PP_ARGS = {'pp_depth': 30, 'pp_margin': 55}
 
-    def __init__(self, args=DEFAULT_ARGS, # pylint: disable=dangerous-default-value
+    def __init__(self, args=(), # pylint: disable=dangerous-default-value
                  sertop_bin=SERTOP_BIN,
                  pp_args=DEFAULT_PP_ARGS):
         """Configure and start a ``sertop`` instance."""
-        self.args, self.sertop_bin = args, sertop_bin
+        self.args, self.sertop_bin = [*args, *SerAPI.DEFAULT_ARGS], sertop_bin
         self.sertop = None
         self.next_qid = 0
         self.pp_args = {**SerAPI.DEFAULT_PP_ARGS, **pp_args}
@@ -316,15 +316,19 @@ def annotate_chunks(api, chunks):
     for chunk in chunks:
         yield api.run(chunk)
 
-def annotate(chunks):
+def annotate(chunks, serapi_args=()):
     """Annotate multiple `chunks` of Coq code.
 
-    All fragments are executed in the same Coq instance.  The return value is a
-    list with as many elements as in `chunks`, but each element is a list of
-    ``CoqText`` instances (for whitespace and comments) and ``CoqSentence``
-    instances (for code).
+    All fragments are executed in the same Coq instance, started with arguments
+    `serapi_args`.  The return value is a list with as many elements as in
+    `chunks`, but each element is a list of ``CoqText`` instances (for
+    whitespace and comments) and ``CoqSentence`` instances (for code).
+
+    >>> annotate(["Check 1.", ("-Q", "directory,logical_name")])
+    [[CoqSentence(sentence='Check 1.', responses=['1\n     : nat'], goals=[])]]
+
     """
-    with SerAPI() as api:
+    with SerAPI(args=serapi_args) as api:
         return list(annotate_chunks(api, chunks))
 
 LEADING_BLANKS_RE = re.compile(r'^([ \t]*(?:\n|$))?(.*)$', flags=re.DOTALL)

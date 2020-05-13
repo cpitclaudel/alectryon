@@ -52,23 +52,53 @@ def read_input(fpath):
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description=ARGDOC)
-    add = parser.add_argument
 
     INPUT_HELP = """Input file.  Can be either .v (plain Coq code) or \
 .json (a list of Coq fragments)."""
-    add("input", nargs="+", type=read_input, help=INPUT_HELP)
+    parser.add_argument("input", nargs="+",
+                        type=read_input, help=INPUT_HELP)
 
     WRITER_HELP = """Output type"""
     WRITER_CHOICES = ("json", "html", "webpage")
-    add("--writer",
-        default="webpage",
-        choices=WRITER_CHOICES,
-        help=WRITER_HELP)
+    parser.add_argument("--writer", default="webpage",
+                        choices=WRITER_CHOICES, help=WRITER_HELP)
 
     DEBUG_HELP = "Print communications with SerAPI."
-    add("--debug", action="store_true", default=False, help=DEBUG_HELP)
+    parser.add_argument("--debug", action="store_true",
+                        default=False, help=DEBUG_HELP)
 
-    return parser.parse_args()
+    SUBP_HELP = "Pass arguments to the SerAPI process"
+    subp = parser.add_argument_group("Subprocess arguments", SUBP_HELP)
+
+    SERAPI_ARGS_HELP = "Pass a single argument to SerAPI (e.g. -Q dir,lib)."
+    subp.add_argument("--serapi-arg", dest="serapi_args",
+                      action="append", default=[],
+                      help=SERAPI_ARGS_HELP)
+
+    I_HELP="Pass -I DIR to the SerAPI subprocess."
+    subp.add_argument("-I", "--ml-include-path", dest="coq_args_I",
+                      metavar="dir", nargs=1, action="append",
+                      default=[], help=I_HELP)
+
+    Q_HELP="Pass -Q DIR COQDIR to the SerAPI subprocess."
+    subp.add_argument("-Q", "--load-path", dest="coq_args_Q",
+                      metavar="DIR COQDIR", nargs=2, action="append",
+                      default=[], help=Q_HELP)
+
+    R_HELP="Pass -R DIR COQDIR to the SerAPI subprocess."
+    subp.add_argument("-R", "--rec-load-path", dest="coq_args_R",
+                      metavar="DIR COQDIR", nargs=2, action="append",
+                      default=[], help=R_HELP)
+
+    args = parser.parse_args()
+    for dir in args.coq_args_I:
+        args.serapi_args.extend(("-I", dir))
+    for pair in args.coq_args_R:
+        args.serapi_args.extend(("-R", ",".join(pair)))
+    for pair in args.coq_args_Q:
+        args.serapi_args.extend(("-Q", ",".join(pair)))
+
+    return args
 
 COQ_TYPES = (CoqSentence, CoqGoal, CoqHypothesis, CoqText)
 COQ_TYPE_NAMES = {
