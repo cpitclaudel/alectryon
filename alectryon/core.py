@@ -79,6 +79,7 @@ class SerAPI():
         self.sertop = None
         self.next_qid = 0
         self.pp_args = {**SerAPI.DEFAULT_PP_ARGS, **pp_args}
+        self.last_response = None
 
     def __enter__(self):
         self.reset()
@@ -104,7 +105,7 @@ class SerAPI():
 
     def next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceeding it."""
-        response = self.sertop.stdout.readline()
+        response = self.last_response = self.sertop.stdout.readline()
         sexp = sx.load(response)
         debug(response, '<< ')
         return sexp
@@ -177,15 +178,15 @@ class SerAPI():
         else:
             raise ValueError("Unexpected feedback: {}".format(sexp))
 
-    @staticmethod
-    def _deserialize_response(sexp):
+    def _deserialize_response(self, sexp):
         tag = sexp_hd(sexp)
         if tag == b'Answer':
             yield from SerAPI._deserialize_answer(sexp[2])
         elif tag == b'Feedback':
             yield from SerAPI._deserialize_feedback(sexp[1])
         else:
-            raise ValueError("Unexpected response: {}".format(sexp))
+            MSG = "Unexpected response: {}\nFull output: {}"
+            raise ValueError(MSG.format(self.last_response, self.sertop.stdout.read()))
 
     @staticmethod
     def _warn_on_exn(response, chunk):
