@@ -22,6 +22,7 @@ import argparse
 import json
 import os.path
 import re
+import sys
 
 from dominate import tags, document
 
@@ -158,6 +159,12 @@ def main():
     args = parse_arguments()
     core.DEBUG = args.debug
 
-    for fname, chunks in args.input:
-        annotated = annotate(chunks)
-        WRITERS[args.writer](fname, annotated)
+    try:
+        for fname, chunks in args.input:
+            annotated = annotate(chunks, args.serapi_args)
+            WRITERS[args.writer](fname, annotated)
+    except ValueError as e:
+        if core.DEBUG:
+            raise e
+        print("Exception:", e)
+        sys.exit(1)
