@@ -41,15 +41,13 @@ COQ_SPLIT_RE = re.compile(r"\n(?:[ \t]*\n)+")
 def read_input(fpath):
     _fdir, fname = os.path.split(fpath)
     _fn, fext = os.path.splitext(fname)
-    if fext == '.v':
-        with open(fpath) as src:
+    with open(fpath) as src:
+        if fext == '.v':
             return fname, COQ_SPLIT_RE.split(src.read())
-    elif fext == '.json':
-        with open(fpath) as src:
+        if fext == '.json':
             return fname, json.load(src)
-    else:
-        msg = "Input files must have extension .v or .json ({})."
-        raise argparse.ArgumentTypeError(msg.format(fname))
+        MSG = "Input files must have extension .v or .json ({})."
+        raise argparse.ArgumentTypeError(MSG.format(fname))
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description=ARGDOC)
@@ -59,14 +57,23 @@ def parse_arguments():
     parser.add_argument("input", nargs="+",
                         type=read_input, help=INPUT_HELP)
 
-    WRITER_HELP = """Output type"""
-    WRITER_CHOICES = ("json", "html", "webpage")
-    parser.add_argument("--writer", default="webpage",
-                        choices=WRITER_CHOICES, help=WRITER_HELP)
-
     DEBUG_HELP = "Print communications with SerAPI."
     parser.add_argument("--debug", action="store_true",
                         default=False, help=DEBUG_HELP)
+
+
+    OUTPUT_HELP = "Configure the output"
+    out = parser.add_argument_group("Output arguments", OUTPUT_HELP)
+
+    WRITER_HELP = """Output type"""
+    WRITER_CHOICES = ("json", "html", "webpage")
+    out.add_argument("--writer", default="webpage",
+                     choices=WRITER_CHOICES, help=WRITER_HELP)
+
+    OUT_DIR_HELP = "Set the output directory."
+    parser.add_argument("--output-directory", default=".",
+                        help=OUT_DIR_HELP)
+
 
     SUBP_HELP = "Pass arguments to the SerAPI process"
     subp = parser.add_argument_group("Subprocess arguments", SUBP_HELP)
@@ -90,6 +97,7 @@ def parse_arguments():
     subp.add_argument("-R", "--rec-load-path", dest="coq_args_R",
                       metavar="DIR COQDIR", nargs=2, action="append",
                       default=[], help=R_HELP)
+
 
     args = parser.parse_args()
     for dir in args.coq_args_I:
@@ -121,21 +129,21 @@ def prepare_json(obj):
         return {"_type": nm, **d}
     return obj
 
-def write_json(fname, annotated):
-    with open("{}.io.json".format(fname), mode="w") as out:
+def write_json(fpath, _fname, annotated):
+    with open("{}.io.json".format(fpath), mode="w") as out:
         json.dump(prepare_json(annotated), out, indent=4)
 
 def gen_html(annotated):
     return HtmlWriter(highlight).gen_html(annotated)
 
-def write_html(fname, annotated):
+def write_html(fpath, _fname, annotated):
     ts = list(gen_html(annotated))
-    with open("{}.snippets.html".format(fname), mode="w") as out:
+    with open("{}.snippets.html".format(fpath), mode="w") as out:
         for t in ts:
             out.write(t.render(pretty=False))
             out.write('\n')
 
-def write_webpage(fname, annotated):
+def write_webpage(fpath, fname, annotated):
     doc = document(title=fname)
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
@@ -150,7 +158,7 @@ def write_webpage(fname, annotated):
     for t in gen_html(annotated):
         doc.body.add(t)
 
-    with open("{}.html".format(fname), mode="w") as out:
+    with open("{}.html".format(fpath), mode="w") as out:
         out.write(doc.render(pretty=False))
 
 WRITERS = {'json': write_json, 'html': write_html, 'webpage': write_webpage}
@@ -162,7 +170,8 @@ def main():
     try:
         for fname, chunks in args.input:
             annotated = annotate(chunks, args.serapi_args)
-            WRITERS[args.writer](fname, annotated)
+            fpath = os.path.join(args.output_directory, fname)
+            WRITERS[args.writer](fpath, fname, annotated)
     except ValueError as e:
         if core.DEBUG:
             raise e
