@@ -76,8 +76,9 @@ class HtmlWriter():
             tags.span(sentence, cls=cls)
 
     def gen_output_html(self, fr):
+        id = self.gensym.next("goal")
         wrapper = tags.div(cls="coq-output-sticky-wrapper")
-        with tags.span(cls="coq-output").add(wrapper):
+        with tags.span(cls="coq-output", id=id).add(wrapper):
             if fr.responses:
                 with tags.span(cls="coq-responses"):
                     for response in fr.responses:

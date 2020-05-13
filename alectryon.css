@@ -101,6 +101,11 @@ In any case, make an exception for comments:
     margin-right: -1rem; /* Compensate for the anti-wrapping space */
 }
 
+.alectryon-io .coq-fragment .coq-output:target {
+    display: block;
+    z-index: 1; /* Place this goal behind goals shown using :hover */
+}
+
 @media (any-hover: hover) {
     .alectryon-bubble:hover:before,
     .alectryon-toggle-label:hover:before,
@@ -115,6 +120,7 @@ In any case, make an exception for comments:
 
     .alectryon-io .coq-fragment:hover .coq-output:not(:hover) {
         display: block;
+        z-index: 2; /* Place this goal above subsequent content */
     }
 }
 
@@ -137,7 +143,7 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .coq-output {
-    display: none; /* Displayed by the hover rule */
+    display: none; /* Displayed by the :hover and :target rules */
     left: 0;
     position: absolute;
     right: 0;
