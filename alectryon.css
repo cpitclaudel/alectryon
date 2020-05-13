@@ -160,9 +160,23 @@ In any case, make an exception for comments:
 
 /* If there's space, display goals to the right of the code, not below it. */
 @media screen and (any-hover: hover) and (min-width: 90rem) {
+    .alectryon-standalone {
+        /* Ensure that all alectryon blocks have the same, minimal width */
+        display: table;
+    }
+
     .alectryon-io {
         box-sizing: border-box; /* Needed so .coq-output won't overflow */
         width: 55%;
+    }
+
+    .alectryon-standalone .alectryon-io {
+        max-width: 60em;
+        width: unset; /* Auto width */
+    }
+
+    .alectryon-standalone .alectryon-io:first-child {
+        margin-top: 0;
     }
 
     .alectryon-io .coq-output {

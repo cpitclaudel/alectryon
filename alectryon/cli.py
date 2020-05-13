@@ -155,8 +155,9 @@ def write_webpage(fpath, fname, annotated):
     pygments_css = FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
 
-    for t in gen_html(annotated):
-        doc.body.add(t)
+    with doc.body.add(tags.div(cls="alectryon-standalone")) as div:
+        for t in gen_html(annotated):
+            div.add(t)
 
     with open("{}.html".format(fpath), mode="w") as out:
         out.write(doc.render(pretty=False))
