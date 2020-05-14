@@ -177,9 +177,12 @@ def write_html(fpath, _fname, annotated):
 
 def write_webpage(fpath, fname, annotated):
     doc = document(title=fname)
+    doc.set_attribute("class", "alectryon-standalone")
+
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
     doc.head.add(tags.link(rel="stylesheet", href="alectryon.css"))
+    doc.head.add(tags.script(src="alectryon-slideshow.js"))
 
     FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
     doc.head.add(tags.link(rel="stylesheet", href=FIRA_CODE_CDN))
@@ -187,9 +190,9 @@ def write_webpage(fpath, fname, annotated):
     pygments_css = FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
 
-    with doc.body.add(tags.div(cls="alectryon-standalone")) as div:
-        for t in gen_html(annotated):
-            div.add(t)
+    container = doc.body.add(tags.article(cls="alectryon-windowed"))
+    for t in gen_html(annotated):
+        container.add(t)
 
     with open("{}.html".format(fpath), mode="w") as out:
         out.write(doc.render(pretty=False))

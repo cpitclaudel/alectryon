@@ -82,6 +82,7 @@ In any case, make an exception for comments:
 .alectryon-io .coq-extra-goals-label:before {
     border: 1px solid #babdb6;
     border-radius: 1rem;
+    box-sizing: border-box;
     content: '';
     display: inline-block;
     font-weight: bold;
@@ -101,11 +102,6 @@ In any case, make an exception for comments:
     margin-right: -1rem; /* Compensate for the anti-wrapping space */
 }
 
-.alectryon-io .coq-fragment .coq-output:target {
-    display: block;
-    z-index: 1; /* Place this goal behind goals shown using :hover */
-}
-
 @media (any-hover: hover) {
     .alectryon-bubble:hover:before,
     .alectryon-toggle-label:hover:before,
@@ -114,13 +110,12 @@ In any case, make an exception for comments:
     }
 
     .alectryon-io label.coq-input:hover {
-        font-weight: bold !important; /* Use !important to avoid a * selector */
         text-decoration: underline dotted #babdb6;
+	    text-shadow: 0 0 1px rgb(46, 52, 54, 0.3); /* #2e3436 + opacity */
     }
 
     .alectryon-io .coq-fragment:hover .coq-output:not(:hover) {
         display: block;
-        z-index: 2; /* Place this goal above subsequent content */
     }
 }
 
@@ -142,13 +137,12 @@ In any case, make an exception for comments:
     display: none;
 }
 
+/* .coq-output is displayed by toggles, :hover, and .alectryon-target rules */
 .alectryon-io .coq-output {
-    display: none; /* Displayed by the :hover and :target rules */
-    left: 0;
+    box-sizing: border-box;
+    display: none;
+    padding: 0.5rem;
     position: absolute;
-    right: 0;
-    top: 100%;
-    z-index: 1;
 }
 
 .alectryon-io .coq-extra-goals .goal-hyps,
@@ -164,68 +158,10 @@ In any case, make an exception for comments:
     vertical-align: middle;
 }
 
-/* If there's space, display goals to the right of the code, not below it. */
-@media screen and (any-hover: hover) and (min-width: 90rem) {
-    .alectryon-standalone {
-        /* Ensure that all alectryon blocks have the same, minimal width */
-        display: table;
-    }
-
-    .alectryon-io {
-        box-sizing: border-box; /* Needed so .coq-output won't overflow */
-        width: 55%;
-    }
-
-    .alectryon-standalone .alectryon-io {
-        max-width: 60em;
-        width: unset; /* Auto width */
-    }
-
-    /* https://bugzilla.mozilla.org/show_bug.cgi?id=1637850 */
-    @-moz-document url-prefix() {
-        .alectryon-standalone .alectryon-io {
-            /* 1rem is the padding-right label.coq-input */
-            width: calc(100% + 1rem);
-        }
-    }
-
-    .alectryon-standalone .alectryon-io:first-child {
-        margin-top: 0;
-    }
-
-    .alectryon-io .coq-output {
-        bottom: 0;
-        left: 100%;
-        margin-top: -0.25rem;
-        padding-left: 0.25rem;
-        right: unset;
-        top: 0;
-        width: 81%; /* 81% of .alectryion-io's 55% is ~45% */
-    }
-
-    .alectryon-standalone .alectryon-io .coq-output {
-        min-width: 30em;
-    }
-
-    .alectryon-io .coq-output-sticky-wrapper {
-        /* This odd margin-bottom property prevents the sticky div from bumping
-           against the bottom of its container (.coq-output).  The alternative
-           would be enlarging .coq-output, but that would cause overflows,
-           enlarging scrollbars and yielding scrolling towards the bottom of the
-           page.  Doing things this way instead makes it possible to restrict
-           .coq-output to a reasonable size (100%, through top = bottom = 0).
-           See also https://stackoverflow.com/questions/43909940/. */
-        margin-bottom: -200%;
-        position: sticky;
-        top: 0;
-    }
-}
-
 .alectryon-io .coq-goals,
 .alectryon-io .coq-responses {
     background: #eeeeec;
     display: block;
-    margin: 0.25rem 0;
     padding: 0.25rem;
 }
 
@@ -236,26 +172,28 @@ In any case, make an exception for comments:
 .alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output,
 .alectryon-io .coq-toggle:checked + label.coq-input + .coq-output {
     display: block;
-    margin: unset;
-    padding: unset;
-    position: unset;
+    position: static;
+    padding: 0.25rem 0;
     width: unset;
 }
 
 .alectryon-toggle:checked + label + .alectryon-container .coq-output > .coq-output-sticky-wrapper,
 .alectryon-io .coq-toggle:checked + label + .coq-output > .coq-output-sticky-wrapper {
     display: block;
-    margin-bottom: unset;
+    margin-bottom: unset; /* Undo negative margins */
 }
 
+.alectryon-windowed .alectryon-target .coq-output .goal-hyps,
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-hyps {
     display: flex;
 }
 
+.alectryon-windowed .alectryon-target .coq-output .goal-separator,
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-separator {
     display: block;
 }
 
+.alectryon-windowed .alectryon-target .coq-output .goal-conclusion,
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-conclusion {
     max-height: unset;
     overflow-y: unset;
@@ -345,4 +283,142 @@ In any case, make an exception for comments:
     height: 1px;
     margin: 0.55rem 0;
     width: 100%;
+}
+
+/******************/
+/* Floating style */
+/******************/
+
+.alectryon-floating .coq-output {
+    width: 100%;
+}
+
+/* If there's space, display goals to the right of the code, not below it. */
+@media screen and (any-hover: hover) {
+    @media (min-width: 90rem) {
+        .alectryon-floating .alectryon-io {
+            /* FIXME: needed? */
+            box-sizing: border-box; /* Needed so .coq-output won't overflow */
+        }
+
+        .alectryon-floating .coq-output {
+            bottom: 0;
+            left: 100%;
+            top: 0;
+            width: 100%;
+        }
+
+        /* This odd margin-bottom property prevents the sticky div from bumping
+           against the bottom of its container (.coq-output).  The alternative
+           would be enlarging .coq-output, but that would cause overflows,
+           enlarging scrollbars and yielding scrolling towards the bottom of the
+           page.  Doing things this way instead makes it possible to restrict
+           .coq-output to a reasonable size (100%, through top = bottom = 0).
+           See also https://stackoverflow.com/questions/43909940/. */
+        .alectryon-io .coq-output-sticky-wrapper {
+            margin-bottom: -200%;
+            position: sticky;
+            top: 0;
+        }
+    }
+
+    /* Float underneath the current block
+    @media (max-width: 90em) {
+        .alectryon-floating .coq-output {
+            top: 100%;
+        }
+    } */
+}
+
+/********************/
+/* Multi-pane style */
+/********************/
+
+.alectryon-windowed {
+    border: 0 solid #2e3436;
+    box-sizing: border-box;
+}
+
+.alectryon-windowed .alectryon-target label.coq-input {
+    /* FIXME use a background? FIXME if keywords were ‘bolder’ we wouldn't need !important */
+    font-weight: bold !important; /* Use !important to avoid a * selector */
+}
+
+.alectryon-standalone,
+.alectryon-windowed .coq-output {
+    background: #f6f6f6; /* Ensure that short goals hide long ones */
+}
+
+.alectryon-windowed .coq-fragment:hover .coq-output,
+.alectryon-windowed .alectryon-target .coq-output {
+    display: block;
+    height: 100%;
+    overflow-y: auto;
+    position: fixed;
+}
+
+.alectryon-windowed .alectryon-target .coq-output {
+    z-index: 1; /* Place this goal behind those shown using :hover */
+}
+
+.alectryon-windowed .coq-fragment:hover .coq-output {
+    z-index: 2; /* Place this goal above .alectryon-target ones */
+}
+
+.alectryon-windowed .alectryon-target .coq-output .coq-extra-goals-label {
+    display: none;
+}
+
+/********************/
+/* Standalone style */
+/********************/
+
+.alectryon-standalone .alectryon-windowed {
+    display: block;
+    margin: 0;
+    overflow-y: auto;
+    position: absolute;
+}
+
+.alectryon-standalone .alectryon-io {
+    box-sizing: border-box;
+    padding: 0 1rem;
+    width: 100%;
+}
+
+@media screen and (min-width: 60rem) {
+    .alectryon-standalone .alectryon-windowed {
+        border-right-width: 1px;
+        bottom: 0;
+        left: 0;
+        right: 50%;
+        top: 0;
+    }
+
+    .alectryon-standalone .coq-fragment:hover .coq-output,
+    .alectryon-standalone .alectryon-target .coq-output {
+        bottom: 0;
+        left: 50%;
+        right: 0;
+        top: 0;
+        width: 50%;
+    }
+}
+
+@media screen and (max-width: 60rem) {
+    .alectryon-standalone .alectryon-windowed {
+        border-bottom-width: 1px;
+        bottom: 40%;
+        left: 0;
+        right: 0;
+        top: 0;
+    }
+
+    .alectryon-standalone .coq-fragment:hover .coq-output,
+    .alectryon-standalone .alectryon-target .coq-output {
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 60%;
+    }
 }

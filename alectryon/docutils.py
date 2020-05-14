@@ -75,6 +75,7 @@ class AlectryonTransform(Transform):
             if node['display'] == 'none':
                 node.parent.remove(node)
             else:
+                node.parent.set_class("alectryon-floating")
                 fragments = group_whitespace_with_code(fragments)
                 html = writer.gen_fragments_html(fragments).render(pretty=False)
                 node.replace_self(raw(node['content'], html, format='html'))
