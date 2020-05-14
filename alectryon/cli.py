@@ -36,16 +36,48 @@ ARGDOC = ".\n".join([
     ".v or .json files, and create one .io.json file per input file."
 ])
 
-COQ_SPLIT_RE = re.compile(r"\n(?:[ \t]*\n)+")
+COQ_SPLIT_RE = re.compile(r"(?:[ \t]*\n){2,}")
+
+def partition_fragments(fragments):
+    """Split a list of `fragments` into whitespace-delimited runs.
+
+    This function makes it easy to further subdivide the results of processing a
+    chunk.  This is useful when processing large chunks, or when chunk
+    boundaries are not known beforehand (e.g. when processing a Coq file).
+
+    Separators are added to the following run of fragments, or discarded if
+    `discard` is truthy.
+    """
+    partitioned = [[]]
+    for fragment in fragments:
+        if isinstance(fragment, CoqText):
+            m = COQ_SPLIT_RE.match(fragment.string)
+            if m:
+                if partitioned[-1]:
+                    partitioned.append([])
+                fragment = fragment._replace(string=fragment.string[m.end():])
+                if not fragment.string:
+                    continue
+        partitioned[-1].append(fragment)
+    return partitioned
+
+def split_single_chunk(chunks):
+    """Split a singleton list of `chunks` into multiple chunks.
+
+    When parsing Coq files we don't know where relevant boundaries are
+    beforehand, so we process everything as one chunk and split afterwards.
+    """
+    assert len(chunks) == 1
+    return partition_fragments(chunks[0])
 
 def read_input(fpath):
     _fdir, fname = os.path.split(fpath)
     _fn, fext = os.path.splitext(fname)
     with open(fpath) as src:
         if fext == '.v':
-            return fname, COQ_SPLIT_RE.split(src.read())
+            return fname, [src.read()], split_single_chunk
         if fext == '.json':
-            return fname, json.load(src)
+            return fname, json.load(src), (lambda chunks: chunks)
         MSG = "Input files must have extension .v or .json ({})."
         raise argparse.ArgumentTypeError(MSG.format(fname))
 
@@ -169,8 +201,8 @@ def main():
     core.DEBUG = args.debug
 
     try:
-        for fname, chunks in args.input:
-            annotated = annotate(chunks, args.serapi_args)
+        for fname, chunks, pp in args.input:
+            annotated = pp(annotate(chunks, args.serapi_args))
             fpath = os.path.join(args.output_directory, fname)
             WRITERS[args.writer](fpath, fname, annotated)
     except ValueError as e:

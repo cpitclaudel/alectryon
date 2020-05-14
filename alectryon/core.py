@@ -104,7 +104,7 @@ class SerAPI():
                           stdin=PIPE, stderr=STDOUT, stdout=PIPE)
 
     def next_sexp(self):
-        """Wait for the next sertop prompt, and return the output preceeding it."""
+        """Wait for the next sertop prompt, and return the output preceding it."""
         response = self.last_response = self.sertop.stdout.readline()
         sexp = sx.load(response)
         debug(response, '<< ')
@@ -312,25 +312,19 @@ class SerAPI():
                 fragment.responses.append(message.pp)
         return fragments
 
-def annotate_chunks(api, chunks):
-    """Annotate multiple `chunks` using `api` and yield results."""
-    for chunk in chunks:
-        yield api.run(chunk)
-
 def annotate(chunks, serapi_args=()):
     """Annotate multiple `chunks` of Coq code.
 
     All fragments are executed in the same Coq instance, started with arguments
     `serapi_args`.  The return value is a list with as many elements as in
-    `chunks`, but each element is a list of ``CoqText`` instances (for
-    whitespace and comments) and ``CoqSentence`` instances (for code).
+    `chunks`, but each element is a list of fragments: either ``CoqText``
+    instances (whitespace and comments) and ``CoqSentence`` instances (code).
 
     >>> annotate(["Check 1.", ("-Q", "directory,logical_name")])
     [[CoqSentence(sentence='Check 1.', responses=['1\n     : nat'], goals=[])]]
-
     """
     with SerAPI(args=serapi_args) as api:
-        return list(annotate_chunks(api, chunks))
+        return [api.run(chunk) for chunk in chunks]
 
 LEADING_BLANKS_RE = re.compile(r'^([ \t]*(?:\n|$))?(.*)$', flags=re.DOTALL)
 
