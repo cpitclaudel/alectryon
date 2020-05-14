@@ -189,6 +189,13 @@ class SerAPI():
             raise ValueError(MSG.format(self.last_response, self.sertop.stdout.read()))
 
     @staticmethod
+    def highlight_substring(chunk, beg, end):
+        prefix, substring, suffix = chunk[:beg], chunk[beg:end], chunk[end:]
+        prefix = b"\n".join(bytes(prefix).splitlines()[-3:])
+        suffix = b"\n".join(bytes(suffix).splitlines()[:3])
+        return b"%b>>>%b<<<%b" % (prefix, substring, suffix)
+
+    @staticmethod
     def _warn_on_exn(response, chunk):
         ERR_FMT = ("!! Coq raised an exception:\n{}\n"
                    "!! Results past this point may be unreliable.\n")
@@ -198,7 +205,7 @@ class SerAPI():
         if chunk:
             loc = response.loc or (0, len(chunk))
             beg, end = max(0, loc[0]), min(len(chunk), loc[1])
-            src = b"%b>>>%b<<<%b" % (chunk[:beg], chunk[beg:end], chunk[end:])
+            src = SerAPI.highlight_substring(chunk, beg, end)
             err += LOC_FMT.format(indent(src.decode('utf-8', 'ignore'), ' ' * 7))
         stderr.write(err)
 

@@ -98,13 +98,13 @@ class WarnOnErrorTokenFilter(Filter):
     """Print a warning when the lexer generates an error token."""
 
     def filter(self, _lexer, stream):
-        history = deque(maxlen=69)
+        history = deque(maxlen=80)
         for typ, val in stream:
             history.extend(val)
             if typ is Error:
                 ell = '...' if len(history) == history.maxlen else ''
                 context = ell + ''.join(history).lstrip()
-                MSG = ("!! Unexpected token: {!r}\n"
+                MSG = ("!! Unexpected token during syntax-highlighting: {!r}\n"
                        "!! This is a bug in Alectryon. Please report it!\n"
                        "!! Context:\n{}")
                 print(MSG.format(val, indent(context, ' ' * 8)))
