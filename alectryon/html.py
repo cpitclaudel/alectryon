@@ -18,17 +18,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from collections import defaultdict
 from dominate import tags
 
 from .core import GENERATOR, CoqText, CoqSentence, HTMLSentence, group_whitespace_with_code
 
 class Gensym():
     def __init__(self):
-        self.counter = -1
+        self.counters = defaultdict(lambda: -1)
 
     def next(self, prefix):
-        self.counter += 1
-        return hex(self.counter).replace("0x", prefix)
+        self.counters[prefix] += 1
+        return hex(self.counters[prefix]).replace("0x", prefix)
 
 class HtmlWriter():
     def __init__(self, highlighter):
