@@ -203,6 +203,10 @@ In any case, make an exception for comments:
         width: 81%; /* 81% of .alectryion-io's 55% is ~45% */
     }
 
+    .alectryon-standalone .alectryon-io .coq-output {
+        min-width: 30em;
+    }
+
     .alectryon-io .coq-output-sticky-wrapper {
         /* This odd margin-bottom property prevents the sticky div from bumping
            against the bottom of its container (.coq-output).  The alternative
