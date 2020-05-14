@@ -181,6 +181,14 @@ In any case, make an exception for comments:
         width: unset; /* Auto width */
     }
 
+    /* https://bugzilla.mozilla.org/show_bug.cgi?id=1637850 */
+    @-moz-document url-prefix() {
+        .alectryon-standalone .alectryon-io {
+            /* 1rem is the padding-right label.coq-input */
+            width: calc(100% + 1rem);
+        }
+    }
+
     .alectryon-standalone .alectryon-io:first-child {
         margin-top: 0;
     }
