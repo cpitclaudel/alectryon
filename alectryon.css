@@ -67,9 +67,14 @@ In any case, make an exception for comments:
     font-size: 0.8rem;
 }
 
-.alectryon-io label.coq-input {
+.alectryon-io .coq-input {
     padding: 0.1em 0; /* Enlarge the hitbox slightly to fill interline gaps */
     padding-right: 1rem; /* Prevent line wraps before the checkbox bubble */
+}
+
+.alectryon-io .alectryon-target .coq-input {
+    /* FIXME use a background? FIXME if keywords were ‘bolder’ we wouldn't need !important */
+    font-weight: bold !important; /* Use !important to avoid a * selector */
 }
 
 .alectryon-io .coq-extra-goals-label {
@@ -114,8 +119,13 @@ In any case, make an exception for comments:
 	    text-shadow: 0 0 1px rgb(46, 52, 54, 0.3); /* #2e3436 + opacity */
     }
 
-    .alectryon-io .coq-fragment:hover .coq-output:not(:hover) {
+    .alectryon-io .coq-fragment:hover .coq-output:not(:hover),
+    .alectryon-io .alectryon-target .coq-output {
         display: block;
+    }
+
+    .alectryon-io .coq-fragment:hover .coq-output {
+        z-index: 2; /* Place hovered goals above .alectryon-target ones */
     }
 }
 
@@ -143,6 +153,7 @@ In any case, make an exception for comments:
     display: none;
     padding: 0.5rem;
     position: absolute;
+    z-index: 1; /* Default to an index lower than that used by :hover */
 }
 
 .alectryon-io .coq-extra-goals .goal-hyps,
@@ -169,11 +180,12 @@ In any case, make an exception for comments:
     width: unset;
 }
 
+/* Show goals when a toggle is set */
 .alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output,
 .alectryon-io .coq-toggle:checked + label.coq-input + .coq-output {
     display: block;
-    position: static;
     padding: 0.25rem 0;
+    position: static;
     width: unset;
 }
 
@@ -183,17 +195,14 @@ In any case, make an exception for comments:
     margin-bottom: unset; /* Undo negative margins */
 }
 
-.alectryon-windowed .alectryon-target .coq-output .goal-hyps,
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-hyps {
     display: flex;
 }
 
-.alectryon-windowed .alectryon-target .coq-output .goal-separator,
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-separator {
     display: block;
 }
 
-.alectryon-windowed .alectryon-target .coq-output .goal-conclusion,
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-conclusion {
     max-height: unset;
     overflow-y: unset;
@@ -304,8 +313,13 @@ In any case, make an exception for comments:
         .alectryon-floating .coq-output {
             bottom: 0;
             left: 100%;
+            padding-top: 0;
             top: 0;
-            width: 100%;
+        }
+
+        .alectryon-floating .coq-output {
+            background: white; /* Ensure that short goals hide long ones */
+            min-height: 100%;
         }
 
         /* This odd margin-bottom property prevents the sticky div from bumping
@@ -322,7 +336,7 @@ In any case, make an exception for comments:
         }
     }
 
-    /* Float underneath the current block
+    /* Float underneath the current fragment
     @media (max-width: 90em) {
         .alectryon-floating .coq-output {
             top: 100%;
@@ -339,11 +353,6 @@ In any case, make an exception for comments:
     box-sizing: border-box;
 }
 
-.alectryon-windowed .alectryon-target label.coq-input {
-    /* FIXME use a background? FIXME if keywords were ‘bolder’ we wouldn't need !important */
-    font-weight: bold !important; /* Use !important to avoid a * selector */
-}
-
 .alectryon-standalone,
 .alectryon-windowed .coq-output {
     background: #f6f6f6; /* Ensure that short goals hide long ones */
@@ -351,22 +360,9 @@ In any case, make an exception for comments:
 
 .alectryon-windowed .coq-fragment:hover .coq-output,
 .alectryon-windowed .alectryon-target .coq-output {
-    display: block;
     height: 100%;
     overflow-y: auto;
     position: fixed;
-}
-
-.alectryon-windowed .alectryon-target .coq-output {
-    z-index: 1; /* Place this goal behind those shown using :hover */
-}
-
-.alectryon-windowed .coq-fragment:hover .coq-output {
-    z-index: 2; /* Place this goal above .alectryon-target ones */
-}
-
-.alectryon-windowed .alectryon-target .coq-output .coq-extra-goals-label {
-    display: none;
 }
 
 /********************/
