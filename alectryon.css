@@ -335,7 +335,7 @@ In any case, make an exception for comments:
            page.  Doing things this way instead makes it possible to restrict
            .coq-output to a reasonable size (100%, through top = bottom = 0).
            See also https://stackoverflow.com/questions/43909940/. */
-        .alectryon-io .coq-output-sticky-wrapper {
+        .alectryon-floating .coq-output-sticky-wrapper {
             margin-bottom: -200%;
             position: sticky;
             top: 0;
@@ -343,7 +343,7 @@ In any case, make an exception for comments:
     }
 
     /* Float underneath the current fragment
-    @media (max-width: 90em) {
+    @media (max-width: 90rem) {
         .alectryon-floating .coq-output {
             top: 100%;
         }
@@ -366,7 +366,6 @@ In any case, make an exception for comments:
 
 .alectryon-windowed .coq-sentence:hover .coq-output,
 .alectryon-windowed .alectryon-target .coq-output {
-    height: 100%;
     overflow-y: auto;
     position: fixed;
 }
