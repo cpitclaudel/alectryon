@@ -142,3 +142,8 @@ rules, such as custom tactic names.  See |help(add_tokens)|_ for more details.
 
 .. |help(add_tokens)| replace:: ``help(alectryon.pygments.add_tokens)``
 .. _help(add_tokens): alectryon/pygments.py
+
+Interactivity
+-------------
+
+Alectryon's HTML output doesn't require JavaScript for interactivity, but a separate "slideshow" mode is implemented in ``alectryon-slideshow.js``.
