@@ -190,9 +190,9 @@ def write_webpage(fpath, fname, annotated):
     pygments_css = FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
 
-    container = doc.body.add(tags.article(cls="alectryon-windowed"))
+    root = doc.body.add(tags.article(cls="alectryon-windowed alectryon-root"))
     for t in gen_html(annotated):
-        container.add(t)
+        root.add(t)
 
     with open("{}.html".format(fpath), mode="w") as out:
         out.write(doc.render(pretty=False))

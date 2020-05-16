@@ -14,22 +14,35 @@ var Alectryon;
             sentence.classList.add("alectryon-target");
         }
 
+        function scroll(sentence) {
+            // Put the top of the current fragment close to the top of the
+            // screen, but scroll it out of view if showing it requires pushing
+            // the sentence past half of the screen.  If sentence is already in
+            // a reasonable position, don't move.
+            var parent = sentence.parentElement;
+            while (parent && !parent.classList.contains("alectryon-root"))
+                parent = parent.parentElement;
+
+            var rect = function(e) { return e.getBoundingClientRect(); };
+            var parent_box = parent ? rect(parent) : { y: 0, height: window.innerHeight },
+                sentence_y = rect(sentence).y - parent_box.y,
+                fragment_y = rect(sentence.parentElement).y - parent_box.y;
+
+            console.assert(sentence_y >= fragment_y);
+            if (sentence_y < 0.1 * parent_box.height ||
+                sentence_y > 0.7 * parent_box.height) {
+                (parent || window).scrollBy(
+                    0, Math.max(sentence_y - 0.5 * parent_box.height,
+                                fragment_y - 0.1 * parent_box.height));
+            }
+        }
+
         function navigate(pos) {
             unhighlight(current_sentence());
             slideshow.pos = Math.min(Math.max(pos, 0), slideshow.sentences.length - 1);
             var sentence = current_sentence();
             highlight(sentence);
-            // Put the top of the current fragment close to the top of the
-            // screen, but scroll it out of view if showing it requires pushing
-            // the sentence past half of the screen.  If sentence is already in a reasonable position, don't move.
-            var sentence_y = sentence.getBoundingClientRect().y,
-                fragment_y = sentence.parentElement.getBoundingClientRect().y,
-                screen_h = window.innerHeight;
-            console.assert(sentence_y >= fragment_y);
-            if (sentence_y < 0.1 * screen_h || sentence_y > 0.7 * screen_h) {
-                window.scrollBy(0, Math.max(sentence_y - 0.5 * screen_h,
-                                            fragment_y - 0.1 * screen_h));
-            }
+            scroll(sentence);
         }
 
         function onkeydown(e) {
