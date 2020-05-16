@@ -119,12 +119,12 @@ In any case, make an exception for comments:
 	    text-shadow: 0 0 1px rgb(46, 52, 54, 0.3); /* #2e3436 + opacity */
     }
 
-    .alectryon-io .coq-fragment:hover .coq-output:not(:hover),
+    .alectryon-io .coq-sentence:hover .coq-output:not(:hover),
     .alectryon-io .alectryon-target .coq-output {
         display: block;
     }
 
-    .alectryon-io .coq-fragment:hover .coq-output {
+    .alectryon-io .coq-sentence:hover .coq-output {
         z-index: 2; /* Place hovered goals above .alectryon-target ones */
     }
 }
@@ -358,7 +358,7 @@ In any case, make an exception for comments:
     background: #f6f6f6; /* Ensure that short goals hide long ones */
 }
 
-.alectryon-windowed .coq-fragment:hover .coq-output,
+.alectryon-windowed .coq-sentence:hover .coq-output,
 .alectryon-windowed .alectryon-target .coq-output {
     height: 100%;
     overflow-y: auto;
@@ -391,7 +391,7 @@ In any case, make an exception for comments:
         top: 0;
     }
 
-    .alectryon-standalone .coq-fragment:hover .coq-output,
+    .alectryon-standalone .coq-sentence:hover .coq-output,
     .alectryon-standalone .alectryon-target .coq-output {
         bottom: 0;
         left: 50%;
@@ -410,7 +410,7 @@ In any case, make an exception for comments:
         top: 0;
     }
 
-    .alectryon-standalone .coq-fragment:hover .coq-output,
+    .alectryon-standalone .coq-sentence:hover .coq-output,
     .alectryon-standalone .alectryon-target .coq-output {
         bottom: 0;
         left: 0;

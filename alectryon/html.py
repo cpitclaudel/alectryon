@@ -89,7 +89,7 @@ class HtmlWriter():
                     self.gen_goals_html(fr.goals[0], fr.goals[1:])
 
     def gen_sentence_html(self, fr):
-        with tags.span(cls="coq-fragment"):
+        with tags.span(cls="coq-sentence"):
             self.gen_input_html(fr)
             if fr.responses or fr.goals:
                 self.gen_output_html(fr)
