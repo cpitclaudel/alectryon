@@ -176,6 +176,12 @@ In any case, make an exception for comments:
     padding: 0.25rem;
 }
 
+.coq-response::before {
+    content: '✉';
+    float: right;
+    text-align: justify;
+}
+
 .alectryon-toggle:checked + label + .alectryon-container {
     width: unset;
 }
