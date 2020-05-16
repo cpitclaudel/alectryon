@@ -38,12 +38,22 @@ var Alectryon;
             e.preventDefault();
         }
 
+        function start() {
+            slideshow.navigate(0);
+        }
+
+        function end() {
+            unhighlight(current_sentence());
+        }
+
         function init() {
             document.onkeydown = onkeydown;
             slideshow.pos = -1;
             slideshow.sentences = document.getElementsByClassName("coq-sentence");
         }
 
+        slideshow.start = start;
+        slideshow.end = end;
         slideshow.next = function() { navigate(slideshow.pos + 1); };
         slideshow.previous = function() { navigate(slideshow.pos + -1); };
         window.addEventListener('DOMContentLoaded', init);
