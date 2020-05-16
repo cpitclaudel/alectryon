@@ -20,7 +20,26 @@ var Alectryon;
             highlight(current_sentence());
         }
 
+        function onkeydown(e) {
+            e = e || window.event;
+            switch(e.keyCode) {
+            case 33: // Page up
+            case 37: // Arrow left
+            case 72: // h
+            case 80: // p
+                slideshow.previous(); break;
+            case 34: // Page down
+            case 39: // Arrow right
+            case 76: // l
+            case 78: // n
+                slideshow.next(); break;
+            default: return;
+            }
+            e.preventDefault();
+        }
+
         function init() {
+            document.onkeydown = onkeydown;
             slideshow.pos = -1;
             slideshow.sentences = document.getElementsByClassName("coq-sentence");
         }
