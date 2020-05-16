@@ -17,7 +17,19 @@ var Alectryon;
         function navigate(pos) {
             unhighlight(current_sentence());
             slideshow.pos = Math.min(Math.max(pos, 0), slideshow.sentences.length - 1);
-            highlight(current_sentence());
+            var sentence = current_sentence();
+            highlight(sentence);
+            // Put the top of the current fragment close to the top of the
+            // screen, but scroll it out of view if showing it requires pushing
+            // the sentence past half of the screen.  If sentence is already in a reasonable position, don't move.
+            var sentence_y = sentence.getBoundingClientRect().y,
+                fragment_y = sentence.parentElement.getBoundingClientRect().y,
+                screen_h = window.innerHeight;
+            console.assert(sentence_y >= fragment_y);
+            if (sentence_y < 0.1 * screen_h || sentence_y > 0.7 * screen_h) {
+                window.scrollBy(0, Math.max(sentence_y - 0.5 * screen_h,
+                                            fragment_y - 0.1 * screen_h));
+            }
         }
 
         function onkeydown(e) {
