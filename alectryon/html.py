@@ -52,8 +52,6 @@ class HtmlWriter():
     def gen_goal_html(self, goal):
         """Serialize a goal to HTML."""
         with tags.span(cls="coq-goal"):
-            if goal.name:
-                tags.span(goal.name, cls="goal-name")
             with tags.span(cls="goal-hyps"):
                 for hyp in goal.hypotheses:
                     with tags.span(cls="goal-hyp"):
@@ -66,7 +64,10 @@ class HtmlWriter():
                             with tags.span(cls="hyp-type"):
                                 tags.span(":", cls="hyp-punct")
                                 self.highlight(hyp.type)
-            tags.span(cls="goal-separator")
+            with tags.span(cls="goal-separator"):
+                tags.hr()
+                if goal.name:
+                    tags.span(goal.name, cls="goal-name")
             tags.span(self.highlight(goal.conclusion), cls="goal-conclusion")
 
     def gen_goals_html(self, first, more):

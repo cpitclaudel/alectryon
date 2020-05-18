@@ -137,10 +137,10 @@ class SerAPI():
 
     @staticmethod
     def _deserialize_goal(sexp):
+        name = dict(sexp[b'info'])[b'name']
         hyps = [h for hs in reversed(sexp[b'hyp'])
                 for h in SerAPI._deserialize_hyp(hs)]
-        opt_name = dict(sexp[b'info'])[b'name']
-        return CoqGoal(opt_name[0] if opt_name else None, sexp[b'ty'], hyps)
+        return CoqGoal(dict(name).get(b'Id'), sexp[b'ty'], hyps)
 
     @staticmethod
     def _deserialize_answer(sexp):

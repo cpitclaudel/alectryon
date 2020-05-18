@@ -253,13 +253,6 @@ In any case, make an exception for comments:
     position: relative;
 }
 
-.alectryon-io .goal-name {
-    display: none; /* Hidden by default */
-    position: absolute;
-    right: 0.5rem;
-    top: 0.5rem;
-}
-
 .alectryon-io .goal-hyps {
     align-content: space-around;
     align-items: baseline;
@@ -302,12 +295,23 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .goal-separator {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+}
+
+.alectryon-io .goal-separator hr {
     background: #555753;
     border: none;
     display: block;
+    flex-grow: 1;
     height: 1px;
     margin: 0.5rem 0;
-    width: 100%;
+}
+
+.alectryon-io .goal-separator .goal-name {
+    font-size: 0.75em;
+    margin-left: 0.5em;
 }
 
 /**********/
