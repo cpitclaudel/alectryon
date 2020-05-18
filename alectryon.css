@@ -177,7 +177,7 @@ In any case, make an exception for comments:
 }
 
 .coq-response::before {
-    content: '✉';
+    content: '📨️';
     float: right;
     text-align: justify;
 }
