@@ -37,12 +37,13 @@ var Alectryon;
             }
         }
 
-        function navigate(pos) {
+        function navigate(pos, inhibitScroll) {
             unhighlight(current_sentence());
             slideshow.pos = Math.min(Math.max(pos, 0), slideshow.sentences.length - 1);
             var sentence = current_sentence();
             highlight(sentence);
-            scroll(sentence);
+            if (!inhibitScroll)
+                scroll(sentence);
         }
 
         function onkeydown(e) {
@@ -71,10 +72,22 @@ var Alectryon;
             unhighlight(current_sentence());
         }
 
+        function handleClick(evt) {
+            if (evt.ctrlKey) {
+                navigate(evt.currentTarget.alectryon_index, true);
+                // document.getSelection().removeAllRanges();
+                evt.preventDefault();
+            }
+        }
+
         function init() {
             document.onkeydown = onkeydown;
             slideshow.pos = -1;
-            slideshow.sentences = document.getElementsByClassName("coq-sentence");
+            slideshow.sentences = Array.from(document.getElementsByClassName("coq-sentence"));
+            slideshow.sentences.forEach(function (s, idx) {
+                s.addEventListener('click', handleClick, false);
+                s.alectryon_index = idx;
+            });
         }
 
         slideshow.start = start;
