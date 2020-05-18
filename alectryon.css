@@ -120,8 +120,7 @@ In any case, make an exception for comments:
 	    text-shadow: 0 0 1px rgb(46, 52, 54, 0.3); /* #2e3436 + opacity */
     }
 
-    .alectryon-io .coq-sentence:hover .coq-output:not(:hover),
-    .alectryon-io .alectryon-target .coq-output {
+    .alectryon-io .coq-sentence:hover .coq-output:not(:hover) {
         display: block;
     }
 
@@ -155,6 +154,10 @@ In any case, make an exception for comments:
     padding: 0.5rem;
     position: absolute;
     z-index: 1; /* Default to an index lower than that used by :hover */
+}
+
+.alectryon-io .alectryon-target .coq-output {
+    display: block;
 }
 
 .alectryon-io .coq-extra-goals .goal-hyps {
