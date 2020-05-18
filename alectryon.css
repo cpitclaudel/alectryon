@@ -169,7 +169,7 @@ In any case, make an exception for comments:
 }
 
 /* Show just a small preview of the other goals; this is undone by the
-   "extra-goals" toggle and by .alectryon-target in windowed mode. */
+   "extra-goals" toggle and by :hover and .alectryon-target in windowed mode. */
 .alectryon-io .coq-extra-goals .goal-conclusion {
     max-height: 5.2em;
     overflow-y: auto;
@@ -406,6 +406,11 @@ In any case, make an exception for comments:
 .alectryon-windowed .alectryon-target .coq-output {
     overflow-y: auto;
     position: fixed;
+}
+
+.alectryon-windowed .alectryon-target .coq-extra-goals .goal-conclusion {
+    max-height: unset;
+    overflow-y: unset;
 }
 
 /********************/
