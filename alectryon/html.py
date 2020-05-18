@@ -20,6 +20,7 @@
 
 from collections import defaultdict
 from dominate import tags
+from dominate.util import raw
 
 from .core import GENERATOR, CoqText, CoqSentence, HTMLSentence, group_whitespace_with_code
 
@@ -30,6 +31,18 @@ class Gensym():
     def next(self, prefix):
         self.counters[prefix] += 1
         return hex(self.counters[prefix]).replace("0x", prefix)
+
+HEADER = (
+    '<div class="alectryon-header">'
+    'Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running <a href="https://coq.inria.fr/">Coq</a>+<a href="https://github.com/ejgallego/coq-serapi">SerAPI</a> v{}. '
+    'Coq sources are in this panel; goals and messages will appear in the other. '
+    'Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. '
+    'Use <kbd>⇞</kbd> <kbd>⇟</kbd> or <kbd>←</kbd> <kbd>→</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus.'
+    '</div>'
+)
+
+def gen_header(version):
+    return raw(HEADER.format(version))
 
 class HtmlWriter():
     def __init__(self, highlighter):

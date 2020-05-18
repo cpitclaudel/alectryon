@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /*
 Copyright © 2019 Clément Pit-Claudel
 
@@ -20,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-.alectryon-io, .alectryon-toggle-label {
+.alectryon-io, .alectryon-toggle-label, .alectryon-header {
     font-family: 'Iosevka Slab Web', 'Iosevka Web', 'Fira Code', monospace;
     font-feature-settings: "XV00" 1; /* Use Coq ligatures when Iosevka is available */
     line-height: initial;
@@ -298,6 +299,34 @@ In any case, make an exception for comments:
     height: 1px;
     margin: 0.55rem 0;
     width: 100%;
+}
+
+/**********/
+/* Header */
+/**********/
+
+.alectryon-header {
+    background: #eeeeec;
+    border: 1px solid #babcbd;
+    font-size: 0.75em;
+    margin: 1rem;
+    padding: 0.25rem;
+    text-align: center;
+}
+
+.alectryon-header kbd {
+    background: #d3d7cf;
+    border-radius: 0.15em;
+    border: 1px solid #babdb6;
+    box-sizing: border-box;
+    display: inline-block;
+    font-family: inherit;
+    font-size: 0.9em;
+    height: 1.3em;
+    line-height: 1.2em;
+    margin: -0.25em 0;
+    padding: 0 0.25em;
+    vertical-align: middle;
 }
 
 /******************/

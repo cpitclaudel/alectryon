@@ -27,8 +27,8 @@ import sys
 from dominate import tags, document
 
 from . import core
-from .core import CoqSentence, CoqGoal, CoqHypothesis, CoqText, annotate, GENERATOR, __version__
-from .html import HtmlWriter
+from .core import SerAPI, CoqSentence, CoqGoal, CoqHypothesis, CoqText, annotate, GENERATOR, __version__
+from .html import HtmlWriter, gen_header
 from .pygments import highlight, FORMATTER
 
 ARGDOC = ".\n".join([
@@ -191,6 +191,7 @@ def write_webpage(fpath, fname, annotated):
     doc.head.add(tags.style(pygments_css, type="text/css"))
 
     root = doc.body.add(tags.article(cls="alectryon-windowed alectryon-root"))
+    root.add(gen_header(SerAPI.version_info()))
     for t in gen_html(annotated):
         root.add(t)
 

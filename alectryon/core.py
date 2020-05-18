@@ -30,7 +30,7 @@ import re
 from sys import stderr
 
 from shutil import which  #from pexpect.utils
-from subprocess import Popen, PIPE, STDOUT
+from subprocess import Popen, PIPE, STDOUT, check_output
 from . import sexp as sx
 
 DEBUG = False
@@ -70,6 +70,11 @@ class SerAPI():
 
     MIN_PP_MARGIN = 20
     DEFAULT_PP_ARGS = {'pp_depth': 30, 'pp_margin': 55}
+
+    @staticmethod
+    def version_info(sertop_bin=SERTOP_BIN):
+        bs = check_output([sertop_bin, "--version"])
+        return bs.decode('ascii', 'ignore').strip()
 
     def __init__(self, args=(), # pylint: disable=dangerous-default-value
                  sertop_bin=SERTOP_BIN,
