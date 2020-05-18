@@ -37,7 +37,7 @@ HEADER = (
     'Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running <a href="https://coq.inria.fr/">Coq</a>+<a href="https://github.com/ejgallego/coq-serapi">SerAPI</a> v{}. '
     'Coq sources are in this panel; goals and messages will appear in the other. '
     'Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. '
-    'Use <kbd>⇞</kbd> <kbd>⇟</kbd> or <kbd>←</kbd> <kbd>→</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus.'
+    'Use <kbd>⇞</kbd> <kbd>⇟</kbd> or <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus.'
     '</div>'
 )
 

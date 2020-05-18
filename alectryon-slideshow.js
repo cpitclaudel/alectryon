@@ -46,20 +46,32 @@ var Alectryon;
                 scroll(sentence);
         }
 
+        var keys = {
+            PAGE_UP: 33,
+            PAGE_DOWN: 34,
+            ARROW_UP: 38,
+            ARROW_DOWN: 40,
+            h: 72, l: 76, p: 80, n: 78
+        };
+
         function onkeydown(e) {
             e = e || window.event;
-            switch(e.keyCode) {
-            case 33: // Page up
-            case 37: // Arrow left
-            case 72: // h
-            case 80: // p
-                slideshow.previous(); break;
-            case 34: // Page down
-            case 39: // Arrow right
-            case 76: // l
-            case 78: // n
-                slideshow.next(); break;
-            default: return;
+            if (e.ctrlKey) {
+                if (e.keyCode == keys.ARROW_UP)
+                    slideshow.previous();
+                else if (e.keyCode == keys.ARROW_DOWN)
+                    slideshow.next();
+                else
+                    return;
+            } else {
+                if (e.keyCode == keys.PAGE_UP ||
+                    e.keyCode == keys.p || e.keyCode == keys.h)
+                    slideshow.previous();
+                else if (e.keyCode == keys.PAGE_DOWN ||
+                         e.keyCode == keys.n || e.keyCode == keys.l)
+                    slideshow.next();
+                else
+                    return;
             }
             e.preventDefault();
         }
