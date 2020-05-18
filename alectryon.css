@@ -157,11 +157,16 @@ In any case, make an exception for comments:
     z-index: 1; /* Default to an index lower than that used by :hover */
 }
 
-.alectryon-io .coq-extra-goals .goal-hyps,
-.alectryon-io .coq-extra-goals .goal-separator {
+.alectryon-io .coq-extra-goals .goal-hyps {
     display: none;
 }
 
+.alectryon-io .coq-extra-goals .goal-separator {
+    margin-top: 0;
+}
+
+/* Show just a small preview of the other goals; this is undone by the
+   "extra-goals" toggle and by .alectryon-target in windowed mode. */
 .alectryon-io .coq-extra-goals .goal-conclusion {
     max-height: 5.2em;
     overflow-y: auto;
@@ -199,7 +204,7 @@ In any case, make an exception for comments:
 .alectryon-toggle:checked + label + .alectryon-container .coq-output > .coq-output-sticky-wrapper,
 .alectryon-io .coq-toggle:checked + label + .coq-output > .coq-output-sticky-wrapper {
     display: block;
-    margin-bottom: unset; /* Undo negative margins */
+    margin-bottom: unset; /* Undo negative margins used to widen the sticky range */
 }
 
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-hyps {
@@ -207,7 +212,7 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-separator {
-    display: block;
+    margin-top: 0.5rem; /* Restore hidden margin */
 }
 
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-conclusion {
@@ -258,7 +263,8 @@ In any case, make an exception for comments:
     display: flex;
     flex-flow: column; /* row wrap? */
     justify-content: space-around;
-    margin: -0.15rem -1rem;
+    /* FIXME use a ‘gap’ property instead of margins once supported */
+    margin: -0.15rem -1rem; /* -0.15rem to cancel the item spacing */
 }
 
 .alectryon-io .goal-hyp,
@@ -297,7 +303,7 @@ In any case, make an exception for comments:
     border: none;
     display: block;
     height: 1px;
-    margin: 0.55rem 0;
+    margin: 0.5rem 0;
     width: 100%;
 }
 
