@@ -29,7 +29,7 @@ from textwrap import indent
 import re
 from sys import stderr
 
-from shutil import which  #from pexpect.utils
+from shutil import which
 from subprocess import Popen, PIPE, STDOUT, check_output
 from . import sexp as sx
 
