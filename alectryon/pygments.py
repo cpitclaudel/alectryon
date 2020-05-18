@@ -104,8 +104,8 @@ class WarnOnErrorTokenFilter(Filter):
             if typ is Error:
                 ell = '...' if len(history) == history.maxlen else ''
                 context = ell + ''.join(history).lstrip()
-                MSG = ("!! Unexpected token during syntax-highlighting: {!r}\n"
-                       "!! This is a bug in Alectryon. Please report it!\n"
+                MSG = ("!! Warning: Unexpected token during syntax-highlighting: {!r}\n"
+                       "!! Alectryon's lexer isn't perfect: please send us an example.\n"
                        "!! Context:\n{}")
                 print(MSG.format(val, indent(context, ' ' * 8)))
             yield typ, val
