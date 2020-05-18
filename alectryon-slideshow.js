@@ -86,8 +86,14 @@ var Alectryon;
 
         function handleClick(evt) {
             if (evt.ctrlKey) {
-                navigate(evt.currentTarget.alectryon_index, true);
-                // document.getSelection().removeAllRanges();
+                var sentence = evt.currentTarget;
+                navigate(sentence.alectryon_index, true);
+
+                // Ensure that the goal is shown on the side, not inline
+                var checkbox = sentence.getElementsByClassName("coq-toggle")[0];
+                if (checkbox)
+                    checkbox.checked = false;
+
                 evt.preventDefault();
             }
         }
