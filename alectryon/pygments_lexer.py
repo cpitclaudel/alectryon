@@ -403,6 +403,7 @@ class CoqLexer(RegexLexer):
     expects_name_re = r"\b(?:{} )?{}\b".format(local_global, expects_name)
     expects_binders = regex_opt(kwds['expects_binders'])
     expects_binders_re = r"\b(?:{} )?{}\b".format(local_global, expects_binders)
+    let_binder_re = regex_opt(["let", "let rec", "let fix", "let cofix"])
     cmd = kwds['cmd'] + kwds['decls'] + kwds['expects_name'] + kwds['expects_binders']
 
     name_re = r"[{}][{}]*".format(identstart, identpart)
@@ -420,7 +421,9 @@ class CoqLexer(RegexLexer):
         (regex, Operator, '#pop'),
         (":", Operator, '#pop'),
         (name_re, Name.Variable),
-        (r"'\(", Operator, ('in parens')), # pattern matching
+        (r"'\s*" + name_re, Name.Variable), # single constructor
+        (r"'\s*\(", Operator, ('in parens')), # pattern matching
+        (r"'\s*\{", Operator, ('in curly')), # pattern matching
         (r"\(", Operator, ('in parens', 'type annot')),
         (r"\{", Operator, ('in curly', 'type annot')),
         include('_basic'),
@@ -445,7 +448,7 @@ class CoqLexer(RegexLexer):
 
         '_basic': [
             (r'\s+', Text),
-            (r'\(\*\*\s', String.Doc, 'docstring'),
+            (r'\(\*\*', String.Doc, 'docstring'),
             (r'\(\*', Comment, 'comment'),
             (r'"', String.Double, 'string'),
 
@@ -481,6 +484,7 @@ class CoqLexer(RegexLexer):
         '_keywords': [
             (r"\bforall\b|\bexists\b|∀|∃", Keyword.Reserved, 'quantifier args'),
             (r"\bfun\b", Keyword.Reserved, 'fun args'),
+            (let_binder_re, Keyword.Reserved, 'let args'),
             (ws(kwds['ltac-keywords']), TOKEN_TYPES['ltac-keywords']),
             (ws(kwds['ltac-builtins']), TOKEN_TYPES['ltac-builtins']),
             (ws(kwds['gallina-keywords']), TOKEN_TYPES['gallina-keywords']),
@@ -490,6 +494,7 @@ class CoqLexer(RegexLexer):
         ],
         'quantifier args': binders(",", name_re),
         'fun args': binders("=>", name_re),
+        'let args': binders(":=", name_re),
         'in parens': [
             (r"\(", Operator, '#push'),
             (r"\)", Operator, '#pop'),
