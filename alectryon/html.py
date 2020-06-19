@@ -22,7 +22,7 @@ from collections import defaultdict
 from dominate import tags
 from dominate.util import raw
 
-from .core import GENERATOR, CoqText, CoqSentence, HTMLSentence, group_whitespace_with_code
+from .core import GENERATOR, CoqText, CoqSentence, HTMLSentence, htmlify_sentences, group_whitespace_with_code
 
 class Gensym():
     def __init__(self):
@@ -82,7 +82,7 @@ class HtmlWriter():
                     self.gen_goal_html(goal)
 
     def gen_input_html(self, fr):
-        sentence, cls = self.highlight(fr.sentence), "coq-input"
+        sentence, cls = self.highlight(fr.contents), "coq-input"
         if fr.goals or fr.responses:
             nm = self.gensym.next("chk")
             tags.input(type="checkbox", id=nm, cls="coq-toggle")
@@ -107,18 +107,18 @@ class HtmlWriter():
             self.gen_input_html(fr)
             if fr.responses or fr.goals:
                 self.gen_output_html(fr)
-            for wsp in getattr(fr, 'wsp', ()):
-                tags.span(wsp.string, cls="coq-wsp")
+            for wsp in fr.wsp:
+                tags.span(wsp.contents, cls="coq-wsp")
 
     def gen_fragments_html(self, fragments):
         """Serialize a list of `fragments` to HTML."""
         with tags.pre(cls="alectryon-io") as div:
             tags.comment(" Generator: {} ".format(GENERATOR))
-            for fr in fragments:
+            for fr in htmlify_sentences(fragments):
                 if isinstance(fr, CoqText):
-                    tags.span(self.highlight(fr.string), cls="coq-nc")
+                    tags.span(self.highlight(fr.contents), cls="coq-nc")
                 else:
-                    assert isinstance(fr, (CoqSentence, HTMLSentence))
+                    assert isinstance(fr, HTMLSentence)
                     self.gen_sentence_html(fr)
             return div
 

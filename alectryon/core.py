@@ -44,10 +44,10 @@ def debug(text, prefix):
 
 CoqHypothesis = namedtuple("CoqHypothesis", "names body type")
 CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
-CoqSentence = namedtuple("CoqSentence", "sentence responses goals")
-HTMLSentence = namedtuple("HTMLSentence", "sentence responses goals wsp")
+CoqSentence = namedtuple("CoqSentence", "contents responses goals")
+HTMLSentence = namedtuple("HTMLSentence", "contents responses goals wsp")
 CoqPrettyPrinted = namedtuple("CoqPrettyPrinted", "sid pp")
-CoqText = namedtuple("CoqText", "string")
+CoqText = namedtuple("CoqText", "contents")
 
 def sexp_hd(sexp):
     if isinstance(sexp, list):
@@ -333,10 +333,17 @@ def annotate(chunks, serapi_args=()):
     instances (whitespace and comments) and ``CoqSentence`` instances (code).
 
     >>> annotate(["Check 1.", ("-Q", "directory,logical_name")])
-    [[CoqSentence(sentence='Check 1.', responses=['1\n     : nat'], goals=[])]]
+    [[CoqSentence(contents='Check 1.', responses=['1\n     : nat'], goals=[])]]
     """
     with SerAPI(args=serapi_args) as api:
         return [api.run(chunk) for chunk in chunks]
+
+def htmlify_sentences(fragments):
+    for fr in fragments:
+        if isinstance(fr, CoqSentence):
+            yield HTMLSentence(wsp=[], **fr._asdict())
+        else:
+            yield fr
 
 LEADING_BLANKS_RE = re.compile(r'^([ \t]*(?:\n|$))?(.*)$', flags=re.DOTALL)
 
@@ -344,19 +351,18 @@ def isolate_leading_blanks(txt):
     return LEADING_BLANKS_RE.match(txt).groups()
 
 def group_whitespace_with_code(fragments):
-    # Move all spaces following a code fragment, up to the first newline, into
-    # the code fragment itself; this makes sure that (1) we can hide the newline
-    # when we display the goals as a block, and (2) that we don't hide the goals
-    # when the user hovers on spaces between two tactics.
+    # Attach all spaces following a code fragment, up to the first newline, to
+    # the code fragment itself.  This makes sure that (1) we can hide the
+    # newline when we display the goals as a block, and (2) that we don't hide
+    # the goals when the user hovers on spaces between two tactics.
     grouped = []
-    for fr in fragments:
+    for fr in htmlify_sentences(fragments):
         if (grouped and isinstance(fr, CoqText)):
-            assert isinstance(grouped[-1], HTMLSentence)
-            wsp, rest = isolate_leading_blanks(fr.string)
-            if wsp: grouped[-1].wsp.append(CoqText(wsp))
-            if rest: grouped.append(CoqText(rest))
-            continue
-        if isinstance(fr, CoqSentence):
-            fr = HTMLSentence(fr.sentence, fr.responses, fr.goals, wsp=[])
-        grouped.append(fr)
+            wsp, rest = isolate_leading_blanks(fr.contents)
+            if wsp:
+                grouped[-1].wsp.append(CoqText(wsp))
+            if rest:
+                grouped.append(CoqText(rest))
+        else:
+            grouped.append(fr)
     return grouped
