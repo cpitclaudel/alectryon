@@ -197,7 +197,7 @@ In any case, make an exception for comments:
 
 /* Show goals when a toggle is set */
 .alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output,
-.alectryon-io .coq-toggle:checked + label.coq-input + .coq-output {
+.alectryon-io .coq-toggle:checked ~ .coq-output {
     display: block;
     padding: 0.25rem 0;
     position: static;
@@ -205,7 +205,7 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle:checked + label + .alectryon-container .coq-output > .coq-output-sticky-wrapper,
-.alectryon-io .coq-toggle:checked + label + .coq-output > .coq-output-sticky-wrapper {
+.alectryon-io .coq-toggle:checked ~ .coq-output > .coq-output-sticky-wrapper {
     display: block;
     margin-bottom: unset; /* Undo negative margins used to widen the sticky range */
 }
