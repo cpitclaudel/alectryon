@@ -110,7 +110,12 @@ class SerAPI():
 
     def next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceding it."""
-        response = self.last_response = self.sertop.stdout.readline()
+        response = self.sertop.stdout.readline()
+        if not response:
+            # https://github.com/ejgallego/coq-serapi/issues/212
+            MSG = "SerTop printed an empty line.  Last response: {!r}."
+            raise ValueError(MSG.format(self.last_response))
+        self.last_response = response
         sexp = sx.load(response)
         debug(response, '<< ')
         return sexp
