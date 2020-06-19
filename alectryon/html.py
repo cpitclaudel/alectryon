@@ -116,7 +116,9 @@ class HtmlWriter():
         responses = fr.annots['messages'] and fr.responses
         goals = fr.annots['goals'] and fr.goals
         fr = fr._replace(responses=responses, goals=goals)
-        self.gen_whitespace(fr.prefixes)
+
+        if fr.annots['in']:
+            self.gen_whitespace(fr.prefixes)
         with tags.span(cls="coq-sentence"):
             self.gen_input_html(fr)
             if fr.responses or fr.goals:
@@ -124,7 +126,8 @@ class HtmlWriter():
                     MSG = "Cannot show output of {!r} without .in or .unfold."
                     raise ValueError(MSG.format(fr.contents))
                 self.gen_output_html(fr)
-            self.gen_whitespace(fr.suffixes)
+            if fr.annots['in']:
+                self.gen_whitespace(fr.suffixes)
 
     def gen_fragments_html(self, fragments, classes=()):
         """Serialize a list of `fragments` to HTML."""
