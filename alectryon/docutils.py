@@ -83,7 +83,7 @@ class AlectryonTransform(Transform):
             if 'none' in options:
                 node.parent.remove(node)
             else:
-                node.parent.set_class("alectryon-floating")
+                classes = ("alectryon-floating",)
                 fragments = group_whitespace_with_code(process_io_annotations(fragments))
                 AlectryonTransform.set_fragment_annots(fragments, options)
                 html = writer.gen_fragments_html(fragments, classes=classes).render(pretty=False)
