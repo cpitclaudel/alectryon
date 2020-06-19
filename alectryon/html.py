@@ -82,15 +82,16 @@ class HtmlWriter():
                     self.gen_goal_html(goal)
 
     def gen_input_html(self, fr):
-        sentence, cls = self.highlight(fr.contents), "coq-input"
+        attrs, tag = {}, tags.span
+        # print(repr(fr.contents), fr.annots.__dict__,
+        #       fr.annots['in'], fr.annots['goals'], fr.annots['messages'])
         if fr.goals or fr.responses:
-            nm = self.gensym.next("chk")
-            show_output = 'all' in fr.annots
-            attrs = { "checked": "checked" } if show_output else dict()
-            tags.input(type="checkbox", id=nm, cls="coq-toggle", **attrs)
-            tags.label(sentence, cls=cls, **{'for': nm})
-        else:
-            tags.span(sentence, cls=cls)
+            tag = tags.label
+            nm = attrs['for'] = self.gensym.next("chk")
+            chk = { "checked": "checked" } if fr.annots.unfold else dict()
+            tags.input(type="checkbox", id=nm, cls="coq-toggle", **chk)
+        if fr.annots['in']:
+            tag(self.highlight(fr.contents), cls="coq-input", **attrs)
 
     def gen_output_html(self, fr):
         id = self.gensym.next("goal")
@@ -104,15 +105,26 @@ class HtmlWriter():
                 with tags.span(cls="coq-goals"):
                     self.gen_goals_html(fr.goals[0], fr.goals[1:])
 
+    @staticmethod
+    def gen_whitespace(wsps):
+        for wsp in wsps:
+            tags.span(wsp, cls="coq-wsp")
+
     def gen_sentence_html(self, fr):
-        if 'none' in fr.annots:
+        if fr.annots.hide:
             return
+        responses = fr.annots['messages'] and fr.responses
+        goals = fr.annots['goals'] and fr.goals
+        fr = fr._replace(responses=responses, goals=goals)
+        self.gen_whitespace(fr.prefixes)
         with tags.span(cls="coq-sentence"):
             self.gen_input_html(fr)
             if fr.responses or fr.goals:
+                if not fr.annots['in'] and not fr.annots.unfold:
+                    MSG = "Cannot show output of {!r} without .in or .unfold."
+                    raise ValueError(MSG.format(fr.contents))
                 self.gen_output_html(fr)
-            for wsp in fr.wsp:
-                tags.span(wsp.contents, cls="coq-wsp")
+            self.gen_whitespace(fr.suffixes)
 
     def gen_fragments_html(self, fragments, classes=()):
         """Serialize a list of `fragments` to HTML."""

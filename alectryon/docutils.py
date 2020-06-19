@@ -27,6 +27,9 @@ Alectryon::
 
            Example test: nat.
 
+This directive supports various arguments to control the appearance of the
+output; check out the README for details.
+
 To use it, call ``docutils_support.register()`` before running your
 reStructuredText to HTML converter.  The generated code relies on CSS classes
 defined in the ``alectryon.css`` file.
@@ -47,7 +50,7 @@ from docutils.nodes import raw, inline, docinfo, Special, Invisible, Element, co
 from docutils.parsers.rst import directives, roles, Directive
 from docutils.transforms import Transform
 
-from .core import annotate, group_whitespace_with_code, process_io_annotations, find_long_lines
+from .core import annotate, group_whitespace_with_code, group_hypotheses, IOAnnots, process_io_annotations, find_long_lines
 from .html import HtmlWriter
 from .pygments import highlight
 
@@ -70,11 +73,11 @@ class AlectryonTransform(Transform):
     auto_toggle = True
 
     @staticmethod
-    def set_fragment_annots(fragments, options):
-        if 'all' in options:
-            for fr in fragments:
-                if hasattr(fr, 'annots') and not fr.annots:
-                    fr.annots.add('all')
+    def set_fragment_annots(fragments, annots):
+        """Apply relevant annotations to all unannotated fragments."""
+        for fr in fragments:
+            if hasattr(fr, 'annots'):
+                fr.annots.inherit(annots)
 
     def check_for_long_lines(self, node, fragments):
         if LONG_LINE_THRESHOLD is None:
@@ -89,14 +92,16 @@ class AlectryonTransform(Transform):
         nodes = list(self.document.traverse(alectryon_pending))
         annotated = annotate(n['content'] for n in nodes)
         for node, fragments in zip(nodes, annotated):
-            options = node['options']
-            if 'none' in options:
+            annots = IOAnnots(*node['options'])
+            if annots.hide:
                 node.parent.remove(node)
             else:
                 classes = ("alectryon-floating",)
-                fragments = group_whitespace_with_code(process_io_annotations(fragments))
+                fragments = group_hypotheses(fragments)
+                fragments = process_io_annotations(fragments)
+                fragments = group_whitespace_with_code(fragments)
                 self.check_for_long_lines(node, fragments)
-                AlectryonTransform.set_fragment_annots(fragments, options)
+                AlectryonTransform.set_fragment_annots(fragments, annots)
                 html = writer.gen_fragments_html(fragments, classes=classes).render(pretty=False)
                 node.replace_self(raw(node['content'], html, format='html'))
 
@@ -182,7 +187,7 @@ class CoqDirective(Directive):
         if not getattr(document, 'alectryon_transform_added', False):
             document.alectryon_transform_added = True
             document.transformer.add_transform(AlectryonTransform)
-        arguments = (self.arguments or ["in"])[0].split()
+        arguments = self.arguments[0].split() if self.arguments else []
         lines = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
         return [alectryon_pending(content="\n".join(lines), options=set(arguments))]
 

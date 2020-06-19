@@ -119,7 +119,7 @@ alectryon and displays the results interleaved with the input::
     import alectryon.docutils
     alectryon.docutils.register()
 
-See |help(docutils)|_ for more information.  The ``.. coq::`` directive accepts a single option, ``:silent:``, which causes it to run its contents without displaying anything.
+See |help(docutils)|_ for more information.
 
 To ensure that Coq blocks render properly, you'll need to tell your blogging platform to include ``alectryon.css``.  Using a git submodule or vendoring a copy of Alectryon is an easy way to ensure that this stylesheet is accessible to your blogging software.
 
@@ -132,6 +132,31 @@ By default, Alectryon will raise warnings for lines over 72 characters.  You can
 
 .. |help(docutils)| replace:: ``help(alectryon.docutils)``
 .. _help(docutils): alectryon/docutils.py
+
+Controlling output
+------------------
+
+The ``.. coq::`` directive takes a list of space-separated flags to control the way its contents are displayed:
+
+- One option controls whether output is folded (``fold``) or unfolded (``unfold``).  When output is folded, users can reveal the output corresponding to each input line selectively.
+
+- Multiple options control what is included on each line.
+  - ``in``: Include input sentences (``no-in``: hide them)
+  - ``goals``: Include goals (``no-goals``: hide them)
+  - ``messages``: Include messages (``no-messages``: hide them)
+  - ``out``: Include goals and messages (``no-out``: hide them)
+  - ``all``: Include input, goals, and messages (``none``: hide them)
+
+The default is ``all fold``, meaning that all output is available, and starts folded.  The exact semantics depend on the polarity of the first inclusion option encountered: ``x y z`` means the same as ``none x y z``, i.e. include ``x``, ``y``, ``z``, and nothing else; ``no-x no-y`` means ``all no-x no-y``, i.e. include everything except ``x`` and ``y``.
+
+These annotations can also be added to individual Coq sentences (⚠ *sentences*, not lines), using special comments of the form ``(* .flag₁ … .flagₙ *)`` (a list of flags each prefixed with a ``.``)::
+
+  .. coq::
+
+     Require Coq.Arith. (* .none *)      ← Executed but hidden
+     Goal True. (* .unfold *)            ← Goal unfolded
+       Fail exact 1. (* .in .messages *) ← Goal omitted
+       Fail fail. (* .messages *)        ← Error message shown, input hidden
 
 Tips
 ====

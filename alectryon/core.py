@@ -23,6 +23,7 @@
 __version__ = "0.2"
 __author__ = 'Clément Pit-Claudel'
 
+from copy import copy
 from collections import namedtuple
 from collections.abc import Iterable
 from textwrap import indent
@@ -45,7 +46,7 @@ def debug(text, prefix):
 CoqHypothesis = namedtuple("CoqHypothesis", "names body type")
 CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
 CoqSentence = namedtuple("CoqSentence", "contents responses goals")
-HTMLSentence = namedtuple("HTMLSentence", "contents responses goals annots wsp")
+HTMLSentence = namedtuple("HTMLSentence", "contents responses goals annots prefixes suffixes")
 CoqPrettyPrinted = namedtuple("CoqPrettyPrinted", "sid pp")
 CoqText = namedtuple("CoqText", "contents")
 
@@ -344,29 +345,82 @@ def annotate(chunks, serapi_args=()):
     with SerAPI(args=serapi_args) as api:
         return [api.run(chunk) for chunk in chunks]
 
+class IOAnnots:
+    def __init__(self, *annots):
+        self.filters = None
+        self.unfold = None
+        for annot in annots:
+            self.update(annot)
+
+    NO = re.compile("no-")
+    FILTER_ALL = { 'in': True, 'goals': True, 'messages': True }
+    FILTER_NONE = { 'in': False, 'goals': False, 'messages': False }
+    # RE = re.compile("[.](fold|unfold|all|none|(?:(?:no-)?(?:in|out|goals|messages)))")
+    RE = re.compile("[.]([-a-z]+)")
+
+    def update(self, annot):
+        if annot == 'fold':
+            self.unfold = False
+        elif annot == 'unfold':
+            self.unfold = True
+
+        elif annot == 'all':
+            self.filters = self.FILTER_ALL
+        elif annot == 'none':
+            self.filters = self.FILTER_NONE
+
+        else:
+            negated, annot = self.NO.match(annot), self.NO.sub("", annot)
+            if self.filters is None:
+                self.filters = copy(self.FILTER_ALL if negated else self.FILTER_NONE)
+            flags = ('messages', 'goals') if annot == 'out' else (annot,)
+            for flag in flags:
+                if flag not in self.filters:
+                    raise ValueError("Unknown flag {}".format(flag))
+                self.filters[flag] = not negated
+
+    @property
+    def hide(self):
+        return self.filters == self.FILTER_NONE
+
+    def inherit(self, other):
+        if self.hide is None:
+            self.hide = other.hide
+        if self.unfold is None:
+            self.unfold = other.unfold
+        if self.filters is None:
+            self.filters = copy(other.filters)
+
+    def __getitem__(self, key):
+        return self.filters[key] if self.filters else True
+
+    def __repr__(self):
+        return "IOAnnots(unfold={}, filters={})".format(self.unfold, self.filters)
+
 def htmlify_sentences(fragments):
     for fr in fragments:
         if isinstance(fr, CoqSentence):
-            yield HTMLSentence(wsp=[], annots=set(), **fr._asdict())
+            yield HTMLSentence(prefixes=[], suffixes=[], annots=IOAnnots(),
+                           **fr._asdict())
         else:
             yield fr
 
-IO_ANNOTATION_RE = re.compile(r"[ \t]*[(][*]\s+[.](?P<annotation>all|in|none)\s+[*][)]")
+IO_COMMENT_RE = re.compile(r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(IOAnnots.RE.pattern))
 
 def process_io_annotations(fragments):
     annotated = []
     for fr in htmlify_sentences(fragments):
         if (annotated and isinstance(fr, CoqText)):
-            m = IO_ANNOTATION_RE.search(fr.contents)
-            if m:
-                annotated[-1].annots.add(m.group('annotation'))
-                fr = fr._replace(contents=IO_ANNOTATION_RE.sub("", fr.contents))
+            for m in IO_COMMENT_RE.finditer(fr.contents):
+                for mannot in IOAnnots.RE.finditer(m.group(0)):
+                    annotated[-1].annots.update(mannot.group(1))
+            fr = fr._replace(contents=IO_COMMENT_RE.sub("", fr.contents))
         annotated.append(fr)
     return annotated
 
-LEADING_BLANKS_RE = re.compile(r'^([ \t]*(?:\n|$))?(.*)$', flags=re.DOTALL)
+LEADING_BLANKS_RE = re.compile(r'^([ \t]*(?:\n|$))?(.*?)([ \t]*)$', flags=re.DOTALL)
 
-def isolate_leading_blanks(txt):
+def isolate_blanks(txt):
     return LEADING_BLANKS_RE.match(txt).groups()
 
 def group_whitespace_with_code(fragments):
@@ -374,24 +428,49 @@ def group_whitespace_with_code(fragments):
     # the code fragment itself.  This makes sure that (1) we can hide the
     # newline when we display the goals as a block, and (2) that we don't hide
     # the goals when the user hovers on spaces between two tactics.
-    grouped = []
-    for fr in htmlify_sentences(fragments):
-        if (grouped and isinstance(fr, CoqText)):
-            wsp, rest = isolate_leading_blanks(fr.contents)
-            if wsp:
-                grouped[-1].wsp.append(CoqText(wsp))
-            if rest:
-                grouped.append(CoqText(rest))
-        else:
-            grouped.append(fr)
-    return grouped
+    grouped = list(htmlify_sentences(fragments))
+    for idx, fr in enumerate(grouped):
+        if isinstance(fr, CoqText):
+            before, rest, after = isolate_blanks(fr.contents)
+
+            if before:
+                if idx > 0:
+                    grouped[idx - 1].suffixes.append(before)
+                else:
+                    rest = before + rest
+
+            if after:
+                if idx + 1 < len(grouped):
+                    grouped[idx + 1].prefixes.append(after)
+                else:
+                    rest = rest + after
+
+            grouped[idx] = CoqText(rest) if rest else None
+    return [g for g in grouped if g is not None]
+
+def group_hypotheses(fragments):
+    for fr in fragments:
+        if isinstance(fr, (HTMLSentence, CoqSentence)):
+            for g in fr.goals:
+                hyps = []
+                for hyp in g.hypotheses:
+                    if (hyps
+                        and hyp.body is None and hyps[-1].body is None
+                        and hyps[-1].type == hyp.type):
+                        hyps[-1].names.extend(hyp.names)
+                    else:
+                        hyps.append(hyp)
+                g.hypotheses[:] = hyps
+    return fragments
 
 def find_long_lines(fragments, threshold):
     prefix = ""
     for fr in fragments:
-        suffix = "".join(w.contents for w in getattr(fr, "wsp", ()))
+        prefix += "".join(getattr(fr, "prefixes", ()))
+        suffix = "".join(getattr(fr, "suffixes", ()))
         lines = (prefix + fr.contents + suffix).split("\n")
         for line in lines:
             if len(line) > threshold:
                 yield line
         prefix = lines[-1]
+
