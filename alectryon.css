@@ -302,11 +302,12 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .goal-separator hr {
-    background: #555753;
     border: none;
+    border-top: thin solid #555753;
+    box-sizing: content-box;
     display: block;
     flex-grow: 1;
-    height: 1px;
+    height: 0;
     margin: 0.5rem 0;
 }
 
