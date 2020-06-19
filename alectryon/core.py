@@ -380,3 +380,13 @@ def group_whitespace_with_code(fragments):
         else:
             grouped.append(fr)
     return grouped
+
+def find_long_lines(fragments, threshold):
+    prefix = ""
+    for fr in fragments:
+        suffix = "".join(w.contents for w in getattr(fr, "wsp", ()))
+        lines = (prefix + fr.contents + suffix).split("\n")
+        for line in lines:
+            if len(line) > threshold:
+                yield line
+        prefix = lines[-1]

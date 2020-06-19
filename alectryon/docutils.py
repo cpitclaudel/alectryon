@@ -47,7 +47,7 @@ from docutils.nodes import raw, inline, docinfo, Special, Invisible, Element, co
 from docutils.parsers.rst import directives, roles, Directive
 from docutils.transforms import Transform
 
-from .core import annotate, group_whitespace_with_code, process_io_annotations
+from .core import annotate, group_whitespace_with_code, process_io_annotations, find_long_lines
 from .html import HtmlWriter
 from .pygments import highlight
 
@@ -63,6 +63,8 @@ TOGGLE_HTML = """
 Display all goals and responses
 </label>""".replace('\n', '')
 
+LONG_LINE_THRESHOLD = 72
+
 class AlectryonTransform(Transform):
     default_priority = 995
     auto_toggle = True
@@ -73,6 +75,14 @@ class AlectryonTransform(Transform):
             for fr in fragments:
                 if hasattr(fr, 'annots') and not fr.annots:
                     fr.annots.add('all')
+
+    def check_for_long_lines(self, node, fragments):
+        if LONG_LINE_THRESHOLD is None:
+            return
+        for line in find_long_lines(fragments, threshold=LONG_LINE_THRESHOLD):
+            msg = "Long line: {!r} ({} characters)".format(line, len(line))
+            self.document.reporter.warning(msg, base_node=node)
+            return
 
     def apply_coq(self):
         writer = HtmlWriter(highlight)
@@ -85,6 +95,7 @@ class AlectryonTransform(Transform):
             else:
                 classes = ("alectryon-floating",)
                 fragments = group_whitespace_with_code(process_io_annotations(fragments))
+                self.check_for_long_lines(node, fragments)
                 AlectryonTransform.set_fragment_annots(fragments, options)
                 html = writer.gen_fragments_html(fragments, classes=classes).render(pretty=False)
                 node.replace_self(raw(node['content'], html, format='html'))
