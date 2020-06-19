@@ -47,7 +47,7 @@ from docutils.nodes import raw, inline, docinfo, Special, Invisible, Element, co
 from docutils.parsers.rst import directives, roles, Directive
 from docutils.transforms import Transform
 
-from .core import annotate, group_whitespace_with_code
+from .core import annotate, group_whitespace_with_code, process_io_annotations
 from .html import HtmlWriter
 from .pygments import highlight
 
@@ -76,7 +76,7 @@ class AlectryonTransform(Transform):
                 node.parent.remove(node)
             else:
                 node.parent.set_class("alectryon-floating")
-                fragments = group_whitespace_with_code(fragments)
+                fragments = group_whitespace_with_code(process_io_annotations(fragments))
                 html = writer.gen_fragments_html(fragments).render(pretty=False)
                 node.replace_self(raw(node['content'], html, format='html'))
 

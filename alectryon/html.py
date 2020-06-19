@@ -85,7 +85,9 @@ class HtmlWriter():
         sentence, cls = self.highlight(fr.contents), "coq-input"
         if fr.goals or fr.responses:
             nm = self.gensym.next("chk")
-            tags.input(type="checkbox", id=nm, cls="coq-toggle")
+            show_output = 'all' in fr.annots
+            attrs = { "checked": "checked" } if show_output else dict()
+            tags.input(type="checkbox", id=nm, cls="coq-toggle", **attrs)
             tags.label(sentence, cls=cls, **{'for': nm})
         else:
             tags.span(sentence, cls=cls)
@@ -103,6 +105,8 @@ class HtmlWriter():
                     self.gen_goals_html(fr.goals[0], fr.goals[1:])
 
     def gen_sentence_html(self, fr):
+        if 'none' in fr.annots:
+            return
         with tags.span(cls="coq-sentence"):
             self.gen_input_html(fr)
             if fr.responses or fr.goals:

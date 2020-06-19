@@ -45,7 +45,7 @@ def debug(text, prefix):
 CoqHypothesis = namedtuple("CoqHypothesis", "names body type")
 CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
 CoqSentence = namedtuple("CoqSentence", "contents responses goals")
-HTMLSentence = namedtuple("HTMLSentence", "contents responses goals wsp")
+HTMLSentence = namedtuple("HTMLSentence", "contents responses goals annots wsp")
 CoqPrettyPrinted = namedtuple("CoqPrettyPrinted", "sid pp")
 CoqText = namedtuple("CoqText", "contents")
 
@@ -341,9 +341,22 @@ def annotate(chunks, serapi_args=()):
 def htmlify_sentences(fragments):
     for fr in fragments:
         if isinstance(fr, CoqSentence):
-            yield HTMLSentence(wsp=[], **fr._asdict())
+            yield HTMLSentence(wsp=[], annots=set(), **fr._asdict())
         else:
             yield fr
+
+IO_ANNOTATION_RE = re.compile(r"[ \t]*[(][*]\s+[.](?P<annotation>all|in|none)\s+[*][)]")
+
+def process_io_annotations(fragments):
+    annotated = []
+    for fr in htmlify_sentences(fragments):
+        if (annotated and isinstance(fr, CoqText)):
+            m = IO_ANNOTATION_RE.search(fr.contents)
+            if m:
+                annotated[-1].annots.add(m.group('annotation'))
+                fr = fr._replace(contents=IO_ANNOTATION_RE.sub("", fr.contents))
+        annotated.append(fr)
+    return annotated
 
 LEADING_BLANKS_RE = re.compile(r'^([ \t]*(?:\n|$))?(.*)$', flags=re.DOTALL)
 
