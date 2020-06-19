@@ -205,6 +205,13 @@ In any case, make an exception for comments:
     background: unset; /* Override the background set in .alectryon-floating */
 }
 
+.alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output .goal-hyps,
+.alectryon-io .coq-toggle:checked ~ .coq-output .goal-hyps {
+    flex-flow: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
 .alectryon-toggle:checked + label + .alectryon-container .coq-output > .coq-output-sticky-wrapper,
 .alectryon-io .coq-toggle:checked ~ .coq-output > .coq-output-sticky-wrapper {
     display: block;
