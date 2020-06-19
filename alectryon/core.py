@@ -203,8 +203,8 @@ class SerAPI():
     @staticmethod
     def _warn_on_exn(response, chunk):
         ERR_FMT = ("!! Coq raised an exception:\n{}\n"
-                   "!! Results past this point may be unreliable.\n")
-        LOC_FMT = "!! The offending chunk is delimited by >>>.<<< below:\n{}\n"
+                   "   Results past this point may be unreliable.\n")
+        LOC_FMT = ("   The offending chunk is delimited by >>>.<<< below:\n{}\n")
         msg = sx.tostr(response.exn)
         err = ERR_FMT.format(indent(msg, ' ' * 7))
         if chunk:
@@ -318,8 +318,9 @@ class SerAPI():
         for message in messages:
             fragment = fragments_by_id.get(message.sid)
             if fragment is None:
-                MSG = "!! Orphaned message for sid {}: {}\n"
-                stderr.write(MSG.format(message.sid, message.pp))
+                pp = ("\n" + message.pp).replace("\n", "\n   > ")
+                MSG = "!! Orphaned message for sid {}:{}\n"
+                stderr.write(MSG.format(message.sid, pp))
             else:
                 fragment.responses.append(message.pp)
         return fragments
