@@ -114,9 +114,9 @@ class HtmlWriter():
             for wsp in fr.wsp:
                 tags.span(wsp.contents, cls="coq-wsp")
 
-    def gen_fragments_html(self, fragments):
+    def gen_fragments_html(self, fragments, classes=()):
         """Serialize a list of `fragments` to HTML."""
-        with tags.pre(cls="alectryon-io") as div:
+        with tags.pre(cls=" ".join(("alectryon-io", *classes))) as div:
             tags.comment(" Generator: {} ".format(GENERATOR))
             for fr in htmlify_sentences(fragments):
                 if isinstance(fr, CoqText):
