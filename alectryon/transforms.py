@@ -144,10 +144,13 @@ def group_hypotheses(fragments):
     return fragments
 
 FAIL_RE = re.compile(r"^Fail\s+")
+FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
 
 def strip_contents(fragments):
     for fr in fragments:
         if hasattr(fr, 'annots') and fr.annots.fails:
+            for idx, r in enumerate(fr.responses):
+                fr.responses[idx] = FAIL_MSG_RE.sub("", r)
             fr = fr._replace(contents=FAIL_RE.sub("", fr.contents))
         yield fr
 
