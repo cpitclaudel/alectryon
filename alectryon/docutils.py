@@ -50,7 +50,8 @@ from docutils.nodes import raw, inline, docinfo, Special, Invisible, Element, co
 from docutils.parsers.rst import directives, roles, Directive
 from docutils.transforms import Transform
 
-from .core import annotate, group_whitespace_with_code, group_hypotheses, IOAnnots, process_io_annotations, find_long_lines, strip_contents
+from . import transforms
+from .core import annotate
 from .html import HtmlWriter
 from .pygments import highlight
 
@@ -82,7 +83,7 @@ class AlectryonTransform(Transform):
     def check_for_long_lines(self, node, fragments):
         if LONG_LINE_THRESHOLD is None:
             return
-        for line in find_long_lines(fragments, threshold=LONG_LINE_THRESHOLD):
+        for line in transforms.find_long_lines(fragments, threshold=LONG_LINE_THRESHOLD):
             msg = "Long line: {!r} ({} characters)".format(line, len(line))
             self.document.reporter.warning(msg, base_node=node)
             return
@@ -92,15 +93,15 @@ class AlectryonTransform(Transform):
         nodes = list(self.document.traverse(alectryon_pending))
         annotated = annotate(n['content'] for n in nodes)
         for node, fragments in zip(nodes, annotated):
-            annots = IOAnnots(*node['options'])
+            annots = transforms.IOAnnots(*node['options'])
             if annots.hide:
                 node.parent.remove(node)
             else:
                 classes = ("alectryon-floating",)
-                fragments = group_hypotheses(fragments)
-                fragments = process_io_annotations(fragments)
-                fragments = strip_contents(fragments)
-                fragments = group_whitespace_with_code(fragments)
+                fragments = transforms.group_hypotheses(fragments)
+                fragments = transforms.process_io_annotations(fragments)
+                fragments = transforms.strip_contents(fragments)
+                fragments = transforms.group_whitespace_with_code(fragments)
                 self.check_for_long_lines(node, fragments)
                 AlectryonTransform.set_fragment_annots(fragments, annots)
                 html = writer.gen_fragments_html(fragments, classes=classes).render(pretty=False)

@@ -22,7 +22,8 @@ from collections import defaultdict
 from dominate import tags
 from dominate.util import raw
 
-from .core import GENERATOR, CoqText, CoqSentence, HTMLSentence, htmlify_sentences, group_whitespace_with_code
+from .core import GENERATOR, CoqText, HTMLSentence
+from . import transforms
 
 class Gensym():
     def __init__(self):
@@ -134,7 +135,7 @@ class HtmlWriter():
         """Serialize a list of `fragments` to HTML."""
         with tags.pre(cls=" ".join(("alectryon-io", *classes))) as div:
             tags.comment(" Generator: {} ".format(GENERATOR))
-            for fr in htmlify_sentences(fragments):
+            for fr in transforms.htmlify_sentences(fragments):
                 if isinstance(fr, CoqText):
                     tags.span(self.highlight(fr.contents), cls="coq-nc")
                 else:
@@ -146,4 +147,5 @@ class HtmlWriter():
         for idx, fragments in enumerate(annotated):
             if idx > 0:
                 yield tags.comment(" alectryon-block-end ")
-            yield self.gen_fragments_html(group_whitespace_with_code(fragments))
+            fragments = transforms.group_whitespace_with_code(fragments)
+            yield self.gen_fragments_html(fragments)
