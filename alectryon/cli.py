@@ -49,16 +49,16 @@ def partition_fragments(fragments):
     `discard` is truthy.
     """
     partitioned = [[]]
-    for fragment in fragments:
-        if isinstance(fragment, CoqText):
-            m = COQ_SPLIT_RE.match(fragment.string)
+    for fr in fragments:
+        if isinstance(fr, CoqText):
+            m = COQ_SPLIT_RE.match(fr.contents)
             if m:
                 if partitioned[-1]:
                     partitioned.append([])
-                fragment = fragment._replace(string=fragment.string[m.end():])
-                if not fragment.string:
+                fr = fr._replace(contents=fr.contents[m.end():])
+                if not fr.contents:
                     continue
-        partitioned[-1].append(fragment)
+        partitioned[-1].append(fr)
     return partitioned
 
 def split_single_chunk(chunks):
