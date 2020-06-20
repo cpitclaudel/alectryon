@@ -113,6 +113,7 @@ class HtmlWriter():
     def gen_sentence_html(self, fr):
         if fr.annots.hide:
             return
+
         responses = fr.annots['messages'] and fr.responses
         goals = fr.annots['goals'] and fr.goals
         fr = fr._replace(responses=responses, goals=goals)

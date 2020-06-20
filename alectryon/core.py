@@ -349,17 +349,22 @@ class IOAnnots:
     def __init__(self, *annots):
         self.filters = None
         self.unfold = None
+        self.fails = None
         for annot in annots:
             self.update(annot)
 
     NO = re.compile("no-")
     FILTER_ALL = { 'in': True, 'goals': True, 'messages': True }
     FILTER_NONE = { 'in': False, 'goals': False, 'messages': False }
-    # RE = re.compile("[.](fold|unfold|all|none|(?:(?:no-)?(?:in|out|goals|messages)))")
     RE = re.compile("[.]([-a-z]+)")
 
     def update(self, annot):
-        if annot == 'fold':
+        if annot == 'fails':
+            self.fails = True
+        elif annot == 'succeeds':
+            self.fails = False
+
+        elif annot == 'fold':
             self.unfold = False
         elif annot == 'unfold':
             self.unfold = True
@@ -384,12 +389,9 @@ class IOAnnots:
         return self.filters == self.FILTER_NONE
 
     def inherit(self, other):
-        if self.hide is None:
-            self.hide = other.hide
-        if self.unfold is None:
-            self.unfold = other.unfold
-        if self.filters is None:
-            self.filters = copy(other.filters)
+        for field, value in self.__dict__.items():
+            if value is None:
+                setattr(self, field, copy(getattr(other, field)))
 
     def __getitem__(self, key):
         return self.filters[key] if self.filters else True
@@ -462,6 +464,14 @@ def group_hypotheses(fragments):
                         hyps.append(hyp)
                 g.hypotheses[:] = hyps
     return fragments
+
+FAIL_RE = re.compile(r"^Fail\s+")
+
+def strip_contents(fragments):
+    for fr in fragments:
+        if hasattr(fr, 'annots') and fr.annots.fails:
+            fr = fr._replace(contents=FAIL_RE.sub("", fr.contents))
+        yield fr
 
 def find_long_lines(fragments, threshold):
     prefix = ""

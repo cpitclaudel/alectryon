@@ -50,7 +50,7 @@ from docutils.nodes import raw, inline, docinfo, Special, Invisible, Element, co
 from docutils.parsers.rst import directives, roles, Directive
 from docutils.transforms import Transform
 
-from .core import annotate, group_whitespace_with_code, group_hypotheses, IOAnnots, process_io_annotations, find_long_lines
+from .core import annotate, group_whitespace_with_code, group_hypotheses, IOAnnots, process_io_annotations, find_long_lines, strip_contents
 from .html import HtmlWriter
 from .pygments import highlight
 
@@ -99,6 +99,7 @@ class AlectryonTransform(Transform):
                 classes = ("alectryon-floating",)
                 fragments = group_hypotheses(fragments)
                 fragments = process_io_annotations(fragments)
+                fragments = strip_contents(fragments)
                 fragments = group_whitespace_with_code(fragments)
                 self.check_for_long_lines(node, fragments)
                 AlectryonTransform.set_fragment_annots(fragments, annots)
