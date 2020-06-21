@@ -98,7 +98,8 @@ def process_io_annotations(fragments):
         annotated.append(fr)
     return annotated
 
-LEADING_BLANKS_RE = re.compile(r'^([ \t]*(?:\n|$))?(.*?)([ \t]*)$', flags=re.DOTALL)
+LEADING_BLANKS_RE = re.compile(r'\A([ \t]*(?:\n|\Z))?(.*?)([ \t]*)\Z',
+                               flags=re.DOTALL)
 
 def isolate_blanks(txt):
     return LEADING_BLANKS_RE.match(txt).groups()
