@@ -32,7 +32,7 @@ output; check out the README for details.
 
 To use it, call ``docutils_support.register()`` before running your
 reStructuredText to HTML converter.  The generated code relies on CSS classes
-defined in the ``alectryon.css`` file.
+defined in the ``assets/alectryon.css`` file.
 
 A checkbox and an accompanying label (with classes ``alectryon-toggle`` and
 ``alectryon-toggle-label``) allowing users to reveal all goals and responses at

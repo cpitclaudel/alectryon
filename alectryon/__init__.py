@@ -18,5 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os
+
 from .core import *
 from .core import __version__, __author__
+
+SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
+ASSETS_PATH = os.path.join(os.path.dirname(SCRIPT_PATH), "assets")
