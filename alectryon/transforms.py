@@ -20,6 +20,7 @@
 
 """Post-process annotated fragments of Coq code."""
 import re
+import textwrap
 from copy import copy
 from .core import CoqText, CoqSentence, HTMLSentence
 
@@ -75,7 +76,8 @@ class IOAnnots:
         return self.filters[key] if self.filters else True
 
     def __repr__(self):
-        return "IOAnnots(unfold={}, filters={})".format(self.unfold, self.filters)
+        return "IOAnnots(unfold={}, fails={}, filters={})".format(
+            self.unfold, self.fails, self.filters)
 
 def htmlify_sentences(fragments):
     for fr in fragments:
@@ -147,12 +149,19 @@ def group_hypotheses(fragments):
 FAIL_RE = re.compile(r"^Fail\s+")
 FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
 
-def strip_contents(fragments):
+def strip_failures(fragments):
     for fr in fragments:
-        if hasattr(fr, 'annots') and fr.annots.fails:
+        if hasattr(fr, 'annots') and fr.annots.fails and FAIL_RE.match(fr.contents):
             for idx, r in enumerate(fr.responses):
                 fr.responses[idx] = FAIL_MSG_RE.sub("", r)
             fr = fr._replace(contents=FAIL_RE.sub("", fr.contents))
+        yield fr
+
+def dedent(fragments):
+    for fr in fragments:
+        if hasattr(fr, 'responses'):
+            for idx, r in enumerate(fr.responses):
+                fr.responses[idx] = textwrap.dedent(r)
         yield fr
 
 def find_long_lines(fragments, threshold):

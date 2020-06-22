@@ -88,6 +88,16 @@ class AlectryonTransform(Transform):
             self.document.reporter.warning(msg, base_node=node)
             return
 
+    def preprocess_fragments(self, fragments, annots):
+        fragments = list(transforms.htmlify_sentences(fragments))
+        self.set_fragment_annots(fragments, annots)
+        fragments = transforms.group_hypotheses(fragments)
+        fragments = transforms.process_io_annotations(fragments)
+        fragments = transforms.strip_failures(fragments)
+        fragments = transforms.dedent(fragments)
+        fragments = transforms.group_whitespace_with_code(fragments)
+        return fragments
+
     def apply_coq(self):
         writer = HtmlWriter(highlight)
         nodes = list(self.document.traverse(alectryon_pending))
@@ -97,13 +107,9 @@ class AlectryonTransform(Transform):
             if annots.hide:
                 node.parent.remove(node)
             else:
-                classes = ("alectryon-floating",)
-                fragments = transforms.group_hypotheses(fragments)
-                fragments = transforms.process_io_annotations(fragments)
-                fragments = transforms.strip_contents(fragments)
-                fragments = transforms.group_whitespace_with_code(fragments)
+                fragments = self.preprocess_fragments(fragments, annots)
                 self.check_for_long_lines(node, fragments)
-                AlectryonTransform.set_fragment_annots(fragments, annots)
+                classes = ("alectryon-floating",)
                 html = writer.gen_fragments_html(fragments, classes=classes).render(pretty=False)
                 node.replace_self(raw(node['content'], html, format='html'))
 
@@ -162,7 +168,6 @@ def recompute_contents(directive, real_indentation):
 
        }
     """
-
     block_lines = directive.block_text.splitlines()
     block_header_len = directive.content_offset - directive.lineno + 1
     block_indentation = measure_indentation(directive.block_text)
