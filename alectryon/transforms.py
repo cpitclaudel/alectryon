@@ -174,3 +174,25 @@ def find_long_lines(fragments, threshold):
             if len(line) > threshold:
                 yield line
         prefix = lines[-1]
+
+COQ_CHUNK_DELIMITER = re.compile(r"(?:[ \t]*\n){2,}")
+
+def partition_fragments(fragments, delim=COQ_CHUNK_DELIMITER):
+    """Partition a list of `fragments` into chunks.
+
+    The result is a list of chunks, each containing multiple fragments.  This
+    can be useful as a post-processing step for .v files.  `delim` is a regular
+    expression matching the delimiter (by default, two blank lines).
+    """
+    partitioned = [[]]
+    for fr in fragments:
+        if isinstance(fr, CoqText):
+            m = delim.match(fr.contents)
+            if m:
+                if partitioned[-1]:
+                    partitioned.append([])
+                fr = fr._replace(contents=fr.contents[m.end():])
+                if not fr.contents:
+                    continue
+        partitioned[-1].append(fr)
+    return partitioned

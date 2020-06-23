@@ -19,88 +19,196 @@
 # SOFTWARE.
 
 import argparse
-import json
+import inspect
 import os.path
-import re
 import sys
 
-from dominate import tags, document
+# pylint: disable=import-outside-toplevel
 
-from . import core
-from .core import SerAPI, CoqSentence, CoqGoal, CoqHypothesis, CoqText, annotate, GENERATOR, __version__
-from .html import HtmlWriter, gen_header
-from .pygments import highlight, FORMATTER
+def load_json(contents):
+    from json import loads
+    return loads(contents)
 
-ARGDOC = ".\n".join([
-    core.__doc__, "When run as a standalone application, take input as multiple "
-    ".v or .json files, and create one .io.json file per input file."
-])
+def parse_coq_plain(contents):
+    return [contents]
 
-COQ_SPLIT_RE = re.compile(r"(?:[ \t]*\n){2,}")
+def annotate_chunks(chunks, serapi_args):
+    from .core import annotate
+    return annotate(chunks, serapi_args)
 
-def partition_fragments(fragments):
-    """Split a list of `fragments` into whitespace-delimited runs.
+def gen_html_snippets(annotated):
+    from .html import HtmlWriter
+    from .pygments import highlight
+    return HtmlWriter(highlight).gen_html(annotated)
 
-    This function makes it easy to further subdivide the results of processing a
-    chunk.  This is useful when processing large chunks, or when chunk
-    boundaries are not known beforehand (e.g. when processing a Coq file).
+# FIXME copy assets to current directory
+def dump_html_standalone(snippets, fname):
+    from dominate import tags, document
+    from .core import SerAPI
+    from .html import gen_header, GENERATOR
+    from .pygments import FORMATTER
 
-    Separators are added to the following run of fragments, or discarded if
-    `discard` is truthy.
-    """
-    partitioned = [[]]
-    for fr in fragments:
-        if isinstance(fr, CoqText):
-            m = COQ_SPLIT_RE.match(fr.contents)
-            if m:
-                if partitioned[-1]:
-                    partitioned.append([])
-                fr = fr._replace(contents=fr.contents[m.end():])
-                if not fr.contents:
-                    continue
-        partitioned[-1].append(fr)
-    return partitioned
+    doc = document(title=fname)
+    doc.set_attribute("class", "alectryon-standalone")
 
-def split_single_chunk(chunks):
-    """Split a singleton list of `chunks` into multiple chunks.
+    doc.head.add(tags.meta(charset="utf-8"))
+    doc.head.add(tags.meta(name="generator", content=GENERATOR))
+    doc.head.add(tags.link(rel="stylesheet", href="alectryon.css"))
+    doc.head.add(tags.script(src="alectryon-slideshow.js"))
 
-    When parsing Coq files we don't know where relevant boundaries are
-    beforehand, so we process everything as one chunk and split afterwards.
-    """
-    assert len(chunks) == 1
-    return partition_fragments(chunks[0])
+    FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
+    doc.head.add(tags.link(rel="stylesheet", href=FIRA_CODE_CDN))
 
-def read_input(fpath):
-    _fdir, fname = os.path.split(fpath)
-    _fn, fext = os.path.splitext(fname)
-    with open(fpath) as src:
-        if fext == '.v':
-            return fname, [src.read()], split_single_chunk
-        if fext == '.json':
-            return fname, json.load(src), (lambda chunks: chunks)
-        MSG = "Input files must have extension .v or .json ({})."
-        raise argparse.ArgumentTypeError(MSG.format(fname))
+    pygments_css = FORMATTER.get_style_defs('.highlight')
+    doc.head.add(tags.style(pygments_css, type="text/css"))
+
+    root = doc.body.add(tags.article(cls="alectryon-windowed alectryon-root"))
+    root.add(gen_header(SerAPI.version_info()))
+    for snippet in snippets:
+        root.add(snippet)
+
+    return doc.render(pretty=False)
+
+def coq_to_rst(coq):
+    from .literate import coq2rst
+    return coq2rst(coq)
+
+def rst_to_coq(coq):
+    from .literate import rst2coq
+    return rst2coq(coq)
+
+COQ_TYPE_NAMES = {
+    "CoqHypothesis": "hypothesis",
+    "CoqGoal": "goal",
+    "CoqSentence": "sentence",
+    "HTMLSentence": "html_sentence",
+    "CoqText": "text",
+}
+
+def prepare_json(obj):
+    if isinstance(obj, list):
+        return [prepare_json(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: prepare_json(v) for k, v in obj.items()}
+    type_name = COQ_TYPE_NAMES.get(type(obj).__name__)
+    if type_name:
+        d = {k: prepare_json(v) for k, v in zip(obj._fields, obj)}
+        return {"_type": type_name, **d}
+    return obj
+
+def dump_json(js):
+    from json import dumps
+    return dumps(js, indent=4)
+
+def dump_html_snippets(snippets):
+    from io import StringIO
+    io = StringIO()
+    for snippet in snippets:
+        io.write(snippet.render(pretty=False))
+        io.write('\n')
+    return io.getvalue()
+
+def write_file(ext):
+    return lambda contents: (contents, ext)
+
+PIPELINES = {
+    'json': {
+        'json': (load_json, annotate_chunks,
+                 prepare_json, dump_json, write_file(".io.json")),
+        'snippets-html': (load_json, annotate_chunks, gen_html_snippets,
+                          dump_html_snippets, write_file(".snippets.html"))
+    },
+    'coq': {
+        'webpage': (parse_coq_plain, annotate_chunks, gen_html_snippets,
+                    dump_html_standalone, write_file(".v.html")),
+        'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
+                          dump_html_snippets, write_file(".v.snippets.html")),
+        'rst': (rst_to_coq, write_file(".rst"))
+    },
+    'coq+rst': {
+        # 'webpage': (coq_to_rst, gen_rst_html),
+        'rst': (coq_to_rst, write_file(".rst"))
+    },
+    'rst': {
+        # 'webpage': (gen_rst_html,),
+        'coq': (rst_to_coq, write_file(".v")),
+        'coq+rst': (rst_to_coq, write_file(".v"))
+    }
+}
+
+FRONTENDS_BY_EXTENSION = [('.v', "coq"), ('.json', "json"), ('.rst', "rest")]
+DEFAULT_BACKENDS = {
+    'json': 'json',
+    'coq': 'webpage',
+    'coq+rst': 'webpage', # FIXME
+    'rst': 'webpage' # FIXME
+}
+
+def infer_frontend(fpath):
+    for (ext, front) in FRONTENDS_BY_EXTENSION:
+        if fpath.endswith(ext):
+            return front
+    MSG = """argument --input: Not sure what to do with {!r}.
+Try passing --frontend?"""
+    raise argparse.ArgumentTypeError(MSG.format(fpath))
+
+def resolve_pipeline(fpath, args):
+    frontend = args.frontend or infer_frontend(fpath)
+
+    assert frontend in PIPELINES
+    supported_backends = PIPELINES[frontend]
+
+    backend = args.backend or DEFAULT_BACKENDS[frontend]
+    if backend not in supported_backends:
+        MSG = """argument --backend: Frontend {!r} does not support backend {!r}: \
+expecting one of {}"""
+        raise argparse.ArgumentTypeError(MSG.format(
+            frontend, backend, ", ".join(map(repr, supported_backends))))
+
+    return supported_backends[backend]
+
+def fill_in_arguments(args):
+    args.point, args.marker = args.mark_point
+    if args.point is not None:
+        try:
+            args.point = int(args.point)
+        except ValueError:
+            MSG = "argument --mark-point: Expecting a number, not {!r}"
+            raise argparse.ArgumentTypeError("--mark-point", MSG.format(args.point))
+
+    args.pipelines = [(fpath, resolve_pipeline(fpath, args))
+                      for fpath in args.input]
 
 def parse_arguments():
-    parser = argparse.ArgumentParser(description=ARGDOC)
+    parser = argparse.ArgumentParser(description="""\
+Annotate segments of Coq code with responses and goals.
+Take input in Coq, reStructuredText, or JSON format \
+and produce reStructuredText, HTML, or JSON output.""")
 
-    INPUT_HELP = """Input file.  Can be either .v (plain Coq code) or \
-.json (a list of Coq fragments)."""
-    parser.add_argument("input", nargs="+",
-                        type=read_input, help=INPUT_HELP)
+    INPUT_HELP = "Configure the input."
+    out = parser.add_argument_group("Input arguments", INPUT_HELP)
 
-    DEBUG_HELP = "Print communications with SerAPI."
-    parser.add_argument("--debug", action="store_true",
-                        default=False, help=DEBUG_HELP)
+    INPUT_FILES_HELP = "Input files"
+    parser.add_argument("input", nargs="+", help=INPUT_FILES_HELP)
+
+    FRONTEND_HELP = "Choose a frontend.  Defaults:"
+    for ext, frontend in FRONTENDS_BY_EXTENSION:
+        FRONTEND_HELP += "\n  For {}: {}".format(ext, frontend)
+    FRONTEND_CHOICES = sorted(PIPELINES.keys())
+    out.add_argument("--frontend", default=None, choices=FRONTEND_CHOICES,
+                     help=FRONTEND_HELP)
 
 
-    OUTPUT_HELP = "Configure the output"
+    OUTPUT_HELP = "Configure the output."
     out = parser.add_argument_group("Output arguments", OUTPUT_HELP)
 
-    WRITER_HELP = """Output type"""
-    WRITER_CHOICES = ("json", "html", "webpage")
-    out.add_argument("--writer", default="webpage",
-                     choices=WRITER_CHOICES, help=WRITER_HELP)
+    BACKEND_HELP = "Choose a backend.  Supported:"
+    for frontend, backends in PIPELINES.items():
+        names = ", ".join(sorted(backends.keys()))
+        BACKEND_HELP += "\nFor {}: {}".format(frontend, names)
+    BACKEND_CHOICES = sorted(set(b for _, bs in PIPELINES.items() for b in bs))
+    out.add_argument("--backend", default=None, choices=BACKEND_CHOICES,
+                     help=BACKEND_HELP)
 
     OUT_DIR_HELP = "Set the output directory."
     parser.add_argument("--output-directory", default=".",
@@ -131,6 +239,11 @@ def parse_arguments():
                       default=[], help=R_HELP)
 
 
+    DEBUG_HELP = "Print communications with SerAPI."
+    parser.add_argument("--debug", action="store_true",
+                        default=False, help=DEBUG_HELP)
+
+
     args = parser.parse_args()
     for dir in args.coq_args_I:
         args.serapi_args.extend(("-I", dir))
@@ -139,78 +252,45 @@ def parse_arguments():
     for pair in args.coq_args_Q:
         args.serapi_args.extend(("-Q", ",".join(pair)))
 
+    args.pipelines = [(fpath, resolve_pipeline(fpath, args))
+                      for fpath in args.input]
+
     return args
 
-COQ_TYPES = (CoqSentence, CoqGoal, CoqHypothesis, CoqText)
-COQ_TYPE_NAMES = {
-    "CoqHypothesis": "hypothesis",
-    "CoqGoal": "goal",
-    "CoqSentence": "sentence",
-    "HTMLSentence": "html_sentence",
-    "CoqText": "text",
-}
+def call_pipeline_step(step, state, ctx):
+    params = list(inspect.signature(step).parameters.keys())[1:]
+    return step(state, **{p: ctx[p] for p in params})
 
-def prepare_json(obj):
-    if isinstance(obj, list):
-        return [prepare_json(x) for x in obj]
-    if isinstance(obj, dict):
-        return {k: prepare_json(v) for k, v in obj.items()}
-    if isinstance(obj, COQ_TYPES):
-        d = {k: prepare_json(v) for k, v in zip(obj._fields, obj)}
-        nm = COQ_TYPE_NAMES[type(obj).__name__]
-        return {"_type": nm, **d}
-    return obj
+def read_input(fpath):
+    if fpath == "-":
+        return "-", sys.stdin.read()
+    fname = os.path.splitext(os.path.basename(fpath))[0]
+    with open(fpath) as f:
+        return fname, f.read()
 
-def write_json(fpath, _fname, annotated):
-    with open("{}.io.json".format(fpath), mode="w") as out:
-        json.dump(prepare_json(annotated), out, indent=4)
-
-def gen_html(annotated):
-    return HtmlWriter(highlight).gen_html(annotated)
-
-def write_html(fpath, _fname, annotated):
-    ts = list(gen_html(annotated))
-    with open("{}.snippets.html".format(fpath), mode="w") as out:
-        for t in ts:
-            out.write(t.render(pretty=False))
-            out.write('\n')
-
-def write_webpage(fpath, fname, annotated):
-    doc = document(title=fname)
-    doc.set_attribute("class", "alectryon-standalone")
-
-    doc.head.add(tags.meta(charset="utf-8"))
-    doc.head.add(tags.meta(name="generator", content=GENERATOR))
-    doc.head.add(tags.link(rel="stylesheet", href="alectryon.css"))
-    doc.head.add(tags.script(src="alectryon-slideshow.js"))
-
-    FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
-    doc.head.add(tags.link(rel="stylesheet", href=FIRA_CODE_CDN))
-
-    pygments_css = FORMATTER.get_style_defs('.highlight')
-    doc.head.add(tags.style(pygments_css, type="text/css"))
-
-    root = doc.body.add(tags.article(cls="alectryon-windowed alectryon-root"))
-    root.add(gen_header(SerAPI.version_info()))
-    for t in gen_html(annotated):
-        root.add(t)
-
-    with open("{}.html".format(fpath), mode="w") as out:
-        out.write(doc.render(pretty=False))
-
-WRITERS = {'json': write_json, 'html': write_html, 'webpage': write_webpage}
+def write_output(fname, outdir, contents, ext):
+    if fname == "-":
+        sys.stdout.write(contents)
+    else:
+        out_fpath = os.path.join(outdir, fname + ext)
+        with open(out_fpath, mode="w") as f:
+            f.write(contents)
 
 def main():
     args = parse_arguments()
-    core.DEBUG = args.debug
 
+    if args.debug:
+        from . import core
+        core.DEBUG = True
     try:
-        for fname, chunks, pp in args.input:
-            annotated = pp(annotate(chunks, args.serapi_args))
-            fpath = os.path.join(args.output_directory, fname)
-            WRITERS[args.writer](fpath, fname, annotated)
+        for fpath, pipeline in args.pipelines:
+            fname, state = read_input(fpath)
+            ctx = { "fpath": fpath, "fname": fname, **vars(args) }
+            for step in pipeline:
+                state = call_pipeline_step(step, state, ctx)
+            write_output(fname, args.output_directory, *state)
     except ValueError as e:
-        if core.DEBUG:
+        if args.debug:
             raise e
-        print("Exception:", e)
+        sys.stderr.write("Exception: {}\n".format(e))
         sys.exit(1)
