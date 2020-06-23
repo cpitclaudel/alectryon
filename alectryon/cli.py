@@ -136,7 +136,7 @@ PIPELINES = {
     }
 }
 
-FRONTENDS_BY_EXTENSION = [('.v', "coq"), ('.json', "json"), ('.rst', "rest")]
+FRONTENDS_BY_EXTENSION = [('.v', "coq"), ('.json', "json"), ('.rst', "rst")]
 DEFAULT_BACKENDS = {
     'json': 'json',
     'coq': 'webpage',
@@ -191,9 +191,9 @@ and produce reStructuredText, HTML, or JSON output.""")
     INPUT_FILES_HELP = "Input files"
     parser.add_argument("input", nargs="+", help=INPUT_FILES_HELP)
 
-    FRONTEND_HELP = "Choose a frontend.  Defaults:"
-    for ext, frontend in FRONTENDS_BY_EXTENSION:
-        FRONTEND_HELP += "\n  For {}: {}".format(ext, frontend)
+    FRONTEND_HELP = "Choose a frontend. Defaults: "
+    FRONTEND_HELP += "; ".join("{!r} → {}".format(ext, frontend)
+                               for ext, frontend in FRONTENDS_BY_EXTENSION)
     FRONTEND_CHOICES = sorted(PIPELINES.keys())
     out.add_argument("--frontend", default=None, choices=FRONTEND_CHOICES,
                      help=FRONTEND_HELP)
@@ -202,10 +202,9 @@ and produce reStructuredText, HTML, or JSON output.""")
     OUTPUT_HELP = "Configure the output."
     out = parser.add_argument_group("Output arguments", OUTPUT_HELP)
 
-    BACKEND_HELP = "Choose a backend.  Supported:"
-    for frontend, backends in PIPELINES.items():
-        names = ", ".join(sorted(backends.keys()))
-        BACKEND_HELP += "\nFor {}: {}".format(frontend, names)
+    BACKEND_HELP = "Choose a backend. Supported: "
+    BACKEND_HELP += "; ".join("{} → {{{}}}".format(frontend, ", ".join(sorted(backends)))
+                              for frontend, backends in PIPELINES.items())
     BACKEND_CHOICES = sorted(set(b for _, bs in PIPELINES.items() for b in bs))
     out.add_argument("--backend", default=None, choices=BACKEND_CHOICES,
                      help=BACKEND_HELP)
