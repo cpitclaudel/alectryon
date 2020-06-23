@@ -19,11 +19,18 @@
 # SOFTWARE.
 
 from collections import defaultdict
+from os import path
+
 from dominate import tags
 from dominate.util import raw
 
-from .core import GENERATOR, CoqText, HTMLSentence
-from . import transforms
+from .core import CoqText, HTMLSentence
+from . import transforms, __version__
+
+GENERATOR = "Alectryon v{}".format(__version__)
+
+SCRIPT_PATH = path.dirname(path.realpath(__file__))
+ASSETS_PATH = path.join(path.dirname(SCRIPT_PATH), "assets")
 
 class Gensym():
     def __init__(self):

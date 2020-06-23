@@ -18,10 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
+"""Annotate segments of Coq code with responses and goals."""
 
-from .core import *
-from .core import __version__, __author__
-
-SCRIPT_PATH = os.path.dirname(os.path.realpath(__file__))
-ASSETS_PATH = os.path.join(os.path.dirname(SCRIPT_PATH), "assets")
+__version__ = "0.2"
+__author__ = 'Clément Pit-Claudel'

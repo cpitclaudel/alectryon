@@ -78,11 +78,11 @@ As a standalone program
 As a library
 ------------
 
-Use ``alectryon.annotate(chunks: List[str])``, which returns an object with the same structure as the JSON above, but using objects instead of records with a ``_type`` field:
+Use ``alectryon.core.annotate(chunks: List[str])``, which returns an object with the same structure as the JSON above, but using objects instead of records with a ``_type`` field:
 
 .. code:: python
 
-    >>> from alectryon import annotate
+    >>> from alectryon.core import annotate
     >>> annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Print xyz."])
     [
         [CoqSentence(sentence='Example xyz (H: False): True.',

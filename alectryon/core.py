@@ -18,11 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Annotate segments of Coq code with responses and goals."""
-
-__version__ = "0.2"
-__author__ = 'Clément Pit-Claudel'
-
 from collections import namedtuple
 from collections.abc import Iterable
 from textwrap import indent
@@ -33,7 +28,6 @@ from subprocess import Popen, PIPE, STDOUT, check_output
 from . import sexp as sx
 
 DEBUG = False
-GENERATOR = "Alectryon v{}".format(__version__)
 
 def debug(text, prefix):
     if isinstance(text, (bytes, bytearray)):
