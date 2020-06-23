@@ -36,7 +36,7 @@ class Gensym():
     def __init__(self):
         self.counters = defaultdict(lambda: -1)
 
-    def next(self, prefix):
+    def __call__(self, prefix):
         self.counters[prefix] += 1
         return hex(self.counters[prefix]).replace("0x", prefix)
 
@@ -81,7 +81,7 @@ class HtmlWriter():
     def gen_goals_html(self, first, more):
         self.gen_goal_html(first)
         if more:
-            nm = self.gensym.next("chk")
+            nm = self.gensym("chk")
             tags.input(type="checkbox", id=nm, cls="coq-extra-goals-toggle")
             lbl = "{} more goal{}".format(len(more), "s" * (len(more) > 1))
             tags.label(lbl, cls="coq-extra-goals-label", **{'for': nm})
@@ -95,14 +95,14 @@ class HtmlWriter():
         #       fr.annots['in'], fr.annots['goals'], fr.annots['messages'])
         if fr.goals or fr.responses:
             tag = tags.label
-            nm = attrs['for'] = self.gensym.next("chk")
+            nm = attrs['for'] = self.gensym("chk")
             chk = { "checked": "checked" } if fr.annots.unfold else dict()
             tags.input(type="checkbox", id=nm, cls="coq-toggle", **chk)
         if fr.annots['in']:
             tag(self.highlight(fr.contents), cls="coq-input", **attrs)
 
     def gen_output_html(self, fr):
-        id = self.gensym.next("goal")
+        id = self.gensym("goal")
         wrapper = tags.div(cls="coq-output-sticky-wrapper")
         with tags.div(cls="coq-output", id=id).add(wrapper):
             if fr.responses:
