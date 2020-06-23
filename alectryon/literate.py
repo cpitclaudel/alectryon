@@ -10,8 +10,6 @@ from collections import namedtuple, deque
 ## Utilities
 ## =========
 
-Line = namedtuple("Line", "num s indent")
-
 class StringView:
     def __init__(self, s, beg=0, end=None):
         end = end if end is not None else len(s)
@@ -48,10 +46,10 @@ class StringView:
 
     def split(self, sep):
         beg, chunks = self.beg, []
-        while True:
+        while beg <= self.end:
             end = self.s.find(sep, beg, self.end)
             if end < 0:
-                break
+                end = self.end
             chunks.append(StringView(self.s, beg, end))
             beg = end + 1
         return chunks
@@ -76,9 +74,22 @@ class StringView:
     def isspace(self):
         return bool(self.match(StringView.BLANKS))
 
+class Line(namedtuple("Line", "num s indent")):
+    def __len__(self):
+        return len(self.s)
+
+    def __str__(self):
+        return self.indent + str(self.s)
+
+    def isspace(self):
+        return self.s.isspace()
+
+    def strip_indent(self, n):
+        indent = self.indent[n:]
+        s = self.s[max(0, n - len(self.indent)):]
+        return Line(self.num, s, indent)
+
 def blank(line):
-    if isinstance(line, Line):
-        line = line.s
     return (not line) or line.isspace()
 
 def strip_block(lines, beg, end):
@@ -233,7 +244,7 @@ LIT_CLOSE = re.compile(r"[ \t]*[|]?[*][)]\Z")
 DEFAULT_HEADER = ".. coq::"
 DIRECTIVE = re.compile(r"([ \t]*)([.][.] coq::.*)?")
 
-Lit = namedtuple("Lit", "lines suffix indent")
+Lit = namedtuple("Lit", "lines directive indent")
 CodeBlock = namedtuple("CodeBlock", "lines indent")
 
 def lit(lines, indent):
@@ -245,7 +256,7 @@ def lit(lines, indent):
         strip_deque(lines)
     else:
         directive = indent + DEFAULT_HEADER
-    return Lit(lines, suffix=directive, indent=indent)
+    return Lit(lines, directive=directive, indent=indent)
 
 def number_lines(span, start, indent):
     lines = span.split("\n")
@@ -257,9 +268,9 @@ def gen_rst(spans):
     for span in spans:
         if isinstance(span, Comment):
             linum, lines = number_lines(span.v.trim(LIT_OPEN, LIT_CLOSE), linum, "")
-            span = lit(lines, indent)
-            indent, prefix = span.indent, ("", span.suffix)
-            yield from span.lines
+            litspan = lit(lines, indent)
+            indent, prefix = litspan.indent, ("", litspan.directive)
+            yield from litspan.lines
         else:
 
             linum, lines = number_lines(span.v, linum, indent + "   ")
@@ -285,49 +296,47 @@ def isolate_literate_comments(code, spans):
         yield Code(code_acc)
 
 def coq2rst(code):
-    ls = ((l.indent + str(l.s) if isinstance(l, Line) else l)
-          for l in gen_rst(isolate_literate_comments(code, coq_partition(code))))
-    return "\n".join(ls)
+    lines = gen_rst(isolate_literate_comments(code, coq_partition(code)))
+    return "\n".join(str(l) for l in lines)
 
 # reStructuredText → Coq
 # ======================
 
-import docutils.nodes
-import docutils.parsers.rst
-from docutils import nodes, parsers
-
-# ReST parsing
+# reST parsing
 # ------------
 
-class coqnode(nodes.inline):
-    pass
+# A previous version of this code used the docutils parsers directly.  This
+# would be a better approach in theory, but in practice it doesn't work well,
+# because the reST parser tends to throw errors and bail out when it encounters
+# malformed text (maybe a configuration issue?).  Hence the approach below, but
+# note that it detects *all* ‘.. coq::’ blocks, including quoted ones.
 
-class CoqDirective(parsers.rst.Directive):
-    optional_arguments = 1
-    final_argument_whitespace = True
-    has_content = True
-
-    def rel_line(self, lineno):
-        source, line = self.state_machine.get_source_and_line(lineno)
-        return line if source == self.state_machine.document['source'] else None
-
-    def run(self):
-        line, content_line = self.rel_line(self.lineno), self.rel_line(self.content_offset)
-        if line is None: # Skip ‘.. coq’ directives from included files
-            return []
-        assert content_line is not None
-        end = content_line + len(self.content) + 1
-        return [coqnode(span=(line - 1, end - 1))] # Use 0-indexed linums
-
-parsers.rst.directives.register_directive("coq", CoqDirective)
+COQ_BLOCK = re.compile(r"""
+^(?P<indent>[ \t]*)[.][.][ ]coq::.*
+(?P<body>
+ (?:\n
+    (?:[ \t]*\n)*
+    (?P=indent)[ ][ ][ ].*$)*)
+""", re.VERBOSE | re.MULTILINE)
 
 def rst_partition(s):
-    parser = parsers.rst.Parser()
-    settings = docutils.frontend.OptionParser((parsers.rst.Parser,)).get_default_values()
-    document = docutils.utils.new_document("<input>", settings)
-    parser.parse(s, document)
-    for node in document.traverse(coqnode):
-        yield node['span']
+    beg, linum = 0, 0
+    for m in COQ_BLOCK.finditer(s):
+        indent = m.group("indent")
+        rst = StringView(s, beg, m.start())
+        block = StringView(s, *m.span())
+
+        linum, rst_lines = number_lines(rst, linum, "")
+        linum, block_lines = number_lines(block, linum, "")
+        directive = block_lines.popleft()
+
+        yield Lit(rst_lines, directive=directive, indent=None)
+        yield CodeBlock(block_lines, indent=len(indent))
+        beg = m.end()
+    if beg < len(s):
+        rst = StringView(s, beg, len(s))
+        linum, lines = number_lines(rst, linum, "")
+        yield Lit(lines, directive=None, indent=None)
 
 # Conversion
 # ----------
@@ -338,57 +347,42 @@ INDENTATION = re.compile("^[ \t]*")
 def indentation(line):
     return INDENTATION.match(line).end()
 
-def fmt_rst_block(lines, directive, beg, end, keep_empty):
-    if beg == end and not directive:
+def trim_rst_block(block, last_indent):
+    strip_deque(block.lines)
+
+    directive = block.directive
+    keep_empty = directive is not None
+    if directive and str(directive).strip() == DEFAULT_HEADER and block.indent == last_indent:
+        directive = None
+
+    if not block.lines and not directive:
         if keep_empty:
             yield "(*||*)"
     else:
         yield "(*|"
-        yield from islice(lines, beg, end)
+        yield from block.lines
         if directive:
-            yield ""
+            if block.lines:
+                yield ""
             yield directive
         yield "|*)"
 
-def trim_rst_block(lines, directive, indent, lit_beg, lit_end):
-    keep_empty = directive is not None
-    lit_beg, lit_end = strip_block(lines, lit_beg, lit_end)
-
-    directive_indent = indentation(directive) if directive else indent
-    if directive and directive.strip() == DEFAULT_HEADER and directive_indent == indent:
-        directive = None
-
-    if directive:
-        indent = directive_indent
-    elif lit_beg < lit_end:
-        indent = indentation(lines[lit_end - 1])
-
-    return indent, "\n".join(fmt_rst_block(lines, directive, lit_beg, lit_end, keep_empty))
-
-def strip_indent(line, indent):
-    if not blank(line[:indent]):
-        MSG = "Unexpected indentation: {!r} (expected at least {} spaces)"
-        raise ValueError(MSG.format(line, indent))
-    return line[indent:]
-
-def trim_code_block(lines, indent, code_beg, code_end):
-    code_beg, code_end = strip_block(lines, code_beg, code_end)
-    return "\n".join(strip_indent(lines[linum], indent) for linum in range(code_beg, code_end))
-
-def gen_coq(s):
-    lines = s.splitlines()
-    rst_beg, last_indent = 0, 0
-    for (beg, end) in rst_partition(s):
-        last_indent, rst = trim_rst_block(lines, lines[beg], last_indent, rst_beg, beg)
-        yield rst
-        yield trim_code_block(lines, last_indent + 3, beg + 1, end)
-        rst_beg = end
-    _, rst = trim_rst_block(lines, None, last_indent, rst_beg, len(lines))
-    if rst:
-        yield rst
+def gen_coq(blocks):
+    last_indent = 0
+    for idx, block in enumerate(blocks):
+        if isinstance(block, Lit):
+            if idx > 0:
+                yield ""
+            yield from trim_rst_block(block, last_indent)
+            yield ""
+        elif isinstance(block, CodeBlock):
+            for line in strip_deque(block.lines):
+                yield line.strip_indent(block.indent + 3)
+        last_indent = block.indent
 
 def rst2coq(rst):
-    return "\n\n".join(gen_coq(rst))
+    lines = gen_coq(rst_partition(rst))
+    return "\n".join(str(l) for l in lines)
 
 # CLI
 # ===
