@@ -5,7 +5,96 @@ import re
 import textwrap
 from enum import Enum
 from itertools import islice
-from collections import namedtuple
+from collections import namedtuple, deque
+
+## Utilities
+## =========
+
+Line = namedtuple("Line", "num s indent")
+
+class StringView:
+    def __init__(self, s, beg=0, end=None):
+        end = end if end is not None else len(s)
+        self.s, self.beg, self.end = s, beg, end
+
+    def __len__(self):
+        return self.end - self.beg
+
+    def __getitem__(self, idx):
+        if isinstance(idx, slice):
+            beg = self.beg + (idx.start or 0)
+            if idx.stop is None:
+                end = self.end
+            elif idx.stop < 0:
+                end = self.end + idx.stop
+            else:
+                end = self.beg + idx.stop
+            return StringView(self.s, beg, end)
+        return self.s[self.beg + idx]
+
+    def __add__(self, other):
+        if self.s is not other.s:
+            raise ValueError("Cannot concatenate {!r} and {!r}".format(self, other))
+        if self.end != other.beg:
+            raise ValueError("Cannot concatenate [{}:{}] and [{}:{}]".format(
+                self.beg, self.end, other.beg, other.end))
+        return StringView(self.s, self.beg, other.end)
+
+    def __str__(self):
+        return self.s[self.beg:self.end]
+
+    def __repr__(self):
+        return repr(str(self))
+
+    def split(self, sep):
+        beg, chunks = self.beg, []
+        while True:
+            end = self.s.find(sep, beg, self.end)
+            if end < 0:
+                break
+            chunks.append(StringView(self.s, beg, end))
+            beg = end + 1
+        return chunks
+
+    def match(self, regexp):
+        return regexp.match(self.s, self.beg, self.end)
+
+    def search(self, regexp):
+        return regexp.search(self.s, self.beg, self.end)
+
+    def trim(self, beg, end):
+        v = self
+        b = v.match(beg)
+        if b:
+            v = v[len(b.group()):]
+        e = v.search(end)
+        if e:
+            v = v[:-len(e.group())]
+        return v
+
+    BLANKS = re.compile(r"\s+\Z")
+    def isspace(self):
+        return bool(self.match(StringView.BLANKS))
+
+def blank(line):
+    if isinstance(line, Line):
+        line = line.s
+    return (not line) or line.isspace()
+
+def strip_block(lines, beg, end):
+    while beg < len(lines) and blank(lines[beg]):
+        beg += 1
+    while end > beg and blank(lines[end - 1]):
+        end -= 1
+    return (beg, end)
+
+def strip_deque(lines):
+    beg, end = strip_block(lines, 0, len(lines))
+    for _ in range(end, len(lines)):
+        lines.pop()
+    for _ in range(beg):
+        lines.popleft()
+    return lines
 
 # Coq → reStructuredText
 # ======================
@@ -13,8 +102,8 @@ from collections import namedtuple
 # Coq parsing
 # -----------
 
-Code = namedtuple("Code", "s")
-Comment = namedtuple("Comment", "s")
+Code = namedtuple("Code", "v")
+Comment = namedtuple("Comment", "v")
 
 class Token(Enum):
     COMMENT_OPEN = "COMMENT_OPEN"
@@ -59,24 +148,24 @@ SCANNERS = { state: regexp_opt(tokens)
              for (state, tokens) in TRANSITIONS.items() }
 
 def coq_partition(doc):
-    """Partition `doc` into runs of code and comments.
+    """Partition `doc` into runs of code and comments (both ``StringView``\\s).
 
     Example:
     >>> coq_partition("Code (* comment *) code")
-    [Code(s='Code '), Comment(s='(* comment *)'), Code(s=' code')]
+    [Code(v='Code '), Comment(v='(* comment *)'), Code(v=' code')]
 
 
     Tricky cases:
     >>> coq_partition("")
-    [Code(s='')]
+    [Code(v='')]
     >>> coq_partition("(**)(***)")
-    [Code(s=''), Comment(s='(**)'), Code(s=''), Comment(s='(***)'), Code(s='')]
+    [Code(v=''), Comment(v='(**)'), Code(v=''), Comment(v='(***)'), Code(v='')]
     >>> coq_partition("(*c*)(*c*c*)")
-    [Code(s=''), Comment(s='(*c*)'), Code(s=''), Comment(s='(*c*c*)'), Code(s='')]
+    [Code(v=''), Comment(v='(*c*)'), Code(v=''), Comment(v='(*c*c*)'), Code(v='')]
     >>> coq_partition('C "(*" C "(*""*)" C')
-    [Code(s='C "(*" C "(*""*)" C')]
+    [Code(v='C "(*" C "(*""*)" C')]
     >>> coq_partition('C (** "*)" *)')
-    [Code(s='C '), Comment(s='(** "*)" *)'), Code(s='')]
+    [Code(v='C '), Comment(v='(** "*)" *)'), Code(v='')]
     """
     pos = 0
     spans = []
@@ -94,12 +183,12 @@ def coq_partition(doc):
             if tok is Token.COMMENT_OPEN:
                 stack.pop()
                 stack.append((mstart, State.COMMENT))
-                spans.append(Code(doc[start:mstart]))
+                spans.append(Code(StringView(doc, start, mstart)))
             elif tok is Token.STRING_DELIM:
                 stack.append((mstart, State.STRING))
             elif tok is Token.EOF:
                 stack.pop()
-                spans.append(Code(doc[start:pos]))
+                spans.append(Code(StringView(doc, start, pos)))
                 break
             else:
                 assert False
@@ -116,7 +205,7 @@ def coq_partition(doc):
             elif tok is Token.COMMENT_CLOSE:
                 stack.pop()
                 stack.append((pos, State.CODE))
-                spans.append(Comment(doc[start:pos]))
+                spans.append(Comment(StringView(doc, start, pos)))
             elif tok is Token.STRING_DELIM:
                 stack.append((mstart, State.STRING))
             else:
@@ -139,63 +228,73 @@ def coq_partition(doc):
 # ----------
 
 LIT_OPEN = re.compile(r"[(][*][|][ \t]*")
-LIT_CLOSE = re.compile(r"[ \t]*[|]?[*][)]")
-
-WSP_BEG = re.compile(r"\A\s*\n")
-WSP_END = re.compile(r"\n\s*\Z")
-
-def strip(s, *res):
-    for r in res:
-        s = r.sub("", s)
-    return s
+LIT_CLOSE = re.compile(r"[ \t]*[|]?[*][)]\Z")
 
 DEFAULT_HEADER = ".. coq::"
 DIRECTIVE = re.compile(r"([ \t]*)([.][.] coq::.*)?")
 
-Lit = namedtuple("Lit", "s suffix indent")
+Lit = namedtuple("Lit", "lines suffix indent")
+CodeBlock = namedtuple("CodeBlock", "lines indent")
 
-def lit(s):
-    m = DIRECTIVE.search(s, pos=s.rfind('\n') + 1)
-    indent, suffix = m.groups()
-    if suffix:
-        s = strip(s[:m.span()[0]], WSP_BEG, WSP_END)
-    return Lit(s, suffix=suffix or DEFAULT_HEADER, indent=indent)
+def lit(lines, indent):
+    strip_deque(lines)
+    m = lines and lines[-1].s.match(DIRECTIVE)
+    indent, directive = m.groups() if m else (indent, None)
+    if directive:
+        directive = lines.pop()
+        strip_deque(lines)
+    else:
+        directive = indent + DEFAULT_HEADER
+    return Lit(lines, suffix=directive, indent=indent)
+
+def number_lines(span, start, indent):
+    lines = span.split("\n")
+    d = deque(Line(num, s, indent) for (num, s) in enumerate(lines, start=start))
+    return start + len(lines) - 1, d
 
 def gen_rst(spans):
-    indent, prefix = "", DEFAULT_HEADER
+    linum, indent, prefix = 0, "", (DEFAULT_HEADER,)
     for span in spans:
         if isinstance(span, Comment):
-            span = lit(strip(span.s, LIT_OPEN, LIT_CLOSE, WSP_BEG, WSP_END))
-            indent, prefix = span.indent, "\n\n" + span.suffix + "\n\n"
-            yield span.s
+            linum, lines = number_lines(span.v.trim(LIT_OPEN, LIT_CLOSE), linum, "")
+            span = lit(lines, indent)
+            indent, prefix = span.indent, ("", span.suffix)
+            yield from span.lines
         else:
-            contents = strip(span.s, WSP_BEG, WSP_END)
-            if contents:
-                yield textwrap.indent(prefix, indent)
-                yield textwrap.indent(contents, indent + "   ")
-                yield "\n\n"
 
-def isolate_literate_comments(spans):
-    code_acc = ""
+            linum, lines = number_lines(span.v, linum, indent + "   ")
+            strip_deque(lines)
+            if lines:
+                yield from prefix
+                yield ""
+                yield from lines
+                yield ""
+
+def isolate_literate_comments(code, spans):
+    code = StringView(code, 0, len(code))
+    code_acc = code[0:0]
     for span in spans:
-        if isinstance(span, Comment) and LIT_OPEN.match(span.s):
+        if isinstance(span, Comment) and span.v.match(LIT_OPEN):
             if code_acc:
                 yield Code(code_acc)
-                code_acc = ""
-            yield Comment(span.s)
+            code_acc = code[span.v.end:span.v.end]
+            yield span
         else:
-            code_acc += span.s
+            code_acc += span.v
     if code_acc:
         yield Code(code_acc)
 
 def coq2rst(code):
-    return "".join(gen_rst(isolate_literate_comments(coq_partition(code))))
+    ls = ((l.indent + str(l.s) if isinstance(l, Line) else l)
+          for l in gen_rst(isolate_literate_comments(code, coq_partition(code))))
+    return "\n".join(ls)
 
 # reStructuredText → Coq
 # ======================
 
-from docutils import nodes, parsers
+import docutils.nodes
 import docutils.parsers.rst
+from docutils import nodes, parsers
 
 # ReST parsing
 # ------------
@@ -232,16 +331,6 @@ def rst_partition(s):
 
 # Conversion
 # ----------
-
-def blank(line):
-    return line == "" or line.isspace()
-
-def strip_block(lines, beg, end):
-    while beg < len(lines) and blank(lines[beg]):
-        beg += 1
-    while end > beg and blank(lines[end - 1]):
-        end -= 1
-    return (beg, end)
 
 # FIXME either get rid of \t or disallow it
 INDENTATION = re.compile("^[ \t]*")
