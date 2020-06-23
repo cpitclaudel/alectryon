@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 
-import sys
 import re
-import textwrap
 from enum import Enum
-from itertools import islice
 from collections import namedtuple, deque
 
 ## Utilities
@@ -387,12 +384,10 @@ def rst2coq(rst):
 # CLI
 # ===
 
-# FIXME replace by cli.py
-import argparse
-import sys
-from os import path
-
 def parse_arguments():
+    import argparse
+    from os import path
+
     DESCRIPTION = "Convert between reStructuredText and literate Coq."
     parser = argparse.ArgumentParser(description=DESCRIPTION)
 
@@ -419,6 +414,8 @@ def parse_arguments():
     return args
 
 def main():
+    import sys
+
     args = parse_arguments()
     if args.input == "-":
         contents = sys.stdin.read()
@@ -428,7 +425,7 @@ def main():
     sys.stdout.write(args.fn(contents))
 
 def doctest():
-    import doctest
+    import doctest, sys
     doctest.debug(sys.modules.get('__main__'), "__main__.partition", pm=True)
 
 if __name__ == '__main__':
