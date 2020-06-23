@@ -46,8 +46,11 @@ contents following the checkbox are wrapped in a container with class
 
 import re
 
+import docutils
+
 from docutils.nodes import raw, inline, docinfo, Special, Invisible, Element, container
 from docutils.parsers.rst import directives, roles, Directive
+from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
 
 from . import transforms
@@ -55,11 +58,20 @@ from .core import annotate
 from .html import HtmlWriter
 from .pygments import highlight
 
+# reST extensions
+# ===============
+
+# Nodes
+# -----
+
 class alectryon_pending(Special, Invisible, Element):
     pass
 
 class alectryon_pending_toggle(Special, Invisible, Element):
     pass
+
+# Transforms
+# ----------
 
 TOGGLE_HTML = """
 <input type="checkbox" class="alectryon-toggle" id="alectryon-toggle-{id}" />
@@ -144,6 +156,9 @@ class AlectryonTransform(Transform):
         self.apply_coq()
         self.apply_toggle()
 
+# Directives
+# ----------
+
 INDENTATION_RE = re.compile("^ *")
 def measure_indentation(line):
     return INDENTATION_RE.match(line).end()
@@ -190,13 +205,19 @@ class CoqDirective(Directive):
     def run(self):
         self.assert_has_content()
 
-        document = self.state_machine.document
-        if not getattr(document, 'alectryon_transform_added', False):
-            document.alectryon_transform_added = True
-            document.transformer.add_transform(AlectryonTransform)
+        stm = self.state_machine
+        pos = stm.get_source_and_line(self.lineno)
+        content_pos = stm.get_source_and_line(self.content_offset)
+
+        if not getattr(stm.document, 'alectryon_transform_added', False):
+            stm.document.alectryon_transform_added = True
+            stm.document.transformer.add_transform(AlectryonTransform)
+
         arguments = self.arguments[0].split() if self.arguments else []
         lines = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
-        return [alectryon_pending(content="\n".join(lines), options=set(arguments))]
+        return [alectryon_pending(
+            content="\n".join(lines),
+            pos=pos, content_pos=content_pos, options=set(arguments))]
 
 class AlectryonToggleDirective(Directive):
     """Display a checkbox allowing readers to show all output at once."""
@@ -210,9 +231,15 @@ class AlectryonToggleDirective(Directive):
     def run(self):
         return [alectryon_pending_toggle()]
 
+# Roles
+# -----
+
 def alectryon_bubble(# pylint: disable=dangerous-default-value
         _name, rawtext, _text, _lineno, _inliner, _options={}, _content=[]):
     return [inline(rawtext, classes=['alectryon-bubble'])], []
+
+# Entry point
+# ===========
 
 def register():
     """Tell Docutils about our directives (.. coq and .. alectryon-toggle).
