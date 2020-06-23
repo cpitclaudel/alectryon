@@ -71,20 +71,20 @@ class StringView:
     def isspace(self):
         return bool(self.match(StringView.BLANKS))
 
-class Line(namedtuple("Line", "num s indent")):
+class Line(namedtuple("Line", "num view indent")):
     def __len__(self):
-        return len(self.s)
+        return len(self.view)
 
     def __str__(self):
-        return self.indent + str(self.s)
+        return self.indent + str(self.view)
 
     def isspace(self):
-        return self.s.isspace()
+        return self.view.isspace()
 
     def strip_indent(self, n):
         indent = self.indent[n:]
-        s = self.s[max(0, n - len(self.indent)):]
-        return Line(self.num, s, indent)
+        view = self.view[max(0, n - len(self.indent)):]
+        return Line(self.num, view, indent)
 
 def blank(line):
     return (not line) or line.isspace()
@@ -103,6 +103,25 @@ def strip_deque(lines):
     for _ in range(beg):
         lines.popleft()
     return lines
+
+def mark_point(lines, point, marker):
+    lines = list(lines) # Could use a 2-element ring buffer instead
+    for idx, l in enumerate(lines):
+        last_line = idx + 1 == len(lines)
+        if (point is not None
+            and isinstance(l, Line)
+            and (l.view.end >= point or last_line)):
+            cutoff = max(0, min(len(l.view), point - l.view.beg))
+            s = str(l.view[:cutoff]) + marker + str(l.view[cutoff:])
+            yield Line(l.num, StringView(s), indent=l.indent)
+            point = None
+        elif point is not None and last_line:
+            yield marker + l
+        else:
+            yield l
+
+def join_lines(lines):
+    return "\n".join(str(l) for l in lines)
 
 # Coq → reStructuredText
 # ======================
@@ -246,7 +265,7 @@ CodeBlock = namedtuple("CodeBlock", "lines indent")
 
 def lit(lines, indent):
     strip_deque(lines)
-    m = lines and lines[-1].s.match(DIRECTIVE)
+    m = lines and lines[-1].view.match(DIRECTIVE)
     indent, directive = m.groups() if m else (indent, None)
     if directive:
         directive = lines.pop()
@@ -261,19 +280,19 @@ def number_lines(span, start, indent):
     return start + len(lines) - 1, d
 
 def gen_rst(spans):
-    linum, indent, prefix = 0, "", (DEFAULT_HEADER,)
+    linum, indent, prefix = 0, "", DEFAULT_HEADER
     for span in spans:
         if isinstance(span, Comment):
             linum, lines = number_lines(span.v.trim(LIT_OPEN, LIT_CLOSE), linum, "")
             litspan = lit(lines, indent)
-            indent, prefix = litspan.indent, ("", litspan.directive)
+            indent, prefix = litspan.indent, litspan.directive
             yield from litspan.lines
+            yield ""
         else:
-
             linum, lines = number_lines(span.v, linum, indent + "   ")
             strip_deque(lines)
             if lines:
-                yield from prefix
+                yield prefix
                 yield ""
                 yield from lines
                 yield ""
@@ -292,9 +311,14 @@ def isolate_literate_comments(code, spans):
     if code_acc:
         yield Code(code_acc)
 
-def coq2rst(code):
-    lines = gen_rst(isolate_literate_comments(code, coq_partition(code)))
-    return "\n".join(str(l) for l in lines)
+def coq2rst_lines(coq):
+    return gen_rst(isolate_literate_comments(coq, coq_partition(coq)))
+
+def coq2rst(coq):
+    return join_lines(coq2rst_lines(coq))
+
+def coq2rst_marked(coq, point, marker):
+    return join_lines(mark_point(coq2rst_lines(coq), point, marker))
 
 # reStructuredText → Coq
 # ======================
@@ -377,9 +401,14 @@ def gen_coq(blocks):
                 yield line.strip_indent(block.indent + 3)
         last_indent = block.indent
 
+def rst2coq_lines(rst):
+    return gen_coq(rst_partition(rst))
+
 def rst2coq(rst):
-    lines = gen_coq(rst_partition(rst))
-    return "\n".join(str(l) for l in lines)
+    return join_lines(rst2coq_lines(rst))
+
+def rst2coq_marked(rst, point, marker):
+    return join_lines(mark_point(rst2coq_lines(rst), point, marker))
 
 # CLI
 # ===

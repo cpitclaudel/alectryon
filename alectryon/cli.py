@@ -69,13 +69,13 @@ def dump_html_standalone(snippets, fname):
 
     return doc.render(pretty=False)
 
-def coq_to_rst(coq):
-    from .literate import coq2rst
-    return coq2rst(coq)
+def coq_to_rst(coq, point, marker):
+    from .literate import coq2rst_marked
+    return coq2rst_marked(coq, point, marker)
 
-def rst_to_coq(coq):
-    from .literate import rst2coq
-    return rst2coq(coq)
+def rst_to_coq(coq, point, marker):
+    from .literate import rst2coq_marked
+    return rst2coq_marked(coq, point, marker)
 
 COQ_TYPE_NAMES = {
     "CoqHypothesis": "hypothesis",
@@ -213,6 +213,11 @@ and produce reStructuredText, HTML, or JSON output.""")
     parser.add_argument("--output-directory", default=".",
                         help=OUT_DIR_HELP)
 
+    MARK_POINT_HELP = "Mark a point in the output with a given marker."
+    parser.add_argument("--mark-point", nargs=2, default=(None, None),
+                        metavar=("point", "marker"),
+                        help=MARK_POINT_HELP)
+
 
     SUBP_HELP = "Pass arguments to the SerAPI process"
     subp = parser.add_argument_group("Subprocess arguments", SUBP_HELP)
@@ -251,8 +256,10 @@ and produce reStructuredText, HTML, or JSON output.""")
     for pair in args.coq_args_Q:
         args.serapi_args.extend(("-Q", ",".join(pair)))
 
-    args.pipelines = [(fpath, resolve_pipeline(fpath, args))
-                      for fpath in args.input]
+    try:
+        fill_in_arguments(args)
+    except argparse.ArgumentTypeError as e:
+        parser.error(str(e))
 
     return args
 
