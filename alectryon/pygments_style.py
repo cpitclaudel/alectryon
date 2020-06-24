@@ -53,7 +53,7 @@ class TangoSubtleStyle(Style):
     A style inspired by the color palette of the Tango icon theme.
     """
 
-    background_color = "#eeeeec"
+    background_color = "none"
     default_style = ""
 
     styles = {
