@@ -29,8 +29,18 @@ from . import transforms, __version__
 
 GENERATOR = "Alectryon v{}".format(__version__)
 
-SCRIPT_PATH = path.dirname(path.realpath(__file__))
-ASSETS_PATH = path.join(path.dirname(SCRIPT_PATH), "assets")
+_SELF_PATH = path.dirname(path.realpath(__file__))
+ASSETS_PATH = path.join(path.dirname(_SELF_PATH), "assets")
+CSS_ASSETS = ("alectryon.css",)
+JS_ASSETS = ("alectryon-slideshow.js",)
+
+def copy_assets(output_directory):
+    from shutil import copy, SameFileError
+    for name in CSS_ASSETS + JS_ASSETS:
+        try:
+            copy(path.join(ASSETS_PATH, name), output_directory)
+        except SameFileError:
+            pass
 
 class Gensym():
     def __init__(self):

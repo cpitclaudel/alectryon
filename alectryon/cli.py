@@ -44,6 +44,9 @@ def annotate_chunks(chunks, serapi_args):
     from .core import annotate
     return annotate(chunks, serapi_args)
 
+DOCUTILS_CSS = "https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutils_basic.css"
+MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"
+
 def gen_docutils_html(document):
     pass # FIXME
 
@@ -102,11 +105,16 @@ def gen_html_snippets(annotated):
     from .pygments import highlight
     return HtmlWriter(highlight).gen_html(annotated)
 
-# FIXME copy assets to current directory
+def copy_assets(state, no_assets, output_directory):
+    from .html import copy_assets as cp
+    if not no_assets:
+        cp(output_directory)
+    return state
+
 def dump_html_standalone(snippets, fname):
     from dominate import tags, document
     from .core import SerAPI
-    from .html import gen_header, GENERATOR
+    from .html import gen_header, GENERATOR, CSS_ASSETS, JS_ASSETS
     from .pygments import FORMATTER
 
     doc = document(title=fname)
@@ -114,8 +122,10 @@ def dump_html_standalone(snippets, fname):
 
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
-    doc.head.add(tags.link(rel="stylesheet", href="alectryon.css"))
-    doc.head.add(tags.script(src="alectryon-slideshow.js"))
+    for css in CSS_ASSETS:
+        doc.head.add(tags.link(rel="stylesheet", href=css))
+    for js in JS_ASSETS:
+        doc.head.add(tags.script(src=js))
 
     FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
     doc.head.add(tags.link(rel="stylesheet", href=FIRA_CODE_CDN))
@@ -173,7 +183,7 @@ PIPELINES = {
     },
     'coq': {
         'webpage': (parse_coq_plain, annotate_chunks, gen_html_snippets,
-                    dump_html_standalone, write_file(".v.html")),
+                    dump_html_standalone, copy_assets, write_file(".v.html")),
         'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
                           dump_html_snippets, write_file(".snippets.html")),
         'lint': (lint_coq_rst, write_file(".lint")),
@@ -292,6 +302,11 @@ and produce reStructuredText, HTML, or JSON output.""")
     OUT_DIR_HELP = "Set the output directory."
     parser.add_argument("--output-directory", default=".",
                         help=OUT_DIR_HELP)
+
+    NO_ASSETS_HELP = ("When creating webpages, " +
+                      "do not copy assets along the generated file.")
+    parser.add_argument("--no-assets", action="store_true",
+                        default=False, help=NO_ASSETS_HELP)
 
     MARK_POINT_HELP = "Mark a point in the output with a given marker."
     parser.add_argument("--mark-point", nargs=2, default=(None, None),
