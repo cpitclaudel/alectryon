@@ -30,15 +30,21 @@ from . import transforms, __version__
 GENERATOR = "Alectryon v{}".format(__version__)
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
-ASSETS_PATH = path.join(path.dirname(_SELF_PATH), "assets")
-CSS_ASSETS = ("alectryon.css",)
-JS_ASSETS = ("alectryon-slideshow.js",)
 
-def copy_assets(output_directory):
+class ASSETS:
+    PATH = path.join(path.dirname(_SELF_PATH), "assets")
+
+    ALECTRYON_CSS = ("alectryon.css",)
+    ALECTRYON_JS = ("alectryon-slideshow.js",)
+
+    PYGMENTS_CSS = ("tango_subtle.css", "tango_subtle.min.css")
+    DOCUTILS_CSS = ("docutils_basic.css",)
+
+def copy_assets(output_directory, assets=ASSETS.ALECTRYON_CSS + ASSETS.ALECTRYON_JS):
     from shutil import copy, SameFileError
-    for name in CSS_ASSETS + JS_ASSETS:
+    for name in assets:
         try:
-            copy(path.join(ASSETS_PATH, name), output_directory)
+            copy(path.join(ASSETS.PATH, name), output_directory)
         except SameFileError:
             pass
 

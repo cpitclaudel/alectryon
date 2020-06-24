@@ -49,7 +49,7 @@ MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?c
 
 def _gen_docutils_html(source, fpath, Parser, Reader):
     from .core import DEBUG
-    from .html import CSS_ASSETS
+    from .html import ASSETS
     from docutils.core import publish_string
     from .docutils import register
 
@@ -59,13 +59,15 @@ def _gen_docutils_html(source, fpath, Parser, Reader):
     # to "unicode" causes reST to generate a bad <meta> tag, and setting
     # input_encoding breaks the ‘.. include’ directive.
 
+    css = [*ASSETS.ALECTRYON_CSS, *ASSETS.DOCUTILS_CSS, *ASSETS.PYGMENTS_CSS]
     settings_overrides = {
         'traceback': DEBUG,
-        'embed_stylesheet': False,
-        'syntax_highlight': 'none',
+        'embed_stylesheet': True,
         'stylesheet_path': None,
+        'stylesheet_dirs': [ASSETS.PATH],
         'math_output': "MathJax " + MATHJAX_URL,
-        'stylesheet': ",".join((*CSS_ASSETS, DOCUTILS_CSS)),
+        'stylesheet': css,
+        'syntax_highlight': 'short',
         'input_encoding': 'utf-8',
         'output_encoding': 'utf-8'
     }
@@ -133,7 +135,7 @@ def copy_assets(state, no_assets, output_directory):
 def dump_html_standalone(snippets, fname):
     from dominate import tags, document
     from .core import SerAPI
-    from .html import gen_header, GENERATOR, CSS_ASSETS, JS_ASSETS
+    from .html import gen_header, GENERATOR, ASSETS
     from .pygments import FORMATTER
 
     doc = document(title=fname)
@@ -141,9 +143,9 @@ def dump_html_standalone(snippets, fname):
 
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
-    for css in CSS_ASSETS:
+    for css in ASSETS.ALECTRYON_CSS:
         doc.head.add(tags.link(rel="stylesheet", href=css))
-    for js in JS_ASSETS:
+    for js in ASSETS.ALECTRYON_JS:
         doc.head.add(tags.script(src=js))
 
     FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
@@ -209,12 +211,12 @@ PIPELINES = {
         'rst': (rst_to_coq, write_file(".v.rst"))
     },
     'coq+rst': {
-        'webpage': (gen_rstcoq_html, copy_assets, write_file(".html")),
+        'webpage': (gen_rstcoq_html, write_file(".html")),
         'lint': (lint_rstcoq, write_file(".lint")),
         'rst': (coq_to_rst, write_file(".v.rst"))
     },
     'rst': {
-        'webpage': (gen_rst_html, copy_assets, write_file(".html")),
+        'webpage': (gen_rst_html, write_file(".html")),
         'lint': (lint_rst, write_file(".lint")),
         'coq': (rst_to_coq, write_file(".v")),
         'coq+rst': (rst_to_coq, write_file(".v"))
