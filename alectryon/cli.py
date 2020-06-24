@@ -188,6 +188,10 @@ def fill_in_arguments(args):
         MSG = "argument --output: Not valid with multiple inputs"
         raise argparse.ArgumentTypeError(MSG)
 
+    if args.stdin_filename and "-" not in args.input:
+        MSG = "argument --stdin-filename: input must be '-'"
+        raise argparse.ArgumentTypeError(MSG)
+
     args.pipelines = [(fpath, resolve_pipeline(fpath, args))
                       for fpath in args.input]
 
@@ -202,6 +206,10 @@ and produce reStructuredText, HTML, or JSON output.""")
 
     INPUT_FILES_HELP = "Input files"
     parser.add_argument("input", nargs="+", help=INPUT_FILES_HELP)
+
+    INPUT_STDIN_NAME_HELP = "Name of file passed on stdin, if any"
+    parser.add_argument("--stdin-filename", default=None,
+                        help=INPUT_STDIN_NAME_HELP)
 
     FRONTEND_HELP = "Choose a frontend. Defaults: "
     FRONTEND_HELP += "; ".join("{!r} → {}".format(ext, frontend)
@@ -283,12 +291,16 @@ def call_pipeline_step(step, state, ctx):
     params = list(inspect.signature(step).parameters.keys())[1:]
     return step(state, **{p: ctx[p] for p in params})
 
-def read_input(fpath):
+def read_input(fpath, args):
     if fpath == "-":
-        return "-", sys.stdin.read()
-    fname = os.path.splitext(os.path.basename(fpath))[0]
+        return (args.stdin_filename or "-"), "-", sys.stdin.read()
+    fname = os.path.basename(fpath)
+    for ext, _ in MODES_BY_EXTENSION:
+        if fpath.endswith(ext):
+            fname = fpath[:-len(ext)]
+            break
     with open(fpath) as f:
-        return fname, f.read()
+        return fpath, fname, f.read()
 
 def write_output(in_fname, out_fpath, outdir, contents, ext):
     if out_fpath == "-" or (out_fpath is None and in_fname == "-"):
@@ -306,7 +318,7 @@ def main():
         core.DEBUG = True
     try:
         for fpath, pipeline in args.pipelines:
-            fname, state = read_input(fpath)
+            fpath, fname, state = read_input(fpath, args)
             ctx = { "fpath": fpath, "fname": fname, **vars(args) }
             for step in pipeline:
                 state = call_pipeline_step(step, state, ctx)

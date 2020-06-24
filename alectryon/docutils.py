@@ -238,6 +238,85 @@ def alectryon_bubble(# pylint: disable=dangerous-default-value
         _name, rawtext, _text, _lineno, _inliner, _options={}, _content=[]):
     return [inline(rawtext, classes=['alectryon-bubble'])], []
 
+# Reader
+# ------
+
+class JsErrorPrinter:
+    @staticmethod
+    def json_of_message(level, message, source, line):
+        js = { "level": level,
+               "message": message,
+               "source": source,
+               "line": line }
+        return js
+
+    def __init__(self, stream, settings):
+        self.stream = stream
+        self.report_level = settings.report_level
+
+    def __call__(self, msg):
+        import json
+        message = msg.children[0].astext() if msg.children else "Unknown error"
+        level, source, line = msg['level'], msg['source'], msg.get('line', 1)
+        if level >= self.report_level:
+            level = docutils.utils.Reporter.levels[level].lower()
+            js = JsErrorPrinter.json_of_message(level, message, source, line)
+            json.dump(js, self.stream)
+            self.stream.write('\n')
+
+class CoqReSTParser(docutils.parsers.rst.Parser):
+    """A wrapper around the reStructuredText parser for literate Coq files."""
+
+    supported = ('coq',)
+    """Aliases this parser supports."""
+
+    settings_spec = ('Literate Coq Parser Options', None,
+                     docutils.parsers.rst.Parser.settings_spec[2])
+    config_section = 'Literate Coq parser'
+    config_section_dependencies = ('parsers',)
+
+    @staticmethod
+    def rst_lines(coq_input):
+        from .literate import coq2rst_lines, Line
+        last_line = 0
+        for line in coq2rst_lines(coq_input):
+            if isinstance(line, Line):
+                yield (str(line), line.num)
+                last_line = line.num
+            else:
+                assert isinstance(line, str)
+                yield (line, last_line)
+
+    @staticmethod
+    def coq_input_lines(coq_input, source):
+        from docutils.statemachine import StringList
+        lines = CoqReSTParser.rst_lines(coq_input)
+        initlist, items = zip(*((line, (source, i)) for (line, i) in lines))
+        return StringList(list(initlist), source, list(items))
+
+    def parse(self, inputstring, document):
+        """Parse `inputstring` and populate `document`, a document tree."""
+        self.setup_parse(inputstring, document)
+        # pylint: disable=attribute-defined-outside-init
+        self.statemachine = docutils.parsers.rst.states.RSTStateMachine(
+              state_classes=self.state_classes,
+              initial_state=self.initial_state,
+              debug=document.reporter.debug_flag)
+        lines = CoqReSTParser.coq_input_lines(inputstring, document['source'])
+        self.statemachine.run(lines, document, inliner=self.inliner)
+        if '' in roles._roles:
+            del roles._roles['']
+        self.finish_parse()
+
+class StandaloneCoqReSTReader(Reader):
+    def __init__(self, parser=None, parser_name=None, extra_transforms=None):
+        Reader.__init__(self, parser, parser_name)
+        self.extra_transforms = extra_transforms or []
+
+    def get_transforms(self):
+        # AlectryonTransform not added here because the CoqDirective does it
+        return Reader.get_transforms(self) + self.extra_transforms
+
 # Entry point
 # ===========
 
