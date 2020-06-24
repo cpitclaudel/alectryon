@@ -136,7 +136,7 @@ PIPELINES = {
     }
 }
 
-FRONTENDS_BY_EXTENSION = [('.v', "coq"), ('.json', "json"), ('.rst', "rst")]
+MODES_BY_EXTENSION = [('.v', "coq"), ('.json', "json"), ('.rst', "rst")]
 DEFAULT_BACKENDS = {
     'json': 'json',
     'coq': 'webpage',
@@ -144,13 +144,21 @@ DEFAULT_BACKENDS = {
     'rst': 'webpage' # FIXME
 }
 
-def infer_frontend(fpath):
-    for (ext, front) in FRONTENDS_BY_EXTENSION:
+def infer_mode(fpath, kind, arg):
+    for (ext, mode) in MODES_BY_EXTENSION:
         if fpath.endswith(ext):
-            return front
-    MSG = """argument --input: Not sure what to do with {!r}.
-Try passing --frontend?"""
-    raise argparse.ArgumentTypeError(MSG.format(fpath))
+            return mode
+    MSG = """{}: Not sure what to do with {!r}.
+Try passing {arg}?"""
+    raise argparse.ArgumentTypeError(MSG.format(fpath, kind, arg))
+
+def infer_frontend(fpath):
+    return infer_mode(fpath, "input", "--frontend")
+
+def infer_backend(frontend, out_fpath):
+    if out_fpath:
+        return infer_mode(out_fpath, "output", "--backend")
+    return DEFAULT_BACKENDS[frontend]
 
 def resolve_pipeline(fpath, args):
     frontend = args.frontend or infer_frontend(fpath)
@@ -158,7 +166,7 @@ def resolve_pipeline(fpath, args):
     assert frontend in PIPELINES
     supported_backends = PIPELINES[frontend]
 
-    backend = args.backend or DEFAULT_BACKENDS[frontend]
+    backend = args.backend or infer_backend(frontend, args.output)
     if backend not in supported_backends:
         MSG = """argument --backend: Frontend {!r} does not support backend {!r}: \
 expecting one of {}"""
@@ -197,7 +205,7 @@ and produce reStructuredText, HTML, or JSON output.""")
 
     FRONTEND_HELP = "Choose a frontend. Defaults: "
     FRONTEND_HELP += "; ".join("{!r} → {}".format(ext, frontend)
-                               for ext, frontend in FRONTENDS_BY_EXTENSION)
+                               for ext, frontend in MODES_BY_EXTENSION)
     FRONTEND_CHOICES = sorted(PIPELINES.keys())
     out.add_argument("--frontend", default=None, choices=FRONTEND_CHOICES,
                      help=FRONTEND_HELP)
