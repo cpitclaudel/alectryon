@@ -32,9 +32,70 @@ def load_json(contents):
 def parse_coq_plain(contents):
     return [contents]
 
+def coq_to_rst(coq, point, marker):
+    from .literate import coq2rst_marked
+    return coq2rst_marked(coq, point, marker)
+
+def rst_to_coq(coq, point, marker):
+    from .literate import rst2coq_marked
+    return rst2coq_marked(coq, point, marker)
+
 def annotate_chunks(chunks, serapi_args):
     from .core import annotate
     return annotate(chunks, serapi_args)
+
+def gen_docutils_html(document):
+    pass # FIXME
+
+def _init_docutils_settings(components):
+    from docutils.frontend import OptionParser
+    return OptionParser(components=components).get_default_values()
+
+def _lint_docutils(source, parser, document):
+    from io import StringIO
+    from .docutils import JsErrorPrinter
+    document.reporter.stream = False # Disable textual reporting
+    observer = JsErrorPrinter(StringIO(), document.settings)
+    document.reporter.attach_observer(observer)
+    parser.parse(source, document)
+    return observer.stream.getvalue()
+
+def _parse_docutils(source, parser, document):
+    parser.parse(source, document)
+    document.transformer.apply_transforms()
+    return document
+
+def _prepare_docutils_parser(fpath, Parser, Reader):
+    from docutils.utils import new_document
+    from .docutils import register
+    register()
+    parser = Parser()
+    reader = Reader(parser)
+    settings = _init_docutils_settings((Parser, Reader))
+    document = new_document(fpath, settings)
+    document.transformer.populate_from_components((parser, reader))
+    return parser, document
+
+def _prepare_coq_rst_parser(fpath):
+    from .docutils import CoqReSTParser, StandaloneCoqReSTReader
+    return _prepare_docutils_parser(fpath, CoqReSTParser, StandaloneCoqReSTReader)
+
+def _prepare_rst_parser(fpath):
+    from docutils.parsers.rst import Parser
+    from docutils.readers.standalone import Reader
+    return _prepare_docutils_parser(fpath, Parser, Reader)
+
+def parse_coq_rst(coq, fpath):
+    return _parse_docutils(coq, *_prepare_coq_rst_parser(fpath))
+
+def lint_coq_rst(coq, fpath):
+    return _lint_docutils(coq, *_prepare_coq_rst_parser(fpath))
+
+def parse_rst(rst, fpath):
+    return _parse_docutils(rst, *_prepare_rst_parser(fpath))
+
+def lint_rst(rst, fpath):
+    return _lint_docutils(rst, *_prepare_rst_parser(fpath))
 
 def gen_html_snippets(annotated):
     from .html import HtmlWriter
@@ -68,14 +129,6 @@ def dump_html_standalone(snippets, fname):
         root.add(snippet)
 
     return doc.render(pretty=False)
-
-def coq_to_rst(coq, point, marker):
-    from .literate import coq2rst_marked
-    return coq2rst_marked(coq, point, marker)
-
-def rst_to_coq(coq, point, marker):
-    from .literate import rst2coq_marked
-    return rst2coq_marked(coq, point, marker)
 
 COQ_TYPE_NAMES = {
     "CoqHypothesis": "hypothesis",
@@ -122,21 +175,24 @@ PIPELINES = {
         'webpage': (parse_coq_plain, annotate_chunks, gen_html_snippets,
                     dump_html_standalone, write_file(".v.html")),
         'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
-                          dump_html_snippets, write_file(".v.snippets.html")),
-        'rst': (rst_to_coq, write_file(".rst"))
+                          dump_html_snippets, write_file(".snippets.html")),
+        'lint': (lint_coq_rst, write_file(".lint")),
+        'rst': (rst_to_coq, write_file(".v.rst"))
     },
     'coq+rst': {
-        # 'webpage': (coq_to_rst, gen_rst_html),
-        'rst': (coq_to_rst, write_file(".rst"))
+        'webpage': (parse_coq_rst, gen_docutils_html, write_file(".html")),
+        'lint': (lint_coq_rst, write_file(".lint")),
+        'rst': (coq_to_rst, write_file(".v.rst"))
     },
     'rst': {
-        # 'webpage': (gen_rst_html,),
+        'webpage': (parse_rst, gen_docutils_html, write_file(".html")),
+        'lint': (lint_rst, write_file(".lint")),
         'coq': (rst_to_coq, write_file(".v")),
         'coq+rst': (rst_to_coq, write_file(".v"))
     }
 }
 
-MODES_BY_EXTENSION = [('.v', "coq"), ('.json', "json"), ('.rst', "rst")]
+MODES_BY_EXTENSION = [('.v', "coq"), ('.json', "json"), ('.v.rst', "rst"), ('.rst', "rst")]
 DEFAULT_BACKENDS = {
     'json': 'json',
     'coq': 'webpage',
