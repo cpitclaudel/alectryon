@@ -394,7 +394,7 @@ def main():
             for step in pipeline:
                 state = call_pipeline_step(step, state, ctx)
             write_output(fname, args.output, args.output_directory, *state)
-    except ValueError as e:
+    except (ValueError, FileNotFoundError) as e:
         if args.debug:
             raise e
         sys.stderr.write("Exception: {}\n".format(e))
