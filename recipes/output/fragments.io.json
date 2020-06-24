@@ -1,0 +1,56 @@
+[
+    [
+        {
+            "_type": "sentence",
+            "contents": "Example xyz (H: False): True.",
+            "responses": [],
+            "goals": [
+                {
+                    "_type": "goal",
+                    "name": null,
+                    "conclusion": "True",
+                    "hypotheses": [
+                        {
+                            "_type": "hypothesis",
+                            "names": [
+                                "H"
+                            ],
+                            "body": null,
+                            "type": "False"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "_type": "text",
+            "contents": " (* ... *) "
+        },
+        {
+            "_type": "sentence",
+            "contents": "exact I.",
+            "responses": [],
+            "goals": []
+        },
+        {
+            "_type": "text",
+            "contents": " "
+        },
+        {
+            "_type": "sentence",
+            "contents": "Qed.",
+            "responses": [],
+            "goals": []
+        }
+    ],
+    [
+        {
+            "_type": "sentence",
+            "contents": "Print xyz.",
+            "responses": [
+                "xyz = fun _ : False => I\n     : False -> True"
+            ],
+            "goals": []
+        }
+    ]
+]

@@ -4,14 +4,16 @@
 
 A library to process Coq snippets embedded in documents, showing goals and messages for each Coq sentence.  The goal of Alectryon is to make it easy to write papers, webpages, and other documents that show bits of Coq code along with their output.
 
+For background information and live examples, see the `quickstart guide <FIXME>` on the PLV blog.
+
 Setup
 =====
 
 Dependencies (OCaml, Python 3):
     ``opam install coq-serapi=8.10.0+0.7.0``
-    ``python3 -m pip install --user pygments==2.5.2 dominate==2.4.0``
+    ``python3 -m pip install --user pygments==2.5.2 dominate==2.4.0 docutils==0.16``
 
-The core library only depends on ``coq-serapi``.  ``dominate`` is used is ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.
+The core library only depends on ``coq-serapi``.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  Docutils support requires the ``docutils`` library.
 
 Usage
 =====
@@ -19,15 +21,54 @@ Usage
 As a standalone program
 -----------------------
 
-``python3 alectryon.py [-h] [--writer {json,html,webpage}] input [input ...]``
+Recipes
+~~~~~~~
 
-- Each ``input`` file can be ``.v`` (a Coq source file, which Alectryon will split into fragments delimited by one or more blank lines) or ``.json`` (a list of Coq fragments).  Each fragment is split into individual sentences, which are executed one by one (all code is run in a single Coq session).
+Try these recipes in the ``recipes`` directory of this repository:
 
-- One output file is written per input file:
+- Generate an interactive webpage from a plain Coq file (Proof General style)::
 
-  * With ``--writer webpage``, output is written to ``<input>.html`` as a standalone webpage.  This is useful for debugging and to get a quick sense of how Alectryon works.
-  * With ``--writer html``, output is written to ``<input>.snippets.html`` as a sequence of ``<pre class="alectryon-io">`` blocks, separated by ``<!-- alectryon-block-end -->`` markers (there will be as many blocks as entries in the input list if ``input`` is a ``.json`` file).
-  * With ``--writer json``, output is written to ``<input>.io.json`` as a JSON-encoded list of Coq fragments (as many as in ``input`` if ``input`` is a ``.json`` file).  Each fragment is a list of records, each with a ``_type`` and some type-specific fields.  here is an example:
+    ../alectryon.py --frontend coq --backend webpage plain.v -o plain.v.html
+
+- Generate an interactive webpage from a literate Coq file (Coqdoc style)::
+
+    ../alectryon.py --frontend coq+rst --backend webpage literate.v -o literate.html
+
+- Compile a reStructuredText document containing ``.. coq::`` blocks (coqrst style)::
+
+    ../alectryon.py --frontend rst --backend webpage literate.v.rst -o doc.html
+
+- Translate a reStructuredText document into a literate Coq file::
+
+    ../alectryon.py --frontend coq+rst --backend rst literate.v.rst -o literate.v
+
+- Translate a literate Coq file into a reStructuredText document::
+
+    ../alectryon.py --frontend coq+rst --backend rst literate.v -o literate.v.rst
+
+- Record goals and responses for fragments contained in a JSON source file::
+
+    ../alectryon.py --frontend json --backend json fragments.json -o fragments.io.json
+
+- Record goals and responses and format them as HTML for fragments contained in a JSON source file::
+
+    ../alectryon.py --frontend json --backend snippets-html fragments.json -o fragments.snippets.html
+
+Command-line interface
+~~~~~~~~~~~~~~~~~~~~~~
+
+| python3 alectryon.py [-h] […]
+|             [--frontend {coq,coq+rst,json,rst}]
+|             [--backend {coq,coq+rst,json,snippets-html,webpage}]
+|             input [input ...]
+
+- Each ``input`` file can be ``.v`` (a Coq source file, optionally including reStructuredText in comments delimited by ``(*| … |*)``), ``.json`` (a list of Coq fragments), or ``.rst`` (a reStructuredText document including ``.. coq::`` blocks).  Each input fragment is split into individual sentences, which are executed one by one (all code is run in a single Coq session).
+
+- One output file is written per input file.  Each frontend supports a subset of all backends.
+
+  * With ``--backend webpage``, output is written as a standalone webpage named ``<input>.html`` (for ``coq+rst`` inputs) or ``<input>.v.html`` (for plain ``coq`` inputs).  This is useful for debugging and to get a quick sense of how Alectryon works.
+  * With ``--backend snippets-html``, output is written to ``<input>.snippets.html`` as a sequence of ``<pre class="alectryon-io">`` blocks, separated by ``<!-- alectryon-block-end -->`` markers (there will be as many blocks as entries in the input list if ``input`` is a ``.json`` file).
+  * With ``--writer json``, output is written to ``<input>.io.json`` as a JSON-encoded list of Coq fragments (as many as in ``input`` if ``input`` is a ``.json`` file).  Each fragment is a list of records, each with a ``_type`` and some type-specific fields.  Here is an example:
 
     Input (``minimal.json``):
         .. code:: json
@@ -75,6 +116,8 @@ As a standalone program
               ]
             ]
 
+Use ``./alectryon.py --help`` for full command line details.
+
 As a library
 ------------
 
@@ -110,7 +153,7 @@ Use ``alectryon.core.annotate(chunks: List[str])``, which returns an object with
 The results of ``annotate`` can be fed to ``alectryon.html.HtmlWriter(highlighter)`` to generate HTML (with CSS classes defined in ``alectryon.css``).  Pass ``highlighter=alectryon.pygments.highlight`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
 
 As a docutils or Sphinx module
-==============================
+------------------------------
 
 Add the following code to your Sphinx ``config.py`` file or to your Pelican
 setup to register a special ``.. coq::`` directive that feeds its contents to
@@ -121,9 +164,9 @@ alectryon and displays the results interleaved with the input::
 
 See |help(docutils)|_ for more information.
 
-To ensure that Coq blocks render properly, you'll need to tell your blogging platform to include ``alectryon.css``.  Using a git submodule or vendoring a copy of Alectryon is an easy way to ensure that this stylesheet is accessible to your blogging software.
+To ensure that Coq blocks render properly, you'll need to tell your blogging platform to include ``alectryon.css``.  Using a git submodule or vendoring a copy of Alectryon is an easy way to ensure that this stylesheet is accessible to your blogging software.  Alternatively, you can use ``alectryon.html.copy_assets``.  Assets are stored in ``alectryon.html.ASSETS.PATH``; their names are in ``alectryon.html.ASSETS.CSS`` and ``alectryon.html.ASSETS.JS``.
 
-By default, Alectryon will raise warnings for lines over 72 characters.  You can change the threshold or silence the warnings by adjusting ``alectryon.docutils.LONG_LINE_THRESHOLD``.  With `Pelican <https://github.com/getpelican/pelican>`_, use the following snippet to make warnings non-fatal::
+By default, Alectryon's docutils module will raise warnings for lines over 72 characters.  You can change the threshold or silence the warnings by adjusting ``alectryon.docutils.LONG_LINE_THRESHOLD``.  With `Pelican <https://github.com/getpelican/pelican>`_, use the following snippet to make warnings non-fatal::
 
    DOCUTILS_SETTINGS = {
        'halt_level': 3, # Error
@@ -134,7 +177,7 @@ By default, Alectryon will raise warnings for lines over 72 characters.  You can
 .. _help(docutils): alectryon/docutils.py
 
 Controlling output
-------------------
+~~~~~~~~~~~~~~~~~~
 
 The ``.. coq::`` directive takes a list of space-separated flags to control the way its contents are displayed:
 
@@ -179,3 +222,8 @@ Interactivity
 -------------
 
 Alectryon's HTML output doesn't require JavaScript for interactivity, but a separate "slideshow" mode is implemented in ``alectryon-slideshow.js``.
+
+Authoring support
+-----------------
+
+Th etc/ folder of this directory includes an Emacs mode, ``alectryon.el``, which enables you to easily switch between the literate Coq view of a document and the reStructuredText view of it.

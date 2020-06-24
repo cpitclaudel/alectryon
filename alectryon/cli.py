@@ -332,7 +332,7 @@ and produce reStructuredText, HTML, or JSON output.""")
 
     MARK_POINT_HELP = "Mark a point in the output with a given marker."
     parser.add_argument("--mark-point", nargs=2, default=(None, None),
-                        metavar=("point", "marker"),
+                        metavar=("POINT", "MARKER"),
                         help=MARK_POINT_HELP)
 
 
@@ -342,6 +342,7 @@ and produce reStructuredText, HTML, or JSON output.""")
     SERAPI_ARGS_HELP = "Pass a single argument to SerAPI (e.g. -Q dir,lib)."
     subp.add_argument("--serapi-arg", dest="serapi_args",
                       action="append", default=[],
+                      metavar="SERAPI_ARG",
                       help=SERAPI_ARGS_HELP)
 
     I_HELP="Pass -I DIR to the SerAPI subprocess."

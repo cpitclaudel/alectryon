@@ -1,0 +1,1258 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>Forget abut strengthening induction hypotheses: write fixpoints!</title>
+<style type="text/css">
+
+@charset "UTF-8";
+/*
+Copyright © 2019 Clément Pit-Claudel
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+.alectryon-io, .alectryon-toggle-label, .alectryon-header {
+    font-family: 'Iosevka Slab Web', 'Iosevka Web', 'Fira Code', monospace;
+    font-feature-settings: "XV00" 1; /* Use Coq ligatures when Iosevka is available */
+    line-height: initial;
+    overflow: visible;
+    overflow-wrap: break-word;
+    position: relative;
+    white-space: pre-wrap;
+}
+
+/*
+CoqIDE doesn't turn off the unicode bidirectional algorithm (and PG simply
+respects the user's `bidi-display-reordering` setting), so don't turn it off
+here either.  But beware unexpected results like `Definition test_אב := 0.`
+
+.alectryon-io span {
+    direction: ltr;
+    unicode-bidi: bidi-override;
+}
+
+In any case, make an exception for comments:
+
+.highlight .c {
+    direction: embed;
+    unicode-bidi: initial;
+}
+*/
+
+.alectryon-toggle,
+.alectryon-io .coq-toggle,
+.alectryon-io .coq-extra-goals-toggle {
+    display: none;
+}
+
+.alectryon-bubble,
+.alectryon-toggle-label,
+.alectryon-io label.coq-input,
+.alectryon-io .coq-extra-goals-label {
+    cursor: pointer;
+}
+
+.alectryon-toggle-label,
+.coq-extra-goals-label {
+    display: block;
+    font-size: 0.8rem;
+}
+
+.alectryon-io .coq-input {
+    padding: 0.1em 0; /* Enlarge the hitbox slightly to fill interline gaps */
+    padding-right: 1rem; /* Prevent line wraps before the checkbox bubble */
+}
+
+.alectryon-io .alectryon-target .coq-input {
+    /* FIXME use a background? FIXME if keywords were ‘bolder’ we wouldn't need !important */
+    font-weight: bold !important; /* Use !important to avoid a * selector */
+}
+
+.alectryon-io .coq-extra-goals-label {
+    text-align: right;
+}
+
+.alectryon-bubble:before,
+.alectryon-toggle-label:before,
+.alectryon-io label.coq-input:after,
+.alectryon-io .coq-extra-goals-label:before {
+    border: 1px solid #babdb6;
+    border-radius: 1rem;
+    box-sizing: border-box;
+    content: '';
+    display: inline-block;
+    font-weight: bold;
+    height: 0.25rem;
+    margin-bottom: 0.15rem;
+    vertical-align: middle;
+    width: 0.75rem;
+}
+
+.alectryon-toggle-label:before,
+.alectryon-io .coq-extra-goals-label:before {
+    margin-right: 0.25rem;
+}
+
+.alectryon-io label.coq-input:after {
+    margin-left: 0.25rem;
+    margin-right: -1rem; /* Compensate for the anti-wrapping space */
+}
+
+@media (any-hover: hover) {
+    .alectryon-bubble:hover:before,
+    .alectryon-toggle-label:hover:before,
+    .alectryon-io label.coq-input:hover:after {
+        background: #eeeeec;
+    }
+
+    .alectryon-io label.coq-input:hover {
+        text-decoration: underline dotted #babdb6;
+	    text-shadow: 0 0 1px rgb(46, 52, 54, 0.3); /* #2e3436 + opacity */
+    }
+
+    .alectryon-io .coq-sentence:hover .coq-output:not(:hover) {
+        display: block;
+    }
+
+    .alectryon-io .coq-sentence:hover .coq-output {
+        z-index: 2; /* Place hovered goals above .alectryon-target ones */
+    }
+}
+
+.alectryon-toggle:checked + .alectryon-toggle-label:before,
+.alectryon-io .coq-toggle:checked + label.coq-input:after,
+.alectryon-io .coq-extra-goals-toggle:checked + .coq-extra-goals-label:before {
+    background-color: #babdb6;
+    border-color: #babdb6;
+}
+
+/* Disable clicks on sentences when the document-wide toggle is set. */
+.alectryon-toggle:checked + label + .alectryon-container label.coq-input {
+    cursor: unset;
+    pointer-events: none;
+}
+
+/* Hide individual checkboxes when the document-wide toggle is set. */
+.alectryon-toggle:checked + label + .alectryon-container label.coq-input:after {
+    display: none;
+}
+
+/* .coq-output is displayed by toggles, :hover, and .alectryon-target rules */
+.alectryon-io .coq-output {
+    box-sizing: border-box;
+    display: none;
+    padding: 0.5rem;
+    position: absolute;
+    z-index: 1; /* Default to an index lower than that used by :hover */
+}
+
+.alectryon-io .alectryon-target .coq-output {
+    display: block;
+}
+
+.alectryon-io .coq-extra-goals .goal-hyps {
+    display: none;
+}
+
+.alectryon-io .coq-extra-goals .goal-separator {
+    margin-top: 0;
+}
+
+/* Show just a small preview of the other goals; this is undone by the
+   "extra-goals" toggle and by :hover and .alectryon-target in windowed mode. */
+.alectryon-io .coq-extra-goals .goal-conclusion {
+    max-height: 5.2em;
+    overflow-y: auto;
+    /* Combining ‘overflow-y: auto’ with ‘display: inline-block’ causes extra space
+       to be added below the box. ‘vertical-align: middle’ gets rid of it. */
+    vertical-align: middle;
+}
+
+.alectryon-io .coq-goals,
+.alectryon-io .coq-responses {
+    background: #eeeeec;
+    display: block;
+    padding: 0.25rem;
+}
+
+.coq-response::before {
+    content: '📨️';
+    float: right;
+    text-align: justify;
+}
+
+.alectryon-toggle:checked + label + .alectryon-container {
+    width: unset;
+}
+
+/* Show goals when a toggle is set */
+.alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output,
+.alectryon-io .coq-toggle:checked ~ .coq-output {
+    display: block;
+    padding: 0.25rem 0;
+    position: static;
+    width: unset;
+    background: unset; /* Override the background set in .alectryon-floating */
+}
+
+.alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output .goal-hyps,
+.alectryon-io .coq-toggle:checked ~ .coq-output .goal-hyps {
+    flex-flow: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.alectryon-toggle:checked + label + .alectryon-container .coq-output > .coq-output-sticky-wrapper,
+.alectryon-io .coq-toggle:checked ~ .coq-output > .coq-output-sticky-wrapper {
+    display: block;
+    margin-bottom: unset; /* Undo negative margins used to widen the sticky range */
+}
+
+.alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-hyps {
+    display: flex;
+}
+
+.alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-separator {
+    margin-top: 0.5rem; /* Restore hidden margin */
+}
+
+.alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-conclusion {
+    max-height: unset;
+    overflow-y: unset;
+}
+
+.alectryon-toggle:checked + label + .alectryon-container .coq-toggle ~ .coq-wsp,
+.alectryon-io .coq-toggle:checked ~ .coq-wsp {
+    display: none;
+}
+
+.alectryon-io .coq-responses,
+.alectryon-io .coq-response,
+.alectryon-io .coq-goals,
+.alectryon-io .coq-goal,
+.alectryon-io .goal-hyp,
+.alectryon-io .goal-conclusion {
+    border-radius: 0.15rem;
+}
+
+.alectryon-io .coq-goal,
+.alectryon-io .coq-response,
+.alectryon-io .coq-extra-goals-label {
+    margin: 0.25rem;
+}
+
+.alectryon-io .coq-goal,
+.alectryon-io .coq-response {
+    align-items: center;
+    background: #d3d7cf;
+    display: block;
+    flex-direction: column;
+    padding: 0.5rem;
+    position: relative;
+}
+
+.alectryon-io .goal-hyps {
+    align-content: space-around;
+    align-items: baseline;
+    display: flex;
+    flex-flow: column; /* row wrap? */
+    justify-content: space-around;
+    /* FIXME use a ‘gap’ property instead of margins once supported */
+    margin: -0.15rem -1rem; /* -0.15rem to cancel the item spacing */
+}
+
+.alectryon-io .goal-hyp,
+.alectryon-io .goal-conclusion {
+    background: #eeeeec;
+    display: inline-block;
+    padding: 0.15rem 0.35rem;
+}
+
+.alectryon-io .goal-hyp {
+    display: inline-flex;
+    margin: 0.15rem 1rem;
+    z-index: 1;
+}
+
+.alectryon-io .hyp-names {
+    font-weight: 600;
+    /* Shrink the list of names, but let it grow as long as space is available. */
+    flex-basis: min-content;
+    flex-grow: 1;
+}
+
+.alectryon-io .hyp-punct {
+    font-weight: 600;
+    margin: 0 0.5rem;
+}
+
+.alectryon-io .hyp-body,
+.alectryon-io .hyp-type {
+    display: flex;
+    vertical-align: top;
+}
+
+.alectryon-io .goal-separator {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+}
+
+.alectryon-io .goal-separator hr {
+    border: none;
+    border-top: thin solid #555753;
+    box-sizing: content-box;
+    display: block;
+    flex-grow: 1;
+    height: 0;
+    margin: 0.5rem 0;
+}
+
+.alectryon-io .goal-separator .goal-name {
+    font-size: 0.75em;
+    margin-left: 0.5em;
+}
+
+/**********/
+/* Header */
+/**********/
+
+.alectryon-header {
+    background: #eeeeec;
+    border: 1px solid #babcbd;
+    font-size: 0.75em;
+    margin: 1rem;
+    padding: 0.25rem;
+    text-align: center;
+}
+
+.alectryon-header kbd {
+    background: #d3d7cf;
+    border-radius: 0.15em;
+    border: 1px solid #babdb6;
+    box-sizing: border-box;
+    display: inline-block;
+    font-family: inherit;
+    font-size: 0.9em;
+    height: 1.3em;
+    line-height: 1.2em;
+    margin: -0.25em 0;
+    padding: 0 0.25em;
+    vertical-align: middle;
+}
+
+/******************/
+/* Floating style */
+/******************/
+
+.alectryon-floating .coq-output {
+    width: 100%;
+}
+
+/* If there's space, display goals to the right of the code, not below it. */
+@media screen and (any-hover: hover) {
+    @media (min-width: 90rem) {
+        .alectryon-floating .alectryon-io {
+            /* FIXME: needed? */
+            box-sizing: border-box; /* Needed so .coq-output won't overflow */
+        }
+
+        .alectryon-floating .coq-output {
+            bottom: 0;
+            left: 100%;
+            padding-top: 0;
+            top: 0;
+        }
+
+        .alectryon-floating .coq-output {
+            background: white; /* Ensure that short goals hide long ones */
+            min-height: 100%;
+        }
+
+        /* This odd margin-bottom property prevents the sticky div from bumping
+           against the bottom of its container (.coq-output).  The alternative
+           would be enlarging .coq-output, but that would cause overflows,
+           enlarging scrollbars and yielding scrolling towards the bottom of the
+           page.  Doing things this way instead makes it possible to restrict
+           .coq-output to a reasonable size (100%, through top = bottom = 0).
+           See also https://stackoverflow.com/questions/43909940/. */
+        .alectryon-floating .coq-output-sticky-wrapper {
+            margin-bottom: -200%;
+            position: sticky;
+            top: 0;
+        }
+    }
+
+    /* Float underneath the current fragment
+    @media (max-width: 90rem) {
+        .alectryon-floating .coq-output {
+            top: 100%;
+        }
+    } */
+}
+
+/********************/
+/* Multi-pane style */
+/********************/
+
+.alectryon-windowed {
+    border: 0 solid #2e3436;
+    box-sizing: border-box;
+}
+
+.alectryon-standalone,
+.alectryon-windowed .coq-output {
+    background: #f6f6f6; /* Ensure that short goals hide long ones */
+}
+
+.alectryon-windowed .coq-sentence:hover .coq-output,
+.alectryon-windowed .alectryon-target .coq-output {
+    overflow-y: auto;
+    position: fixed;
+}
+
+.alectryon-windowed .alectryon-target .coq-extra-goals .goal-conclusion {
+    max-height: unset;
+    overflow-y: unset;
+}
+
+.alectryon-windowed .coq-output-sticky-wrapper {
+    display: flex; /* Put messages after goals */
+    flex-direction: column-reverse;
+}
+
+/********************/
+/* Standalone style */
+/********************/
+
+.alectryon-standalone .alectryon-windowed {
+    display: block;
+    margin: 0;
+    overflow-y: auto;
+    position: absolute;
+}
+
+.alectryon-standalone .alectryon-io {
+    box-sizing: border-box;
+    padding: 0 1rem;
+    width: 100%;
+}
+
+@media screen and (min-width: 60rem) {
+    .alectryon-standalone .alectryon-windowed {
+        border-right-width: 1px;
+        bottom: 0;
+        left: 0;
+        right: 50%;
+        top: 0;
+    }
+
+    .alectryon-standalone .coq-sentence:hover .coq-output,
+    .alectryon-standalone .alectryon-target .coq-output {
+        bottom: 0;
+        left: 50%;
+        right: 0;
+        top: 0;
+        width: 50%;
+    }
+}
+
+@media screen and (max-width: 60rem) {
+    .alectryon-standalone .alectryon-windowed {
+        border-bottom-width: 1px;
+        bottom: 40%;
+        left: 0;
+        right: 0;
+        top: 0;
+    }
+
+    .alectryon-standalone .coq-sentence:hover .coq-output,
+    .alectryon-standalone .alectryon-target .coq-output {
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 60%;
+    }
+}
+
+</style>
+<style type="text/css">
+
+/******************************************************************************
+The MIT License (MIT)
+
+Copyright (c) 2014 Matthias Eisen
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+******************************************************************************/
+
+
+body {
+    font-family: Palatino, "Palatino LT STD", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    font-size: 16px;
+    color: #111;
+}
+
+div.document {
+    margin: 0 auto;
+    max-width: 720px;
+}
+
+
+/* ========== Headings ========== */
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: normal;
+    margin-top: 1.5em;
+}
+
+h1.section-subtitle, 
+h2.section-subtitle, 
+h3.section-subtitle,
+h4.section-subtitle, 
+h5.section-subtitle, 
+h6.section-subtitle {
+    margin-top: 0.4em;
+}
+
+h1.title {
+    text-align: center;
+}
+
+h2.subtitle {
+    text-align: center;
+}
+
+span.section-subtitle {
+    font-size: 80%,
+}
+
+/* //-------- Headings ---------- */
+
+
+/* ========== Images ========== */
+
+img, 
+.figure, 
+object {
+    display:        block;
+    margin-left:    auto;
+    margin-right:   auto;
+}
+
+div.figure {
+    margin-left:    2em;
+    margin-right:   2em;
+}
+
+img.align-left, .figure.align-left, object.align-left {
+    clear:          left;
+    float:          left;
+    margin-right:   1em;
+}
+
+img.align-right, .figure.align-right, object.align-right {
+    clear:          right;
+    float:          right;
+    margin-left:    1em;
+}
+
+img.align-center, .figure.align-center, object.align-center {
+    display:        block;
+    margin-left:    auto;
+    margin-right:   auto;
+}
+
+/* reset inner alignment in figures */
+div.align-right {
+    text-align: inherit;
+}
+
+object[type="image/svg+xml"], 
+object[type="application/x-shockwave-flash"] {
+    overflow: hidden;
+}
+
+/* //-------- Images ---------- */
+
+
+
+/* ========== Literal Blocks ========== */
+
+pre, tt.literal {
+    font-family: "Lucida Sans Typewriter", "Lucida Console", Monaco, "Bitstream Vera Sans Mono", monospace;
+    font-size: 14px;
+}
+
+tt.literal {
+    background-color: #ffa;
+}
+
+pre.address {
+    margin-bottom: 0;
+    margin-top: 0;
+    font: inherit;
+}
+
+pre.literal-block {
+    border-left: solid 5px #ccc;
+    padding: 1em; 
+}
+
+pre.literal-block, pre.doctest-block, pre.math, pre.code {
+}
+
+span.interpreted {
+}
+
+span.pre {
+    white-space: pre;
+}
+
+pre.code .ln { 
+    color: grey; 
+}
+pre.code, code {
+    border-style: none;
+    padding: 1em 0;
+}
+pre.code .comment, code .comment { 
+    color: #888;
+}
+pre.code .keyword, code .keyword {
+    font-weight: bold; 
+    color: #080;
+}
+pre.code .literal.string, code .literal.string { 
+    color: #d20;
+    background-color: #fff0f0;
+}
+pre.code .literal.number, code .literal.number { 
+    color: #00d;
+}
+pre.code .name.builtin, code .name.builtin {
+    color: #038;
+    color: #820;
+}
+pre.code .name.namespace, code .name.namespace {
+    color: #b06;
+}
+pre.code .deleted, code .deleted {
+    background-color: #fdd;
+}
+pre.code .inserted, code .inserted {
+    background-color: #dfd;
+}
+
+
+/* //-------- Literal Blocks --------- */
+
+
+/* ========== Tables ========== */
+
+table {
+    border-spacing:         0;
+    border-collapse:        collapse;
+    border-style:           none;
+    border-top:             solid 1px #111;
+    border-bottom:          solid 1px #111;
+}
+
+td, 
+th {
+    border: none;
+    padding:                0.5em;
+    vertical-align:         top;
+}
+
+th {
+    border-top:             solid 1px #111;
+    border-bottom:          solid 1px #111;
+    background-color:       #ddd;
+}
+
+
+table.field-list,
+table.footnote,
+table.citation,
+table.option-list {
+    border:                 none;
+}
+table.docinfo {
+    margin:                 2em 4em;
+}
+
+table.docutils {
+    margin:                 1em 0;
+}
+
+table.docutils th.field-name, 
+table.docinfo th.docinfo-name {
+    border:                 none;
+    background:             none;
+    font-weight:            bold ;
+    text-align:             left ;
+    white-space:            nowrap ;
+    padding-left:           0;
+    vertical-align:         middle; 
+}
+
+table.docutils.booktabs {
+    border:                 none;
+    border-top:             2px solid;
+    border-bottom:          2px solid;
+    border-collapse:        collapse;
+}
+
+table.docutils.booktabs * {
+    border:                 0px;
+}
+table.docutils.booktabs th {
+    border-bottom:          thin solid;
+    text-align:             left;
+}
+
+span.option {
+    white-space: nowrap;
+}
+
+table caption {
+    margin-bottom: 2px;
+}
+
+/* //-------- Tables ---------- */
+
+
+/* ========== Lists ========== */
+
+ol.simple, ul.simple {
+    margin-bottom: 1em;
+}
+
+ol.arabic {
+    list-style: decimal;
+}
+
+ol.loweralpha {
+    list-style: lower-alpha;
+}
+
+ol.upperalpha {
+    list-style: upper-alpha;
+}
+
+ol.lowerroman {
+    list-style: lower-roman;
+}
+
+ol.upperroman {
+    list-style: upper-roman;
+}
+
+dl.docutils dd {
+    margin-bottom: 0.5em;
+}
+
+
+dl.docutils dt {
+    font-weight: bold;
+}
+
+/* //-------- Lists ---------- */
+
+
+/* ========== Sidebar ========== */
+
+div.sidebar {
+    margin: 0 0 0.5em 1em ;
+    border-left: solid 2px #111;
+    padding: 1em ;
+    width: 40% ;
+    float: right ;
+    clear: right;
+}
+
+div.sidebar {
+    font-size: 14px;
+}
+
+p.sidebar-title {
+    font-size: 16px;
+    font-weight: bold ;
+}
+
+p.sidebar-subtitle {
+    font-weight: bold;
+}
+
+/* //-------- Sidebar ---------- */
+
+
+/* ========== Topic ========== */
+
+div.topic {
+    margin: 2em;
+    padding: 1em 0;
+    border-width: 1px;
+    border-color: #111;
+    border-style: solid none;
+}
+
+div.topic p {
+    padding: 0;
+}
+
+p.topic-title {
+    font-weight: bold;
+}
+
+/* //-------- Topic ---------- */
+
+
+/* ========== Header ========== */
+
+div.header {
+    font-family:        "Century Gothic", CenturyGothic, Geneva, AppleGothic, sans-serif;
+    font-size:          14px;
+    margin:             2em auto 4em auto;
+    max-width:          960px;
+    clear:              both;
+}
+
+hr.header {
+    border:             0;
+    height:             1px;
+    margin-top:         1em;
+    background-color:   #111;
+}
+
+/* //-------- Header ---------- */
+
+
+/* ========== Footer ========== */
+
+div.footer {
+    font-family:        "Century Gothic", CenturyGothic, Geneva, AppleGothic, sans-serif;
+    font-size:          14px;
+    margin:             6em auto 2em auto;
+    max-width:          960px;
+    clear:              both;
+    text-align:         center;
+}
+
+hr.footer {
+    border:             0;
+    height:             1px;
+    margin-bottom:      2em;
+    background-color:   #111;
+}
+
+/* //-------- Footer ---------- */
+
+
+/* ========== Admonitions ========== */
+
+div.admonition, 
+div.attention, 
+div.caution, 
+div.danger, 
+div.error,
+div.hint, 
+div.important, 
+div.note, 
+div.tip, 
+div.warning {
+    margin: 2em;
+    border: solid 1px #111;
+    padding: 0 1em;
+    background-color: #eee;
+}
+
+div.error,
+div.danger {
+    border-color: #a94442;
+    background-color: #f2dede;
+}
+
+div.hint,
+div.tip {
+    border-color: #31708f;
+    background-color: #d9edf7;
+}
+
+div.attention,
+div.caution,
+div.warning {
+    border-color: #8a6d3b;
+    background-color: #fcf8e3; 
+}
+
+div.hint p.admonition-title,
+div.tip p.admonition-title {
+    color: #31708f;
+    font-weight: bold ;
+}
+
+div.note p.admonition-title,
+div.admonition p.admonition-title, 
+div.important p.admonition-title {
+    font-weight: bold ;
+}
+
+div.attention p.admonition-title,
+div.caution p.admonition-title,
+div.warning p.admonition-title {
+    color: #8a6d3b;
+    font-weight: bold ;
+}
+
+div.danger p.admonition-title, 
+div.error p.admonition-title,
+.code .error {
+    color: #a94442;
+    font-weight: bold ;
+}
+
+/* //-------- Admonitions ---------- */
+
+
+/* ========== Table of Contents ========== */
+
+div.contents {
+    margin: 2em 0;
+    border: none;
+}
+
+ul.auto-toc {
+    list-style-type: none;
+}
+
+a.toc-backref {
+    text-decoration: none ;
+    color: #111;
+}
+
+/* //-------- Table of Contents ---------- */
+
+
+
+/* ========== Line Blocks========== */
+
+div.line-block {
+    display: block ;
+    margin-top: 1em ;
+    margin-bottom: 1em;
+}
+
+div.line-block div.line-block {
+    margin-top: 0 ;
+    margin-bottom: 0 ;
+    margin-left: 1.5em;
+}
+
+/* //-------- Line Blocks---------- */
+
+
+/* ========== System Messages ========== */
+
+div.system-messages {
+    margin: 5em;
+}
+
+div.system-messages h1 {
+    color: red;
+}
+
+div.system-message {
+    border: medium outset ;
+    padding: 1em;
+}
+
+div.system-message p.system-message-title {
+    color: red ;
+    font-weight: bold;
+}
+
+/* //-------- System Messages---------- */
+
+
+/* ========== Helpers ========== */
+
+.hidden {
+    display: none;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.align-center {
+    clear: both ;
+    text-align: center;
+}
+
+.align-right {
+    text-align: right;
+}
+
+/* //-------- Helpers---------- */
+
+
+p.caption {
+    font-style: italic;
+    text-align: center;
+}
+
+p.credits {
+font-style: italic ;
+font-size: smaller }
+
+p.label {
+white-space: nowrap }
+
+p.rubric {
+font-weight: bold ;
+font-size: larger ;
+color: maroon ;
+text-align: center }
+
+p.attribution {
+text-align: right ;
+margin-left: 50% }
+
+blockquote.epigraph {
+    margin: 2em 5em;
+}
+
+div.abstract {
+margin: 2em 5em }
+
+div.abstract {
+font-weight: bold ;
+text-align: center }
+
+div.dedication {
+margin: 2em 5em ;
+text-align: center ;
+font-style: italic }
+
+div.dedication {
+font-weight: bold ;
+font-style: normal }
+
+
+span.classifier {
+font-style: oblique }
+
+span.classifier-delimiter {
+font-weight: bold }
+
+span.problematic {
+color: red }
+
+
+
+
+</style>
+<style type="text/css">
+
+.highlight .hll { background-color: #ffffcc }
+.highlight .c { color: #555753; font-style: italic } /* Comment */
+.highlight .err { color: #a40000; border: 1px solid #cc0000 } /* Error */
+.highlight .g { color: #000000 } /* Generic */
+.highlight .k { color: #8f5902 } /* Keyword */
+.highlight .l { color: #2e3436 } /* Literal */
+.highlight .n { color: #000000 } /* Name */
+.highlight .o { color: #000000 } /* Operator */
+.highlight .x { color: #2e3436 } /* Other */
+.highlight .p { color: #000000 } /* Punctuation */
+.highlight .ch { color: #555753; font-weight: bold; font-style: italic } /* Comment.Hashbang */
+.highlight .cm { color: #555753; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #3465a4; font-style: italic } /* Comment.Preproc */
+.highlight .cpf { color: #555753; font-style: italic } /* Comment.PreprocFile */
+.highlight .c1 { color: #555753; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #3465a4; font-weight: bold; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #a40000 } /* Generic.Deleted */
+.highlight .ge { color: #000000; font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #a40000 } /* Generic.Error */
+.highlight .gh { color: #a40000; font-weight: bold } /* Generic.Heading */
+.highlight .gi { color: #4e9a06 } /* Generic.Inserted */
+.highlight .go { color: #000000; font-style: italic } /* Generic.Output */
+.highlight .gp { color: #8f5902 } /* Generic.Prompt */
+.highlight .gs { color: #000000; font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #000000; font-weight: bold } /* Generic.Subheading */
+.highlight .gt { color: #000000; font-style: italic } /* Generic.Traceback */
+.highlight .kc { color: #204a87; font-weight: bold } /* Keyword.Constant */
+.highlight .kd { color: #4e9a06; font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { color: #4e9a06; font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { color: #204a87 } /* Keyword.Pseudo */
+.highlight .kr { color: #8f5902 } /* Keyword.Reserved */
+.highlight .kt { color: #204a87 } /* Keyword.Type */
+.highlight .ld { color: #2e3436 } /* Literal.Date */
+.highlight .m { color: #2e3436 } /* Literal.Number */
+.highlight .s { color: #ad7fa8 } /* Literal.String */
+.highlight .na { color: #c4a000 } /* Name.Attribute */
+.highlight .nb { color: #75507b } /* Name.Builtin */
+.highlight .nc { color: #204a87 } /* Name.Class */
+.highlight .no { color: #ce5c00 } /* Name.Constant */
+.highlight .nd { color: #3465a4; font-weight: bold } /* Name.Decorator */
+.highlight .ni { color: #c4a000; text-decoration: underline } /* Name.Entity */
+.highlight .ne { color: #cc0000 } /* Name.Exception */
+.highlight .nf { color: #a40000 } /* Name.Function */
+.highlight .nl { color: #3465a4; font-weight: bold } /* Name.Label */
+.highlight .nn { color: #000000 } /* Name.Namespace */
+.highlight .nx { color: #000000 } /* Name.Other */
+.highlight .py { color: #000000 } /* Name.Property */
+.highlight .nt { color: #a40000 } /* Name.Tag */
+.highlight .nv { color: #ce5c00 } /* Name.Variable */
+.highlight .ow { color: #8f5902 } /* Operator.Word */
+.highlight .w { color: #d3d7cf; text-decoration: underline } /* Text.Whitespace */
+.highlight .mb { color: #2e3436 } /* Literal.Number.Bin */
+.highlight .mf { color: #2e3436 } /* Literal.Number.Float */
+.highlight .mh { color: #2e3436 } /* Literal.Number.Hex */
+.highlight .mi { color: #2e3436 } /* Literal.Number.Integer */
+.highlight .mo { color: #2e3436 } /* Literal.Number.Oct */
+.highlight .sa { color: #ad7fa8 } /* Literal.String.Affix */
+.highlight .sb { color: #ad7fa8 } /* Literal.String.Backtick */
+.highlight .sc { color: #ad7fa8; font-weight: bold } /* Literal.String.Char */
+.highlight .dl { color: #ad7fa8 } /* Literal.String.Delimiter */
+.highlight .sd { color: #ad7fa8 } /* Literal.String.Doc */
+.highlight .s2 { color: #ad7fa8 } /* Literal.String.Double */
+.highlight .se { color: #ad7fa8; font-weight: bold } /* Literal.String.Escape */
+.highlight .sh { color: #ad7fa8; text-decoration: underline } /* Literal.String.Heredoc */
+.highlight .si { color: #ce5c00 } /* Literal.String.Interpol */
+.highlight .sx { color: #ad7fa8 } /* Literal.String.Other */
+.highlight .sr { color: #ad7fa8 } /* Literal.String.Regex */
+.highlight .s1 { color: #ad7fa8 } /* Literal.String.Single */
+.highlight .ss { color: #8f5902 } /* Literal.String.Symbol */
+.highlight .bp { color: #5c35cc } /* Name.Builtin.Pseudo */
+.highlight .fm { color: #a40000 } /* Name.Function.Magic */
+.highlight .vc { color: #ce5c00 } /* Name.Variable.Class */
+.highlight .vg { color: #ce5c00; text-decoration: underline } /* Name.Variable.Global */
+.highlight .vi { color: #ce5c00 } /* Name.Variable.Instance */
+.highlight .vm { color: #ce5c00 } /* Name.Variable.Magic */
+.highlight .il { color: #2e3436 } /* Literal.Number.Integer.Long */
+</style>
+<style type="text/css">
+
+.highlight .hll{background-color:#ffc}.highlight .c{color:#555753;font-style:italic}.highlight .err{color:#a40000;border:1px solid #c00}.highlight .g{color:#000}.highlight .k{color:#8f5902}.highlight .l{color:#2e3436}.highlight .n{color:#000}.highlight .o{color:#000}.highlight .x{color:#2e3436}.highlight .p{color:#000}.highlight .ch{color:#555753;font-weight:700;font-style:italic}.highlight .cm{color:#555753;font-style:italic}.highlight .cp{color:#3465a4;font-style:italic}.highlight .cpf{color:#555753;font-style:italic}.highlight .c1{color:#555753;font-style:italic}.highlight .cs{color:#3465a4;font-weight:700;font-style:italic}.highlight .gd{color:#a40000}.highlight .ge{color:#000;font-style:italic}.highlight .gr{color:#a40000}.highlight .gh{color:#a40000;font-weight:700}.highlight .gi{color:#4e9a06}.highlight .go{color:#000;font-style:italic}.highlight .gp{color:#8f5902}.highlight .gs{color:#000;font-weight:700}.highlight .gu{color:#000;font-weight:700}.highlight .gt{color:#000;font-style:italic}.highlight .kc{color:#204a87;font-weight:700}.highlight .kd{color:#4e9a06;font-weight:700}.highlight .kn{color:#4e9a06;font-weight:700}.highlight .kp{color:#204a87}.highlight .kr{color:#8f5902}.highlight .kt{color:#204a87}.highlight .ld{color:#2e3436}.highlight .m{color:#2e3436}.highlight .s{color:#ad7fa8}.highlight .na{color:#c4a000}.highlight .nb{color:#75507b}.highlight .nc{color:#204a87}.highlight .no{color:#ce5c00}.highlight .nd{color:#3465a4;font-weight:700}.highlight .ni{color:#c4a000;text-decoration:underline}.highlight .ne{color:#c00}.highlight .nf{color:#a40000}.highlight .nl{color:#3465a4;font-weight:700}.highlight .nn{color:#000}.highlight .nx{color:#000}.highlight .py{color:#000}.highlight .nt{color:#a40000}.highlight .nv{color:#ce5c00}.highlight .ow{color:#8f5902}.highlight .w{color:#d3d7cf;text-decoration:underline}.highlight .mb{color:#2e3436}.highlight .mf{color:#2e3436}.highlight .mh{color:#2e3436}.highlight .mi{color:#2e3436}.highlight .mo{color:#2e3436}.highlight .sa{color:#ad7fa8}.highlight .sb{color:#ad7fa8}.highlight .sc{color:#ad7fa8;font-weight:700}.highlight .dl{color:#ad7fa8}.highlight .sd{color:#ad7fa8}.highlight .s2{color:#ad7fa8}.highlight .se{color:#ad7fa8;font-weight:700}.highlight .sh{color:#ad7fa8;text-decoration:underline}.highlight .si{color:#ce5c00}.highlight .sx{color:#ad7fa8}.highlight .sr{color:#ad7fa8}.highlight .s1{color:#ad7fa8}.highlight .ss{color:#8f5902}.highlight .bp{color:#5c35cc}.highlight .fm{color:#a40000}.highlight .vc{color:#ce5c00}.highlight .vg{color:#ce5c00;text-decoration:underline}.highlight .vi{color:#ce5c00}.highlight .vm{color:#ce5c00}.highlight .il{color:#2e3436}
+</style>
+</head>
+<body>
+<div class="document" id="forget-abut-strengthening-induction-hypotheses-write-fixpoints">
+<h1 class="title">Forget abut strengthening induction hypotheses: write fixpoints!</h1>
+
+<p>Here's an <em>inductive specification</em> of evenness:</p>
+<pre class="alectryon-io alectryon-floating"><!-- Generator: Alectryon v0.2 --><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="kn">Inductive</span> <span class="nf">Even</span> : nat -&gt; <span class="kt">Prop</span> :=
+| EvenO : Even O
+| EvenS : <span class="kr">forall</span> <span class="nv">n</span>, Even n -&gt; Even (S (S n)).</span></span></span></pre><p>… and a corresponding decision procedure:</p>
+<pre class="alectryon-io alectryon-floating"><!-- Generator: Alectryon v0.2 --><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="kn">Fixpoint</span> <span class="nf">even</span> (<span class="nv">n</span>: nat): bool :=
+  <span class="kr">match</span> n <span class="kr">with</span>
+  | <span class="mi">0</span> =&gt; true
+  | <span class="mi">1</span> =&gt; false
+  | S (S n) =&gt; even n
+  <span class="kr">end</span>.</span></span><span class="coq-wsp">
+</span></span><span class="coq-nc"><span class="highlight">
+<span class="c">(* Ensure that we never unfold [even (S n)] *)</span>
+</span></span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="kn">Arguments</span> even : <span class="nb">simpl</span> nomatch.</span></span></span></pre><p>Can we prove it correct?</p>
+<pre class="alectryon-io alectryon-floating"><!-- Generator: Alectryon v0.2 --><span class="coq-sentence"><input class="coq-toggle" id="chk0" type="checkbox"><label class="coq-input" for="chk0"><span class="highlight"><span class="kn">Lemma</span> <span class="nf">even_Even</span> :
+  <span class="kr">forall</span> <span class="nv">n</span>, even n = true &lt;-&gt; Even n.</span></label><div class="coq-output" id="goal0"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight"><span class="kr">forall</span> <span class="nv">n</span> : nat, even n = true &lt;-&gt; Even n</span></span></span></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-sentence"><input class="coq-toggle" id="chk1" type="checkbox"><label class="coq-input" for="chk1"><span class="highlight"><span class="kn">Proof</span>.</span></label><div class="coq-output" id="goal1"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight"><span class="kr">forall</span> <span class="nv">n</span> : nat, even n = true &lt;-&gt; Even n</span></span></span></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk2" type="checkbox"><label class="coq-input" for="chk2"><span class="highlight"><span class="nb">induction</span> n.</span></label><div class="coq-output" id="goal2"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even <span class="mi">0</span> = true &lt;-&gt; Even <span class="mi">0</span></span></span></span><input class="coq-extra-goals-toggle" id="chk3" type="checkbox"><label class="coq-extra-goals-label" for="chk3">1 more goal</label><div class="coq-extra-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even n = true &lt;-&gt; Even n</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even (S n) = true &lt;-&gt; Even (S n)</span></span></span></div></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk4" type="checkbox"><label class="coq-input" for="chk4"><span class="highlight"><span class="kp">all</span>: <span class="nb">cbn</span>.</span></label><div class="coq-output" id="goal3"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">true = true &lt;-&gt; Even <span class="mi">0</span></span></span></span><input class="coq-extra-goals-toggle" id="chk5" type="checkbox"><label class="coq-extra-goals-label" for="chk5">1 more goal</label><div class="coq-extra-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even n = true &lt;-&gt; Even n</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even (S n) = true &lt;-&gt; Even (S n)</span></span></span></div></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk6" type="checkbox"><label class="coq-input" for="chk6"><span class="highlight">-</span></label><div class="coq-output" id="goal4"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">true = true &lt;-&gt; Even <span class="mi">0</span></span></span></span></span></div></div><span class="coq-wsp"> </span></span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk7" type="checkbox"><label class="coq-input" for="chk7"><span class="highlight"><span class="nb">split</span>.</span></label><div class="coq-output" id="goal5"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">true = true -&gt; Even <span class="mi">0</span></span></span></span><input class="coq-extra-goals-toggle" id="chk8" type="checkbox"><label class="coq-extra-goals-label" for="chk8">1 more goal</label><div class="coq-extra-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">Even <span class="mi">0</span> -&gt; true = true</span></span></span></div></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">    </span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="kp">all</span>: <span class="nb">constructor</span>.</span></span><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk9" type="checkbox"><label class="coq-input" for="chk9"><span class="highlight">-</span></label><div class="coq-output" id="goal6"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even n = true &lt;-&gt; Even n</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even (S n) = true &lt;-&gt; Even (S n)</span></span></span></span></div></div><span class="coq-wsp"> </span></span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chka" type="checkbox"><label class="coq-input" for="chka"><span class="highlight"><span class="nb">apply</span> IHn.</span></label><div class="coq-output" id="goal7"><div class="coq-output-sticky-wrapper"><span class="coq-responses"><span class="coq-response"><span class="highlight">In environment
+n : nat
+IHn : even n = true &lt;-&gt; Even n
+Unable to <span class="nb">unify</span> <span class="s2">&quot;even n = true &lt;-&gt; Even n&quot;</span> <span class="kr">with</span>
+ <span class="s2">&quot;even (S n) = true &lt;-&gt; Even (S n)&quot;</span>.</span></span></span></div></div></span></pre><p>The induction hypothesis doesn't apply — maybe we need to destruct <tt class="docutils literal">n</tt>?</p>
+<pre class="alectryon-io alectryon-floating"><!-- Generator: Alectryon v0.2 --><span class="coq-nc"><span class="highlight">    </span></span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chkb" type="checkbox"><label class="coq-input" for="chkb"><span class="highlight"><span class="nb">destruct</span> n.</span></label><div class="coq-output" id="goal8"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even <span class="mi">0</span> = true &lt;-&gt; Even <span class="mi">0</span></span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even <span class="mi">1</span> = true &lt;-&gt; Even <span class="mi">1</span></span></span></span><input class="coq-extra-goals-toggle" id="chkc" type="checkbox"><label class="coq-extra-goals-label" for="chkc">1 more goal</label><div class="coq-extra-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even (S n) = true &lt;-&gt; Even (S n)</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even (S (S n)) = true &lt;-&gt; Even (S (S n))</span></span></span></div></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">    </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chkd" type="checkbox"><label class="coq-input" for="chkd"><span class="highlight">+</span></label><div class="coq-output" id="goal9"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even <span class="mi">0</span> = true &lt;-&gt; Even <span class="mi">0</span></span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even <span class="mi">1</span> = true &lt;-&gt; Even <span class="mi">1</span></span></span></span></span></div></div><span class="coq-wsp"> </span></span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="nb">split</span>; <span class="nb">inversion</span> <span class="mi">1</span>.</span></span><span class="coq-wsp">
+</span></span><span class="coq-wsp">    </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chke" type="checkbox"><label class="coq-input" for="chke"><span class="highlight">+</span></label><div class="coq-output" id="goala"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even (S n) = true &lt;-&gt; Even (S n)</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even (S (S n)) = true &lt;-&gt; Even (S (S n))</span></span></span></span></div></div></span></pre><p>Stuck again!</p>
+<pre class="alectryon-io alectryon-floating"><!-- Generator: Alectryon v0.2 --><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="kn">Abort</span>.</span></span></span></pre><div class="section" id="strengthening-the-spec">
+<h1>Strengthening the spec</h1>
+<p>The usual approach is to strengthen the spec:</p>
+<pre class="alectryon-io alectryon-floating"><!-- Generator: Alectryon v0.2 --><span class="coq-sentence"><input class="coq-toggle" id="chkf" type="checkbox"><label class="coq-input" for="chkf"><span class="highlight"><span class="kn">Lemma</span> <span class="nf">even_Even</span> :
+  <span class="kr">forall</span> <span class="nv">n</span>, (even n = true &lt;-&gt; Even n) /\
+       (even (S n) = true &lt;-&gt; Even (S n)).</span></label><div class="coq-output" id="goalb"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight"><span class="kr">forall</span> <span class="nv">n</span> : nat,
+(even n = true &lt;-&gt; Even n) /\
+(even (S n) = true &lt;-&gt; Even (S n))</span></span></span></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-sentence"><input class="coq-toggle" id="chk10" type="checkbox"><label class="coq-input" for="chk10"><span class="highlight"><span class="kn">Proof</span>.</span></label><div class="coq-output" id="goalc"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight"><span class="kr">forall</span> <span class="nv">n</span> : nat,
+(even n = true &lt;-&gt; Even n) /\
+(even (S n) = true &lt;-&gt; Even (S n))</span></span></span></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk11" type="checkbox"><label class="coq-input" for="chk11"><span class="highlight"><span class="nb">induction</span> n; <span class="nb">cbn</span>.</span></label><div class="coq-output" id="goald"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">(true = true &lt;-&gt; Even <span class="mi">0</span>) /\ (false = true &lt;-&gt; Even <span class="mi">1</span>)</span></span></span><input class="coq-extra-goals-toggle" id="chk12" type="checkbox"><label class="coq-extra-goals-label" for="chk12">1 more goal</label><div class="coq-extra-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">(even n = true &lt;-&gt; Even n) /\ (even (S n) = true &lt;-&gt; Even (S n))</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">(even (S n) = true &lt;-&gt; Even (S n)) /\
+(even n = true &lt;-&gt; Even (S (S n)))</span></span></span></div></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk13" type="checkbox"><label class="coq-input" for="chk13"><span class="highlight">-</span></label><div class="coq-output" id="goale"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">(true = true &lt;-&gt; Even <span class="mi">0</span>) /\ (false = true &lt;-&gt; Even <span class="mi">1</span>)</span></span></span></span></div></div><span class="coq-wsp"> </span></span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk14" type="checkbox"><label class="coq-input" for="chk14"><span class="highlight"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="nb">cbn</span>.</span></label><div class="coq-output" id="goalf"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">true = true -&gt; Even <span class="mi">0</span></span></span></span><input class="coq-extra-goals-toggle" id="chk15" type="checkbox"><label class="coq-extra-goals-label" for="chk15">2 more goals</label><div class="coq-extra-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">false = true -&gt; Even <span class="mi">1</span></span></span></span><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">Even <span class="mi">1</span> -&gt; false = true</span></span></span></div></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">    </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk16" type="checkbox"><label class="coq-input" for="chk16"><span class="highlight"><span class="kp">all</span>: <span class="kp">try</span> <span class="nb">constructor</span>.</span></label><div class="coq-output" id="goal10"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">false = true -&gt; Even <span class="mi">1</span></span></span></span><input class="coq-extra-goals-toggle" id="chk17" type="checkbox"><label class="coq-extra-goals-label" for="chk17">1 more goal</label><div class="coq-extra-goals"><span class="coq-goal"><span class="goal-hyps"></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">Even <span class="mi">1</span> -&gt; false = true</span></span></span></div></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">    </span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="kp">all</span>: <span class="nb">inversion</span> <span class="mi">1</span>.</span></span><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk18" type="checkbox"><label class="coq-input" for="chk18"><span class="highlight">-</span></label><div class="coq-output" id="goal11"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">(even n = true &lt;-&gt; Even n) /\ (even (S n) = true &lt;-&gt; Even (S n))</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">(even (S n) = true &lt;-&gt; Even (S n)) /\
+(even n = true &lt;-&gt; Even (S (S n)))</span></span></span></span></div></div><span class="coq-wsp"> </span></span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk19" type="checkbox"><label class="coq-input" for="chk19"><span class="highlight"><span class="nb">destruct</span> IHn <span class="kr">as</span> ((Hne &amp; HnE) &amp; (HSne &amp; HSnE)).</span></label><div class="coq-output" id="goal12"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">Hne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even n = true -&gt; Even n</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even n -&gt; even n = true</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even (S n) = true -&gt; Even (S n)</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even (S n) -&gt; even (S n) = true</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">(even (S n) = true &lt;-&gt; Even (S n)) /\
+(even n = true &lt;-&gt; Even (S (S n)))</span></span></span></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">    </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk1a" type="checkbox"><label class="coq-input" for="chk1a"><span class="highlight"><span class="kp">repeat</span> <span class="nb">split</span>; <span class="nb">cbn</span>.</span></label><div class="coq-output" id="goal13"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">Hne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even n = true -&gt; Even n</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even n -&gt; even n = true</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even (S n) = true -&gt; Even (S n)</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even (S n) -&gt; even (S n) = true</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even (S n) = true -&gt; Even (S n)</span></span></span><input class="coq-extra-goals-toggle" id="chk1b" type="checkbox"><label class="coq-extra-goals-label" for="chk1b">3 more goals</label><div class="coq-extra-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">Hne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even n = true -&gt; Even n</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even n -&gt; even n = true</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even (S n) = true -&gt; Even (S n)</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even (S n) -&gt; even (S n) = true</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">Even (S n) -&gt; even (S n) = true</span></span></span><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">Hne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even n = true -&gt; Even n</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even n -&gt; even n = true</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even (S n) = true -&gt; Even (S n)</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even (S n) -&gt; even (S n) = true</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even n = true -&gt; Even (S (S n))</span></span></span><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">Hne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even n = true -&gt; Even n</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even n -&gt; even n = true</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even (S n) = true -&gt; Even (S n)</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even (S n) -&gt; even (S n) = true</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">Even (S (S n)) -&gt; even n = true</span></span></span></div></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">    </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk1c" type="checkbox"><label class="coq-input" for="chk1c"><span class="highlight"><span class="kp">all</span>: <span class="nb">eauto using</span> EvenS.</span></label><div class="coq-output" id="goal14"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span><span class="goal-hyp"><span class="hyp-names">Hne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even n = true -&gt; Even n</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even n -&gt; even n = true</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSne</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">even (S n) = true -&gt; Even (S n)</span></span></span></span><span class="goal-hyp"><span class="hyp-names">HSnE</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">Even (S n) -&gt; even (S n) = true</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">Even (S (S n)) -&gt; even n = true</span></span></span></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">    </span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="nb">inversion</span> <span class="mi">1</span>; <span class="nb">eauto</span>.</span></span><span class="coq-wsp">
+</span></span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="kn">Qed</span>.</span></span></span></pre></div>
+<div class="section" id="writing-a-fixpoint">
+<h1>Writing a fixpoint</h1>
+<p>But writing a fixpoint is much nicer:</p>
+<pre class="alectryon-io alectryon-floating"><!-- Generator: Alectryon v0.2 --><span class="coq-sentence"><input class="coq-toggle" id="chk1d" type="checkbox"><label class="coq-input" for="chk1d"><span class="highlight"><span class="kn">Fixpoint</span> <span class="nf">even_Even_fp</span> (<span class="nv">n</span>: nat):
+  even n = true &lt;-&gt; Even n.</span></label><div class="coq-output" id="goal15"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n0</span> : nat,
+even n0 = true &lt;-&gt; Even n0</span></span></span></span><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even n = true &lt;-&gt; Even n</span></span></span></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-sentence"><input class="coq-toggle" id="chk1e" type="checkbox"><label class="coq-input" for="chk1e"><span class="highlight"><span class="kn">Proof</span>.</span></label><div class="coq-output" id="goal16"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n0</span> : nat,
+even n0 = true &lt;-&gt; Even n0</span></span></span></span><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even n = true &lt;-&gt; Even n</span></span></span></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk1f" type="checkbox"><label class="coq-input" for="chk1f"><span class="highlight"><span class="nb">destruct</span> n <span class="kr">as</span> [ | [ | n ] ]; <span class="nb">cbn</span>.</span></label><div class="coq-output" id="goal17"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n</span> : nat,
+even n = true &lt;-&gt; Even n</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">true = true &lt;-&gt; Even <span class="mi">0</span></span></span></span><input class="coq-extra-goals-toggle" id="chk20" type="checkbox"><label class="coq-extra-goals-label" for="chk20">2 more goals</label><div class="coq-extra-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n</span> : nat,
+even n = true &lt;-&gt; Even n</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">false = true &lt;-&gt; Even <span class="mi">1</span></span></span></span><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n0</span> : nat,
+even n0 = true &lt;-&gt; Even n0</span></span></span></span><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even n = true &lt;-&gt; Even (S (S n))</span></span></span></div></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk21" type="checkbox"><label class="coq-input" for="chk21"><span class="highlight">-</span></label><div class="coq-output" id="goal18"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n</span> : nat,
+even n = true &lt;-&gt; Even n</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">true = true &lt;-&gt; Even <span class="mi">0</span></span></span></span></span></div></div><span class="coq-wsp"> </span></span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="kp">repeat</span> <span class="nb">constructor</span>.</span></span><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk22" type="checkbox"><label class="coq-input" for="chk22"><span class="highlight">-</span></label><div class="coq-output" id="goal19"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n</span> : nat,
+even n = true &lt;-&gt; Even n</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">false = true &lt;-&gt; Even <span class="mi">1</span></span></span></span></span></div></div><span class="coq-wsp"> </span></span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="nb">split</span>; <span class="nb">inversion</span> <span class="mi">1</span>.</span></span><span class="coq-wsp">
+</span></span><span class="coq-wsp">  </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk23" type="checkbox"><label class="coq-input" for="chk23"><span class="highlight">-</span></label><div class="coq-output" id="goal1a"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n0</span> : nat,
+even n0 = true &lt;-&gt; Even n0</span></span></span></span><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even n = true &lt;-&gt; Even (S (S n))</span></span></span></span></div></div><span class="coq-wsp"> </span></span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk24" type="checkbox"><label class="coq-input" for="chk24"><span class="highlight"><span class="nb">split</span>.</span></label><div class="coq-output" id="goal1b"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n0</span> : nat,
+even n0 = true &lt;-&gt; Even n0</span></span></span></span><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even n = true -&gt; Even (S (S n))</span></span></span><input class="coq-extra-goals-toggle" id="chk25" type="checkbox"><label class="coq-extra-goals-label" for="chk25">1 more goal</label><div class="coq-extra-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n0</span> : nat,
+even n0 = true &lt;-&gt; Even n0</span></span></span></span><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">Even (S (S n)) -&gt; even n = true</span></span></span></div></span></div></div><span class="coq-wsp">
+</span></span><span class="coq-wsp">    </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk26" type="checkbox"><label class="coq-input" for="chk26"><span class="highlight">+</span></label><div class="coq-output" id="goal1c"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n0</span> : nat,
+even n0 = true &lt;-&gt; Even n0</span></span></span></span><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">even n = true -&gt; Even (S (S n))</span></span></span></span></div></div><span class="coq-wsp"> </span></span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="nb">constructor</span>; <span class="nb">apply</span> even_Even; <span class="bp">assumption</span>.</span></span><span class="coq-wsp">
+</span></span><span class="coq-wsp">    </span><span class="coq-sentence"><input checked="checked" class="coq-toggle" id="chk27" type="checkbox"><label class="coq-input" for="chk27"><span class="highlight">+</span></label><div class="coq-output" id="goal1d"><div class="coq-output-sticky-wrapper"><span class="coq-goals"><span class="coq-goal"><span class="goal-hyps"><span class="goal-hyp"><span class="hyp-names">even_Even_fp</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight"><span class="kr">forall</span> <span class="nv">n0</span> : nat,
+even n0 = true &lt;-&gt; Even n0</span></span></span></span><span class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type"><span class="hyp-punct">:</span><span class="highlight">nat</span></span></span></span></span><span class="goal-separator"><hr></span><span class="goal-conclusion"><span class="highlight">Even (S (S n)) -&gt; even n = true</span></span></span></span></div></div><span class="coq-wsp"> </span></span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="nb">inversion</span> <span class="mi">1</span>; <span class="nb">apply</span> even_Even; <span class="bp">assumption</span>.</span></span><span class="coq-wsp">
+</span></span><span class="coq-sentence"><span class="coq-input"><span class="highlight"><span class="kn">Qed</span>.</span></span></span></pre></div>
+</div>
+</body>
+</html>
