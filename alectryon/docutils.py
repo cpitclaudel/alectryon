@@ -264,7 +264,7 @@ class JsErrorPrinter:
             json.dump(js, self.stream)
             self.stream.write('\n')
 
-class CoqReSTParser(docutils.parsers.rst.Parser):
+class RSTCoqParser(docutils.parsers.rst.Parser):
     """A wrapper around the reStructuredText parser for literate Coq files."""
 
     supported = ('coq',)
@@ -290,7 +290,7 @@ class CoqReSTParser(docutils.parsers.rst.Parser):
     @staticmethod
     def coq_input_lines(coq_input, source):
         from docutils.statemachine import StringList
-        lines = CoqReSTParser.rst_lines(coq_input)
+        lines = RSTCoqParser.rst_lines(coq_input)
         initlist, items = zip(*((line, (source, i)) for (line, i) in lines))
         return StringList(list(initlist), source, list(items))
 
@@ -302,13 +302,13 @@ class CoqReSTParser(docutils.parsers.rst.Parser):
               state_classes=self.state_classes,
               initial_state=self.initial_state,
               debug=document.reporter.debug_flag)
-        lines = CoqReSTParser.coq_input_lines(inputstring, document['source'])
+        lines = RSTCoqParser.coq_input_lines(inputstring, document['source'])
         self.statemachine.run(lines, document, inliner=self.inliner)
         if '' in roles._roles:
             del roles._roles['']
         self.finish_parse()
 
-class StandaloneCoqReSTReader(Reader):
+class RSTCoqStandaloneReader(Reader):
     def __init__(self, parser=None, parser_name=None, extra_transforms=None):
         Reader.__init__(self, parser, parser_name)
         self.extra_transforms = extra_transforms or []

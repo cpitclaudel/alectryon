@@ -47,58 +47,77 @@ def annotate_chunks(chunks, serapi_args):
 DOCUTILS_CSS = "https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutils_basic.css"
 MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"
 
-def gen_docutils_html(document):
-    pass # FIXME
-
-def _init_docutils_settings(components):
-    from docutils.frontend import OptionParser
-    return OptionParser(components=components).get_default_values()
-
-def _lint_docutils(source, parser, document):
-    from io import StringIO
-    from .docutils import JsErrorPrinter
-    document.reporter.stream = False # Disable textual reporting
-    observer = JsErrorPrinter(StringIO(), document.settings)
-    document.reporter.attach_observer(observer)
-    parser.parse(source, document)
-    return observer.stream.getvalue()
-
-def _parse_docutils(source, parser, document):
-    parser.parse(source, document)
-    document.transformer.apply_transforms()
-    return document
-
-def _prepare_docutils_parser(fpath, Parser, Reader):
-    from docutils.utils import new_document
+def _gen_docutils_html(source, fpath, Parser, Reader):
+    from .core import DEBUG
+    from .html import CSS_ASSETS
+    from docutils.core import publish_string
     from .docutils import register
+
     register()
+
+    # The encoding/decoding dance below happens because setting output_encoding
+    # to "unicode" causes reST to generate a bad <meta> tag, and setting
+    # input_encoding breaks the ‘.. include’ directive.
+
+    settings_overrides = {
+        'traceback': DEBUG,
+        'embed_stylesheet': False,
+        'syntax_highlight': 'none',
+        'stylesheet_path': None,
+        'math_output': "MathJax " + MATHJAX_URL,
+        'stylesheet': ",".join((*CSS_ASSETS, DOCUTILS_CSS)),
+        'input_encoding': 'utf-8',
+        'output_encoding': 'utf-8'
+    }
+
     parser = Parser()
-    reader = Reader(parser)
-    settings = _init_docutils_settings((Parser, Reader))
-    document = new_document(fpath, settings)
-    document.transformer.populate_from_components((parser, reader))
-    return parser, document
+    return publish_string(
+        source=source.encode("utf-8"),
+        source_path=fpath, destination_path=None,
+        reader=Reader(parser), reader_name=None,
+        parser=parser, parser_name=None,
+        writer=None, writer_name='html',
+        settings=None, settings_spec=None,
+        settings_overrides=settings_overrides, config_section=None,
+        enable_exit_status=True).decode("utf-8")
 
-def _prepare_coq_rst_parser(fpath):
-    from .docutils import CoqReSTParser, StandaloneCoqReSTReader
-    return _prepare_docutils_parser(fpath, CoqReSTParser, StandaloneCoqReSTReader)
+def gen_rstcoq_html(coq, fpath):
+    from .docutils import RSTCoqParser, RSTCoqStandaloneReader
+    return _gen_docutils_html(coq, fpath, RSTCoqParser, RSTCoqStandaloneReader)
 
-def _prepare_rst_parser(fpath):
+def gen_rst_html(rst, fpath):
     from docutils.parsers.rst import Parser
     from docutils.readers.standalone import Reader
-    return _prepare_docutils_parser(fpath, Parser, Reader)
+    return _gen_docutils_html(rst, fpath, Parser, Reader)
 
-def parse_coq_rst(coq, fpath):
-    return _parse_docutils(coq, *_prepare_coq_rst_parser(fpath))
+def _lint_docutils(source, fpath, Parser):
+    from io import StringIO
+    from docutils.utils import new_document
+    from docutils.frontend import OptionParser
+    from .core import DEBUG
+    from .docutils import register, JsErrorPrinter
+    register()
 
-def lint_coq_rst(coq, fpath):
-    return _lint_docutils(coq, *_prepare_coq_rst_parser(fpath))
+    parser = Parser()
+    settings = OptionParser(components=(Parser,)).get_default_values()
+    settings.traceback = DEBUG
+    observer = JsErrorPrinter(StringIO(), settings)
+    document = new_document(fpath, settings)
 
-def parse_rst(rst, fpath):
-    return _parse_docutils(rst, *_prepare_rst_parser(fpath))
+    document.reporter.report_level = 0 # Report all messages
+    document.reporter.stream = False # Disable textual reporting
+    document.reporter.attach_observer(observer)
+    parser.parse(source, document)
+
+    return observer.stream.getvalue()
+
+def lint_rstcoq(coq, fpath):
+    from .docutils import RSTCoqParser
+    return _lint_docutils(coq, fpath, RSTCoqParser)
 
 def lint_rst(rst, fpath):
-    return _lint_docutils(rst, *_prepare_rst_parser(fpath))
+    from docutils.parsers.rst import Parser
+    return _lint_docutils(rst, fpath, Parser)
 
 def gen_html_snippets(annotated):
     from .html import HtmlWriter
@@ -186,16 +205,16 @@ PIPELINES = {
                     dump_html_standalone, copy_assets, write_file(".v.html")),
         'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
                           dump_html_snippets, write_file(".snippets.html")),
-        'lint': (lint_coq_rst, write_file(".lint")),
+        'lint': (lint_rstcoq, write_file(".lint")),
         'rst': (rst_to_coq, write_file(".v.rst"))
     },
     'coq+rst': {
-        'webpage': (parse_coq_rst, gen_docutils_html, write_file(".html")),
-        'lint': (lint_coq_rst, write_file(".lint")),
+        'webpage': (gen_rstcoq_html, copy_assets, write_file(".html")),
+        'lint': (lint_rstcoq, write_file(".lint")),
         'rst': (coq_to_rst, write_file(".v.rst"))
     },
     'rst': {
-        'webpage': (parse_rst, gen_docutils_html, write_file(".html")),
+        'webpage': (gen_rst_html, copy_assets, write_file(".html")),
         'lint': (lint_rst, write_file(".lint")),
         'coq': (rst_to_coq, write_file(".v")),
         'coq+rst': (rst_to_coq, write_file(".v"))
@@ -206,8 +225,8 @@ MODES_BY_EXTENSION = [('.v', "coq"), ('.json', "json"), ('.v.rst', "rst"), ('.rs
 DEFAULT_BACKENDS = {
     'json': 'json',
     'coq': 'webpage',
-    'coq+rst': 'webpage', # FIXME
-    'rst': 'webpage' # FIXME
+    'coq+rst': 'webpage',
+    'rst': 'webpage'
 }
 
 def infer_mode(fpath, kind, arg):
@@ -289,8 +308,9 @@ and produce reStructuredText, HTML, or JSON output.""")
     out = parser.add_argument_group("Output arguments", OUTPUT_HELP)
 
     BACKEND_HELP = "Choose a backend. Supported: "
-    BACKEND_HELP += "; ".join("{} → {{{}}}".format(frontend, ", ".join(sorted(backends)))
-                              for frontend, backends in PIPELINES.items())
+    BACKEND_HELP += "; ".join(
+        "{} → {{{}}}".format(frontend, ", ".join(sorted(backends)))
+        for frontend, backends in PIPELINES.items())
     BACKEND_CHOICES = sorted(set(b for _, bs in PIPELINES.items() for b in bs))
     out.add_argument("--backend", default=None, choices=BACKEND_CHOICES,
                      help=BACKEND_HELP)
