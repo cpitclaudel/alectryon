@@ -79,6 +79,11 @@
 (require 'proof-general nil t)
 (require 'proof-shell nil t)
 
+(defgroup alectryon nil
+  "reStructuredText support Coq files."
+  :prefix "alectryon-"
+  :group 'languages)
+
 ;;;; Utilities
 
 (defconst alectryon--script-full-path
@@ -240,6 +245,34 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 
 (add-to-list 'flycheck-checkers 'alectryon)
 
+;;; Font-locking
+
+(defface alectryon-comment
+  '((t :inherit font-lock-doc-face))
+  "Face used to highlight (*| … |*) comments."
+  :group 'alectryon)
+
+(defface alectryon-comment-marker
+  '((t :strike-through t :height 0.5))
+  "Face used to highlight (*| … |*) marker."
+  :group 'alectryon)
+
+(defun alectryon--syntactic-face-function (state)
+  "Determine which face to use based on parsing state STATE."
+  (let ((comment-opener-pos (nth 8 state)))
+    (when comment-opener-pos
+      (save-excursion
+        (goto-char comment-opener-pos)
+        (when (looking-at-p (regexp-quote "(*|"))
+          'alectryon-comment)))))
+
+(defconst alectryon--coq-font-lock-keywords
+  '(("^\\s-*\\(([*][|]\\|[|][*])\\)\\s-*$"
+     1 '(face alectryon-comment-marker display (space :align-to right)) append)))
+
+(defconst alectryon--rst-font-lock-keywords
+  '())
+
 ;;; Minor mode
 
 (defvar-local alectryon--original-mode nil
@@ -249,7 +282,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 (defun alectryon--save ()
   "Translate back to `alectryon--original-mode' and save the result.
 Current document must have a file name."
-  (unless (eq major-mode alectryon--original-mode)
+  (unless (eq major-mode (or alectryon--original-mode major-mode))
     (let ((mode major-mode)
           (input (alectryon--buffer-string))
           (fname buffer-file-name))
@@ -272,12 +305,26 @@ Current document must have a file name."
   :lighter " 📚"
   (cond
    (alectryon-mode
+    (visual-line-mode)
+    (alectryon--invoke 'flycheck-mode)
+    (font-lock-add-keywords
+     nil (alectryon--mode-case alectryon--coq-font-lock-keywords alectryon--rst-font-lock-keywords))
+    (add-function :before-until (local 'font-lock-syntactic-face-function)
+                  #'alectryon--syntactic-face-function '((depth . -100)))
     (setq-local alectryon--original-mode (or alectryon--original-mode major-mode))
-    (add-hook 'write-contents-functions #'alectryon--save t t)
-    (alectryon--invoke 'flycheck-mode))
+    (add-hook 'write-contents-functions #'alectryon--save t t))
    (t
+    (visual-line-mode -1)
+    (font-lock-remove-keywords
+     nil (alectryon--mode-case alectryon--coq-font-lock-keywords alectryon--rst-font-lock-keywords))
+    (remove-function (local 'font-lock-syntactic-face-function)
+                     #'alectryon--syntactic-face-function)
     (kill-local-variable 'alectryon--original-mode)
-    (remove-hook 'write-contents-functions #'alectryon--save t))))
+    (remove-hook 'write-contents-functions #'alectryon--save t)))
+  (if (and (fboundp 'font-lock-flush) (fboundp 'font-lock-ensure))
+      (progn (setq font-lock-fontified t)
+             (font-lock-flush) (font-lock-ensure))
+    (with-no-warnings (font-lock-fontify-buffer))))
 
 ;;;###autoload
 (add-hook 'coq-mode-hook #'alectryon-mode)
