@@ -286,8 +286,9 @@ def gen_rst(spans):
             linum, lines = number_lines(span.v.trim(LIT_OPEN, LIT_CLOSE), linum, "")
             litspan = lit(lines, indent)
             indent, prefix = litspan.indent, litspan.directive
-            yield from litspan.lines
-            yield ""
+            if litspan.lines:
+                yield from litspan.lines
+                yield ""
         else:
             linum, lines = number_lines(span.v, linum, indent + "   ")
             strip_deque(lines)
@@ -343,7 +344,7 @@ COQ_BLOCK = re.compile(r"""
 def rst_partition(s):
     beg, linum = 0, 0
     for m in COQ_BLOCK.finditer(s):
-        indent = m.group("indent")
+        indent = len(m.group("indent"))
         rst = StringView(s, beg, m.start())
         block = StringView(s, *m.span())
 
@@ -351,8 +352,8 @@ def rst_partition(s):
         linum, block_lines = number_lines(block, linum, "")
         directive = block_lines.popleft()
 
-        yield Lit(rst_lines, directive=directive, indent=None)
-        yield CodeBlock(block_lines, indent=len(indent))
+        yield Lit(rst_lines, directive=directive, indent=indent)
+        yield CodeBlock(block_lines, indent=indent)
         beg = m.end()
     if beg < len(s):
         rst = StringView(s, beg, len(s))
@@ -363,22 +364,27 @@ def rst_partition(s):
 # ----------
 
 # FIXME either get rid of \t or disallow it
-INDENTATION = re.compile("^[ \t]*")
+INDENTATION = re.compile("[ \t]*")
 
 def indentation(line):
-    return INDENTATION.match(line).end()
+    return len(line.view.match(INDENTATION).group())
 
-def trim_rst_block(block, last_indent):
+def trim_rst_block(block, last_indent, keep_empty):
     strip_deque(block.lines)
+    directive_indent = block.indent # Stored here for convenience
+    last_indent = indentation(block.lines[-1]) if block.lines else last_indent
 
     directive = block.directive
-    keep_empty = directive is not None
-    if directive and str(directive).strip() == DEFAULT_HEADER and block.indent == last_indent:
+    keep_empty = keep_empty and directive is not None
+    if (directive
+        and str(directive).strip() == DEFAULT_HEADER
+        and directive_indent == last_indent):
         directive = None
 
     if not block.lines and not directive:
         if keep_empty:
             yield "(*||*)"
+            yield ""
     else:
         yield "(*|"
         yield from block.lines
@@ -387,18 +393,22 @@ def trim_rst_block(block, last_indent):
                 yield ""
             yield directive
         yield "|*)"
+        yield ""
+
+def trim_coq_block(block):
+    strip_deque(block.lines)
+    for line in block.lines:
+        yield line.strip_indent(block.indent + 3)
+    if block.lines:
+        yield ""
 
 def gen_coq(blocks):
     last_indent = 0
     for idx, block in enumerate(blocks):
         if isinstance(block, Lit):
-            if idx > 0:
-                yield ""
-            yield from trim_rst_block(block, last_indent)
-            yield ""
+            yield from trim_rst_block(block, last_indent, idx > 0)
         elif isinstance(block, CodeBlock):
-            for line in strip_deque(block.lines):
-                yield line.strip_indent(block.indent + 3)
+            yield from trim_coq_block(block)
         last_indent = block.indent
 
 def rst2coq_lines(rst):
