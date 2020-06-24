@@ -174,7 +174,11 @@ def fill_in_arguments(args):
             args.point = int(args.point)
         except ValueError:
             MSG = "argument --mark-point: Expecting a number, not {!r}"
-            raise argparse.ArgumentTypeError("--mark-point", MSG.format(args.point))
+            raise argparse.ArgumentTypeError(MSG.format(args.point))
+
+    if len(args.input) > 1 and args.output:
+        MSG = "argument --output: Not valid with multiple inputs"
+        raise argparse.ArgumentTypeError(MSG)
 
     args.pipelines = [(fpath, resolve_pipeline(fpath, args))
                       for fpath in args.input]
@@ -208,6 +212,10 @@ and produce reStructuredText, HTML, or JSON output.""")
     BACKEND_CHOICES = sorted(set(b for _, bs in PIPELINES.items() for b in bs))
     out.add_argument("--backend", default=None, choices=BACKEND_CHOICES,
                      help=BACKEND_HELP)
+
+    OUT_FILE_HELP = "Set the output file (default: computed based on INPUT)."
+    parser.add_argument("-o", "--output", default=None,
+                        help=OUT_FILE_HELP)
 
     OUT_DIR_HELP = "Set the output directory."
     parser.add_argument("--output-directory", default=".",
@@ -274,11 +282,11 @@ def read_input(fpath):
     with open(fpath) as f:
         return fname, f.read()
 
-def write_output(fname, outdir, contents, ext):
-    if fname == "-":
+def write_output(in_fname, out_fpath, outdir, contents, ext):
+    if out_fpath == "-" or (out_fpath is None and in_fname == "-"):
         sys.stdout.write(contents)
     else:
-        out_fpath = os.path.join(outdir, fname + ext)
+        out_fpath = out_fpath or os.path.join(outdir, in_fname + ext)
         with open(out_fpath, mode="w") as f:
             f.write(contents)
 
@@ -294,7 +302,7 @@ def main():
             ctx = { "fpath": fpath, "fname": fname, **vars(args) }
             for step in pipeline:
                 state = call_pipeline_step(step, state, ctx)
-            write_output(fname, args.output_directory, *state)
+            write_output(fname, args.output, args.output_directory, *state)
     except ValueError as e:
         if args.debug:
             raise e
