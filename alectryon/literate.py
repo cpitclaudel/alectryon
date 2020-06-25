@@ -76,7 +76,8 @@ class Line(namedtuple("Line", "num view indent")):
         return len(self.view)
 
     def __str__(self):
-        return self.indent + str(self.view)
+        s = str(self.view)
+        return (self.indent + s) if s else ""
 
     def isspace(self):
         return self.view.isspace()
