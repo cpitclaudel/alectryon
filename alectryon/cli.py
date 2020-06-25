@@ -92,18 +92,17 @@ def gen_rst_html(rst, fpath):
     from docutils.readers.standalone import Reader
     return _gen_docutils_html(rst, fpath, Parser, Reader)
 
-def _lint_docutils(source, fpath, Parser):
+def _lint_docutils(source, fpath, Parser, traceback):
     from io import StringIO
     from docutils.utils import new_document
     from docutils.frontend import OptionParser
     from docutils.utils import Reporter
-    from .core import DEBUG
     from .docutils import register, JsErrorPrinter
     register()
 
     parser = Parser()
     settings = OptionParser(components=(Parser,)).get_default_values()
-    settings.traceback = DEBUG
+    settings.traceback = traceback
     observer = JsErrorPrinter(StringIO(), settings)
     document = new_document(fpath, settings)
 
@@ -115,13 +114,13 @@ def _lint_docutils(source, fpath, Parser):
 
     return observer.stream.getvalue()
 
-def lint_rstcoq(coq, fpath):
+def lint_rstcoq(coq, fpath, traceback):
     from .docutils import RSTCoqParser
-    return _lint_docutils(coq, fpath, RSTCoqParser)
+    return _lint_docutils(coq, fpath, RSTCoqParser, traceback)
 
-def lint_rst(rst, fpath):
+def lint_rst(rst, fpath, traceback):
     from docutils.parsers.rst import Parser
-    return _lint_docutils(rst, fpath, Parser)
+    return _lint_docutils(rst, fpath, Parser, traceback)
 
 def gen_html_snippets(annotated):
     from .html import HtmlWriter
@@ -367,6 +366,10 @@ and produce reStructuredText, HTML, or JSON output.""")
     parser.add_argument("--debug", action="store_true",
                         default=False, help=DEBUG_HELP)
 
+    TRACEBACK_HELP = "Print error traces."
+    parser.add_argument("--traceback", action="store_true",
+                        default=False, help=TRACEBACK_HELP)
+
 
     args = parser.parse_args()
     for dir in args.coq_args_I:
@@ -420,7 +423,7 @@ def main():
                 state = call_pipeline_step(step, state, ctx)
             write_output(fname, args.output, args.output_directory, *state)
     except (ValueError, FileNotFoundError) as e:
-        if args.debug:
+        if args.traceback:
             raise e
         sys.stderr.write("Exception: {}\n".format(e))
         sys.exit(1)
