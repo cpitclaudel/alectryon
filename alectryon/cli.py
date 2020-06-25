@@ -208,23 +208,31 @@ PIPELINES = {
                     dump_html_standalone, copy_assets, write_file(".v.html")),
         'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
                           dump_html_snippets, write_file(".snippets.html")),
-        'lint': (lint_rstcoq, write_file(".lint")),
-        'rst': (rst_to_coq, write_file(".v.rst"))
+        'lint': (lint_rstcoq, write_file(".lint.json")),
+        'rst': (coq_to_rst, write_file(".v.rst"))
     },
     'coq+rst': {
         'webpage': (gen_rstcoq_html, write_file(".html")),
-        'lint': (lint_rstcoq, write_file(".lint")),
+        'lint': (lint_rstcoq, write_file(".lint.json")),
         'rst': (coq_to_rst, write_file(".v.rst"))
     },
     'rst': {
         'webpage': (gen_rst_html, write_file(".html")),
-        'lint': (lint_rst, write_file(".lint")),
+        'lint': (lint_rst, write_file(".lint.json")),
         'coq': (rst_to_coq, write_file(".v")),
         'coq+rst': (rst_to_coq, write_file(".v"))
     }
 }
 
-MODES_BY_EXTENSION = [('.v', "coq"), ('.json', "json"), ('.v.rst', "rst"), ('.rst', "rst")]
+EXTENSIONS = ['.v', '.json', '.v.rst', '.rst']
+FRONTENDS_BY_EXTENSION = [
+    ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst')
+]
+BACKENDS_BY_EXTENSION = [
+    ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst'),
+    ('.lint.json', 'lint'), ('.snippets.html', 'snippets-html')
+]
+
 DEFAULT_BACKENDS = {
     'json': 'json',
     'coq': 'webpage',
@@ -232,20 +240,20 @@ DEFAULT_BACKENDS = {
     'rst': 'webpage'
 }
 
-def infer_mode(fpath, kind, arg):
-    for (ext, mode) in MODES_BY_EXTENSION:
+def infer_mode(fpath, kind, arg, table):
+    for (ext, mode) in table:
         if fpath.endswith(ext):
             return mode
     MSG = """{}: Not sure what to do with {!r}.
-Try passing {arg}?"""
-    raise argparse.ArgumentTypeError(MSG.format(fpath, kind, arg))
+Try passing {}?"""
+    raise argparse.ArgumentTypeError(MSG.format(kind, fpath, arg))
 
 def infer_frontend(fpath):
-    return infer_mode(fpath, "input", "--frontend")
+    return infer_mode(fpath, "input", "--frontend", FRONTENDS_BY_EXTENSION)
 
 def infer_backend(frontend, out_fpath):
     if out_fpath:
-        return infer_mode(out_fpath, "output", "--backend")
+        return infer_mode(out_fpath, "output", "--backend", BACKENDS_BY_EXTENSION)
     return DEFAULT_BACKENDS[frontend]
 
 def resolve_pipeline(fpath, args):
@@ -301,7 +309,7 @@ and produce reStructuredText, HTML, or JSON output.""")
 
     FRONTEND_HELP = "Choose a frontend. Defaults: "
     FRONTEND_HELP += "; ".join("{!r} → {}".format(ext, frontend)
-                               for ext, frontend in MODES_BY_EXTENSION)
+                               for ext, frontend in FRONTENDS_BY_EXTENSION)
     FRONTEND_CHOICES = sorted(PIPELINES.keys())
     out.add_argument("--frontend", default=None, choices=FRONTEND_CHOICES,
                      help=FRONTEND_HELP)
@@ -394,7 +402,7 @@ def read_input(fpath, args):
     if fpath == "-":
         return (args.stdin_filename or "-"), "-", sys.stdin.read()
     fname = os.path.basename(fpath)
-    for ext, _ in MODES_BY_EXTENSION:
+    for ext in EXTENSIONS:
         if fpath.endswith(ext):
             fname = fpath[:-len(ext)]
             break
