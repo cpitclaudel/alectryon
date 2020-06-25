@@ -96,6 +96,7 @@ def _lint_docutils(source, fpath, Parser):
     from io import StringIO
     from docutils.utils import new_document
     from docutils.frontend import OptionParser
+    from docutils.utils import Reporter
     from .core import DEBUG
     from .docutils import register, JsErrorPrinter
     register()
@@ -107,6 +108,7 @@ def _lint_docutils(source, fpath, Parser):
     document = new_document(fpath, settings)
 
     document.reporter.report_level = 0 # Report all messages
+    document.reporter.halt_level = Reporter.SEVERE_LEVEL + 1 # Do not exit early
     document.reporter.stream = False # Disable textual reporting
     document.reporter.attach_observer(observer)
     parser.parse(source, document)
