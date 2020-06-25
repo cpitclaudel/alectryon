@@ -327,7 +327,7 @@ Current document must have a file name."
     (with-no-warnings (font-lock-fontify-buffer))))
 
 ;;;###autoload
-(add-hook 'coq-mode-hook #'alectryon-mode)
+(add-hook 'coq-mode-hook #'alectryon-mode t)
 
 (provide 'alectryon)
 ;;; alectryon.el ends here
