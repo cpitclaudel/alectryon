@@ -240,9 +240,9 @@ rules, such as custom tactic names.  See |help(add_tokens)|_ for more details.
 Interactivity
 -------------
 
-Alectryon's HTML output doesn't require JavaScript for interactivity, but a separate "slideshow" mode is implemented in ``alectryon-slideshow.js``.
+Alectryon's HTML output doesn't require JavaScript for basic interactivity, but ``assets/alectryon.js`` implements keyboard navigation.
 
 Authoring support
 -----------------
 
-Th etc/ folder of this directory includes an Emacs mode, ``alectryon.el``, which enables you to easily switch between the literate Coq view of a document and the reStructuredText view of it.
+The ``etc/emacs`` folder of this directory includes an Emacs mode, ``alectryon.el``, which makes it easy to switch between the Coq and reStructuredText views of a document.

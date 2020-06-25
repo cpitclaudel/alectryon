@@ -1,5 +1,5 @@
 alectryon := ../alectryon.py --output-directory output
-assets := alectryon.css alectryon-slideshow.js
+assets := alectryon.css alectryon.js
 all := plain.v.html literate.v.html literate.html document.html document.v literate.v.rst fragments.io.json fragments.snippets.html
 
 all: $(patsubst %,output/%,$(all) $(assets));
