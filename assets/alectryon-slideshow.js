@@ -64,14 +64,12 @@ var Alectryon;
                 else
                     return;
             } else {
-                if (e.keyCode == keys.PAGE_UP ||
-                    e.keyCode == keys.p || e.keyCode == keys.h)
-                    slideshow.previous();
-                else if (e.keyCode == keys.PAGE_DOWN ||
-                         e.keyCode == keys.n || e.keyCode == keys.l)
-                    slideshow.next();
-                else
-                    return;
+                // if (e.keyCode == keys.PAGE_UP || e.keyCode == keys.p || e.keyCode == keys.h)
+                //     slideshow.previous();
+                // else if (e.keyCode == keys.PAGE_DOWN || e.keyCode == keys.n || e.keyCode == keys.l)
+                //     slideshow.next();
+                // else
+                return;
             }
             e.preventDefault();
         }
