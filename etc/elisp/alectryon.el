@@ -307,6 +307,7 @@ Current document must have a file name."
    (alectryon-mode
     (visual-line-mode)
     (alectryon--invoke 'flycheck-mode)
+    (add-to-list 'font-lock-extra-managed-props 'display)
     (font-lock-add-keywords
      nil (alectryon--mode-case alectryon--coq-font-lock-keywords alectryon--rst-font-lock-keywords))
     (add-function :before-until (local 'font-lock-syntactic-face-function)
