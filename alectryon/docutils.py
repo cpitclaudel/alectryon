@@ -291,8 +291,12 @@ class RSTCoqParser(docutils.parsers.rst.Parser):
     def coq_input_lines(coq_input, source):
         from docutils.statemachine import StringList
         lines = RSTCoqParser.rst_lines(coq_input)
-        initlist, items = zip(*((line, (source, i)) for (line, i) in lines))
-        return StringList(list(initlist), source, list(items))
+        initlist, items = [], []
+        # Don't use zip(): we need lists, not tuples, and the input can be empty
+        for (line, i) in lines:
+            initlist.append(line)
+            items.append((source, i))
+        return StringList(initlist, source, items)
 
     def parse(self, inputstring, document):
         """Parse `inputstring` and populate `document`, a document tree."""
