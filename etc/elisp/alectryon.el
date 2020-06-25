@@ -267,7 +267,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
           'alectryon-comment)))))
 
 (defconst alectryon--coq-font-lock-keywords
-  '(("^\\s-*\\(([*][|]\\|[|][*])\\)\\s-*$"
+  '(("^\\(([*][|]\\|[|][*])\\)$"
      1 '(face alectryon-comment-marker display (space :align-to right)) append)))
 
 (defconst alectryon--rst-font-lock-keywords
