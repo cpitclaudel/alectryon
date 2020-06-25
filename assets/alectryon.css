@@ -426,6 +426,11 @@ In any case, make an exception for comments:
     overflow-y: unset;
 }
 
+.alectryon-windowed .coq-output-sticky-wrapper {
+    display: flex; /* Put messages after goals */
+    flex-direction: column-reverse;
+}
+
 /********************/
 /* Standalone style */
 /********************/
