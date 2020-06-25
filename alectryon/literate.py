@@ -87,6 +87,17 @@ class Line(namedtuple("Line", "num view indent")):
         view = self.view[max(0, n - len(self.indent)):]
         return Line(self.num, view, indent)
 
+class QuotedLine(Line):
+    PAIRS = [("(*", r"(\ *"), ("*)", r"*\ )")]
+    def __str__(self):
+        s = super().__str__()
+        for src, dst in self.PAIRS:
+            s = s.replace(src, dst)
+        return s
+
+class UnquotedLine(QuotedLine):
+    PAIRS = [(dst, src) for (src, dst) in QuotedLine.PAIRS]
+
 def blank(line):
     return (not line) or line.isspace()
 
@@ -288,7 +299,7 @@ def gen_rst(spans):
             litspan = lit(lines, indent)
             indent, prefix = litspan.indent, litspan.directive
             if litspan.lines:
-                yield from litspan.lines
+                yield from (UnquotedLine(*l) for l in litspan.lines)
                 yield ""
         else:
             linum, lines = number_lines(span.v, linum, indent + "   ")
@@ -388,7 +399,7 @@ def trim_rst_block(block, last_indent, keep_empty):
             yield ""
     else:
         yield "(*|"
-        yield from block.lines
+        yield from (QuotedLine(*l) for l in block.lines)
         if directive:
             if block.lines:
                 yield ""
