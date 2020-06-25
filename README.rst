@@ -4,6 +4,14 @@
 
 A library to process Coq snippets embedded in documents, showing goals and messages for each Coq sentence.  The goal of Alectryon is to make it easy to write papers, webpages, and other documents that show bits of Coq code along with their output.
 
+Alectryon is typically used in one of three ways:
+
+- As a library, through its Python API
+
+- As a reStructuredText extension, allowing you to include annotated snippets into your reStructuredText documents.  During compilation, Alectryon collects all ``.. coq::`` blocks, feeds their contents to Coq, and incorporates the resulting goals and responses into the final document.
+
+- As a standalone compiler, allowing you to include prose delimited by special ``(*| … |*)`` comments directly into your Coq source files (in the style of coqdoc).  When invoked, Alectryon translates your Coq file into a reStructuredText document and compiles it using the standard reStructuredText toolchain.
+
 For background information and live examples, see the `quickstart guide <FIXME>` on the PLV blog.
 
 Setup
@@ -155,9 +163,10 @@ The results of ``annotate`` can be fed to ``alectryon.html.HtmlWriter(highlighte
 As a docutils or Sphinx module
 ------------------------------
 
-Add the following code to your Sphinx ``config.py`` file or to your Pelican
-setup to register a special ``.. coq::`` directive that feeds its contents to
-alectryon and displays the results interleaved with the input::
+With blogs (Pelican, Nikola, Hugo, etc.)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Include the following code in your configuration file to register Alectryon's ``.. coq::`` directive, which feeds its contents to Alectryon and displays the resulting responses and goals interleaved with the input::
 
     import alectryon.docutils
     alectryon.docutils.register()
@@ -175,6 +184,16 @@ By default, Alectryon's docutils module will raise warnings for lines over 72 ch
 
 .. |help(docutils)| replace:: ``help(alectryon.docutils)``
 .. _help(docutils): alectryon/docutils.py
+
+I test regularly with Pelican; other blogs will likely need minimal adjustments.
+
+With Sphinx
+~~~~~~~~~~~
+
+For Sphinx, add the following to your ``config.py`` file instead::
+
+    import alectryon.sphinx
+    alectryon.sphinx.register()
 
 Controlling output
 ~~~~~~~~~~~~~~~~~~
