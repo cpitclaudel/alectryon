@@ -238,8 +238,10 @@ def alectryon_bubble(# pylint: disable=dangerous-default-value
         _name, rawtext, _text, _lineno, _inliner, _options={}, _content=[]):
     return [inline(rawtext, classes=['alectryon-bubble'])], []
 
-# Reader
-# ------
+alectryon_bubble.name = "alectryon-bubble"
+
+# Error printer
+# -------------
 
 class JsErrorPrinter:
     @staticmethod
@@ -263,6 +265,9 @@ class JsErrorPrinter:
             js = JsErrorPrinter.json_of_message(level, message, source, line)
             json.dump(js, self.stream)
             self.stream.write('\n')
+
+# Parser
+# ------
 
 class RSTCoqParser(docutils.parsers.rst.Parser):
     """A wrapper around the reStructuredText parser for literate Coq files."""
@@ -324,6 +329,11 @@ class RSTCoqStandaloneReader(Reader):
 # Entry point
 # ===========
 
+NODES = [alectryon_pending, alectryon_pending_toggle]
+TRANSFORMS = [AlectryonTransform]
+DIRECTIVES = [CoqDirective, AlectryonToggleDirective]
+ROLES = [alectryon_bubble]
+
 def register():
     """Tell Docutils about our directives (.. coq and .. alectryon-toggle).
 
@@ -332,6 +342,7 @@ def register():
     You can customize the name under which these are registered by adjusting the
     ``name`` field of ``CoqDirective`` and ``AlectryonToggleDirective``.
     """
-    for directive in [CoqDirective, AlectryonToggleDirective]:
+    for directive in DIRECTIVES:
         directives.register_directive(directive.name, directive)
-    roles.register_canonical_role('alectryon-bubble', alectryon_bubble)
+    for role in ROLES:
+        roles.register_canonical_role(role.name, alectryon_bubble)
