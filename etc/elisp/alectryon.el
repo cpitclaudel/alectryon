@@ -163,7 +163,7 @@ The output goes into the current buffer."
   "Convert current buffer from MODE."
   (let* ((pt (point))
          (marker "")
-         (pt-str (number-to-string pt))
+         (pt-str (number-to-string (1- pt)))
          (args `("--mark-point" ,pt-str ,marker ,@(alectryon--converter-args mode)))
          (input (current-buffer)))
     (with-temp-buffer
@@ -177,6 +177,8 @@ The output goes into the current buffer."
     (goto-char (point-min))
     (if (search-forward marker nil t)
         (delete-char -1)
+      (message "Point marker missing from Alectryon's output.
+Please open an issue at https://github.com/cpitclaudel/alectryon.")
       (goto-char (min pt (point-max))))))
 
 (defun alectryon--set-mode (mode)
