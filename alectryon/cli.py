@@ -47,30 +47,47 @@ def annotate_chunks(chunks, serapi_args):
 DOCUTILS_CSS = "https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutils_basic.css"
 MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"
 
-def _gen_docutils_html(source, fpath, Parser, Reader):
-    from .core import DEBUG
+def _gen_docutils_html(source, fpath, html_assets, traceback, Parser, Reader):
     from .html import ASSETS
     from docutils.core import publish_string
+    from docutils.writers import get_writer_class
     from .docutils import register
 
     register()
 
     # The encoding/decoding dance below happens because setting output_encoding
     # to "unicode" causes reST to generate a bad <meta> tag, and setting
-    # input_encoding breaks the ‘.. include’ directive.
+    # input_encoding to "unicode" breaks the ‘.. include’ directive.
 
-    css = [*ASSETS.ALECTRYON_CSS, *ASSETS.DOCUTILS_CSS, *ASSETS.PYGMENTS_CSS]
+    js = ASSETS.ALECTRYON_JS
+    css = (*ASSETS.ALECTRYON_CSS, *ASSETS.DOCUTILS_CSS, *ASSETS.PYGMENTS_CSS)
+    html_assets.extend(js + css)
+
     settings_overrides = {
-        'traceback': DEBUG,
-        'embed_stylesheet': True,
+        'traceback': traceback,
+        'embed_stylesheet': False,
         'stylesheet_path': None,
         'stylesheet_dirs': [ASSETS.PATH],
         'math_output': "MathJax " + MATHJAX_URL,
-        'stylesheet': css,
+        'stylesheet': list(css), # Must be a list
         'syntax_highlight': 'short',
         'input_encoding': 'utf-8',
         'output_encoding': 'utf-8'
     }
+
+    Writer = get_writer_class('html')
+
+    class JSHtmlWriter(Writer):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.translator_class = JSHtmlTranslator
+
+    class JSHtmlTranslator(Writer().translator_class):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            for j in js:
+                TEMPLATE = '<script type="text/javascript" src="{}"></script>'
+                self.stylesheet.append(TEMPLATE.format(j))
 
     parser = Parser()
     return publish_string(
@@ -78,19 +95,19 @@ def _gen_docutils_html(source, fpath, Parser, Reader):
         source_path=fpath, destination_path=None,
         reader=Reader(parser), reader_name=None,
         parser=parser, parser_name=None,
-        writer=None, writer_name='html',
+        writer=JSHtmlWriter(), writer_name=None,
         settings=None, settings_spec=None,
         settings_overrides=settings_overrides, config_section=None,
         enable_exit_status=True).decode("utf-8")
 
-def gen_rstcoq_html(coq, fpath):
+def gen_rstcoq_html(coq, fpath, html_assets, traceback):
     from .docutils import RSTCoqParser, RSTCoqStandaloneReader
-    return _gen_docutils_html(coq, fpath, RSTCoqParser, RSTCoqStandaloneReader)
+    return _gen_docutils_html(coq, fpath, html_assets, traceback, RSTCoqParser, RSTCoqStandaloneReader)
 
-def gen_rst_html(rst, fpath):
+def gen_rst_html(rst, fpath, html_assets, traceback):
     from docutils.parsers.rst import Parser
     from docutils.readers.standalone import Reader
-    return _gen_docutils_html(rst, fpath, Parser, Reader)
+    return _gen_docutils_html(rst, fpath, html_assets, traceback, Parser, Reader)
 
 def _lint_docutils(source, fpath, Parser, traceback):
     from io import StringIO
@@ -170,13 +187,13 @@ def gen_html_snippets_with_coqdoc(annotated):
             else:
                 yield writer.gen_fragments_html(part.fragments)
 
-def copy_assets(state, no_assets, output_directory):
+def copy_assets(state, html_assets, no_assets, output_directory):
     from .html import copy_assets as cp
     if not no_assets:
-        cp(output_directory)
+        cp(output_directory, assets=html_assets)
     return state
 
-def dump_html_standalone(snippets, fname):
+def dump_html_standalone(snippets, fname, html_assets):
     from dominate import tags, document
     from .core import SerAPI
     from .html import gen_header, GENERATOR, ASSETS
@@ -188,9 +205,11 @@ def dump_html_standalone(snippets, fname):
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
     for css in ASSETS.ALECTRYON_CSS:
+        html_assets.append(css)
         doc.head.add(tags.link(rel="stylesheet", href=css))
-    doc.head.add(tags.link(rel="stylesheet", href="coqdoc.css"))
+    doc.head.add(tags.link(rel="stylesheet", href="coqdoc.css")) # FIXME
     for js in ASSETS.ALECTRYON_JS:
+        html_assets.append(js)
         doc.head.add(tags.script(src=js))
 
     FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
@@ -257,7 +276,7 @@ PIPELINES = {
         'rst': (coq_to_rst, write_file(".v.rst"))
     },
     'coq+rst': {
-        'webpage': (gen_rstcoq_html, write_file(".html")),
+        'webpage': (gen_rstcoq_html, copy_assets, write_file(".html")),
         'lint': (lint_rstcoq, write_file(".lint.json")),
         'rst': (coq_to_rst, write_file(".v.rst"))
     },
@@ -266,7 +285,7 @@ PIPELINES = {
                     dump_html_standalone, copy_assets, write_file(".html")),
     },
     'rst': {
-        'webpage': (gen_rst_html, write_file(".html")),
+        'webpage': (gen_rst_html, copy_assets, write_file(".html")),
         'lint': (lint_rst, write_file(".lint.json")),
         'coq': (rst_to_coq, write_file(".v")),
         'coq+rst': (rst_to_coq, write_file(".v"))
@@ -339,6 +358,7 @@ def fill_in_arguments(args):
         MSG = "argument --stdin-filename: input must be '-'"
         raise argparse.ArgumentTypeError(MSG)
 
+    args.html_assets = []
     args.pipelines = [(fpath, resolve_pipeline(fpath, args))
                       for fpath in args.input]
 

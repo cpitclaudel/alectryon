@@ -37,8 +37,9 @@ output/fragments.io.json: fragments.json | output
 output/fragments.snippets.html: fragments.json | output
 	$(alectryon) $< -o $@
 
-output/alectryon%css output/alectryon%js:
+output/alectryon%css output/alectryon%js: FORCE
 	cp ../assets/* output/
+FORCE:
 
 clean:
 	rm -rf output/
