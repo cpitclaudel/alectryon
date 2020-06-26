@@ -230,7 +230,8 @@ FRONTENDS_BY_EXTENSION = [
 ]
 BACKENDS_BY_EXTENSION = [
     ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst'),
-    ('.lint.json', 'lint'), ('.snippets.html', 'snippets-html')
+    ('.lint.json', 'lint'), ('.snippets.html', 'snippets-html'),
+    ('.v.html', 'webpage'), ('.html', 'webpage')
 ]
 
 DEFAULT_BACKENDS = {
