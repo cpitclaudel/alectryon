@@ -154,21 +154,21 @@ class HtmlWriter():
             if fr.annots['in']:
                 self.gen_whitespace(fr.suffixes)
 
+    def gen_fragment_html(self, fr):
+        if isinstance(fr, CoqText):
+            tags.span(self.highlight(fr.contents), cls="coq-nc")
+        else:
+            assert isinstance(fr, HTMLSentence)
+            self.gen_sentence_html(fr)
+
     def gen_fragments_html(self, fragments, classes=()):
         """Serialize a list of `fragments` to HTML."""
         with tags.pre(cls=" ".join(("alectryon-io", *classes))) as div:
             tags.comment(" Generator: {} ".format(GENERATOR))
-            for fr in transforms.htmlify_sentences(fragments):
-                if isinstance(fr, CoqText):
-                    tags.span(self.highlight(fr.contents), cls="coq-nc")
-                else:
-                    assert isinstance(fr, HTMLSentence)
-                    self.gen_sentence_html(fr)
+            for fr in transforms.group_whitespace_with_code(fragments):
+                self.gen_fragment_html(fr)
             return div
 
     def gen_html(self, annotated):
-        for idx, fragments in enumerate(annotated):
-            if idx > 0:
-                yield tags.comment(" alectryon-block-end ")
-            fragments = transforms.group_whitespace_with_code(fragments)
+        for fragments in annotated:
             yield self.gen_fragments_html(fragments)

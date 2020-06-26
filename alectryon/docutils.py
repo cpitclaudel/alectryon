@@ -107,8 +107,7 @@ class AlectryonTransform(Transform):
         fragments = transforms.process_io_annotations(fragments)
         fragments = transforms.strip_failures(fragments)
         fragments = transforms.dedent(fragments)
-        fragments = transforms.group_whitespace_with_code(fragments)
-        return fragments
+        return list(fragments)
 
     def apply_coq(self):
         writer = HtmlWriter(highlight)
