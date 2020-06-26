@@ -41,14 +41,14 @@ class StringView:
     def __repr__(self):
         return repr(str(self))
 
-    def split(self, sep):
+    def split(self, sep, nsplits=None):
         beg, chunks = self.beg, []
         while beg <= self.end:
             end = self.s.find(sep, beg, self.end)
-            if end < 0:
+            if end < 0 or nsplits and len(chunks) == nsplits:
                 end = self.end
             chunks.append(StringView(self.s, beg, end))
-            beg = end + 1
+            beg = end + len(sep)
         return chunks
 
     def match(self, regexp):
@@ -71,32 +71,48 @@ class StringView:
     def isspace(self):
         return bool(self.match(StringView.BLANKS))
 
-class Line(namedtuple("Line", "num view indent")):
+class Line(namedtuple("Line", "num parts indent")):
     def __len__(self):
-        return len(self.view)
+        return sum(len(p) for p in self.parts)
 
-    def __str__(self):
-        s = str(self.view)
+    def __str__(self): #FIXME get rid of indent by making it a part?
+        s = "".join(str(p) for p in self.parts)
         return (self.indent + s) if s else ""
 
     def isspace(self):
-        return self.view.isspace()
+        return all(p.isspace() for p in self.parts)
 
     def strip_indent(self, n):
         indent = self.indent[n:]
-        view = self.view[max(0, n - len(self.indent)):]
-        return Line(self.num, view, indent)
+        n -= len(self.indent)
+        for idx, p in enumerate(self.parts):
+            if n < 0:
+                break
+            self.parts[idx] = p[n:]
+            n -= len(p)
+        return Line(self.num, self.parts, indent)
 
-class QuotedLine(Line):
-    PAIRS = [("(*", r"(\ *"), ("*)", r"*\ )")]
-    def __str__(self):
-        s = super().__str__()
-        for src, dst in self.PAIRS:
-            s = s.replace(src, dst)
-        return s
+    def replace(self, src, dst):
+        parts = []
+        for part in self.parts:
+            for idx, p in enumerate(part.split(src)):
+                if idx > 0:
+                    parts.append(dst)
+                parts.append(p)
+        self.parts[:] = parts
+        return self
 
-class UnquotedLine(QuotedLine):
-    PAIRS = [(dst, src) for (src, dst) in QuotedLine.PAIRS]
+    def match(self, regex):
+        assert len(self.parts) == 1
+        return self.parts[0].match(regex)
+
+QUOTE_PAIRS = [("(*", r"(\ *"), ("*)", r"*\ )")]
+UNQUOTE_PAIRS = [(dst, src) for (src, dst) in QUOTE_PAIRS]
+
+def replace(line, pairs):
+    for src, dst in pairs:
+        line = line.replace(src, dst)
+    return line
 
 def blank(line):
     return (not line) or line.isspace()
@@ -110,27 +126,45 @@ def strip_block(lines, beg, end):
 
 def strip_deque(lines):
     beg, end = strip_block(lines, 0, len(lines))
+    before, after = [], []
     for _ in range(end, len(lines)):
-        lines.pop()
+        after.append(lines.pop())
     for _ in range(beg):
-        lines.popleft()
-    return lines
+        before.append(lines.popleft())
+    after.reverse()
+    return before, after
+
+def sliding_window(seq, n):
+    seq = iter(seq)
+    window = deque(maxlen=n)
+    for item in seq:
+        if len(window) == n:
+            yield tuple(window)
+        window.append(item)
+    while window:
+        yield tuple(window) + (None,) * (n - len(window))
+        window.popleft()
+
 
 def mark_point(lines, point, marker):
-    lines = list(lines) # Could use a 2-element ring buffer instead
-    for idx, l in enumerate(lines):
-        last_line = idx + 1 == len(lines)
-        if (point is not None
-            and isinstance(l, Line)
-            and (l.view.end >= point or last_line)):
-            cutoff = max(0, min(len(l.view), point - l.view.beg))
-            s = str(l.view[:cutoff]) + marker + str(l.view[cutoff:])
-            yield Line(l.num, StringView(s), indent=l.indent)
-            point = None
-        elif point is not None and last_line:
-            yield marker + l
-        else:
-            yield l
+    for l, nextl in sliding_window(lines, 2):
+        last_line = nextl is None
+        if point is not None:
+            if isinstance(l, Line):
+                parts = []
+                for p in l.parts:
+                    if point is not None and isinstance(p, StringView) and p.end >= point:
+                        cutoff = max(0, min(point - p.beg, len(p)))
+                        parts.extend((p[:cutoff], marker, p[cutoff:]))
+                        point = None
+                    else:
+                        parts.append(p)
+                if point is not None and last_line:
+                    parts.append(marker)
+                l.parts[:] = parts
+            elif last_line:
+                l = marker + l
+        yield l
 
 def join_lines(lines):
     return "\n".join(str(l) for l in lines)
@@ -277,7 +311,7 @@ CodeBlock = namedtuple("CodeBlock", "lines indent")
 
 def lit(lines, indent):
     strip_deque(lines)
-    m = lines and lines[-1].view.match(DIRECTIVE)
+    m = lines and lines[-1].match(DIRECTIVE)
     indent, directive = m.groups() if m else (indent, None)
     if directive:
         directive = lines.pop()
@@ -288,7 +322,7 @@ def lit(lines, indent):
 
 def number_lines(span, start, indent):
     lines = span.split("\n")
-    d = deque(Line(num, s, indent) for (num, s) in enumerate(lines, start=start))
+    d = deque(Line(num, [s], indent) for (num, s) in enumerate(lines, start=start))
     return start + len(lines) - 1, d
 
 def gen_rst(spans):
@@ -299,7 +333,7 @@ def gen_rst(spans):
             litspan = lit(lines, indent)
             indent, prefix = litspan.indent, litspan.directive
             if litspan.lines:
-                yield from (UnquotedLine(*l) for l in litspan.lines)
+                yield from (replace(l, UNQUOTE_PAIRS) for l in litspan.lines)
                 yield ""
         else:
             linum, lines = number_lines(span.v, linum, indent + "   ")
@@ -379,7 +413,7 @@ def rst_partition(s):
 INDENTATION = re.compile("[ \t]*")
 
 def indentation(line):
-    return len(line.view.match(INDENTATION).group())
+    return len(line.match(INDENTATION).group())
 
 def trim_rst_block(block, last_indent, keep_empty):
     strip_deque(block.lines)
@@ -399,7 +433,7 @@ def trim_rst_block(block, last_indent, keep_empty):
             yield ""
     else:
         yield "(*|"
-        yield from (QuotedLine(*l) for l in block.lines)
+        yield from (replace(l, QUOTE_PAIRS) for l in block.lines)
         if directive:
             if block.lines:
                 yield ""
