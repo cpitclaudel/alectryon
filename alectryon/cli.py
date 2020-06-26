@@ -127,6 +127,49 @@ def gen_html_snippets(annotated):
     from .pygments import highlight
     return HtmlWriter(highlight).gen_html(annotated)
 
+COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
+                  '-s', '--html', '--stdout', '--utf8']
+
+def run_coqdoc(coq_snippets, coqdoc_bin=None):
+    """Get the output of coqdoc on coq_code."""
+    from tempfile import mkstemp
+    from subprocess import check_output
+    coqdoc_bin = coqdoc_bin or os.path.join(os.getenv("COQBIN", ""), "coqdoc")
+    fd, filename = mkstemp(prefix="coqdoc_", suffix=".v")
+    try:
+        for snippet in coq_snippets:
+            os.write(fd, snippet.encode("utf-8"))
+            os.write(fd, b"\n(* --- *)\n") # Separator to prevent fusing
+        os.close(fd)
+        return check_output([coqdoc_bin] + COQDOC_OPTIONS + [filename], timeout = 10).decode("utf-8")
+    finally:
+        os.remove(filename)
+
+def gen_coqdoc_html(coqdoc_comments):
+    from bs4 import BeautifulSoup
+    coqdoc_output = run_coqdoc(coqdoc_comments)
+    soup = BeautifulSoup(coqdoc_output, "html.parser")
+    docs = soup.find_all(class_='doc')
+    assert len(docs) == len(coqdoc_comments)
+    return docs
+
+def gen_html_snippets_with_coqdoc(annotated):
+    from dominate.util import raw
+    from .html import HtmlWriter
+    from .pygments import highlight
+    from .transforms import isolate_coqdoc, CoqdocFragment
+    writer = HtmlWriter(highlight)
+    coqdoc = [part.contents for fragments in annotated
+              for part in isolate_coqdoc(fragments)
+              if isinstance(part, CoqdocFragment)]
+    coqdoc_html = iter(gen_coqdoc_html(coqdoc))
+    for fragments in annotated:
+        for part in isolate_coqdoc(fragments):
+            if isinstance(part, CoqdocFragment):
+                yield [raw(str(next(coqdoc_html, None)))]
+            else:
+                yield writer.gen_fragments_html(part.fragments)
+
 def copy_assets(state, no_assets, output_directory):
     from .html import copy_assets as cp
     if not no_assets:
@@ -146,6 +189,7 @@ def dump_html_standalone(snippets, fname):
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
     for css in ASSETS.ALECTRYON_CSS:
         doc.head.add(tags.link(rel="stylesheet", href=css))
+    doc.head.add(tags.link(rel="stylesheet", href="coqdoc.css"))
     for js in ASSETS.ALECTRYON_JS:
         doc.head.add(tags.script(src=js))
 
@@ -190,6 +234,7 @@ def dump_html_snippets(snippets):
     io = StringIO()
     for snippet in snippets:
         io.write(snippet.render(pretty=False))
+        io.write("<!-- alectryon-block-end -->")
         io.write('\n')
     return io.getvalue()
 
@@ -216,6 +261,10 @@ PIPELINES = {
         'lint': (lint_rstcoq, write_file(".lint.json")),
         'rst': (coq_to_rst, write_file(".v.rst"))
     },
+    'coqdoc': {
+        'webpage': (parse_coq_plain, annotate_chunks, gen_html_snippets_with_coqdoc,
+                    dump_html_standalone, copy_assets, write_file(".html")),
+    },
     'rst': {
         'webpage': (gen_rst_html, write_file(".html")),
         'lint': (lint_rst, write_file(".lint.json")),
@@ -237,6 +286,7 @@ BACKENDS_BY_EXTENSION = [
 DEFAULT_BACKENDS = {
     'json': 'json',
     'coq': 'webpage',
+    'coqdoc': 'webpage',
     'coq+rst': 'webpage',
     'rst': 'webpage'
 }

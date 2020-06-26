@@ -300,6 +300,9 @@ def coq_partition(doc):
 LIT_OPEN = re.compile(r"[(][*][|][ \t]*")
 LIT_CLOSE = re.compile(r"[ \t]*[|]?[*][)]\Z")
 
+COQDOC_OPEN = re.compile(r"[(][*]{2,}[ \t]*")
+COQDOC_CLOSE = re.compile(r"[ \t]*[*]+[)]\Z")
+
 DEFAULT_HEADER = ".. coq::"
 DIRECTIVE = re.compile(r"([ \t]*)([.][.] coq::.*)?")
 
@@ -343,11 +346,12 @@ def gen_rst(spans):
                 yield from lines
                 yield ""
 
-def isolate_literate_comments(code, spans):
+def coq_partition_literate(code, opener=LIT_OPEN):
+    spans = coq_partition(code)
     code = StringView(code, 0, len(code))
     code_acc = code[0:0]
     for span in spans:
-        if isinstance(span, Comment) and span.v.match(LIT_OPEN):
+        if isinstance(span, Comment) and span.v.match(opener):
             if code_acc:
                 yield Code(code_acc)
             code_acc = code[span.v.end:span.v.end]
@@ -358,7 +362,7 @@ def isolate_literate_comments(code, spans):
         yield Code(code_acc)
 
 def coq2rst_lines(coq):
-    return gen_rst(isolate_literate_comments(coq, coq_partition(coq)))
+    return gen_rst(coq_partition_literate(coq))
 
 def coq2rst(coq):
     return join_lines(coq2rst_lines(coq))

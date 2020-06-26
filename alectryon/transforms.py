@@ -22,6 +22,7 @@
 import re
 import textwrap
 from copy import copy
+from collections import namedtuple
 from .core import CoqText, CoqSentence, HTMLSentence
 
 class IOAnnots:
@@ -195,4 +196,47 @@ def partition_fragments(fragments, delim=COQ_CHUNK_DELIMITER):
                 if not fr.contents:
                     continue
         partitioned[-1].append(fr)
+    return partitioned
+
+LBLANKS = re.compile(r"\A([ \t]*\n)+")
+RBLANKS = re.compile(r"(\n[ \t]*)+\Z")
+
+def strip_text(fragments):
+    for idx, fr in enumerate(fragments):
+        if isinstance(fr, CoqText):
+            fragments[idx] = fr = CoqText(contents=LBLANKS.sub("", fr.contents))
+            if not fr.contents:
+                continue
+        break
+    for idx, fr in reversed(list(enumerate(fragments))):
+        if isinstance(fr, CoqText):
+            fragments[idx] = fr = CoqText(contents=RBLANKS.sub("", fr.contents))
+            if not fr.contents:
+                continue
+        break
+    return fragments
+
+CoqdocFragment = namedtuple("CoqdocFragment", "contents")
+AlectryonFragments = namedtuple("AlectryonFragments", "fragments")
+def isolate_coqdoc(fragments):
+    from .literate import coq_partition_literate, Comment, COQDOC_OPEN
+    refined = []
+    for fr in fragments:
+        if isinstance(fr, CoqText):
+            for span in coq_partition_literate(fr.contents, opener=COQDOC_OPEN):
+                wrapper = CoqdocFragment if isinstance(span, Comment) else CoqText
+                refined.append(wrapper(str(span.v)))
+        else:
+            refined.append(fr)
+    partitioned = []
+    for fr in refined:
+        if isinstance(fr, CoqdocFragment):
+            partitioned.append(fr)
+        else:
+            if not partitioned or not isinstance(partitioned[-1], AlectryonFragments):
+                partitioned.append(AlectryonFragments([]))
+            partitioned[-1].fragments.append(fr)
+    for part in partitioned:
+        if isinstance(part, AlectryonFragments):
+            strip_text(part.fragments)
     return partitioned
