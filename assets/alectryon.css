@@ -431,9 +431,15 @@ In any case, make an exception for comments:
     flex-direction: column-reverse;
 }
 
-/********************/
-/* Standalone style */
-/********************/
+/*********************/
+/* Standalone styles */
+/*********************/
+
+/* Floating */
+
+
+
+/* Windowed */
 
 .alectryon-standalone .alectryon-windowed {
     display: block;
@@ -442,7 +448,7 @@ In any case, make an exception for comments:
     position: absolute;
 }
 
-.alectryon-standalone .alectryon-io {
+.alectryon-standalone .alectryon-windowed .alectryon-io {
     box-sizing: border-box;
     padding: 0 1rem;
     width: 100%;
@@ -457,8 +463,8 @@ In any case, make an exception for comments:
         top: 0;
     }
 
-    .alectryon-standalone .coq-sentence:hover .coq-toggle:not(:checked) ~ .coq-output,
-    .alectryon-standalone .alectryon-target .coq-output {
+    .alectryon-standalone .alectryon-windowed .coq-sentence:hover .coq-toggle:not(:checked) ~ .coq-output,
+    .alectryon-standalone .alectryon-windowed .alectryon-target .coq-output {
         bottom: 0;
         left: 50%;
         right: 0;
@@ -476,8 +482,8 @@ In any case, make an exception for comments:
         top: 0;
     }
 
-    .alectryon-standalone .coq-sentence:hover .coq-toggle:not(:checked) ~ .coq-output,
-    .alectryon-standalone .alectryon-target .coq-output {
+    .alectryon-standalone .alectryon-windowed .coq-sentence:hover .coq-toggle:not(:checked) ~ .coq-output,
+    .alectryon-standalone .alectryon-windowed .alectryon-target .coq-output {
         bottom: 0;
         left: 0;
         right: 0;
