@@ -415,13 +415,18 @@ In any case, make an exception for comments:
     background: #f6f6f6; /* Ensure that short goals hide long ones */
 }
 
-.alectryon-windowed .coq-sentence:hover .coq-toggle:not(:checked) ~ .coq-output,
-.alectryon-windowed .alectryon-target .coq-output {
-    overflow-y: auto;
-    position: fixed;
+.alectryon-windowed .coq-output {
+    position: fixed; /* Overwritten by the ‘:checked’ rules */
 }
 
-.alectryon-windowed .alectryon-target .coq-extra-goals .goal-conclusion {
+.alectryon-windowed .coq-sentence:hover .coq-output,
+.alectryon-windowed .alectryon-target .coq-output {
+    padding: 0.5rem;
+    overflow-y: auto; /* Windowed contents may need to scroll */
+}
+
+.alectryon-windowed .alectryon-target .coq-extra-goals .goal-conclusion
+/* Like .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-conclusion */ {
     max-height: unset;
     overflow-y: unset;
 }
@@ -454,6 +459,10 @@ In any case, make an exception for comments:
     width: 100%;
 }
 
+/* No need to predicate the rules below on ‘:not(:checked)’, since ‘left’,
+   ‘right’, ‘top’, and ‘bottom’ will be inactived by the :checked rules setting
+   ‘position’ to ‘static’ */
+
 @media screen and (min-width: 60rem) {
     .alectryon-standalone .alectryon-windowed {
         border-right-width: 1px;
@@ -463,13 +472,12 @@ In any case, make an exception for comments:
         top: 0;
     }
 
-    .alectryon-standalone .alectryon-windowed .coq-sentence:hover .coq-toggle:not(:checked) ~ .coq-output,
+    .alectryon-standalone .alectryon-windowed .coq-sentence:hover .coq-output,
     .alectryon-standalone .alectryon-windowed .alectryon-target .coq-output {
         bottom: 0;
         left: 50%;
         right: 0;
         top: 0;
-        width: 50%;
     }
 }
 
@@ -482,7 +490,7 @@ In any case, make an exception for comments:
         top: 0;
     }
 
-    .alectryon-standalone .alectryon-windowed .coq-sentence:hover .coq-toggle:not(:checked) ~ .coq-output,
+    .alectryon-standalone .alectryon-windowed .coq-sentence:hover .coq-output,
     .alectryon-standalone .alectryon-windowed .alectryon-target .coq-output {
         bottom: 0;
         left: 0;
