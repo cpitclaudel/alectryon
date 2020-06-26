@@ -120,7 +120,7 @@ In any case, make an exception for comments:
 	    text-shadow: 0 0 1px rgb(46, 52, 54, 0.3); /* #2e3436 + opacity */
     }
 
-    .alectryon-io .coq-sentence:hover .coq-output:not(:hover) {
+    .alectryon-io .coq-sentence:hover .coq-output {
         display: block;
     }
 
@@ -151,8 +151,10 @@ In any case, make an exception for comments:
 .alectryon-io .coq-output {
     box-sizing: border-box;
     display: none;
-    padding: 0.5rem;
+    left: 0;
+    right: 0;
     position: absolute;
+    padding: 0.25rem 0;
     z-index: 1; /* Default to an index lower than that used by :hover */
 }
 
@@ -197,12 +199,12 @@ In any case, make an exception for comments:
 
 /* Show goals when a toggle is set */
 .alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output,
-.alectryon-io .coq-toggle:checked ~ .coq-output {
+.alectryon-io .coq-sentence .coq-toggle:checked ~ .coq-output {
     display: block;
-    padding: 0.25rem 0;
     position: static;
     width: unset;
     background: unset; /* Override the background set in .alectryon-floating */
+    padding: 0.25rem 0; /* Re-assert so that later :hover rules don't override this padding */ 
 }
 
 .alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output .goal-hyps,
@@ -215,7 +217,7 @@ In any case, make an exception for comments:
 .alectryon-toggle:checked + label + .alectryon-container .coq-output > .coq-output-sticky-wrapper,
 .alectryon-io .coq-toggle:checked ~ .coq-output > .coq-output-sticky-wrapper {
     display: block;
-    margin-bottom: unset; /* Undo negative margins used to widen the sticky range */
+    margin-bottom: unset; /* Undo negative margins FIXME these margins should be conditional on not checked used to widen the sticky range */
 }
 
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-hyps {
@@ -355,9 +357,7 @@ In any case, make an exception for comments:
 /* Floating style */
 /******************/
 
-.alectryon-floating .coq-output {
-    width: 100%;
-}
+/* FIXME: condition on not checked should also condition on not global-toggled? */
 
 /* If there's space, display goals to the right of the code, not below it. */
 @media screen and (any-hover: hover) {
@@ -367,11 +367,11 @@ In any case, make an exception for comments:
             box-sizing: border-box; /* Needed so .coq-output won't overflow */
         }
 
-        .alectryon-floating .coq-output {
+        .alectryon-floating .coq-sentence:hover .coq-output {
             bottom: 0;
             left: 100%;
-            padding-top: 0;
-            top: 0;
+            right: -100%;
+            padding: 0 0.5rem;
         }
 
         .alectryon-floating .coq-output {
