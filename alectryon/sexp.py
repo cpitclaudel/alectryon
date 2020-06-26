@@ -1,6 +1,7 @@
 import re
 
 SEXP_SPECIAL = re.compile(rb'[ ()"]')
+STR_SPECIAL = re.compile(rb'[\\"]')
 OPEN, CLOSE, ESCAPE, QUOTE = map(ord, r'()\"')
 
 STRING_QUOTES = [(b'\\', b'\\'), (b'"', b'"'), (b'\r', b'r'), (b'\n', b'n'),
@@ -26,17 +27,18 @@ def escape(bs):
 def tostr(bs):
     return unescape(bs).decode('utf-8')
 
-def tokenize_str(view, start):
+def tokenize_str(view, start, str_special=STR_SPECIAL):
     pos = start
     while True:
-        pos = view.find(b'"', pos)
-        if pos < 0:
+        m = str_special.search(view, pos)
+        if m is None:
             MSG = "Unterminated string: {!r}@{}."
             raise ValueError(MSG.format(view, start))
-        if pos == 0 or view[pos - 1] != ESCAPE:
-            yield view[start:pos]
-            return pos + 1
-        pos += 1
+        if view[m.start()] == ESCAPE:
+            pos = m.end() + 1
+        else:
+            yield view[start:m.start()]
+            return m.end()
 
 def tokenize(view, sexp_special=SEXP_SPECIAL):
     pos = 0
