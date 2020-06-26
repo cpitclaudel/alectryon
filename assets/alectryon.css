@@ -415,7 +415,7 @@ In any case, make an exception for comments:
     background: #f6f6f6; /* Ensure that short goals hide long ones */
 }
 
-.alectryon-windowed .coq-sentence:hover .coq-output,
+.alectryon-windowed .coq-sentence:hover .coq-toggle:not(:checked) ~ .coq-output,
 .alectryon-windowed .alectryon-target .coq-output {
     overflow-y: auto;
     position: fixed;
@@ -457,7 +457,7 @@ In any case, make an exception for comments:
         top: 0;
     }
 
-    .alectryon-standalone .coq-sentence:hover .coq-output,
+    .alectryon-standalone .coq-sentence:hover .coq-toggle:not(:checked) ~ .coq-output,
     .alectryon-standalone .alectryon-target .coq-output {
         bottom: 0;
         left: 50%;
@@ -476,7 +476,7 @@ In any case, make an exception for comments:
         top: 0;
     }
 
-    .alectryon-standalone .coq-sentence:hover .coq-output,
+    .alectryon-standalone .coq-sentence:hover .coq-toggle:not(:checked) ~ .coq-output,
     .alectryon-standalone .alectryon-target .coq-output {
         bottom: 0;
         left: 0;
