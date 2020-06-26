@@ -130,15 +130,17 @@
 ;;; Conversion between Coq and reST
 
 (defun alectryon--run-converter (input args)
-  "Convert INPUT with ARGS.
+  "Convert contents of buffer INPUT with ARGS.
 
 The output goes into the current buffer."
   (let* ((python (executable-find alectryon-python-executable))
          (converter (alectryon--locate-executable))
+         (buffer (current-buffer))
          (args `(,@args "-")))
-    (print (cons converter args))
-    (let* ((ex (apply #'call-process-region input nil python
-                      nil (current-buffer) nil converter args)))
+    (let* ((ex (with-current-buffer input
+                 (alectryon--widened
+                   (apply #'call-process-region nil nil python
+                          nil buffer nil converter args)))))
       (unless (eq 0 ex)
         (error "Conversion error (%s):\n%s" ex (alectryon--buffer-string))))))
 
@@ -159,17 +161,23 @@ The output goes into the current buffer."
 
 (defun alectryon--toggle (mode)
   "Convert current buffer from MODE."
-  (let* ((input (alectryon--buffer-string))
-         (buffer (current-buffer))
-         (pt (point)))
+  (let* ((pt (point))
+         (marker "")
+         (pt-str (number-to-string pt))
+         (args `("--mark-point" ,pt-str ,marker ,@(alectryon--converter-args mode)))
+         (input (current-buffer)))
     (with-temp-buffer
-      (alectryon--run-converter input (alectryon--converter-args mode))
+      (alectryon--run-converter input args)
       (let ((output (current-buffer)))
-        (with-current-buffer buffer
-          (setq buffer-read-only nil)
+        (with-current-buffer input
           (widen)
-          (unless (replace-buffer-contents output 1)
-            (goto-char (min pt (point-max)))))))))
+          (setq buffer-read-only nil)
+          (delete-region (point-min) (point-max))
+          (insert-buffer-substring output))))
+    (goto-char (point-min))
+    (if (search-forward marker nil t)
+        (delete-char -1)
+      (goto-char (min pt (point-max))))))
 
 (defun alectryon--set-mode (mode)
   "Switch to MODE and enable `alecrtyon-mode'."
@@ -284,7 +292,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 Current document must have a file name."
   (unless (eq major-mode (or alectryon--original-mode major-mode))
     (let ((mode major-mode)
-          (input (alectryon--buffer-string))
+          (input (current-buffer))
           (fname buffer-file-name))
       (with-temp-buffer
         (alectryon--run-converter input (alectryon--converter-args mode))
