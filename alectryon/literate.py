@@ -71,26 +71,23 @@ class StringView:
     def isspace(self):
         return bool(self.match(StringView.BLANKS))
 
-class Line(namedtuple("Line", "num parts indent")):
+class Line(namedtuple("Line", "num parts")):
     def __len__(self):
         return sum(len(p) for p in self.parts)
 
-    def __str__(self): #FIXME get rid of indent by making it a part?
-        s = "".join(str(p) for p in self.parts)
-        return (self.indent + s) if s else ""
+    def __str__(self):
+        return "".join(str(p) for p in self.parts)
 
     def isspace(self):
         return all(p.isspace() for p in self.parts)
 
-    def strip_indent(self, n):
-        indent = self.indent[n:]
-        n -= len(self.indent)
+    def dedent(self, n):
         for idx, p in enumerate(self.parts):
             if n < 0:
                 break
             self.parts[idx] = p[n:]
             n -= len(p)
-        return Line(self.num, self.parts, indent)
+        return Line(self.num, self.parts)
 
     def replace(self, src, dst):
         parts = []
@@ -320,24 +317,26 @@ def lit(lines, indent):
         directive = indent + DEFAULT_HEADER
     return Lit(lines, directive=directive, indent=indent)
 
-def number_lines(span, start, indent):
+def number_lines(span, start):
     lines = span.split("\n")
-    d = deque(Line(num, [s], indent) for (num, s) in enumerate(lines, start=start))
+    d = deque(Line(num, [s]) for (num, s) in enumerate(lines, start=start))
     return start + len(lines) - 1, d
 
 def gen_rst(spans):
     linum, indent, prefix = 0, "", DEFAULT_HEADER
     for span in spans:
         if isinstance(span, Comment):
-            linum, lines = number_lines(span.v.trim(LIT_OPEN, LIT_CLOSE), linum, "")
+            linum, lines = number_lines(span.v.trim(LIT_OPEN, LIT_CLOSE), linum)
             litspan = lit(lines, indent)
             indent, prefix = litspan.indent, litspan.directive
             if litspan.lines:
                 yield from (replace(l, UNQUOTE_PAIRS) for l in litspan.lines)
                 yield ""
         else:
-            linum, lines = number_lines(span.v, linum, indent + "   ")
+            linum, lines = number_lines(span.v, linum)
             strip_deque(lines)
+            for l in lines:
+                l.parts.insert(0, indent + "   ")
             if lines:
                 yield prefix
                 yield ""
@@ -394,8 +393,8 @@ def rst_partition(s):
         rst = StringView(s, beg, m.start())
         block = StringView(s, *m.span())
 
-        linum, rst_lines = number_lines(rst, linum, "")
-        linum, block_lines = number_lines(block, linum, "")
+        linum, rst_lines = number_lines(rst, linum)
+        linum, block_lines = number_lines(block, linum)
         directive = block_lines.popleft()
 
         yield Lit(rst_lines, directive=directive, indent=indent)
@@ -403,7 +402,7 @@ def rst_partition(s):
         beg = m.end()
     if beg < len(s):
         rst = StringView(s, beg, len(s))
-        linum, lines = number_lines(rst, linum, "")
+        linum, lines = number_lines(rst, linum)
         yield Lit(lines, directive=None, indent=None)
 
 # Conversion
@@ -444,7 +443,7 @@ def trim_rst_block(block, last_indent, keep_empty):
 def trim_coq_block(block):
     strip_deque(block.lines)
     for line in block.lines:
-        yield line.strip_indent(block.indent + 3)
+        yield line.dedent(block.indent + 3)
     if block.lines:
         yield ""
 
