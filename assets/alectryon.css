@@ -466,9 +466,24 @@ In any case, make an exception for comments:
     height: 0.75rem;
 }
 
+/* Centered */
+
+.alectryon-standalone .alectryon-centered {
+    max-width: 50rem;
+    margin: auto;
+}
+
 /* Floating */
 
+.alectryon-standalone .alectryon-floating {
+    max-width: 80rem;
+    margin: auto;
+}
 
+.alectryon-standalone .alectryon-floating > * {
+    width: 50%;
+    margin-left: 0;
+}
 
 /* Windowed */
 
@@ -477,6 +492,10 @@ In any case, make an exception for comments:
     margin: 0;
     overflow-y: auto;
     position: absolute;
+}
+
+.alectryon-standalone .alectryon-windowed > * {
+    margin-left: 0;
 }
 
 .alectryon-standalone .alectryon-windowed .alectryon-io {
@@ -491,7 +510,7 @@ In any case, make an exception for comments:
 
 @media screen and (min-width: 60rem) {
     .alectryon-standalone .alectryon-windowed {
-        border-right-width: 1px;
+        border-right-width: thin;
         bottom: 0;
         left: 0;
         right: 50%;
