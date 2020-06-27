@@ -50,6 +50,9 @@ def register_docutils(v, serapi_args):
     register()
     return v
 
+def _wrap_classes(*cls):
+    return " ".join("alectryon-" + c for c in cls)
+
 DOCUTILS_CSS = "https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutils_basic.css"
 MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"
 
@@ -88,8 +91,9 @@ def _gen_docutils_html(source, fpath, webpage_style, html_assets, traceback, Par
     class HtmlTranslator(Writer().translator_class):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            cls = "alectryon-{}".format(webpage_style)
-            self.body_prefix = ['</head>\n<body class="{}">\n'.format(cls)]
+            cls = _wrap_classes("standalone", webpage_style)
+            self.body_prefix.append('<div class="{}">'.format(cls))
+            self.body_suffix.insert(0, '</div>')
             for j in js:
                 TEMPLATE = '<script type="text/javascript" src="{}"></script>'
                 self.stylesheet.append(TEMPLATE.format(j))
@@ -214,8 +218,6 @@ def dump_html_standalone(snippets, fname, webpage_style, html_assets, html_class
     from .pygments import FORMATTER
 
     doc = document(title=fname)
-    doc.set_attribute("class", "alectryon-standalone")
-
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
 
@@ -233,8 +235,8 @@ def dump_html_standalone(snippets, fname, webpage_style, html_assets, html_class
     pygments_css = FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
 
-    cls = ("alectryon-" + c for c in ("root", webpage_style, *html_classes))
-    root = doc.body.add(tags.article(cls=" ".join(cls)))
+    cls = _wrap_classes("standalone", webpage_style, *html_classes)
+    root = doc.body.add(tags.article(cls=cls))
     root.add(gen_header(SerAPI.version_info()))
     for snippet in snippets:
         root.add(snippet)
