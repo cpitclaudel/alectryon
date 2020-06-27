@@ -416,9 +416,8 @@ In any case, make an exception for comments:
     box-sizing: border-box;
 }
 
-.alectryon-standalone,
-.alectryon-windowed .coq-output {
-    background: #f6f6f6; /* Ensure that short goals hide long ones */
+.alectryon-windowed .coq-sentence:hover .coq-output {
+    background: white; /* Ensure that short goals hide long ones */
 }
 
 .alectryon-windowed .coq-output {
