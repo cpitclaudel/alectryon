@@ -205,10 +205,13 @@ def gen_html_snippets_with_coqdoc(annotated, html_classes):
     # ‘return’ instead of ‘yield from’ to update html_classes eagerly
     return _gen_html_snippets_with_coqdoc(annotated)
 
-def copy_assets(state, html_assets, no_assets, output_directory):
+def copy_assets(state, html_assets, no_assets, output, output_directory):
     from .html import copy_assets as cp
     if not no_assets:
-        cp(output_directory, assets=html_assets)
+        if output:
+            cp(os.path.dirname(output), assets=html_assets)
+        else:
+            cp(output_directory, assets=html_assets)
     return state
 
 def dump_html_standalone(snippets, fname, webpage_style, html_assets, html_classes):
