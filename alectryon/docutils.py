@@ -85,6 +85,9 @@ class AlectryonTransform(Transform):
     default_priority = 995
     auto_toggle = True
 
+    SERAPI_ARGS = ()
+    """Arguments to pass to SerAPI"""
+
     @staticmethod
     def set_fragment_annots(fragments, annots):
         """Apply relevant annotations to all unannotated fragments."""
@@ -112,7 +115,8 @@ class AlectryonTransform(Transform):
     def apply_coq(self):
         writer = HtmlWriter(highlight)
         nodes = list(self.document.traverse(alectryon_pending))
-        annotated = annotate(n['content'] for n in nodes)
+        # TODO: Read SerAPI args from document and use SERAPI_ARGS as fallback
+        annotated = annotate((n['content'] for n in nodes), self.SERAPI_ARGS)
         for node, fragments in zip(nodes, annotated):
             annots = transforms.IOAnnots(*node['options'])
             if annots.hide:

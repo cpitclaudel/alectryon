@@ -44,6 +44,12 @@ def annotate_chunks(chunks, serapi_args):
     from .core import annotate
     return annotate(chunks, serapi_args)
 
+def register_docutils(v, serapi_args):
+    from .docutils import register, AlectryonTransform
+    AlectryonTransform.SERAPI_ARGS = serapi_args
+    register()
+    return v
+
 DOCUTILS_CSS = "https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutils_basic.css"
 MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"
 
@@ -51,9 +57,6 @@ def _gen_docutils_html(source, fpath, html_assets, traceback, Parser, Reader):
     from .html import ASSETS
     from docutils.core import publish_string
     from docutils.writers import get_writer_class
-    from .docutils import register
-
-    register()
 
     # The encoding/decoding dance below happens because setting output_encoding
     # to "unicode" causes reST to generate a bad <meta> tag, and setting
@@ -114,8 +117,7 @@ def _lint_docutils(source, fpath, Parser, traceback):
     from docutils.utils import new_document
     from docutils.frontend import OptionParser
     from docutils.utils import Reporter
-    from .docutils import register, JsErrorPrinter
-    register()
+    from .docutils import JsErrorPrinter
 
     parser = Parser()
     settings = OptionParser(components=(Parser,)).get_default_values()
@@ -147,7 +149,7 @@ def gen_html_snippets(annotated):
 COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
                   '-s', '--html', '--stdout', '--utf8']
 
-def run_coqdoc(coq_snippets, coqdoc_bin=None):
+def _run_coqdoc(coq_snippets, coqdoc_bin=None):
     """Get the output of coqdoc on coq_code."""
     from tempfile import mkstemp
     from subprocess import check_output
@@ -162,24 +164,27 @@ def run_coqdoc(coq_snippets, coqdoc_bin=None):
     finally:
         os.remove(filename)
 
-def gen_coqdoc_html(coqdoc_comments):
+def _gen_coqdoc_html(coqdoc_comments):
     from bs4 import BeautifulSoup
-    coqdoc_output = run_coqdoc(coqdoc_comments)
+    coqdoc_output = _run_coqdoc(coqdoc_comments)
     soup = BeautifulSoup(coqdoc_output, "html.parser")
     docs = soup.find_all(class_='doc')
     assert len(docs) == len(coqdoc_comments)
     return docs
 
-def gen_html_snippets_with_coqdoc(annotated):
+def _gen_html_snippets_with_coqdoc(annotated):
     from dominate.util import raw
     from .html import HtmlWriter
     from .pygments import highlight
     from .transforms import isolate_coqdoc, CoqdocFragment
+
     writer = HtmlWriter(highlight)
+
     coqdoc = [part.contents for fragments in annotated
               for part in isolate_coqdoc(fragments)
               if isinstance(part, CoqdocFragment)]
-    coqdoc_html = iter(gen_coqdoc_html(coqdoc))
+    coqdoc_html = iter(_gen_coqdoc_html(coqdoc))
+
     for fragments in annotated:
         for part in isolate_coqdoc(fragments):
             if isinstance(part, CoqdocFragment):
@@ -272,21 +277,24 @@ PIPELINES = {
                     dump_html_standalone, copy_assets, write_file(".v.html")),
         'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
                           dump_html_snippets, write_file(".snippets.html")),
-        'lint': (lint_rstcoq, write_file(".lint.json")),
+        'lint': (register_docutils, lint_rstcoq, write_file(".lint.json")),
         'rst': (coq_to_rst, write_file(".v.rst"))
     },
     'coq+rst': {
-        'webpage': (gen_rstcoq_html, copy_assets, write_file(".html")),
-        'lint': (lint_rstcoq, write_file(".lint.json")),
+        'webpage': (register_docutils, gen_rstcoq_html,
+                    copy_assets, write_file(".html")),
+        'lint': (register_docutils, lint_rstcoq, write_file(".lint.json")),
         'rst': (coq_to_rst, write_file(".v.rst"))
     },
     'coqdoc': {
-        'webpage': (parse_coq_plain, annotate_chunks, gen_html_snippets_with_coqdoc,
+        'webpage': (parse_coq_plain, annotate_chunks,
+                    gen_html_snippets_with_coqdoc,
                     dump_html_standalone, copy_assets, write_file(".html")),
     },
     'rst': {
-        'webpage': (gen_rst_html, copy_assets, write_file(".html")),
-        'lint': (lint_rst, write_file(".lint.json")),
+        'webpage': (register_docutils, gen_rst_html,
+                    copy_assets, write_file(".html")),
+        'lint': (register_docutils, lint_rst, write_file(".lint.json")),
         'coq': (rst_to_coq, write_file(".v")),
         'coq+rst': (rst_to_coq, write_file(".v"))
     }
