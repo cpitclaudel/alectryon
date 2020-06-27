@@ -23,6 +23,7 @@ from collections.abc import Iterable
 from textwrap import indent
 from sys import stderr
 
+from shlex import quote
 from shutil import which
 from subprocess import Popen, PIPE, STDOUT, check_output
 from . import sexp as sx
@@ -98,8 +99,9 @@ class SerAPI():
                    " please run `opam install coq-serapi`")
             raise ValueError(msg.format(self.sertop_bin))
         self.kill()
-        self.sertop = Popen([path, *self.args],
-                          stdin=PIPE, stderr=STDOUT, stdout=PIPE)
+        cmd = [path, *self.args]
+        debug(" ".join(quote(s) for s in cmd), '# ')
+        self.sertop = Popen(cmd, stdin=PIPE, stderr=STDOUT, stdout=PIPE)
 
     def next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceding it."""
