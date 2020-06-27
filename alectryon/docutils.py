@@ -124,8 +124,7 @@ class AlectryonTransform(Transform):
             else:
                 fragments = self.preprocess_fragments(fragments, annots)
                 self.check_for_long_lines(node, fragments)
-                classes = ("alectryon-floating",)
-                html = writer.gen_fragments_html(fragments, classes=classes).render(pretty=False)
+                html = writer.gen_fragments_html(fragments).render(pretty=False)
                 node.replace_self(raw(node['content'], html, format='html'))
 
     @staticmethod
@@ -339,8 +338,6 @@ ROLES = [alectryon_bubble]
 
 def register():
     """Tell Docutils about our directives (.. coq and .. alectryon-toggle).
-
-    If `auto_toggle` is true, also register a transform to add a top-level
 
     You can customize the name under which these are registered by adjusting the
     ``name`` field of ``CoqDirective`` and ``AlectryonToggleDirective``.

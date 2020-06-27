@@ -53,7 +53,7 @@ def register_docutils(v, serapi_args):
 DOCUTILS_CSS = "https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutils_basic.css"
 MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"
 
-def _gen_docutils_html(source, fpath, html_assets, traceback, Parser, Reader):
+def _gen_docutils_html(source, fpath, webpage_style, html_assets, traceback, Parser, Reader):
     from .html import ASSETS
     from docutils.core import publish_string
     from docutils.writers import get_writer_class
@@ -80,14 +80,16 @@ def _gen_docutils_html(source, fpath, html_assets, traceback, Parser, Reader):
 
     Writer = get_writer_class('html')
 
-    class JSHtmlWriter(Writer):
+    class HtmlWriter(Writer):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            self.translator_class = JSHtmlTranslator
+            self.translator_class = HtmlTranslator
 
-    class JSHtmlTranslator(Writer().translator_class):
+    class HtmlTranslator(Writer().translator_class):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
+            cls = "alectryon-{}".format(webpage_style)
+            self.body_prefix = ['</head>\n<body class="{}">\n'.format(cls)]
             for j in js:
                 TEMPLATE = '<script type="text/javascript" src="{}"></script>'
                 self.stylesheet.append(TEMPLATE.format(j))
@@ -98,19 +100,21 @@ def _gen_docutils_html(source, fpath, html_assets, traceback, Parser, Reader):
         source_path=fpath, destination_path=None,
         reader=Reader(parser), reader_name=None,
         parser=parser, parser_name=None,
-        writer=JSHtmlWriter(), writer_name=None,
+        writer=HtmlWriter(), writer_name=None,
         settings=None, settings_spec=None,
         settings_overrides=settings_overrides, config_section=None,
         enable_exit_status=True).decode("utf-8")
 
-def gen_rstcoq_html(coq, fpath, html_assets, traceback):
+def gen_rstcoq_html(coq, fpath, webpage_style, html_assets, traceback):
     from .docutils import RSTCoqParser, RSTCoqStandaloneReader
-    return _gen_docutils_html(coq, fpath, html_assets, traceback, RSTCoqParser, RSTCoqStandaloneReader)
+    return _gen_docutils_html(coq, fpath, webpage_style, html_assets, traceback,
+                         RSTCoqParser, RSTCoqStandaloneReader)
 
-def gen_rst_html(rst, fpath, html_assets, traceback):
+def gen_rst_html(rst, fpath, webpage_style, html_assets, traceback):
     from docutils.parsers.rst import Parser
     from docutils.readers.standalone import Reader
-    return _gen_docutils_html(rst, fpath, html_assets, traceback, Parser, Reader)
+    return _gen_docutils_html(rst, fpath, webpage_style, html_assets, traceback,
+                         Parser, Reader)
 
 def _lint_docutils(source, fpath, Parser, traceback):
     from io import StringIO
@@ -192,13 +196,18 @@ def _gen_html_snippets_with_coqdoc(annotated):
             else:
                 yield writer.gen_fragments_html(part.fragments)
 
+def gen_html_snippets_with_coqdoc(annotated, html_classes):
+    html_classes.append("coqdoc")
+    # ‘return’ instead of ‘yield from’ to update html_classes eagerly
+    return _gen_html_snippets_with_coqdoc(annotated)
+
 def copy_assets(state, html_assets, no_assets, output_directory):
     from .html import copy_assets as cp
     if not no_assets:
         cp(output_directory, assets=html_assets)
     return state
 
-def dump_html_standalone(snippets, fname, html_assets):
+def dump_html_standalone(snippets, fname, webpage_style, html_assets, html_classes):
     from dominate import tags, document
     from .core import SerAPI
     from .html import gen_header, GENERATOR, ASSETS
@@ -209,21 +218,23 @@ def dump_html_standalone(snippets, fname, html_assets):
 
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
-    for css in ASSETS.ALECTRYON_CSS:
-        html_assets.append(css)
+
+    PLEX_CDN = ("https://fonts.googleapis.com/css2?family=IBM+Plex+Serif"
+                ":ital,wght@0,400;0,700;1,400;1,700&display=swap")
+    FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
+    for css in (PLEX_CDN, FIRA_CODE_CDN, *ASSETS.ALECTRYON_CSS):
         doc.head.add(tags.link(rel="stylesheet", href=css))
-    doc.head.add(tags.link(rel="stylesheet", href="coqdoc.css")) # FIXME
     for js in ASSETS.ALECTRYON_JS:
-        html_assets.append(js)
         doc.head.add(tags.script(src=js))
 
-    FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
-    doc.head.add(tags.link(rel="stylesheet", href=FIRA_CODE_CDN))
+    html_assets.extend(ASSETS.ALECTRYON_CSS)
+    html_assets.extend(ASSETS.ALECTRYON_JS)
 
     pygments_css = FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
 
-    root = doc.body.add(tags.article(cls="alectryon-windowed alectryon-root"))
+    cls = ("alectryon-" + c for c in ("root", webpage_style, *html_classes))
+    root = doc.body.add(tags.article(cls=" ".join(cls)))
     root.add(gen_header(SerAPI.version_info()))
     for snippet in snippets:
         root.add(snippet)
@@ -367,6 +378,7 @@ def fill_in_arguments(args):
         raise argparse.ArgumentTypeError(MSG)
 
     args.html_assets = []
+    args.html_classes = []
     args.pipelines = [(fpath, resolve_pipeline(fpath, args))
                       for fpath in args.input]
 
@@ -417,6 +429,12 @@ and produce reStructuredText, HTML, or JSON output.""")
                       "do not copy assets along the generated file.")
     parser.add_argument("--no-assets", action="store_true",
                         default=False, help=NO_ASSETS_HELP)
+
+    WEBPAGE_STYLE_HELP = "Choose a style for standalone webpages."
+    WEBPAGE_STYLE_CHOICES = ("centered", "floating", "windowed")
+    parser.add_argument("--webpage-style", default="centered",
+                        choices=WEBPAGE_STYLE_CHOICES,
+                        help=WEBPAGE_STYLE_HELP)
 
     MARK_POINT_HELP = "Mark a point in the output with a given marker."
     parser.add_argument("--mark-point", nargs=2, default=(None, None),
