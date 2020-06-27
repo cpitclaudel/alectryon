@@ -370,7 +370,7 @@ In any case, make an exception for comments:
     }
 
     /* Adjoin to increase specificity */
-    .coq-sentence.alectryon-target .coq-output,
+    .alectryon-floating .coq-sentence.alectryon-target .coq-output,
     .alectryon-floating .coq-sentence:hover .coq-output {
         bottom: 0;
         left: 100%;
