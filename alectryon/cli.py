@@ -70,7 +70,7 @@ def _gen_docutils_html(source, fpath, webpage_style, html_assets, traceback, Par
         'traceback': traceback,
         'embed_stylesheet': False,
         'stylesheet_path': None,
-        'stylesheet_dirs': [ASSETS.PATH],
+        'stylesheet_dirs': [],
         'math_output': "MathJax " + MATHJAX_URL,
         'stylesheet': list(css), # Must be a list
         'syntax_highlight': 'short',
