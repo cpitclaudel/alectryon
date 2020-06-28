@@ -47,8 +47,8 @@ contents following the checkbox are wrapped in a container with class
 import re
 
 import docutils
+from docutils import nodes
 
-from docutils.nodes import raw, inline, docinfo, Special, Invisible, Element, container
 from docutils.parsers.rst import directives, roles, Directive
 from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
@@ -56,7 +56,7 @@ from docutils.transforms import Transform
 from . import transforms
 from .core import annotate
 from .html import HtmlWriter
-from .pygments import highlight
+from .pygments import highlight, added_tokens
 
 # reST extensions
 # ===============
@@ -64,10 +64,10 @@ from .pygments import highlight
 # Nodes
 # -----
 
-class alectryon_pending(Special, Invisible, Element):
+class alectryon_pending(nodes.Special, nodes.Invisible, nodes.Element):
     pass
 
-class alectryon_pending_toggle(Special, Invisible, Element):
+class alectryon_pending_toggle(nodes.Special, nodes.Invisible, nodes.Element):
     pass
 
 # Transforms
@@ -80,6 +80,40 @@ Display all goals and responses
 </label>""".replace('\n', '')
 
 LONG_LINE_THRESHOLD = 72
+
+class Config:
+    def __init__(self, document):
+        self.tokens = {}
+        self.serapi_args = []
+        for di in document.traverse(nodes.docinfo):
+            for field in di.traverse(nodes.field):
+                name, body = field.children
+                self.parse_docinfo_field(field, name.rawsource, body.rawsource)
+
+    def parse_docinfo_field(self, node, name, body):
+        if name.startswith("alectryon/pygments/"):
+            token = name[len("alectryon/pygments/"):]
+            self.tokens.setdefault(token, []).extend(body.split())
+        elif name == "alectryon/serapi/args":
+            self.parse_args(body)
+        else:
+            return
+        node.parent.remove(node)
+
+    def parse_args(self, args):
+        import argparse
+        import shlex
+        p = argparse.ArgumentParser(prog=":alectryon/serapi/args:", add_help=False)
+        p.add_argument("-I", "--ml-include-path", dest="I", metavar="DIR",
+                       nargs=1, action="append", default=[])
+        p.add_argument("-Q", "--load-path", dest="Q", metavar=("DIR", "COQDIR"),
+                       nargs=2, action="append", default=[])
+        p.add_argument("-R", "--rec-load-path", dest="R", metavar=("DIR", "COQDIR"),
+                       nargs=2, action="append", default=[])
+        for (arg, instances) in p.parse_args(shlex.split(args))._get_kwargs():
+            for vals in instances:
+                self.serapi_args.append("-" + arg)
+                self.serapi_args.append(",".join(vals))
 
 class AlectryonTransform(Transform):
     default_priority = 995
@@ -105,20 +139,22 @@ class AlectryonTransform(Transform):
             return
 
     def apply_coq(self):
-        writer = HtmlWriter(highlight)
-        nodes = list(self.document.traverse(alectryon_pending))
-        # TODO: Read SerAPI args from document and use SERAPI_ARGS as fallback
-        annotated = annotate((n['content'] for n in nodes), self.SERAPI_ARGS)
-        for node, fragments in zip(nodes, annotated):
+        config = Config(self.document)
+        writer = HtmlWriter(highlight) # Single writer to use one single gensym
+        pending_nodes = list(self.document.traverse(alectryon_pending))
+        pending = (n['content'] for n in pending_nodes)
+        annotated = annotate(pending, (*self.SERAPI_ARGS, *config.serapi_args))
+        for node, fragments in zip(pending_nodes, annotated):
             annots = transforms.IOAnnots(*node['options'])
             if annots.hide:
                 node.parent.remove(node)
-            else:
-                fragments = self.set_fragment_annots(fragments, annots)
-                fragments = transforms.default_transform(fragments)
-                self.check_for_long_lines(node, fragments)
+                continue
+            fragments = self.set_fragment_annots(fragments, annots)
+            fragments = transforms.default_transform(fragments)
+            self.check_for_long_lines(node, fragments)
+            with added_tokens(config.tokens):
                 html = writer.gen_fragments_html(fragments).render(pretty=False)
-                node.replace_self(raw(node['content'], html, format='html'))
+            node.replace_self(nodes.raw(node['content'], html, format='html'))
 
     @staticmethod
     def split_around(node):
@@ -128,23 +164,23 @@ class AlectryonTransform(Transform):
 
     @staticmethod
     def insert_toggle_after(node, toggle, keep_node):
-        before, node, after = AlectryonTransform.split_around(node)
+        pre, node, post = AlectryonTransform.split_around(node)
         if keep_node:
-            before.append(node)
-        before.append(toggle)
-        before.append(container('', *after, classes=['alectryon-container']))
-        node.parent.children = before
+            pre.append(node)
+        pre.append(toggle)
+        pre.append(nodes.container('', *post, classes=['alectryon-container']))
+        node.parent.children = pre
 
     def apply_toggle(self):
-        toggle = lambda id: raw('', TOGGLE_HTML.format(id=id), format='html')
-        nodes = list(self.document.traverse(alectryon_pending_toggle))
-        for idx, node in enumerate(nodes):
+        toggle = lambda id: nodes.raw('', TOGGLE_HTML.format(id=id), format='html')
+        toggles = list(self.document.traverse(alectryon_pending_toggle))
+        for idx, node in enumerate(toggles):
             self.insert_toggle_after(node, toggle(idx), False)
             self.auto_toggle = False
         if self.auto_toggle:
-            p = self.document.next_node(docinfo)
-            if p:
-                self.insert_toggle_after(p, toggle(0), True)
+            di = self.document.next_node(nodes.docinfo)
+            if di:
+                self.insert_toggle_after(di, toggle(0), True)
 
     def apply(self, **_kwargs):
         assert self.startnode is None
@@ -231,7 +267,7 @@ class AlectryonToggleDirective(Directive):
 
 def alectryon_bubble(# pylint: disable=dangerous-default-value
         _name, rawtext, _text, _lineno, _inliner, _options={}, _content=[]):
-    return [inline(rawtext, classes=['alectryon-bubble'])], []
+    return [nodes.inline(rawtext, classes=['alectryon-bubble'])], []
 
 alectryon_bubble.name = "alectryon-bubble"
 

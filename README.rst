@@ -83,13 +83,13 @@ Command-line interface
   * With ``--writer json``, output is written to ``<input>.io.json`` as a JSON-encoded list of Coq fragments (as many as in ``input`` if ``input`` is a ``.json`` file).  Each fragment is a list of records, each with a ``_type`` and some type-specific fields.  Here is an example:
 
     Input (``minimal.json``):
-        .. code:: json
+        .. code-block:: json
 
            ["Example xyz (H: False): True. (* ... *) exact I. Qed.",
             "Print xyz."]
 
     Output (``minimal.json.io.json``) after running ``./alectryon.py --writer json minimal.json``:
-        .. code:: js
+        .. code-block:: js
 
             [ // A list of fragments
               [ // Each fragment is a list of records
@@ -135,7 +135,7 @@ As a library
 
 Use ``alectryon.core.annotate(chunks: List[str])``, which returns an object with the same structure as the JSON above, but using objects instead of records with a ``_type`` field:
 
-.. code:: python
+.. code-block:: python
 
     >>> from alectryon.core import annotate
     >>> annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Print xyz."])
@@ -170,7 +170,9 @@ As a docutils or Sphinx module
 With blogs (Pelican, Nikola, Hugo, etc.)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Include the following code in your configuration file to register Alectryon's ``.. coq::`` directive, which feeds its contents to Alectryon and displays the resulting responses and goals interleaved with the input::
+Include the following code in your configuration file to register Alectryon's ``.. coq::`` directive, which feeds its contents to Alectryon and displays the resulting responses and goals interleaved with the input:
+
+.. code-block:: python
 
     import alectryon.docutils
     alectryon.docutils.register()
@@ -179,7 +181,9 @@ See |help(docutils)|_ for more information.
 
 To ensure that Coq blocks render properly, you'll need to tell your blogging platform to include ``alectryon.css``.  Using a git submodule or vendoring a copy of Alectryon is an easy way to ensure that this stylesheet is accessible to your blogging software.  Alternatively, you can use ``alectryon.html.copy_assets``.  Assets are stored in ``alectryon.html.ASSETS.PATH``; their names are in ``alectryon.html.ASSETS.CSS`` and ``alectryon.html.ASSETS.JS``.
 
-By default, Alectryon's docutils module will raise warnings for lines over 72 characters.  You can change the threshold or silence the warnings by adjusting ``alectryon.docutils.LONG_LINE_THRESHOLD``.  With `Pelican <https://github.com/getpelican/pelican>`_, use the following snippet to make warnings non-fatal::
+By default, Alectryon's docutils module will raise warnings for lines over 72 characters.  You can change the threshold or silence the warnings by adjusting ``alectryon.docutils.LONG_LINE_THRESHOLD``.  With `Pelican <https://github.com/getpelican/pelican>`_, use the following snippet to make warnings non-fatal:
+
+.. code-block:: python
 
    DOCUTILS_SETTINGS = {
        'halt_level': 3, # Error
@@ -189,12 +193,14 @@ By default, Alectryon's docutils module will raise warnings for lines over 72 ch
 .. |help(docutils)| replace:: ``help(alectryon.docutils)``
 .. _help(docutils): alectryon/docutils.py
 
-I test regularly with Pelican; other blogs will likely need minimal adjustments.
+I test regularly with Pelican; other systems will likely need minimal adjustments.
 
 With Sphinx
 ~~~~~~~~~~~
 
-For Sphinx, add the following to your ``config.py`` file instead::
+For Sphinx, add the following to your ``config.py`` file instead:
+
+.. code-block:: python
 
     import alectryon.sphinx
     alectryon.sphinx.register()
@@ -215,14 +221,16 @@ The ``.. coq::`` directive takes a list of space-separated flags to control the 
 
 The default is ``all fold``, meaning that all output is available, and starts folded.  The exact semantics depend on the polarity of the first inclusion option encountered: ``x y z`` means the same as ``none x y z``, i.e. include ``x``, ``y``, ``z``, and nothing else; ``no-x no-y`` means ``all no-x no-y``, i.e. include everything except ``x`` and ``y``.
 
-These annotations can also be added to individual Coq sentences (⚠ *sentences*, not lines), using special comments of the form ``(* .flag₁ … .flagₙ *)`` (a list of flags each prefixed with a ``.``)::
+These annotations can also be added to individual Coq sentences (⚠ *sentences*, not lines), using special comments of the form ``(* .flag₁ … .flagₙ *)`` (a list of flags each prefixed with a ``.``):
 
-  .. coq::
+.. code-block:: rst
 
-     Require Coq.Arith. (* .none *)      ← Executed but hidden
-     Goal True. (* .unfold *)            ← Goal unfolded
-       Fail exact 1. (* .in .messages *) ← Goal omitted
-       Fail fail. (* .messages *)        ← Error message shown, input hidden
+   .. coq::
+
+      Require Coq.Arith. (* .none *)      ← Executed but hidden
+      Goal True. (* .unfold *)            ← Goal unfolded
+        Fail exact 1. (* .in .messages *) ← Goal omitted
+        Fail fail. (* .messages *)        ← Error message shown, input hidden
 
 Tips
 ====
@@ -232,6 +240,15 @@ Prettification
 
 Programming fonts with ligatures are a good way to display prettified symbols without resorting to complex hacks.  Good candidates include *Fira Code* and *Iosevka* (with the later, add ``.alectryon-io { font-feature-settings: 'XV00' 1; }`` to your CSS to pick Coq-specific ligatures).
 
+Passing arguments to SerAPI
+---------------------------
+
+When compiling reStructuredText documents, besides the ``-I``, ``-Q``, ``-R`` and ``--serapi-args`` flags, you can specify custom SerAPI arguments in docinfo section at the beginning of your document, like this:
+
+.. code-block:: rst
+
+   :alectryon/serapi/args: -R . Lib -I mldir
+
 Adding custom keywords
 ----------------------
 
@@ -240,6 +257,13 @@ rules, such as custom tactic names.  See |help(add_tokens)|_ for more details.
 
 .. |help(add_tokens)| replace:: ``help(alectryon.pygments.add_tokens)``
 .. _help(add_tokens): alectryon/pygments.py
+
+When compiling reStructuredText documents, you can add per-document highlighting rules to the docinfo section at the beginning of your document, like this:
+
+.. code-block:: rst
+
+   :alectryon/pygments/tacn: intuition_eauto simplify invert
+   :alectryon/pygments/tacn-solve: map_tauto solve_eq
 
 Interactivity
 -------------

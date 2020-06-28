@@ -55,11 +55,28 @@ def add_tokens(tokens):
     ...     'tacn': ['map_simplify', 'map_subst']
     ... })
     """
+    filters = []
     for kind, names in tokens.items():
         tokentype = LEXER.TOKEN_TYPES.get(kind)
         if not tokentype:
             raise ValueError("Unknown token kind: {}".format(kind))
-        LEXER.add_filter(NameHighlightFilter(names=names, tokentype=tokentype))
+        filters.append(NameHighlightFilter(names=names, tokentype=tokentype))
+    for f in filters:
+        LEXER.add_filter(f)
+    return filters
+
+@contextmanager
+def added_tokens(tokens):
+    """Temporarily register additional syntax-highlighting tokens.
+
+    `tokens` should be as in ``add_tokens``.  This is intended to be used as a
+    context manager.
+    """
+    added = add_tokens(tokens)
+    try:
+        yield
+    finally:
+        LEXER.filters[:] = [f for f in LEXER.filters if f not in added]
 
 def highlight(coqstr):
     """Highlight a Coq string `coqstr`.
@@ -91,8 +108,10 @@ def highlight(coqstr):
 def munged_dict(d, updates):
     saved = d.copy()
     d.update(updates)
-    yield
-    d.update(saved)
+    try:
+        yield
+    finally:
+        d.update(saved)
 
 class WarnOnErrorTokenFilter(Filter):
     """Print a warning when the lexer generates an error token."""
