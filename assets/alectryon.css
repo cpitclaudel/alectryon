@@ -349,6 +349,11 @@ In any case, make an exception for comments:
     margin: 1rem 0;
 }
 
+.alectryon-header a {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
 .alectryon-header kbd {
     background: #d3d7cf;
     border-radius: 0.15em;
