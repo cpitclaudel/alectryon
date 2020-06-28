@@ -220,16 +220,15 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output .goal-hyps,
-.alectryon-io .coq-toggle:checked ~ .coq-output .goal-hyps {
+.alectryon-io .coq-toggle:checked ~ .coq-output .goal-hyps { /* FIXME not when targeted */
     flex-flow: row;
     flex-wrap: wrap;
     justify-content: flex-start;
 }
 
-.alectryon-toggle:checked + label + .alectryon-container .coq-output > .coq-output-sticky-wrapper,
-.alectryon-io .coq-toggle:checked ~ .coq-output > .coq-output-sticky-wrapper {
+.alectryon-toggle:checked + label + .alectryon-container .coq-sentence .coq-output > .coq-output-sticky-wrapper,
+.alectryon-io .coq-sentence .coq-toggle:checked ~ .coq-output > .coq-output-sticky-wrapper {
     display: block;
-    margin-bottom: unset; /* Undo negative margins FIXME these margins should be conditional on not checked used to widen the sticky range */
 }
 
 .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-hyps {
@@ -372,19 +371,23 @@ In any case, make an exception for comments:
 /* FIXME: condition on not checked should also condition on not global-toggled? */
 
 /* If there's space, display goals to the right of the code, not below it. */
-@media (min-width: 90rem) {
+@media (min-width: 80rem) {
     .alectryon-floating .alectryon-io {
         /* FIXME: needed? */
         box-sizing: border-box; /* Needed so .coq-output won't overflow */
     }
 
-    /* Adjoin to increase specificity */
-    .alectryon-floating .coq-sentence.alectryon-target .coq-output,
+    /* Unlike the windowed case, we don't want to move output blocks to the side
+       when they are both :checked and -targeted, since it gets confusing as
+       things jump around; hence the commented-output part of the selector,
+       which would otherwise increase specificity */
+    .alectryon-floating .coq-sentence.alectryon-target /* .coq-toggle ~ */ .coq-output,
     .alectryon-floating .coq-sentence:hover .coq-output {
         bottom: 0;
         left: 100%;
         right: -100%;
         padding: 0 0.5rem;
+        position:  absolute;
     }
 
     .alectryon-floating .coq-output {
@@ -402,14 +405,21 @@ In any case, make an exception for comments:
        page.  Doing things this way instead makes it possible to restrict
        .coq-output to a reasonable size (100%, through top = bottom = 0).
        See also https://stackoverflow.com/questions/43909940/. */
-    .alectryon-floating .coq-output-sticky-wrapper {
+    /* See note on specificity above */
+    .alectryon-floating .coq-sentence.alectryon-target /* .coq-toggle ~ */ .coq-output .coq-output-sticky-wrapper,
+    .alectryon-floating .coq-sentence:hover .coq-output-sticky-wrapper {
         margin-bottom: -200%;
         position: sticky;
         top: 0;
     }
 
+    .alectryon-floating .alectryon-toggle:checked + label + .alectryon-container .coq-sentence .coq-output > .coq-output-sticky-wrapper,
+    .alectryon-floating .alectryon-io .coq-sentence .coq-toggle:checked ~ .coq-output > .coq-output-sticky-wrapper {
+        margin-bottom: unset; /* Undo the margin */
+    }
+
     /* Float underneath the current fragment
-    @media (max-width: 90rem) {
+    @media (max-width: 80rem) {
         .alectryon-floating .coq-output {
             top: 100%;
         }
@@ -433,10 +443,18 @@ In any case, make an exception for comments:
     position: fixed; /* Overwritten by the ‘:checked’ rules */
 }
 
+/* See note about specificity below */
 .alectryon-windowed .coq-sentence:hover .coq-output,
-.alectryon-windowed .coq-sentence.alectryon-target .coq-output {
+.alectryon-windowed .coq-sentence.alectryon-target .coq-toggle ~ .coq-output {
     padding: 0.5rem;
     overflow-y: auto; /* Windowed contents may need to scroll */
+}
+
+.alectryon-windowed .alectryon-io .coq-sentence:hover .coq-output:not(:hover) .coq-responses,
+.alectryon-windowed .alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-responses,
+.alectryon-windowed .alectryon-io .coq-sentence:hover .coq-output:not(:hover) .coq-goals,
+.alectryon-windowed .alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-goals {
+    box-shadow: none; /* A shadow is unnecessary here and incompatible with overflow-y set to auto */
 }
 
 .alectryon-windowed .coq-sentence.alectryon-target .coq-extra-goals .goal-conclusion
@@ -474,23 +492,23 @@ In any case, make an exception for comments:
     height: 0.75rem;
 }
 
-/* Centered */
+/* Centered, Floating */
 
-.alectryon-standalone.alectryon-centered {
+.alectryon-standalone.alectryon-centered,
+.alectryon-standalone.alectryon-floating {
     max-width: 50rem;
     margin: auto;
 }
 
-/* Floating */
+@media (min-width: 80rem) {
+    .alectryon-standalone.alectryon-floating {
+        max-width: 80rem;
+    }
 
-.alectryon-standalone.alectryon-floating {
-    max-width: 80rem;
-    margin: auto;
-}
-
-.alectryon-standalone.alectryon-floating > * {
-    width: 50%;
-    margin-left: 0;
+    .alectryon-standalone.alectryon-floating > * {
+        width: 50%;
+        margin-left: 0;
+    }
 }
 
 /* Windowed */
@@ -512,9 +530,20 @@ In any case, make an exception for comments:
     width: 100%;
 }
 
-/* No need to predicate the rules below on ‘:not(:checked)’, since ‘left’,
+/* No need to predicate the ‘:hover’ rules below on ‘:not(:checked)’, since ‘left’,
    ‘right’, ‘top’, and ‘bottom’ will be inactived by the :checked rules setting
    ‘position’ to ‘static’ */
+
+
+/* Specificity: We want the output to stay inline when hovered while unfolded
+   (:checked), but we want it to move when it's targeted (i.e. when the user
+   is browsing goals one by one using the keyboard, in which case we want to
+   goals to appear in consistent locations).  The selectors below ensure
+   that :hover < :checked < -targeted in terms of specificity. */
+/* LATER: Reimplement this stuff with CSS variables */
+.alectryon-windowed .coq-sentence.alectryon-target .coq-toggle ~ .coq-output {
+    position: fixed;
+}
 
 @media screen and (min-width: 60rem) {
     .alectryon-standalone.alectryon-windowed {
