@@ -93,10 +93,14 @@ IO_COMMENT_RE = re.compile(r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(IOAnnots.RE
 def process_io_annotations(fragments):
     annotated = []
     for fr in htmlify_sentences(fragments):
-        if (annotated and isinstance(fr, CoqText)):
+        if isinstance(fr, CoqText):
+            target = annotated[-1] if annotated else None
+        else:
+            target = fr
+        if target:
             for m in IO_COMMENT_RE.finditer(fr.contents):
                 for mannot in IOAnnots.RE.finditer(m.group(0)):
-                    annotated[-1].annots.update(mannot.group(1))
+                    target.annots.update(mannot.group(1))
             fr = fr._replace(contents=IO_COMMENT_RE.sub("", fr.contents))
         annotated.append(fr)
     return annotated
