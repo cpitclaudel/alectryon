@@ -1,6 +1,6 @@
 alectryon := ../alectryon.py --output-directory output
 assets := alectryon.css alectryon.js
-all := plain.v.html literate.v.html literate.html document.html document.v literate.v.rst fragments.io.json fragments.snippets.html
+all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html document.v literate.v.rst fragments.io.json fragments.snippets.html
 
 all: $(patsubst %,output/%,$(all) $(assets));
 
@@ -12,6 +12,12 @@ output/plain.v.html: plain.v | output
 	$(alectryon) $<
 output/literate.v.html: literate.v | output
 	$(alectryon) $<
+output/coqdoc.v.html: coqdoc.v | output
+	$(alectryon) $<
+
+# HTML ← Coqdoc
+output/coqdoc.html: coqdoc.v | output
+	$(alectryon) $< --frontend coqdoc
 
 # HTML ← Coq+reST
 output/literate.html: literate.v | output

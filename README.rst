@@ -42,6 +42,10 @@ Try these recipes in the ``recipes`` directory of this repository:
 
     ../alectryon.py --frontend coq+rst --backend webpage literate.v -o literate.html
 
+- Generate an interactive webpage from a Coqdoc file (compatibility mode)::
+
+    ../alectryon.py --frontend coqdoc --backend webpage literate.v -o literate.html
+
 - Compile a reStructuredText document containing ``.. coq::`` blocks (coqrst style)::
 
     ../alectryon.py --frontend rst --backend webpage literate.v.rst -o doc.html

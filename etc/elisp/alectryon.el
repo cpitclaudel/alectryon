@@ -278,6 +278,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 
 (defconst alectryon--coq-font-lock-keywords
   '(("^\\(([*][|]\\|[|][*])\\)$"
+     ;; No space allowed at EOL (the :align-to would push it to the next line)
      1 '(face alectryon-comment-marker display (space :align-to right)) append)))
 
 (defconst alectryon--rst-font-lock-keywords
