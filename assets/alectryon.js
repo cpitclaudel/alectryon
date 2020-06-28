@@ -30,7 +30,7 @@ var Alectryon;
             /* <body> and <html> elements can have their client rect overflow
              * the window if their height is unset, so scroll the window
              * instead */
-            if (parent.nodeName == "BODY" || parent.nodeName == "HTML")
+            if (parent && (parent.nodeName == "BODY" || parent.nodeName == "HTML"))
                 parent = null;
 
             var rect = function(e) { return e.getBoundingClientRect(); };
