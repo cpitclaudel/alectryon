@@ -1,13 +1,14 @@
 var Alectryon;
 (function(Alectryon) {
-    var slideshow;
     (function (slideshow) {
         function anchor(sentence) { return "#" + sentence.id; }
 
         function current_sentence() { return slideshow.sentences[slideshow.pos]; }
 
-        function unhighlight(sentence) {
+        function unhighlight() {
+            var sentence = current_sentence();
             if (sentence) sentence.classList.remove("alectryon-target");
+            slideshow.pos = -1;
         }
 
         function highlight(sentence) {
@@ -46,8 +47,12 @@ var Alectryon;
             }
         }
 
+        function highlighted(pos) {
+            return slideshow.pos == pos;
+        }
+
         function navigate(pos, inhibitScroll) {
-            unhighlight(current_sentence());
+            unhighlight();
             slideshow.pos = Math.min(Math.max(pos, 0), slideshow.sentences.length - 1);
             var sentence = current_sentence();
             highlight(sentence);
@@ -87,20 +92,23 @@ var Alectryon;
             slideshow.navigate(0);
         }
 
-        function end() {
-            unhighlight(current_sentence());
+        function toggleHighlight(idx) {
+            if (highlighted(idx))
+                unhighlight();
+            else
+                navigate(idx, true);
         }
 
         function handleClick(evt) {
             if (evt.ctrlKey) {
                 var sentence = evt.currentTarget;
-                navigate(sentence.alectryon_index, true);
 
                 // Ensure that the goal is shown on the side, not inline
                 var checkbox = sentence.getElementsByClassName("coq-toggle")[0];
                 if (checkbox)
                     checkbox.checked = false;
 
+                toggleHighlight(sentence.alectryon_index);
                 evt.preventDefault();
             }
         }
@@ -116,7 +124,7 @@ var Alectryon;
         }
 
         slideshow.start = start;
-        slideshow.end = end;
+        slideshow.end = unhighlight;
         slideshow.next = function() { navigate(slideshow.pos + 1); };
         slideshow.previous = function() { navigate(slideshow.pos + -1); };
         window.addEventListener('DOMContentLoaded', init);
