@@ -129,4 +129,37 @@ var Alectryon;
         slideshow.previous = function() { navigate(slideshow.pos + -1); };
         window.addEventListener('DOMContentLoaded', init);
     })(Alectryon.slideshow || (Alectryon.slideshow = {}));
+
+    (function (styles) {
+        var styleNames = ["centered", "floating", "windowed"];
+
+        function className(style) {
+            return "alectryon-" + style;
+        }
+
+        function setStyle(style) {
+            var root = document.getElementsByClassName("alectryon-root")[0];
+            styleNames.forEach(function (s) {
+                root.classList.remove(className(s)); });
+            root.classList.add(className(style));
+        }
+
+        function init() {
+            var header = document.getElementsByClassName("alectryon-header")[0];
+            if (header) {
+                header.append(" Style: ");
+                styleNames.forEach(function (styleName, idx) {
+                    var s = styleName;
+                    var a = document.createElement("a");
+                    a.onclick = function() { setStyle(s); };
+                    a.append(styleName);
+                    if (idx > 0) header.append("; ");
+                    header.appendChild(a);
+                });
+                header.append(".");
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    })(Alectryon.styles || (Alectryon.styles = {}));
 })(Alectryon || (Alectryon = {}));
