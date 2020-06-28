@@ -57,7 +57,7 @@ def _wrap_classes(*cls):
 DOCUTILS_CSS = "https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutils_basic.css"
 MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"
 
-def _gen_docutils_html(source, fpath, webpage_style, html_assets, traceback, Parser, Reader):
+def _gen_docutils_html(source, fpath, webpage_style, no_header, html_assets, traceback, Parser, Reader):
     from .core import SerAPI
     from .html import ASSETS, gen_header
     from docutils.core import publish_string
@@ -95,7 +95,8 @@ def _gen_docutils_html(source, fpath, webpage_style, html_assets, traceback, Par
             super().__init__(*args, **kwargs)
             cls = _wrap_classes("standalone", webpage_style)
             self.body_prefix.append('<div class="{}">'.format(cls))
-            self.body_prefix.append(gen_header(SerAPI.version_info()))
+            if not no_header:
+                self.body_prefix.append(gen_header(SerAPI.version_info()))
             self.body_suffix.insert(0, '</div>')
             for j in js:
                 TEMPLATE = '<script type="text/javascript" src="{}"></script>'
@@ -112,15 +113,15 @@ def _gen_docutils_html(source, fpath, webpage_style, html_assets, traceback, Par
         settings_overrides=settings_overrides, config_section=None,
         enable_exit_status=True).decode("utf-8")
 
-def gen_rstcoq_html(coq, fpath, webpage_style, html_assets, traceback):
+def gen_rstcoq_html(coq, fpath, webpage_style, no_header, html_assets, traceback):
     from .docutils import RSTCoqParser, RSTCoqStandaloneReader
-    return _gen_docutils_html(coq, fpath, webpage_style, html_assets, traceback,
+    return _gen_docutils_html(coq, fpath, webpage_style, no_header, html_assets, traceback,
                          RSTCoqParser, RSTCoqStandaloneReader)
 
-def gen_rst_html(rst, fpath, webpage_style, html_assets, traceback):
+def gen_rst_html(rst, fpath, webpage_style, no_header, html_assets, traceback):
     from docutils.parsers.rst import Parser
     from docutils.readers.standalone import Reader
-    return _gen_docutils_html(rst, fpath, webpage_style, html_assets, traceback,
+    return _gen_docutils_html(rst, fpath, webpage_style, no_header, html_assets, traceback,
                          Parser, Reader)
 
 def _lint_docutils(source, fpath, Parser, traceback):
@@ -217,7 +218,7 @@ def copy_assets(state, html_assets, copy_fn, output, output_directory):
         cp(output_directory, assets=html_assets, copy_fn=copy_fn)
     return state
 
-def dump_html_standalone(snippets, fname, webpage_style, html_assets, html_classes):
+def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets, html_classes):
     from dominate import tags, document
     from dominate.util import raw
     from .core import SerAPI
@@ -244,7 +245,8 @@ def dump_html_standalone(snippets, fname, webpage_style, html_assets, html_class
 
     cls = _wrap_classes("standalone", webpage_style, *html_classes)
     root = doc.body.add(tags.article(cls=cls))
-    root.add(raw(gen_header(SerAPI.version_info())))
+    if not no_header:
+        root.add(raw(gen_header(SerAPI.version_info())))
     for snippet in snippets:
         root.add(snippet)
 
@@ -441,6 +443,10 @@ and produce reStructuredText, HTML, or JSON output.""")
     parser.add_argument("--copy-assets", choices=list(COPY_ASSETS_CHOICES.keys()),
                         default="copy", dest="copy_fn",
                         help=COPY_ASSETS_HELP)
+
+    NO_HEADER_HELP = "Do not insert a header with usage instructions in webpages."
+    parser.add_argument("--no-header", action='store_true',
+                        help=NO_HEADER_HELP)
 
     WEBPAGE_STYLE_HELP = "Choose a style for standalone webpages."
     WEBPAGE_STYLE_CHOICES = ("centered", "floating", "windowed")

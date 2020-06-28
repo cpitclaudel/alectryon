@@ -1,4 +1,4 @@
-alectryon := ../alectryon.py --output-directory output
+alectryon := ../alectryon.py --output-directory output --no-header
 assets := alectryon.css alectryon.js
 all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html document.v literate.v.rst fragments.io.json fragments.snippets.html
 
