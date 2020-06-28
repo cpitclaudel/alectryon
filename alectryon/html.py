@@ -19,7 +19,8 @@
 # SOFTWARE.
 
 from collections import defaultdict
-from os import path
+from os import path, unlink
+import shutil
 
 from dominate import tags
 from dominate.util import raw
@@ -40,12 +41,20 @@ class ASSETS:
     PYGMENTS_CSS = ("tango_subtle.css", "tango_subtle.min.css")
     DOCUTILS_CSS = ("docutils_basic.css",)
 
-def copy_assets(output_directory, assets=ASSETS.ALECTRYON_CSS + ASSETS.ALECTRYON_JS):
-    from shutil import copy, SameFileError
+def copy_assets(output_directory,
+                assets=ASSETS.ALECTRYON_CSS + ASSETS.ALECTRYON_JS,
+                copy_fn=shutil.copy):
     for name in assets:
+        src = path.join(ASSETS.PATH, name)
+        dst = path.join(output_directory, name)
+        if copy_fn != shutil.copy:
+            try:
+                unlink(dst)
+            except FileNotFoundError:
+                pass
         try:
-            copy(path.join(ASSETS.PATH, name), output_directory)
-        except SameFileError:
+            copy_fn(src, dst)
+        except shutil.SameFileError:
             pass
 
 class Gensym():

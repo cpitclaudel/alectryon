@@ -21,6 +21,7 @@
 import argparse
 import inspect
 import os.path
+import shutil
 import sys
 
 # pylint: disable=import-outside-toplevel
@@ -206,13 +207,12 @@ def gen_html_snippets_with_coqdoc(annotated, html_classes):
     # ‘return’ instead of ‘yield from’ to update html_classes eagerly
     return _gen_html_snippets_with_coqdoc(annotated)
 
-def copy_assets(state, html_assets, no_assets, output, output_directory):
+def copy_assets(state, html_assets, copy_fn, output, output_directory):
     from .html import copy_assets as cp
-    if not no_assets:
+    if copy_fn:
         if output:
-            cp(os.path.dirname(output), assets=html_assets)
-        else:
-            cp(output_directory, assets=html_assets)
+            output_directory = os.path.dirname(os.path.abspath(output))
+        cp(output_directory, assets=html_assets, copy_fn=copy_fn)
     return state
 
 def dump_html_standalone(snippets, fname, webpage_style, html_assets, html_classes):
@@ -431,10 +431,13 @@ and produce reStructuredText, HTML, or JSON output.""")
     parser.add_argument("--output-directory", default=".",
                         help=OUT_DIR_HELP)
 
-    NO_ASSETS_HELP = ("When creating webpages, " +
-                      "do not copy assets along the generated file.")
-    parser.add_argument("--no-assets", action="store_true",
-                        default=False, help=NO_ASSETS_HELP)
+    COPY_ASSETS_HELP = ("Chose the method to use to copy assets " +
+                        "along the generated file(s) when creating webpages.")
+    COPY_ASSETS_CHOICES = {"copy": shutil.copy, "symlink": os.symlink,
+                           "hardlink": os.link, "none": None}
+    parser.add_argument("--copy-assets", choices=list(COPY_ASSETS_CHOICES.keys()),
+                        default="copy", dest="copy_fn",
+                        help=COPY_ASSETS_HELP)
 
     WEBPAGE_STYLE_HELP = "Choose a style for standalone webpages."
     WEBPAGE_STYLE_CHOICES = ("centered", "floating", "windowed")
@@ -489,6 +492,9 @@ and produce reStructuredText, HTML, or JSON output.""")
         args.serapi_args.extend(("-R", ",".join(pair)))
     for pair in args.coq_args_Q:
         args.serapi_args.extend(("-Q", ",".join(pair)))
+
+    # argparse applies ‘type’ before ‘choices’, so we do the conversion here
+    args.copy_fn = COPY_ASSETS_CHOICES[args.copy_fn]
 
     try:
         fill_in_arguments(args)
