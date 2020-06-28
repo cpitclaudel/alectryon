@@ -51,7 +51,7 @@ def register_docutils(v, serapi_args):
     return v
 
 def _wrap_classes(*cls):
-    return " ".join("alectryon-" + c for c in cls)
+    return " ".join("alectryon-" + c for c in ("root", *cls))
 
 DOCUTILS_CSS = "https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutils_basic.css"
 MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"

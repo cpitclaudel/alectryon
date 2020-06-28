@@ -20,8 +20,17 @@ var Alectryon;
             // the sentence past half of the screen.  If sentence is already in
             // a reasonable position, don't move.
             var parent = sentence.parentElement;
+            /* We want to scroll the whole document, so start at root… */
             while (parent && !parent.classList.contains("alectryon-root"))
                 parent = parent.parentElement;
+            /* … and work up from there to find a scrollable element */
+            while (parent && parent.scrollHeight <= parent.clientHeight)
+                parent = parent.parentElement;
+            /* <body> and <html> elements can have their client rect overflow
+             * the window if their height is unset, so scroll the window
+             * instead */
+            if (parent.nodeName == "BODY" || parent.nodeName == "HTML")
+                parent = null;
 
             var rect = function(e) { return e.getBoundingClientRect(); };
             var parent_box = parent ? rect(parent) : { y: 0, height: window.innerHeight },
