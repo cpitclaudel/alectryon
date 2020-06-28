@@ -157,12 +157,21 @@ In any case, make an exception for comments:
     right: 0;
     position: absolute;
     padding: 0.25rem 0;
+    overflow: visible; /* Let box-shadows overflow */
     z-index: 1; /* Default to an index lower than that used by :hover */
 }
 
 .alectryon-io .coq-sentence:hover .coq-output:not(:hover),
 .alectryon-io .coq-sentence.alectryon-target .coq-output {
     display: block;
+}
+
+/* Indicate active (hovered or targeted) goals with a shadow. */
+.alectryon-io .coq-sentence:hover .coq-output:not(:hover) .coq-responses,
+.alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-responses,
+.alectryon-io .coq-sentence:hover .coq-output:not(:hover) .coq-goals,
+.alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-goals {
+    box-shadow: 0 0 3px gray;
 }
 
 .alectryon-io .coq-extra-goals .goal-hyps {
@@ -206,8 +215,8 @@ In any case, make an exception for comments:
     display: block;
     position: static;
     width: unset;
-    background: unset; /* Override the background set in .alectryon-floating */
-    padding: 0.25rem 0; /* Re-assert so that later :hover rules don't override this padding */ 
+    background: unset; /* Override the backgrounds set in floating in windowed mode */
+    padding: 0.25rem 0; /* Re-assert so that later :hover rules don't override this padding */
 }
 
 .alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output .goal-hyps,
