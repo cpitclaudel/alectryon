@@ -58,7 +58,8 @@ DOCUTILS_CSS = "https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutil
 MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"
 
 def _gen_docutils_html(source, fpath, webpage_style, html_assets, traceback, Parser, Reader):
-    from .html import ASSETS
+    from .core import SerAPI
+    from .html import ASSETS, gen_header
     from docutils.core import publish_string
     from docutils.writers import get_writer_class
 
@@ -94,6 +95,7 @@ def _gen_docutils_html(source, fpath, webpage_style, html_assets, traceback, Par
             super().__init__(*args, **kwargs)
             cls = _wrap_classes("standalone", webpage_style)
             self.body_prefix.append('<div class="{}">'.format(cls))
+            self.body_prefix.append(gen_header(SerAPI.version_info()))
             self.body_suffix.insert(0, '</div>')
             for j in js:
                 TEMPLATE = '<script type="text/javascript" src="{}"></script>'
@@ -217,6 +219,7 @@ def copy_assets(state, html_assets, copy_fn, output, output_directory):
 
 def dump_html_standalone(snippets, fname, webpage_style, html_assets, html_classes):
     from dominate import tags, document
+    from dominate.util import raw
     from .core import SerAPI
     from .html import gen_header, GENERATOR, ASSETS
     from .pygments import FORMATTER
@@ -241,7 +244,7 @@ def dump_html_standalone(snippets, fname, webpage_style, html_assets, html_class
 
     cls = _wrap_classes("standalone", webpage_style, *html_classes)
     root = doc.body.add(tags.article(cls=cls))
-    root.add(gen_header(SerAPI.version_info()))
+    root.add(raw(gen_header(SerAPI.version_info())))
     for snippet in snippets:
         root.add(snippet)
 

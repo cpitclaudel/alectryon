@@ -23,7 +23,6 @@ from os import path, unlink
 import shutil
 
 from dominate import tags
-from dominate.util import raw
 
 from .core import CoqText, HTMLSentence
 from . import transforms, __version__
@@ -75,7 +74,7 @@ HEADER = (
 )
 
 def gen_header(version):
-    return raw(HEADER.format(version))
+    return HEADER.format(version)
 
 class HtmlWriter():
     def __init__(self, highlighter):
