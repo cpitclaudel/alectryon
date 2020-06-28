@@ -465,17 +465,17 @@ and produce reStructuredText, HTML, or JSON output.""")
 
     I_HELP="Pass -I DIR to the SerAPI subprocess."
     subp.add_argument("-I", "--ml-include-path", dest="coq_args_I",
-                      metavar="dir", nargs=1, action="append",
+                      metavar="DIR", nargs=1, action="append",
                       default=[], help=I_HELP)
 
     Q_HELP="Pass -Q DIR COQDIR to the SerAPI subprocess."
     subp.add_argument("-Q", "--load-path", dest="coq_args_Q",
-                      metavar="DIR COQDIR", nargs=2, action="append",
+                      metavar=("DIR", "COQDIR"), nargs=2, action="append",
                       default=[], help=Q_HELP)
 
     R_HELP="Pass -R DIR COQDIR to the SerAPI subprocess."
     subp.add_argument("-R", "--rec-load-path", dest="coq_args_R",
-                      metavar="DIR COQDIR", nargs=2, action="append",
+                      metavar=("DIR", "COQDIR"), nargs=2, action="append",
                       default=[], help=R_HELP)
 
 
