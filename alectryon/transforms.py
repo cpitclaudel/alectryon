@@ -240,3 +240,11 @@ def isolate_coqdoc(fragments):
         if isinstance(part, AlectryonFragments):
             strip_text(part.fragments)
     return partitioned
+
+def default_transform(fragments):
+    fragments = list(htmlify_sentences(fragments))
+    fragments = group_hypotheses(fragments)
+    fragments = process_io_annotations(fragments)
+    fragments = strip_failures(fragments)
+    fragments = dedent(fragments)
+    return list(fragments)

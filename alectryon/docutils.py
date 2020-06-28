@@ -91,9 +91,10 @@ class AlectryonTransform(Transform):
     @staticmethod
     def set_fragment_annots(fragments, annots):
         """Apply relevant annotations to all unannotated fragments."""
-        for fr in fragments:
+        for fr in transforms.htmlify_sentences(fragments):
             if hasattr(fr, 'annots'):
                 fr.annots.inherit(annots)
+            yield fr
 
     def check_for_long_lines(self, node, fragments):
         if LONG_LINE_THRESHOLD is None:
@@ -102,15 +103,6 @@ class AlectryonTransform(Transform):
             msg = "Long line: {!r} ({} characters)".format(line, len(line))
             self.document.reporter.warning(msg, base_node=node)
             return
-
-    def preprocess_fragments(self, fragments, annots):
-        fragments = list(transforms.htmlify_sentences(fragments))
-        self.set_fragment_annots(fragments, annots)
-        fragments = transforms.group_hypotheses(fragments)
-        fragments = transforms.process_io_annotations(fragments)
-        fragments = transforms.strip_failures(fragments)
-        fragments = transforms.dedent(fragments)
-        return list(fragments)
 
     def apply_coq(self):
         writer = HtmlWriter(highlight)
@@ -122,7 +114,8 @@ class AlectryonTransform(Transform):
             if annots.hide:
                 node.parent.remove(node)
             else:
-                fragments = self.preprocess_fragments(fragments, annots)
+                fragments = self.set_fragment_annots(fragments, annots)
+                fragments = transforms.default_transform(fragments)
                 self.check_for_long_lines(node, fragments)
                 html = writer.gen_fragments_html(fragments).render(pretty=False)
                 node.replace_self(raw(node['content'], html, format='html'))

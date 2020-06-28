@@ -184,7 +184,7 @@ def _gen_html_snippets_with_coqdoc(annotated):
     from dominate.util import raw
     from .html import HtmlWriter
     from .pygments import highlight
-    from .transforms import isolate_coqdoc, CoqdocFragment
+    from .transforms import isolate_coqdoc, default_transform, CoqdocFragment
 
     writer = HtmlWriter(highlight)
 
@@ -198,7 +198,8 @@ def _gen_html_snippets_with_coqdoc(annotated):
             if isinstance(part, CoqdocFragment):
                 yield [raw(str(next(coqdoc_html, None)))]
             else:
-                yield writer.gen_fragments_html(part.fragments)
+                fragments = default_transform(part.fragments)
+                yield writer.gen_fragments_html(fragments)
 
 def gen_html_snippets_with_coqdoc(annotated, html_classes):
     html_classes.append("coqdoc")
