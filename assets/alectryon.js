@@ -102,7 +102,7 @@ var Alectryon;
         }
 
         function handleClick(evt) {
-            if (evt.ctrlKey) {
+            if (evt.ctrlKey || evt.metaKey) {
                 var sentence = evt.currentTarget;
 
                 // Ensure that the goal is shown on the side, not inline
