@@ -55,7 +55,7 @@ from docutils.transforms import Transform
 
 from . import transforms
 from .core import annotate
-from .html import HtmlWriter
+from .html import HtmlWriter, gen_header
 from .pygments import highlight, added_tokens
 
 # reST extensions
@@ -262,6 +262,20 @@ class AlectryonToggleDirective(Directive):
     def run(self):
         return [alectryon_pending_toggle()]
 
+
+class AlectryonHeaderDirective(Directive):
+    """Display an explanatory header."""
+    name = "alectryon-header"
+
+    required_arguments = 0
+    optional_arguments = 0
+    option_spec = {}
+    has_content = False
+
+    def run(self):
+        from .core import SerAPI
+        return [nodes.raw('', gen_header(SerAPI.version_info()))]
+
 # Roles
 # -----
 
@@ -362,7 +376,7 @@ class RSTCoqStandaloneReader(Reader):
 
 NODES = [alectryon_pending, alectryon_pending_toggle]
 TRANSFORMS = [AlectryonTransform]
-DIRECTIVES = [CoqDirective, AlectryonToggleDirective]
+DIRECTIVES = [CoqDirective, AlectryonToggleDirective, AlectryonHeaderDirective]
 ROLES = [alectryon_bubble]
 
 def register():
