@@ -163,5 +163,7 @@ var Alectryon;
         }
 
         window.addEventListener('DOMContentLoaded', init);
+
+        styles.setStyle = setStyle;
     })(Alectryon.styles || (Alectryon.styles = {}));
 })(Alectryon || (Alectryon = {}));
