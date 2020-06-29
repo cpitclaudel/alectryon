@@ -35,9 +35,11 @@ Lemma even_Even :
 Proof. (* .fold *)
   induction n.
   all: cbn.
-  - split.
+  - (* n ← 0 *)
+    split.
     all: constructor.
-  - Fail apply IHn. (* .fails .no-goals *)
+  - (* n ← S _ *)
+    Fail apply IHn. (* .fails .no-goals *) (* stuck! *)
 
 (*|
 The induction hypothesis doesn't apply — maybe we need to destruct ``n``?
@@ -46,8 +48,9 @@ The induction hypothesis doesn't apply — maybe we need to destruct ``n``?
 |*)
 
     destruct n.
-    + split; inversion 1.
-    +
+    + (* n ← 1 *)
+      split; inversion 1.
+    + (* n ← S (S _) *)
 
 (*|
 Stuck again!
@@ -59,7 +62,7 @@ Abort.
 Strengthening the spec
 ======================
 
-The usual approach is to strengthen the spec:
+The usual approach is to strengthen the spec to work around the weakness of the inductive principle.
 
 .. coq:: unfold
 |*)
@@ -69,10 +72,12 @@ Lemma even_Even :
        (even (S n) = true <-> Even (S n)). (* .fold *)
 Proof. (* .fold *)
   induction n; cbn.
-  - repeat split; cbn.
+  - (* n ← 0 *)
+    repeat split; cbn.
     all: try constructor.
     all: inversion 1.
-  - destruct IHn as ((Hne & HnE) & (HSne & HSnE)).
+  - (* n ← S _ *)
+    destruct IHn as ((Hne & HnE) & (HSne & HSnE)).
     repeat split; cbn.
     all: eauto using EvenS.
     inversion 1; eauto.
@@ -91,9 +96,12 @@ Fixpoint even_Even_fp (n: nat):
   even n = true <-> Even n. (* .fold *)
 Proof. (* .fold *)
   destruct n as [ | [ | n ] ]; cbn.
-  - repeat constructor.
-  - split; inversion 1.
-  - split.
+  - (* n ← 0 *)
+    repeat constructor.
+  - (* n ← 1 *)
+    split; inversion 1.
+  - (* n ← S (S _) *)
+    split.
     + constructor; apply even_Even_fp; assumption.
     + inversion 1; apply even_Even_fp; assumption.
 Qed.

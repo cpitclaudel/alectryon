@@ -138,10 +138,10 @@ def group_whitespace_with_code(fragments):
 
 BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
 def is_bullet(fr):
-    return isinstance(fr, (CoqSentence, HTMLSentence)) and BULLET.match(fr.contents)
+    return BULLET.match(fr.contents)
 
-def attach_comments_to_bullets(fragments):
-    """Attach comments immediately following a bullet to the bullet itself.
+def attach_comments_to_code(fragments, predicate=lambda _: True):
+    """Attach comments immediately following a sentence to the sentence itself.
 
     This is to support this common pattern::
 
@@ -154,12 +154,16 @@ def attach_comments_to_bullets(fragments):
     A small complication is that we want to absorb only up to the end of a
     comment, not including subsequent spaces (for example, above, we want to
     capture ‘(* n = S _ *) (* the hard case *)’, without the final space).
+
+    Only sentences for which `predicate` returns ``True`` are considered (to
+    restrict the behavior to just bullets, pass ``is_bullet``.
     """
     from .literate import coq_partition, StringView, Code, Comment
     grouped = list(htmlify_sentences(fragments))
     for idx, fr in enumerate(grouped):
         prev = idx > 0 and grouped[idx - 1]
-        if is_bullet(prev) and isinstance(fr, CoqText):
+        prev_is_sentence = isinstance(prev, (CoqSentence, HTMLSentence))
+        if prev_is_sentence and predicate(prev) and isinstance(fr, CoqText):
             best = prefix = StringView(fr.contents, 0, 0)
             for part in coq_partition(fr.contents):
                 if "\n" in part.v:
@@ -286,7 +290,7 @@ def isolate_coqdoc(fragments):
 
 def default_transform(fragments):
     fragments = list(htmlify_sentences(fragments))
-    fragments = attach_comments_to_bullets(fragments)
+    fragments = attach_comments_to_code(fragments)
     fragments = group_hypotheses(fragments)
     fragments = process_io_annotations(fragments)
     fragments = strip_failures(fragments)
