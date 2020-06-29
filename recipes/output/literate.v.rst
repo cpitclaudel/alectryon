@@ -20,7 +20,7 @@ Here's an *inductive specification* of evenness:
      | 1 => false
      | S (S n) => even n
      end.
-   
+
    (* Ensure that we never unfold [even (S n)] *)
    Arguments even : simpl nomatch.
 

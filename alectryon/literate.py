@@ -79,7 +79,8 @@ class Line(namedtuple("Line", "num parts")):
         return sum(len(p) for p in self.parts)
 
     def __str__(self):
-        return "".join(str(p) for p in self.parts)
+        s = "".join(str(p) for p in self.parts)
+        return s if not s.isspace() else ""
 
     def isspace(self):
         return all(p.isspace() for p in self.parts)
