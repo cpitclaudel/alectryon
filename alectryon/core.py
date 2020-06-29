@@ -32,7 +32,7 @@ DEBUG = False
 
 def debug(text, prefix):
     if isinstance(text, (bytes, bytearray)):
-        text = text.decode("utf-8")
+        text = text.decode("utf-8", errors="replace")
     if DEBUG:
         print(indent(text.rstrip(), prefix), flush=True)
 
