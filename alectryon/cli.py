@@ -51,56 +51,26 @@ def register_docutils(v, serapi_args):
     register()
     return v
 
-def _wrap_classes(*cls):
-    return " ".join("alectryon-" + c for c in ("root", *cls))
-
-DOCUTILS_CSS = "https://cdn.rawgit.com/matthiaseisen/docutils-css/master/docutils_basic.css"
-MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full"
-
 def _gen_docutils_html(source, fpath, webpage_style, no_header, html_assets, traceback, Parser, Reader):
-    from .core import SerAPI
-    from .html import ASSETS, gen_header
     from docutils.core import publish_string
-    from docutils.writers import get_writer_class
+    from .docutils import HtmlTranslator, HtmlWriter
 
     # The encoding/decoding dance below happens because setting output_encoding
     # to "unicode" causes reST to generate a bad <meta> tag, and setting
     # input_encoding to "unicode" breaks the ‘.. include’ directive.
 
-    js = ASSETS.ALECTRYON_JS
-    css = (*ASSETS.ALECTRYON_CSS, *ASSETS.DOCUTILS_CSS, *ASSETS.PYGMENTS_CSS)
-    html_assets.extend(js + css)
+    html_assets.extend(HtmlTranslator.JS + HtmlTranslator.CSS)
 
     settings_overrides = {
         'traceback': traceback,
         'embed_stylesheet': False,
         'stylesheet_path': None,
         'stylesheet_dirs': [],
-        'math_output': "MathJax " + MATHJAX_URL,
-        'stylesheet': list(css), # Must be a list
-        'syntax_highlight': 'short',
+        'no_header': no_header,
+        'webpage_style': webpage_style,
         'input_encoding': 'utf-8',
         'output_encoding': 'utf-8'
     }
-
-    Writer = get_writer_class('html')
-
-    class HtmlWriter(Writer):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.translator_class = HtmlTranslator
-
-    class HtmlTranslator(Writer().translator_class):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            cls = _wrap_classes("standalone", webpage_style)
-            self.body_prefix.append('<div class="{}">'.format(cls))
-            if not no_header:
-                self.body_prefix.append(gen_header(SerAPI.version_info()))
-            self.body_suffix.insert(0, '</div>')
-            for j in js:
-                TEMPLATE = '<script type="text/javascript" src="{}"></script>'
-                self.stylesheet.append(TEMPLATE.format(j))
 
     parser = Parser()
     return publish_string(
@@ -154,9 +124,9 @@ def lint_rst(rst, fpath, traceback):
     return _lint_docutils(rst, fpath, Parser, traceback)
 
 def gen_html_snippets(annotated):
-    from .html import HtmlWriter
+    from .html import HtmlGenerator
     from .pygments import highlight
-    return HtmlWriter(highlight).gen_html(annotated)
+    return HtmlGenerator(highlight).gen_html(annotated)
 
 COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
                   '-s', '--html', '--stdout', '--utf8']
@@ -186,11 +156,11 @@ def _gen_coqdoc_html(coqdoc_comments):
 
 def _gen_html_snippets_with_coqdoc(annotated):
     from dominate.util import raw
-    from .html import HtmlWriter
+    from .html import HtmlGenerator
     from .pygments import highlight
     from .transforms import isolate_coqdoc, default_transform, CoqdocFragment
 
-    writer = HtmlWriter(highlight)
+    writer = HtmlGenerator(highlight)
 
     coqdoc = [part.contents for fragments in annotated
               for part in isolate_coqdoc(fragments)
@@ -222,7 +192,7 @@ def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets,
     from dominate import tags, document
     from dominate.util import raw
     from .core import SerAPI
-    from .html import gen_header, GENERATOR, ASSETS
+    from .html import gen_header, wrap_classes, GENERATOR, ASSETS
     from .pygments import FORMATTER
 
     doc = document(title=fname)
@@ -243,7 +213,7 @@ def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets,
     pygments_css = FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
 
-    cls = _wrap_classes("standalone", webpage_style, *html_classes)
+    cls = wrap_classes("standalone", webpage_style, *html_classes)
     root = doc.body.add(tags.article(cls=cls))
     if not no_header:
         root.add(raw(gen_header(SerAPI.version_info())))

@@ -45,17 +45,19 @@ contents following the checkbox are wrapped in a container with class
 """
 
 import re
+import os.path
 
 import docutils
-from docutils import nodes
+from docutils import nodes, frontend
 
 from docutils.parsers.rst import directives, roles, Directive
 from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
+from docutils.writers import get_writer_class
 
 from . import transforms
 from .core import annotate
-from .html import HtmlWriter, gen_header
+from .html import ASSETS, HtmlGenerator, gen_header, wrap_classes
 from .pygments import highlight, added_tokens
 
 # reST extensions
@@ -140,7 +142,7 @@ class AlectryonTransform(Transform):
 
     def apply_coq(self):
         config = Config(self.document)
-        writer = HtmlWriter(highlight) # Single writer to use one single gensym
+        writer = HtmlGenerator(highlight) # Single writer to use one single gensym
         pending_nodes = list(self.document.traverse(alectryon_pending))
         pending = (n['content'] for n in pending_nodes)
         annotated = annotate(pending, (*self.SERAPI_ARGS, *config.serapi_args))
@@ -370,6 +372,55 @@ class RSTCoqStandaloneReader(Reader):
     def get_transforms(self):
         # AlectryonTransform not added here because the CoqDirective does it
         return Reader.get_transforms(self) + self.extra_transforms
+
+# Writer
+# ------
+
+DefaultWriter = get_writer_class('html')
+
+class HtmlTranslator(DefaultWriter().translator_class):
+    JS = ASSETS.ALECTRYON_JS
+    CSS = (*ASSETS.ALECTRYON_CSS, *ASSETS.DOCUTILS_CSS, *ASSETS.PYGMENTS_CSS)
+
+    JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>'
+    MATHJAX_URL = ("MathJax "
+                   "https://cdnjs.cloudflare.com/ajax/libs/"
+                   "mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full")
+
+    def stylesheet_call(self, name):
+        if self.settings.embed_stylesheet:
+            # Expand only if we're going to inline; otherwise keep relative
+            name = os.path.join(ASSETS.PATH, name)
+        return super().stylesheet_call(name)
+
+    def __init__(self, document):
+        super().__init__(document)
+        self.settings.syntax_highlight = "short"
+        self.settings.math_output = self.MATHJAX_URL
+        self.stylesheet.extend(self.stylesheet_call(css) for css in self.CSS)
+        self.stylesheet.extend(self.JS_TEMPLATE.format(js) for js in self.JS)
+        cls = wrap_classes("standalone", self.settings.webpage_style)
+        self.body_prefix.append('<div class="{}">'.format(cls))
+        if not self.settings.no_header:
+            from .core import SerAPI
+            self.body_prefix.append(gen_header(SerAPI.version_info()))
+        self.body_suffix.insert(0, '</div>')
+
+class HtmlWriter(DefaultWriter):
+    settings_spec = ('HTML-Specific Options', None,
+                     (("Choose an Alectryon style",
+                        ["--webpage-style"],
+                        {"choices": ("centered", "floating", "windowed"),
+                         "default": "centered", "metavar": "STYLE"}),
+                       ("Omit Alectryon's explanatory header",
+                        ["--no-header"],
+                        {'default': False, 'action': 'store_true',
+                         'validator': frontend.validate_boolean}),
+                       *DefaultWriter.settings_spec[-1]))
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.translator_class = HtmlTranslator
 
 # Entry point
 # ===========

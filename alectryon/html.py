@@ -76,7 +76,10 @@ HEADER = (
 def gen_header(version):
     return HEADER.format(version)
 
-class HtmlWriter():
+def wrap_classes(*cls):
+    return " ".join("alectryon-" + c for c in ("root", *cls))
+
+class HtmlGenerator():
     def __init__(self, highlighter):
         self.highlight = highlighter
         self.gensym = Gensym()
