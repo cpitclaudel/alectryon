@@ -286,7 +286,8 @@ class SerAPI():
         return CoqGoal(sx.tostr(goal.name) if goal.name else None, ccl, hyps)
 
     def _goals(self, sid, chunk):
-        # FIXME Goals instead and CoqGoal and CoqConstr?
+        # LATER Goals instead and CoqGoal and CoqConstr?
+        # LATER We'd like to retrieve the formatted version directly
         self._send([b'Query', [[b'sid', sid]], b'EGoals'])
         goals = list(self._collect_responses(CoqGoal, chunk, sid))
         yield from (self._pprint_goal(g, sid) for g in goals)

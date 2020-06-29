@@ -192,9 +192,10 @@ class AlectryonTransform(Transform):
 # Directives
 # ----------
 
-INDENTATION_RE = re.compile("^ *")
+INDENTATION_RE = re.compile(" *")
 def measure_indentation(line):
-    return INDENTATION_RE.match(line).end()
+    m = INDENTATION_RE.match(line)
+    return m.end() - m.start()
 
 def recompute_contents(directive, real_indentation):
     """Compute the contents of `directive` relative to `real_indentation`.

@@ -416,16 +416,15 @@ def rst_partition(s):
 # Conversion
 # ----------
 
-# FIXME either get rid of \t or disallow it
-INDENTATION = re.compile("[ \t]*")
-
-def indentation(line):
-    return len(line.match(INDENTATION).group())
+INDENTATION_RE = re.compile(" *")
+def measure_indentation(line):
+    m = line.match(INDENTATION_RE)
+    return m.end() - m.start()
 
 def trim_rst_block(block, last_indent, keep_empty):
     strip_deque(block.lines)
     directive_indent = block.indent # Stored here for convenience
-    last_indent = indentation(block.lines[-1]) if block.lines else last_indent
+    last_indent = measure_indentation(block.lines[-1]) if block.lines else last_indent
 
     directive = block.directive
     keep_empty = keep_empty and directive is not None

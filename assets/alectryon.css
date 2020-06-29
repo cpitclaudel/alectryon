@@ -80,7 +80,7 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .coq-sentence.alectryon-target .coq-input {
-    /* FIXME use a background? FIXME if keywords were ‘bolder’ we wouldn't need !important */
+    /* FIXME if keywords were ‘bolder’ we wouldn't need !important */
     font-weight: bold !important; /* Use !important to avoid a * selector */
 }
 
@@ -220,9 +220,9 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle:checked + label + .alectryon-container label.coq-input + .coq-output .goal-hyps,
-.alectryon-io .coq-toggle:checked ~ .coq-output .goal-hyps { /* FIXME not when targeted */
-    flex-flow: row;
-    flex-wrap: wrap;
+.alectryon-io .coq-toggle:checked ~ .coq-output .goal-hyps {
+    /* Overridden back in windowed style */
+    flex-flow: row wrap;
     justify-content: flex-start;
 }
 
@@ -278,9 +278,9 @@ In any case, make an exception for comments:
     align-content: space-around;
     align-items: baseline;
     display: flex;
-    flex-flow: column; /* row wrap? */
+    flex-flow: column nowrap; /* re-stated in windowed mode */
     justify-content: space-around;
-    /* FIXME use a ‘gap’ property instead of margins once supported */
+    /* LATER use a ‘gap’ property instead of margins once supported */
     margin: -0.15rem -1rem; /* -0.15rem to cancel the item spacing */
 }
 
@@ -373,15 +373,8 @@ In any case, make an exception for comments:
 /* Floating style */
 /******************/
 
-/* FIXME: condition on not checked should also condition on not global-toggled? */
-
 /* If there's space, display goals to the right of the code, not below it. */
 @media (min-width: 80rem) {
-    .alectryon-floating .alectryon-io {
-        /* FIXME: needed? */
-        box-sizing: border-box; /* Needed so .coq-output won't overflow */
-    }
-
     /* Unlike the windowed case, we don't want to move output blocks to the side
        when they are both :checked and -targeted, since it gets confusing as
        things jump around; hence the commented-output part of the selector,
@@ -461,6 +454,13 @@ In any case, make an exception for comments:
 .alectryon-windowed .alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-goals {
     box-shadow: none; /* A shadow is unnecessary here and incompatible with overflow-y set to auto */
 }
+
+.alectryon-windowed .alectryon-io .coq-sentence.alectryon-target .coq-output .goal-hyps {
+    /* Restated to override the :checked style */
+    flex-flow: column nowrap;
+    justify-content: space-around;
+}
+
 
 .alectryon-windowed .coq-sentence.alectryon-target .coq-extra-goals .goal-conclusion
 /* Like .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-conclusion */ {
