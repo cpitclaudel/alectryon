@@ -44,7 +44,7 @@ output/fragments.snippets.html: fragments.json | output
 	$(alectryon) $< -o $@
 
 output/alectryon%css output/alectryon%js: FORCE
-	cp ../assets/* output/
+	cp --link --force ../assets/* output/
 FORCE:
 
 clean:

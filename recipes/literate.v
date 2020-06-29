@@ -94,6 +94,6 @@ Proof. (* .fold *)
   - repeat constructor.
   - split; inversion 1.
   - split.
-    + constructor; apply even_Even; assumption.
-    + inversion 1; apply even_Even; assumption.
+    + constructor; apply even_Even_fp; assumption.
+    + inversion 1; apply even_Even_fp; assumption.
 Qed.
