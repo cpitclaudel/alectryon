@@ -32,38 +32,46 @@ As a standalone program
 Recipes
 ~~~~~~~
 
-Try these recipes in the ``recipes`` directory of this repository:
+Try these recipes in the ``recipes`` directory of this repository (for each task I listed two commands: a short one and a longer one making everything explicit):
+
+- Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style)::
+
+    ../alectryon.py literate.v
+    ../alectryon.py --frontend coq+rst --backend webpage literate.v -o literate.html
 
 - Generate an interactive webpage from a plain Coq file (Proof General style)::
 
+    ../alectryon.py --frontend coq plain.v
     ../alectryon.py --frontend coq --backend webpage plain.v -o plain.v.html
-
-- Generate an interactive webpage from a literate Coq file (Coqdoc style)::
-
-    ../alectryon.py --frontend coq+rst --backend webpage literate.v -o literate.html
 
 - Generate an interactive webpage from a Coqdoc file (compatibility mode)::
 
+    ../alectryon.py --frontend coqdoc literate.v
     ../alectryon.py --frontend coqdoc --backend webpage literate.v -o literate.html
 
 - Compile a reStructuredText document containing ``.. coq::`` blocks (coqrst style)::
 
-    ../alectryon.py --frontend rst --backend webpage literate.v.rst -o doc.html
+    ../alectryon.py literate.v.rst
+    ../alectryon.py --frontend rst --backend webpage literate.v.rst -o literate.html
 
 - Translate a reStructuredText document into a literate Coq file::
 
-    ../alectryon.py --frontend coq+rst --backend rst literate.v.rst -o literate.v
+    ../alectryon.py literate.v.rst -o literate.v
+    ../alectryon.py --frontend rst --backend coq+rst literate.v.rst -o literate.v
 
 - Translate a literate Coq file into a reStructuredText document::
 
+    ../alectryon.py literate.v -o literate.v.rst
     ../alectryon.py --frontend coq+rst --backend rst literate.v -o literate.v.rst
 
 - Record goals and responses for fragments contained in a JSON source file::
 
+    ../alectryon.py fragments.json
     ../alectryon.py --frontend json --backend json fragments.json -o fragments.io.json
 
 - Record goals and responses and format them as HTML for fragments contained in a JSON source file::
 
+    ../alectryon.py fragments.json -o fragments.snippets.html
     ../alectryon.py --frontend json --backend snippets-html fragments.json -o fragments.snippets.html
 
 Command-line interface
