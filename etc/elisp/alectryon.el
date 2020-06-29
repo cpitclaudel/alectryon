@@ -282,7 +282,15 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
      1 '(face alectryon-comment-marker display (space :align-to right)) append)))
 
 (defconst alectryon--rst-font-lock-keywords
-  '())
+  '()) ;; TODO highlight .. coq:: blocks
+
+;;; Editing
+
+(defun alectryon-insert-literate-block ()
+  "Insert a pair of (*| … |*) markers."
+  (interactive)
+  (insert "(*|\n")
+  (save-excursion (insert "\n|*)\n")))
 
 ;;; Minor mode
 
@@ -307,6 +315,7 @@ Current document must have a file name."
 (defvar alectryon-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-S-a") #'alectryon-toggle)
+    (define-key map (kbd "C-c C-=") #'alectryon-insert-literate-block)
     map))
 
 (define-minor-mode alectryon-mode
