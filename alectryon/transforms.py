@@ -136,6 +136,45 @@ def group_whitespace_with_code(fragments):
             grouped[idx] = CoqText(rest) if rest else None
     return [g for g in grouped if g is not None]
 
+BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
+def is_bullet(fr):
+    return isinstance(fr, (CoqSentence, HTMLSentence)) and BULLET.match(fr.contents)
+
+def attach_comments_to_bullets(fragments):
+    """Attach comments immediately following a bullet to the bullet itself.
+
+    This is to support this common pattern::
+
+       induction.
+       - (* n = 0 *)
+         …
+       - (* n = S _ *) (* the hard case *) cbn.
+         …
+
+    A small complication is that we want to absorb only up to the end of a
+    comment, not including subsequent spaces (for example, above, we want to
+    capture ‘(* n = S _ *) (* the hard case *)’, without the final space).
+    """
+    from .literate import coq_partition, StringView, Code, Comment
+    grouped = list(htmlify_sentences(fragments))
+    for idx, fr in enumerate(grouped):
+        prev = idx > 0 and grouped[idx - 1]
+        if is_bullet(prev) and isinstance(fr, CoqText):
+            best = prefix = StringView(fr.contents, 0, 0)
+            for part in coq_partition(fr.contents):
+                if "\n" in part.v:
+                    break
+                if isinstance(part, Code) and not part.v.isspace():
+                    break
+                prefix += part.v
+                if isinstance(part, Comment):
+                    best = prefix
+            if best:
+                rest = fr.contents[len(best):]
+                grouped[idx - 1] = prev._replace(contents=prev.contents + str(best))
+                grouped[idx] = CoqText(rest) if rest else None
+    return [g for g in grouped if g is not None]
+
 def group_hypotheses(fragments):
     for fr in fragments:
         if isinstance(fr, (HTMLSentence, CoqSentence)):
@@ -247,6 +286,7 @@ def isolate_coqdoc(fragments):
 
 def default_transform(fragments):
     fragments = list(htmlify_sentences(fragments))
+    fragments = attach_comments_to_bullets(fragments)
     fragments = group_hypotheses(fragments)
     fragments = process_io_annotations(fragments)
     fragments = strip_failures(fragments)

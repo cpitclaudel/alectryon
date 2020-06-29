@@ -35,6 +35,9 @@ class StringView:
                 self.beg, self.end, other.beg, other.end))
         return StringView(self.s, self.beg, other.end)
 
+    def __contains__(self, other):
+        return self.s.find(other, self.beg, self.end) >= 0
+
     def __str__(self):
         return self.s[self.beg:self.end]
 
