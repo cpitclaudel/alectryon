@@ -388,7 +388,7 @@ In any case, make an exception for comments:
        which would otherwise increase specificity */
     .alectryon-floating .coq-sentence.alectryon-target /* .coq-toggle ~ */ .coq-output,
     .alectryon-floating .coq-sentence:hover .coq-output {
-        bottom: 0;
+        top: 0;
         left: 100%;
         right: -100%;
         padding: 0 0.5rem;
