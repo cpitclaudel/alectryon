@@ -24,8 +24,10 @@ var Alectryon;
             /* We want to scroll the whole document, so start at root… */
             while (parent && !parent.classList.contains("alectryon-root"))
                 parent = parent.parentElement;
-            /* … and work up from there to find a scrollable element */
-            while (parent && parent.scrollHeight <= parent.clientHeight)
+            /* … and work up from there to find a scrollable element.
+               parent.scrollHeight can be greater than parent.clientHeight
+               without showing scrollbars, so we add a 10px buffer. */
+            while (parent && parent.scrollHeight <= parent.clientHeight + 10)
                 parent = parent.parentElement;
             /* <body> and <html> elements can have their client rect overflow
              * the window if their height is unset, so scroll the window
