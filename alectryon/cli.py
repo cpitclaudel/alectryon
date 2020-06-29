@@ -26,6 +26,9 @@ import sys
 
 # pylint: disable=import-outside-toplevel
 
+# Pipelines
+# =========
+
 def load_json(contents):
     from json import loads
     return loads(contents)
@@ -93,6 +96,23 @@ def gen_rst_html(rst, fpath, webpage_style, no_header, html_assets, traceback):
     from docutils.readers.standalone import Reader
     return _gen_docutils_html(rst, fpath, webpage_style, no_header, html_assets, traceback,
                          Parser, Reader)
+
+def _docutils_cmdline(description, Reader, Parser):
+    import locale
+    locale.setlocale(locale.LC_ALL, '')
+
+    from docutils.core import publish_cmdline, default_description
+    from .docutils import register, HtmlWriter
+
+    register()
+
+    parser = Parser()
+    publish_cmdline(
+        reader=Reader(parser), parser=parser,
+        writer=HtmlWriter(),
+        settings_overrides={'stylesheet_path': None},
+        description=(description + default_description)
+    )
 
 def _lint_docutils(source, fpath, Parser, traceback):
     from io import StringIO
@@ -292,6 +312,9 @@ PIPELINES = {
     }
 }
 
+# CLI
+# ===
+
 EXTENSIONS = ['.v', '.json', '.v.rst', '.rst']
 FRONTENDS_BY_EXTENSION = [
     ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst')
@@ -482,6 +505,9 @@ and produce reStructuredText, HTML, or JSON output.""")
 
     return args
 
+# Entry point
+# ===========
+
 def call_pipeline_step(step, state, ctx):
     params = list(inspect.signature(step).parameters.keys())[1:]
     return step(state, **{p: ctx[p] for p in params})
@@ -523,3 +549,17 @@ def main():
             raise e
         sys.stderr.write("Exception: {}\n".format(e))
         sys.exit(1)
+
+# Alternative CLIs
+# ================
+
+def rstcoq2html():
+    from .docutils import RSTCoqStandaloneReader, RSTCoqParser
+    DESCRIPTION = 'Build an HTML document from an Alectryon Coq file.'
+    _docutils_cmdline(DESCRIPTION, RSTCoqStandaloneReader, RSTCoqParser)
+
+def coqrst2html():
+    from docutils.parsers.rst import Parser
+    from docutils.readers.standalone import Reader
+    DESCRIPTION = 'Build an HTML document from an Alectryon reStructuredText file.'
+    _docutils_cmdline(DESCRIPTION, Reader, Parser)
