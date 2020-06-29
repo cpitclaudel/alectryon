@@ -317,7 +317,7 @@ PIPELINES = {
 
 EXTENSIONS = ['.v', '.json', '.v.rst', '.rst']
 FRONTENDS_BY_EXTENSION = [
-    ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst')
+    ('.v', 'coq+rst'), ('.json', 'json'), ('.rst', 'rst')
 ]
 BACKENDS_BY_EXTENSION = [
     ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst'),

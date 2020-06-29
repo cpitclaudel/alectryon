@@ -1,9 +1,9 @@
 (** * An example using Coqdoc
 
-    This mode uses mixed rendering: This is a hybrid rendering mode: coqdoc is
-    used to render literate comments, and Alectryon is used to render code,
-    responses, and goals.  It's a bit as if coqdoc was just a markup language,
-    _without anything specific to Coq_.  Cons:
+    This is a hybrid rendering mode: coqdoc is used to render literate comments,
+    and Alectryon is used to render code, responses, and goals.  It's a bit as
+    if coqdoc was just a markup language, _without anything specific to
+    Coq_. Cons:
 
     - There's a dependency on [coqdoc]
     - It doesn't use a standard markup language like reST, markdown, etc.

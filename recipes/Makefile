@@ -9,11 +9,11 @@ output:
 
 # HTML ← Coq
 output/plain.v.html: plain.v | output
-	$(alectryon) $<
+	$(alectryon) --frontend coq $<
 output/literate.v.html: literate.v | output
-	$(alectryon) $<
+	$(alectryon) --frontend coq $<
 output/coqdoc.v.html: coqdoc.v | output
-	$(alectryon) $<
+	$(alectryon) --frontend coq $<
 
 # HTML ← Coqdoc
 output/coqdoc.html: coqdoc.v | output
@@ -21,7 +21,7 @@ output/coqdoc.html: coqdoc.v | output
 
 # HTML ← Coq+reST
 output/literate.html: literate.v | output
-	$(alectryon) --frontend coq+rst $<
+	$(alectryon) $<
 
 # HTML ← reST+Coq
 output/document.html: document.v.rst | output
