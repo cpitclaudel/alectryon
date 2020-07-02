@@ -87,10 +87,10 @@ class HtmlGenerator:
 
     def gen_goal_html(self, goal):
         """Serialize a goal to HTML."""
-        with tags.span(cls="coq-goal"):
-            with tags.span(cls="goal-hyps"):
+        with tags.div(cls="coq-goal"):
+            with tags.div(cls="goal-hyps"):
                 for hyp in goal.hypotheses:
-                    with tags.span(cls="goal-hyp"):
+                    with tags.div(cls="goal-hyp"):
                         tags.span(", ".join(hyp.names), cls="hyp-names")
                         with tags.span():
                             if hyp.body:
@@ -100,11 +100,11 @@ class HtmlGenerator:
                             with tags.span(cls="hyp-type"):
                                 tags.span(":", cls="hyp-punct")
                                 self.highlight(hyp.type)
-            with tags.span(cls="goal-separator"):
+            with tags.div(cls="goal-separator"):
                 tags.hr()
                 if goal.name:
                     tags.span(goal.name, cls="goal-name")
-            tags.span(self.highlight(goal.conclusion), cls="goal-conclusion")
+            tags.div(self.highlight(goal.conclusion), cls="goal-conclusion")
 
     def gen_goals_html(self, first, more):
         self.gen_goal_html(first)
@@ -119,8 +119,6 @@ class HtmlGenerator:
 
     def gen_input_html(self, fr):
         attrs, tag = {}, tags.span
-        # print(repr(fr.contents), fr.annots.__dict__,
-        #       fr.annots['in'], fr.annots['goals'], fr.annots['messages'])
         if fr.goals or fr.responses:
             tag = tags.label
             nm = attrs['for'] = self.gensym("chk")
@@ -134,11 +132,11 @@ class HtmlGenerator:
         wrapper = tags.div(cls="coq-output-sticky-wrapper")
         with tags.div(cls="coq-output", id=id).add(wrapper):
             if fr.responses:
-                with tags.span(cls="coq-responses"):
+                with tags.div(cls="coq-responses"):
                     for response in fr.responses:
-                        tags.span(self.highlight(response), cls="coq-response")
+                        tags.div(self.highlight(response), cls="coq-response")
             if fr.goals:
-                with tags.span(cls="coq-goals"):
+                with tags.div(cls="coq-goals"):
                     self.gen_goals_html(fr.goals[0], fr.goals[1:])
 
     @staticmethod
