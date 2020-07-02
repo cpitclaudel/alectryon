@@ -21,7 +21,7 @@ Dependencies (OCaml, Python 3):
     ``opam install coq-serapi=8.10.0+0.7.0``
     ``python3 -m pip install --user pygments==2.5.2 dominate==2.4.0 docutils==0.16``
 
-The core library only depends on ``coq-serapi``.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  Docutils support requires the ``docutils`` library.
+The core library only depends on ``coq-serapi``.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires the ``docutils`` library.
 
 Usage
 =====
@@ -34,53 +34,63 @@ Recipes
 
 Try these recipes in the ``recipes`` directory of this repository (for each task I listed two commands: a short one and a longer one making everything explicit):
 
-- Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style)::
+Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style):
+   .. code::
 
-    ../alectryon.py literate.v
-    ../alectryon.py --frontend coq+rst --backend webpage literate.v -o literate.html
+      ../alectryon.py literate.v
+      ../alectryon.py --frontend coq+rst --backend webpage literate.v -o literate.html
 
-- Generate an interactive webpage from a plain Coq file (Proof General style)::
+Generate an interactive webpage from a plain Coq file (Proof General style):
+   .. code::
 
-    ../alectryon.py --frontend coq plain.v
-    ../alectryon.py --frontend coq --backend webpage plain.v -o plain.v.html
+      ../alectryon.py --frontend coq plain.v
+      ../alectryon.py --frontend coq --backend webpage plain.v -o plain.v.html
 
-- Generate an interactive webpage from a Coqdoc file (compatibility mode)::
+Generate an interactive webpage from a Coqdoc file (compatibility mode):
+   .. code::
 
-    ../alectryon.py --frontend coqdoc literate.v
-    ../alectryon.py --frontend coqdoc --backend webpage literate.v -o literate.html
+      ../alectryon.py --frontend coqdoc literate.v
+      ../alectryon.py --frontend coqdoc --backend webpage literate.v -o literate.html
 
-- Compile a reStructuredText document containing ``.. coq::`` blocks (coqrst style)::
+Compile a reStructuredText document containing ``.. coq::`` blocks (coqrst style):
+   .. code::
 
-    ../alectryon.py literate.v.rst
-    ../alectryon.py --frontend rst --backend webpage literate.v.rst -o literate.html
+      ../alectryon.py literate.v.rst
+      ../alectryon.py --frontend rst --backend webpage literate.v.rst -o literate.html
 
-- Translate a reStructuredText document into a literate Coq file::
+Translate a reStructuredText document into a literate Coq file:
+   .. code::
 
-    ../alectryon.py literate.v.rst -o literate.v
-    ../alectryon.py --frontend rst --backend coq+rst literate.v.rst -o literate.v
+      ../alectryon.py literate.v.rst -o literate.v
+      ../alectryon.py --frontend rst --backend coq+rst literate.v.rst -o literate.v
 
-- Translate a literate Coq file into a reStructuredText document::
+Translate a literate Coq file into a reStructuredText document:
+   .. code::
 
-    ../alectryon.py literate.v -o literate.v.rst
-    ../alectryon.py --frontend coq+rst --backend rst literate.v -o literate.v.rst
+      ../alectryon.py literate.v -o literate.v.rst
+      ../alectryon.py --frontend coq+rst --backend rst literate.v -o literate.v.rst
 
-- Record goals and responses for fragments contained in a JSON source file::
+Record goals and responses for fragments contained in a JSON source file:
+   .. code::
 
-    ../alectryon.py fragments.json
-    ../alectryon.py --frontend json --backend json fragments.json -o fragments.io.json
+      ../alectryon.py fragments.json
+      ../alectryon.py --frontend json --backend json fragments.json -o fragments.io.json
 
-- Record goals and responses and format them as HTML for fragments contained in a JSON source file::
+Record goals and responses and format them as HTML for fragments contained in a JSON source file:
+   .. code::
 
-    ../alectryon.py fragments.json -o fragments.snippets.html
-    ../alectryon.py --frontend json --backend snippets-html fragments.json -o fragments.snippets.html
+      ../alectryon.py fragments.json -o fragments.snippets.html
+      ../alectryon.py --frontend json --backend snippets-html fragments.json -o fragments.snippets.html
 
 Command-line interface
 ~~~~~~~~~~~~~~~~~~~~~~
 
-| python3 alectryon.py [-h] […]
-|             [--frontend {coq,coq+rst,json,rst}]
-|             [--backend {coq,coq+rst,json,snippets-html,webpage}]
-|             input [input ...]
+.. code::
+
+   python3 alectryon.py [-h] […]
+              [--frontend {coq,coq+rst,json,rst}]
+              [--backend {coq,coq+rst,json,snippets-html,webpage}]
+              input [input ...]
 
 - Each ``input`` file can be ``.v`` (a Coq source file, optionally including reStructuredText in comments delimited by ``(*| … |*)``), ``.json`` (a list of Coq fragments), or ``.rst`` (a reStructuredText document including ``.. coq::`` blocks).  Each input fragment is split into individual sentences, which are executed one by one (all code is run in a single Coq session).
 
