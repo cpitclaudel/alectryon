@@ -288,11 +288,16 @@ def isolate_coqdoc(fragments):
             strip_text(part.fragments)
     return partitioned
 
+DEFAULT_TRANSFORMS = [
+    htmlify_sentences,
+    attach_comments_to_code,
+    group_hypotheses,
+    process_io_annotations,
+    strip_failures,
+    dedent
+]
+
 def default_transform(fragments):
-    fragments = list(htmlify_sentences(fragments))
-    fragments = attach_comments_to_code(fragments)
-    fragments = group_hypotheses(fragments)
-    fragments = process_io_annotations(fragments)
-    fragments = strip_failures(fragments)
-    fragments = dedent(fragments)
+    for transform in DEFAULT_TRANSFORMS:
+        fragments = transform(fragments)
     return list(fragments)
