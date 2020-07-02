@@ -132,6 +132,11 @@ class AlectryonTransform(Transform):
                 fr.annots.inherit(annots)
             yield fr
 
+    @staticmethod
+    def document_id(document):
+        source = document.get('source', "")
+        return nodes.make_id(os.path.basename(source))
+
     def check_for_long_lines(self, node, fragments):
         if LONG_LINE_THRESHOLD is None:
             return
@@ -142,7 +147,7 @@ class AlectryonTransform(Transform):
 
     def apply_coq(self):
         config = Config(self.document)
-        writer = HtmlGenerator(highlight) # Single writer to use one single gensym
+        writer = HtmlGenerator(highlight, gensym_stem=self.document_id(self.document))
         pending_nodes = list(self.document.traverse(alectryon_pending))
         pending = (n['content'] for n in pending_nodes)
         annotated = annotate(pending, (*self.SERAPI_ARGS, *config.serapi_args))

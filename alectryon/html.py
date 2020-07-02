@@ -57,12 +57,13 @@ def copy_assets(output_directory,
             pass
 
 class Gensym():
-    def __init__(self):
+    def __init__(self, stem):
+        self.stem = stem
         self.counters = defaultdict(lambda: -1)
 
     def __call__(self, prefix):
         self.counters[prefix] += 1
-        return hex(self.counters[prefix]).replace("0x", prefix)
+        return self.stem + prefix + hex(self.counters[prefix])[len("0x"):]
 
 HEADER = (
     '<div class="alectryon-header">'
@@ -79,10 +80,10 @@ def gen_header(version):
 def wrap_classes(*cls):
     return " ".join("alectryon-" + c for c in ("root", *cls))
 
-class HtmlGenerator():
-    def __init__(self, highlighter):
+class HtmlGenerator:
+    def __init__(self, highlighter, gensym_stem=""):
         self.highlight = highlighter
-        self.gensym = Gensym()
+        self.gensym = Gensym(gensym_stem + "-" if gensym_stem else "")
 
     def gen_goal_html(self, goal):
         """Serialize a goal to HTML."""

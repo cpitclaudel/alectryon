@@ -143,10 +143,14 @@ def lint_rst(rst, fpath, traceback):
     from docutils.parsers.rst import Parser
     return _lint_docutils(rst, fpath, Parser, traceback)
 
-def gen_html_snippets(annotated):
+def _scrub_fname(fname):
+    import re
+    return re.sub("[^-a-zA-Z0-9]", "-", fname)
+
+def gen_html_snippets(annotated, fname):
     from .html import HtmlGenerator
     from .pygments import highlight
-    return HtmlGenerator(highlight).gen_html(annotated)
+    return HtmlGenerator(highlight, _scrub_fname(fname)).gen_html(annotated)
 
 COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
                   '-s', '--html', '--stdout', '--utf8']
@@ -174,13 +178,13 @@ def _gen_coqdoc_html(coqdoc_comments):
     assert len(docs) == len(coqdoc_comments)
     return docs
 
-def _gen_html_snippets_with_coqdoc(annotated):
+def _gen_html_snippets_with_coqdoc(annotated, fname):
     from dominate.util import raw
     from .html import HtmlGenerator
     from .pygments import highlight
     from .transforms import isolate_coqdoc, default_transform, CoqdocFragment
 
-    writer = HtmlGenerator(highlight)
+    writer = HtmlGenerator(highlight, _scrub_fname(fname))
 
     coqdoc = [part.contents for fragments in annotated
               for part in isolate_coqdoc(fragments)
@@ -195,10 +199,10 @@ def _gen_html_snippets_with_coqdoc(annotated):
                 fragments = default_transform(part.fragments)
                 yield writer.gen_fragments_html(fragments)
 
-def gen_html_snippets_with_coqdoc(annotated, html_classes):
+def gen_html_snippets_with_coqdoc(annotated, html_classes, fname):
     html_classes.append("coqdoc")
     # ‘return’ instead of ‘yield from’ to update html_classes eagerly
-    return _gen_html_snippets_with_coqdoc(annotated)
+    return _gen_html_snippets_with_coqdoc(annotated, fname)
 
 def copy_assets(state, html_assets, copy_fn, output, output_directory):
     from .html import copy_assets as cp
@@ -516,18 +520,21 @@ def read_input(fpath, args):
     if fpath == "-":
         return (args.stdin_filename or "-"), "-", sys.stdin.read()
     fname = os.path.basename(fpath)
-    for ext in EXTENSIONS:
-        if fpath.endswith(ext):
-            fname = fpath[:-len(ext)]
-            break
     with open(fpath) as f:
         return fpath, fname, f.read()
+
+def strip_extension(fname):
+    for ext in EXTENSIONS:
+        if fname.endswith(ext):
+            return fname[:-len(ext)]
+    return fname
 
 def write_output(in_fname, out_fpath, outdir, contents, ext):
     if out_fpath == "-" or (out_fpath is None and in_fname == "-"):
         sys.stdout.write(contents)
     else:
-        out_fpath = out_fpath or os.path.join(outdir, in_fname + ext)
+        out_fname = strip_extension(in_fname) + ext
+        out_fpath = out_fpath or os.path.join(outdir, out_fname)
         with open(out_fpath, mode="w") as f:
             f.write(contents)
 
