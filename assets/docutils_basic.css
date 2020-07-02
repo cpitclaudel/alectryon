@@ -115,12 +115,12 @@ object[type="application/x-shockwave-flash"] {
 
 /* ========== Literal Blocks ========== */
 
-pre, tt.literal {
+pre, .docutils.literal {
     font-family: "Lucida Sans Typewriter", "Lucida Console", Monaco, "Bitstream Vera Sans Mono", monospace;
     font-size: 14px;
 }
 
-tt.literal {
+.docutils.literal {
     background-color: #ffa;
 }
 
