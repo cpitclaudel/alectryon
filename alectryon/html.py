@@ -87,7 +87,7 @@ class HtmlGenerator:
 
     def gen_goal_html(self, goal):
         """Serialize a goal to HTML."""
-        with tags.div(cls="coq-goal"):
+        with tags.blockquote(cls="coq-goal"):
             with tags.div(cls="goal-hyps"):
                 for hyp in goal.hypotheses:
                     with tags.div(cls="goal-hyp"):
@@ -134,7 +134,7 @@ class HtmlGenerator:
             if fr.responses:
                 with tags.div(cls="coq-responses"):
                     for response in fr.responses:
-                        tags.div(self.highlight(response), cls="coq-response")
+                        tags.blockquote(self.highlight(response), cls="coq-response")
             if fr.goals:
                 with tags.div(cls="coq-goals"):
                     self.gen_goals_html(fr.goals[0], fr.goals[1:])
