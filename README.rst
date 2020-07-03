@@ -180,7 +180,7 @@ Use ``alectryon.core.annotate(chunks: List[str])``, which returns an object with
                  goals=[])]
     ]
 
-The results of ``annotate`` can be fed to ``alectryon.html.HtmlWriter(highlighter)`` to generate HTML (with CSS classes defined in ``alectryon.css``).  Pass ``highlighter=alectryon.pygments.highlight`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
+The results of ``annotate`` can be fed to ``alectryon.html.HtmlGenerator(highlighter).gen()`` to generate HTML (with CSS classes defined in ``alectryon.css``).  Pass ``highlighter=alectryon.pygments.highlight`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
 
 As a docutils or Sphinx module
 ------------------------------

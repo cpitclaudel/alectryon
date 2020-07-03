@@ -46,7 +46,7 @@ def copy_assets(output_directory,
     for name in assets:
         src = path.join(ASSETS.PATH, name)
         dst = path.join(output_directory, name)
-        if copy_fn != shutil.copy:
+        if copy_fn is not shutil.copy:
             try:
                 unlink(dst)
             except FileNotFoundError:
@@ -85,7 +85,7 @@ class HtmlGenerator:
         self.highlight = highlighter
         self.gensym = Gensym(gensym_stem + "-" if gensym_stem else "")
 
-    def gen_goal_html(self, goal):
+    def gen_goal(self, goal):
         """Serialize a goal to HTML."""
         with tags.blockquote(cls="coq-goal"):
             with tags.div(cls="goal-hyps"):
@@ -106,8 +106,8 @@ class HtmlGenerator:
                     tags.span(goal.name, cls="goal-name")
             tags.div(self.highlight(goal.conclusion), cls="goal-conclusion")
 
-    def gen_goals_html(self, first, more):
-        self.gen_goal_html(first)
+    def gen_goals(self, first, more):
+        self.gen_goal(first)
         if more:
             nm = self.gensym("chk")
             tags.input(type="checkbox", id=nm, cls="coq-extra-goals-toggle")
@@ -115,36 +115,41 @@ class HtmlGenerator:
             tags.label(lbl, cls="coq-extra-goals-label", **{'for': nm})
             with tags.div(cls='coq-extra-goals'):
                 for goal in more:
-                    self.gen_goal_html(goal)
+                    self.gen_goal(goal)
 
-    def gen_input_html(self, fr):
-        attrs, tag = {}, tags.span
-        if fr.goals or fr.responses:
-            tag = tags.label
-            nm = attrs['for'] = self.gensym("chk")
-            chk = { "checked": "checked" } if fr.annots.unfold else dict()
-            tags.input(type="checkbox", id=nm, cls="coq-toggle", **chk)
-        if fr.annots['in']:
-            tag(self.highlight(fr.contents), cls="coq-input", **attrs)
+    def gen_input_toggle(self, fr):
+        if not (fr.goals or fr.responses):
+            return None
+        nm = self.gensym("chk")
+        chk = { "checked": "checked" } if fr.annots.unfold else {}
+        tags.input(type="checkbox", id=nm, cls="coq-toggle", **chk)
+        return nm
 
-    def gen_output_html(self, fr):
-        id = self.gensym("goal")
+    def gen_input(self, fr, toggle):
+        cls = {"cls": "coq-input"}
+        contents = self.highlight(fr.contents)
+        if toggle:
+            tags.label(contents, **cls, **{"for": toggle})
+        else:
+            tags.span(contents, **cls)
+
+    def gen_output(self, fr):
         wrapper = tags.div(cls="coq-output-sticky-wrapper")
-        with tags.div(cls="coq-output", id=id).add(wrapper):
+        with tags.div(cls="coq-output").add(wrapper):
             if fr.responses:
                 with tags.div(cls="coq-responses"):
                     for response in fr.responses:
                         tags.blockquote(self.highlight(response), cls="coq-response")
             if fr.goals:
                 with tags.div(cls="coq-goals"):
-                    self.gen_goals_html(fr.goals[0], fr.goals[1:])
+                    self.gen_goals(fr.goals[0], fr.goals[1:])
 
     @staticmethod
     def gen_whitespace(wsps):
         for wsp in wsps:
             tags.span(wsp, cls="coq-wsp")
 
-    def gen_sentence_html(self, fr):
+    def gen_sentence(self, fr):
         if fr.annots.hide:
             return
 
@@ -155,30 +160,32 @@ class HtmlGenerator:
         if fr.annots['in']:
             self.gen_whitespace(fr.prefixes)
         with tags.span(cls="coq-sentence"):
-            self.gen_input_html(fr)
+            toggle = self.gen_input_toggle(fr)
+            if fr.annots['in']:
+                self.gen_input(fr, toggle)
             if fr.responses or fr.goals:
                 if not fr.annots['in'] and not fr.annots.unfold:
                     MSG = "Cannot show output of {!r} without .in or .unfold."
                     raise ValueError(MSG.format(fr.contents))
-                self.gen_output_html(fr)
+                self.gen_output(fr)
             if fr.annots['in']:
                 self.gen_whitespace(fr.suffixes)
 
-    def gen_fragment_html(self, fr):
+    def gen_fragment(self, fr):
         if isinstance(fr, CoqText):
             tags.span(self.highlight(fr.contents), cls="coq-nc")
         else:
             assert isinstance(fr, HTMLSentence)
-            self.gen_sentence_html(fr)
+            self.gen_sentence(fr)
 
-    def gen_fragments_html(self, fragments, classes=()):
+    def gen_fragments(self, fragments, classes=()):
         """Serialize a list of `fragments` to HTML."""
         with tags.pre(cls=" ".join(("alectryon-io", *classes))) as div:
             tags.comment(" Generator: {} ".format(GENERATOR))
             for fr in transforms.group_whitespace_with_code(fragments):
-                self.gen_fragment_html(fr)
+                self.gen_fragment(fr)
             return div
 
-    def gen_html(self, annotated):
+    def gen(self, annotated):
         for fragments in annotated:
-            yield self.gen_fragments_html(fragments)
+            yield self.gen_fragments(fragments)

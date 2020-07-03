@@ -160,7 +160,7 @@ class AlectryonTransform(Transform):
             fragments = transforms.default_transform(fragments)
             self.check_for_long_lines(node, fragments)
             with added_tokens(config.tokens):
-                html = writer.gen_fragments_html(fragments).render(pretty=False)
+                html = writer.gen_fragments(fragments).render(pretty=False)
             node.replace_self(nodes.raw(node['content'], html, format='html'))
 
     @staticmethod

@@ -150,7 +150,7 @@ def _scrub_fname(fname):
 def gen_html_snippets(annotated, fname):
     from .html import HtmlGenerator
     from .pygments import highlight
-    return HtmlGenerator(highlight, _scrub_fname(fname)).gen_html(annotated)
+    return HtmlGenerator(highlight, _scrub_fname(fname)).gen(annotated)
 
 COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
                   '-s', '--html', '--stdout', '--utf8']
@@ -197,7 +197,7 @@ def _gen_html_snippets_with_coqdoc(annotated, fname):
                 yield [raw(str(next(coqdoc_html, None)))]
             else:
                 fragments = default_transform(part.fragments)
-                yield writer.gen_fragments_html(fragments)
+                yield writer.gen_fragments(fragments)
 
 def gen_html_snippets_with_coqdoc(annotated, html_classes, fname):
     html_classes.append("coqdoc")
