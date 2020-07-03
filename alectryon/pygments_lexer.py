@@ -527,3 +527,5 @@ class CoqLexer(RegexLexer):
     def analyse_text(text):
         if text.startswith('(*'):
             return True
+
+__all__ = ["CoqLexer"]

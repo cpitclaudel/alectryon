@@ -49,9 +49,9 @@ def annotate_chunks(chunks, serapi_args):
     return annotate(chunks, serapi_args)
 
 def register_docutils(v, serapi_args):
-    from .docutils import register, AlectryonTransform
+    from .docutils import setup, AlectryonTransform
     AlectryonTransform.SERAPI_ARGS = serapi_args
-    register()
+    setup()
     return v
 
 def _gen_docutils_html(source, fpath, webpage_style, no_header, html_assets, traceback, Parser, Reader):
@@ -102,9 +102,9 @@ def _docutils_cmdline(description, Reader, Parser):
     locale.setlocale(locale.LC_ALL, '')
 
     from docutils.core import publish_cmdline, default_description
-    from .docutils import register, HtmlWriter
+    from .docutils import setup, HtmlWriter
 
-    register()
+    setup()
 
     parser = Parser()
     publish_cmdline(

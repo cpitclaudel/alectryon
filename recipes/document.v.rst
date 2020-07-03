@@ -80,7 +80,7 @@ The usual approach is to strengthen the spec to work around the weakness of the 
 Writing a fixpoint
 ==================
 
-But writing a fixpoint is much nicer:
+But writing a fixpoint (either with the :coq:`Fixpoint` command or with the `fix` tactic) is much nicer:
 
 .. coq:: unfold
 

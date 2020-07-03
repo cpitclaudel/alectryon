@@ -130,3 +130,17 @@ class WarnOnErrorTokenFilter(Filter):
             yield typ, val
 
 LEXER.add_filter(WarnOnErrorTokenFilter())
+
+def replace_builtin_coq_lexer():
+    """Monkey-patch pygments to replace the built-in Coq Lexer.
+
+    https://stackoverflow.com/questions/40514205/ describes a way to register
+    entry points dynamically, so we could use that to play nice with pygments
+    architecture, but it wouldn't pick up our Lexer (it would stick with the
+    built-in one).
+    """
+    from pygments.lexers import _lexer_cache
+    from pygments.lexers._mapping import LEXERS
+    (_mod, name, aliases, ext, mime) = LEXERS['CoqLexer']
+    LEXERS['CoqLexer'] = ("alectryon.pygments_lexer", name, aliases, ext, mime)
+    _lexer_cache.pop(name, None)

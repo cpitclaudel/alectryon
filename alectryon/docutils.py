@@ -42,6 +42,16 @@ directive in your document, and you can ommit it entirely by setting
 ``AlectryonTransform.insert_toggle`` to ``False`` (to make styling easier, all
 contents following the checkbox are wrapped in a container with class
 ``alectryon-container``).
+
+Inline Coq highlighting is provided by the ``:coq:`` role.  By default it uses
+Pygments' default Coq highlighter (like ``.. code-block``), but you can change
+that using ``alectryon.pygments.replace_builtin_coq_lexer()``.
+
+If you write lots of inline Coq snippets, consider calling ``set_default_role``,
+which will set the default role to ``:coq:``.
+
+For convenience, ``alectryon.docutils.setup()`` can be used to perform all the
+steps above at once.
 """
 
 import re
@@ -58,7 +68,7 @@ from docutils.writers import get_writer_class
 from . import transforms
 from .core import annotate
 from .html import ASSETS, HtmlGenerator, gen_header, wrap_classes
-from .pygments import highlight, added_tokens
+from .pygments import highlight, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
 # ===============
@@ -296,7 +306,9 @@ alectryon_bubble.name = "alectryon-bubble"
 def coq_code_role(# pylint: disable=dangerous-default-value
         role, rawtext, text, lineno, inliner, options={}, content=[]):
     options = options.copy()
+    roles.set_classes(options)
     options["language"] = "coq"
+    options.setdefault("classes", []).append("highlight")
     return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
 
 coq_code_role.name = "coq"
@@ -374,7 +386,7 @@ class RSTCoqParser(docutils.parsers.rst.Parser):
               debug=document.reporter.debug_flag)
         lines = RSTCoqParser.coq_input_lines(inputstring, document['source'])
         self.statemachine.run(lines, document, inliner=self.inliner)
-        if '' in roles._roles:
+        if '' in roles._roles: # Reset the default role
             del roles._roles['']
         self.finish_parse()
 
@@ -454,3 +466,17 @@ def register():
         directives.register_directive(directive.name, directive)
     for role in ROLES:
         roles.register_canonical_role(role.name, role)
+
+def set_default_role():
+    """Set the default role (the one used with single backticks) to :coq:."""
+    roles.DEFAULT_INTERPRETED_ROLE = coq_code_role.name
+
+def setup():
+    """Prepare docutils for writing Coq documents with Alectryon.
+
+    This includes registering Alectryon's role and directives, loading an
+    improved Coq highlighter, and setting the default role to ``:coq:``.
+    """
+    register()
+    set_default_role()
+    replace_builtin_coq_lexer()

@@ -188,14 +188,14 @@ As a docutils or Sphinx module
 With blogs (Pelican, Nikola, Hugo, etc.)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Include the following code in your configuration file to register Alectryon's ``.. coq::`` directive, which feeds its contents to Alectryon and displays the resulting responses and goals interleaved with the input:
+Include the following code in your configuration file to setup Alectryon's ``docutils`` extensions:
 
 .. code-block:: python
 
     import alectryon.docutils
-    alectryon.docutils.register()
+    alectryon.docutils.setup()
 
-See |help(docutils)|_ for more information.
+This snippet registers a ``.. coq::`` directive, which feeds its contents to Alectryon and displays the resulting responses and goals interleaved with the input and a ``:coq:`` role for highlighting inline Coq code.  It also replaces the default Pygments highlighter for Coq with Alectryon's improved one, and sets `:coq:` as the default role.  See |help(docutils)|_ for more information.
 
 To ensure that Coq blocks render properly, you'll need to tell your blogging platform to include ``alectryon.css``.  Using a git submodule or vendoring a copy of Alectryon is an easy way to ensure that this stylesheet is accessible to your blogging software.  Alternatively, you can use ``alectryon.html.copy_assets``.  Assets are stored in ``alectryon.html.ASSETS.PATH``; their names are in ``alectryon.html.ASSETS.CSS`` and ``alectryon.html.ASSETS.JS``.
 
@@ -221,7 +221,7 @@ For Sphinx, add the following to your ``config.py`` file instead:
 .. code-block:: python
 
     import alectryon.sphinx
-    alectryon.sphinx.register()
+    alectryon.sphinx.setup()
 
 Controlling output
 ~~~~~~~~~~~~~~~~~~
