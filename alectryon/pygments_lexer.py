@@ -448,7 +448,7 @@ class CoqLexer(RegexLexer):
 
         '_basic': [
             (r'\s+', Text),
-            (r'\(\*\*', String.Doc, 'docstring'),
+            (r'\(\*[|*]', String.Doc, 'docstring'),
             (r'\(\*', Comment, 'comment'),
             (r'"', String.Double, 'string'),
 
