@@ -80,16 +80,12 @@ def gen_header(version):
 def wrap_classes(*cls):
     return " ".join("alectryon-" + c for c in ("root", *cls))
 
-# RSS readers don't read stylesheets, so we include minimal styles inline
-def css_display(disp):
-    return {"style": "display: {}".format(disp)}
-
 class HtmlGenerator:
     def __init__(self, highlighter, gensym_stem=""):
         self.highlight = highlighter
         self.gensym = Gensym(gensym_stem + "-" if gensym_stem else "")
 
-    def gen_goal(self, goal):
+    def gen_goal(self, goal, toggle=None):
         """Serialize a goal to HTML."""
         with tags.blockquote(cls="coq-goal"):
             with tags.div(cls="goal-hyps"):
@@ -104,31 +100,36 @@ class HtmlGenerator:
                             with tags.span(cls="hyp-type"):
                                 tags.span(":", cls="hyp-punct")
                                 self.highlight(hyp.type)
-            with tags.div(cls="goal-separator"):
+            sep_attrs = {"cls": "goal-separator"}
+            if toggle:
+                sep_attrs["for"] = toggle
+                sep_attrs["cls"] += " coq-extra-goal-label"
+            with tags.label(**sep_attrs):
                 tags.hr()
                 if goal.name:
                     tags.span(goal.name, cls="goal-name")
             tags.div(self.highlight(goal.conclusion), cls="goal-conclusion")
 
+    def gen_checkbox(self, checked, cls):
+        nm = self.gensym("chk")
+        attrs = {"style": "display: none"} # Most RSS readers ignore stylesheets
+        if checked:
+            attrs["checked"] = "checked"
+        tags.input(type="checkbox", id=nm, cls=cls, **attrs)
+        return nm
+
     def gen_goals(self, first, more):
         self.gen_goal(first)
         if more:
-            nm = self.gensym("chk")
-            tags.input(type="checkbox", id=nm, cls="coq-extra-goals-toggle")
-            lbl = "{} more goal{}".format(len(more), "s" * (len(more) > 1))
-            tags.label(lbl, cls="coq-extra-goals-label", **{'for': nm})
             with tags.div(cls='coq-extra-goals'):
                 for goal in more:
-                    self.gen_goal(goal)
+                    nm = self.gen_checkbox(False, "coq-extra-goal-toggle")
+                    self.gen_goal(goal, toggle=nm)
 
     def gen_input_toggle(self, fr):
         if not (fr.goals or fr.responses):
             return None
-        nm = self.gensym("chk")
-        chk = { "checked": "checked" } if fr.annots.unfold else {}
-        tags.input(type="checkbox", id=nm, cls="coq-toggle",
-                   **chk, **css_display("none"))
-        return nm
+        return self.gen_checkbox(fr.annots.unfold, "coq-toggle")
 
     def gen_input(self, fr, toggle):
         cls = {"cls": "coq-input"}

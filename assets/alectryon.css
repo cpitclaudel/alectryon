@@ -57,19 +57,19 @@ In any case, make an exception for comments:
 
 .alectryon-toggle,
 .alectryon-io .coq-toggle,
-.alectryon-io .coq-extra-goals-toggle {
+.alectryon-io .coq-extra-goal-toggle {
     display: none;
 }
 
 .alectryon-bubble,
 .alectryon-toggle-label,
 .alectryon-io label.coq-input,
-.alectryon-io .coq-extra-goals-label {
+.alectryon-io .coq-extra-goal-label {
     cursor: pointer;
 }
 
 .alectryon-toggle-label,
-.coq-extra-goals-label {
+.coq-extra-goal-label {
     display: block;
     font-size: 0.8rem;
 }
@@ -84,14 +84,10 @@ In any case, make an exception for comments:
     font-weight: bold !important; /* Use !important to avoid a * selector */
 }
 
-.alectryon-io .coq-extra-goals-label {
-    text-align: right;
-}
-
 .alectryon-bubble:before,
 .alectryon-toggle-label:before,
 .alectryon-io label.coq-input:after,
-.alectryon-io .coq-extra-goals-label:before {
+.alectryon-io .coq-extra-goal-label:before {
     border: 1px solid #babdb6;
     border-radius: 1rem;
     box-sizing: border-box;
@@ -105,8 +101,12 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle-label:before,
-.alectryon-io .coq-extra-goals-label:before {
+.alectryon-io .coq-extra-goal-label:before {
     margin-right: 0.25rem;
+}
+
+.alectryon-io .coq-extra-goal-label::before {
+    margin-top: -0.35rem;
 }
 
 .alectryon-io label.coq-input:after {
@@ -133,7 +133,7 @@ In any case, make an exception for comments:
 
 .alectryon-toggle:checked + .alectryon-toggle-label:before,
 .alectryon-io .coq-toggle:checked + label.coq-input:after,
-.alectryon-io .coq-extra-goals-toggle:checked + .coq-extra-goals-label:before {
+.alectryon-io .coq-extra-goal-toggle:checked + .coq-goal .coq-extra-goal-label:before {
     background-color: #babdb6;
     border-color: #babdb6;
 }
@@ -174,17 +174,19 @@ In any case, make an exception for comments:
     box-shadow: 0 0 3px gray;
 }
 
-.alectryon-io .coq-extra-goals .goal-hyps {
+.alectryon-io .coq-extra-goals .coq-goal .goal-hyps {
     display: none;
 }
 
-.alectryon-io .coq-extra-goals .goal-separator {
-    margin-top: 0;
+.alectryon-io .coq-extra-goals .coq-extra-goal-toggle:not(:checked) + .coq-goal .goal-separator hr {
+    /* Dashes indicate that the hypotheses are hidden */
+    border-top-style: dashed;
 }
 
+
 /* Show just a small preview of the other goals; this is undone by the
-   "extra-goals" toggle and by :hover and .alectryon-target in windowed mode. */
-.alectryon-io .coq-extra-goals .goal-conclusion {
+   "extra-goal" toggle and by :hover and .alectryon-target in windowed mode. */
+.alectryon-io .coq-extra-goals .coq-goal .goal-conclusion {
     max-height: 5.2em;
     overflow-y: auto;
     /* Combining ‘overflow-y: auto’ with ‘display: inline-block’ causes extra space
@@ -231,15 +233,11 @@ In any case, make an exception for comments:
     display: block;
 }
 
-.alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-hyps {
+.alectryon-io .coq-extra-goal-toggle:checked + .coq-goal .goal-hyps {
     display: flex;
 }
 
-.alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-separator {
-    margin-top: 0.5rem; /* Restore hidden margin */
-}
-
-.alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-conclusion {
+.alectryon-io .coq-extra-goal-toggle:checked + .coq-goal .goal-conclusion {
     max-height: unset;
     overflow-y: unset;
 }
@@ -259,8 +257,7 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .coq-goal,
-.alectryon-io .coq-response,
-.alectryon-io .coq-extra-goals-label {
+.alectryon-io .coq-response {
     margin: 0.25rem;
 }
 
@@ -282,6 +279,7 @@ In any case, make an exception for comments:
     justify-content: space-around;
     /* LATER use a ‘gap’ property instead of margins once supported */
     margin: -0.15rem -1rem; /* -0.15rem to cancel the item spacing */
+    padding-bottom: 0.5rem;
 }
 
 .alectryon-io .goal-hyp,
@@ -328,7 +326,7 @@ In any case, make an exception for comments:
     display: block;
     flex-grow: 1;
     height: 0;
-    margin: 0.5rem 0;
+    margin: 0 0 0.5rem 0;
 }
 
 .alectryon-io .goal-separator .goal-name {
@@ -462,8 +460,8 @@ In any case, make an exception for comments:
 }
 
 
-.alectryon-windowed .coq-sentence.alectryon-target .coq-extra-goals .goal-conclusion
-/* Like .alectryon-io .coq-extra-goals-toggle:checked + label + .coq-extra-goals .goal-conclusion */ {
+.alectryon-windowed .coq-sentence.alectryon-target .coq-extra-goals .coq-goal .goal-conclusion
+/* Like .alectryon-io .coq-extra-goal-toggle:checked + .coq-goal .goal-conclusion */ {
     max-height: unset;
     overflow-y: unset;
 }
