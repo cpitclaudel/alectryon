@@ -80,6 +80,10 @@ def gen_header(version):
 def wrap_classes(*cls):
     return " ".join("alectryon-" + c for c in ("root", *cls))
 
+# RSS readers don't read stylesheets, so we include minimal styles inline
+def css_display(disp):
+    return {"style": "display: {}".format(disp)}
+
 class HtmlGenerator:
     def __init__(self, highlighter, gensym_stem=""):
         self.highlight = highlighter
@@ -122,7 +126,8 @@ class HtmlGenerator:
             return None
         nm = self.gensym("chk")
         chk = { "checked": "checked" } if fr.annots.unfold else {}
-        tags.input(type="checkbox", id=nm, cls="coq-toggle", **chk)
+        tags.input(type="checkbox", id=nm, cls="coq-toggle",
+                   **chk, **css_display("none"))
         return nm
 
     def gen_input(self, fr, toggle):
