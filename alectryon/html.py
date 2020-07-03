@@ -140,8 +140,9 @@ class HtmlGenerator:
             tags.span(contents, **cls)
 
     def gen_output(self, fr):
+        # Using <small> improves rendering in RSS feeds
         wrapper = tags.div(cls="coq-output-sticky-wrapper")
-        with tags.div(cls="coq-output").add(wrapper):
+        with tags.small(cls="coq-output").add(wrapper):
             if fr.responses:
                 with tags.div(cls="coq-responses"):
                     for response in fr.responses:
