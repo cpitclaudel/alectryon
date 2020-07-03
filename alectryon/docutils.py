@@ -288,10 +288,18 @@ class AlectryonHeaderDirective(Directive):
 # -----
 
 def alectryon_bubble(# pylint: disable=dangerous-default-value
-        _name, rawtext, _text, _lineno, _inliner, _options={}, _content=[]):
+        _role, rawtext, _text, _lineno, _inliner, _options={}, _content=[]):
     return [nodes.inline(rawtext, classes=['alectryon-bubble'])], []
 
 alectryon_bubble.name = "alectryon-bubble"
+
+def coq_code_role(# pylint: disable=dangerous-default-value
+        role, rawtext, text, lineno, inliner, options={}, content=[]):
+    options = options.copy()
+    options["language"] = "coq"
+    return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
+
+coq_code_role.name = "coq"
 
 # Error printer
 # -------------
@@ -434,7 +442,7 @@ class HtmlWriter(DefaultWriter):
 NODES = [alectryon_pending, alectryon_pending_toggle]
 TRANSFORMS = [AlectryonTransform]
 DIRECTIVES = [CoqDirective, AlectryonToggleDirective, AlectryonHeaderDirective]
-ROLES = [alectryon_bubble]
+ROLES = [alectryon_bubble, coq_code_role]
 
 def register():
     """Tell Docutils about our directives (.. coq and .. alectryon-toggle).
@@ -445,4 +453,4 @@ def register():
     for directive in DIRECTIVES:
         directives.register_directive(directive.name, directive)
     for role in ROLES:
-        roles.register_canonical_role(role.name, alectryon_bubble)
+        roles.register_canonical_role(role.name, role)
