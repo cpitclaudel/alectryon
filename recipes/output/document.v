@@ -87,7 +87,7 @@ Qed.
 Writing a fixpoint
 ==================
 
-But writing a fixpoint is much nicer:
+But writing a fixpoint (either with the :coq:`Fixpoint` command or with the `fix` tactic) is much nicer:
 
 .. coq:: unfold
 |*)
