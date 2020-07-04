@@ -114,6 +114,11 @@ In any case, make an exception for comments:
     margin-right: -1rem; /* Compensate for the anti-wrapping space */
 }
 
+/* Wrapping :hover rules in a media query ensures that tapping a Coq sentence
+   doesn't trigger its :hover state (otherwise, on mobile, tapping a sentence to
+   hide its output causes it to remain visible (its :hover state gets triggered.
+   We only do it for the default style though, since other styles don't put the
+   output over the main text, so showing too much is not an issue. */
 @media (any-hover: hover) {
     .alectryon-bubble:hover:before,
     .alectryon-toggle-label:hover:before,
@@ -125,10 +130,10 @@ In any case, make an exception for comments:
         text-decoration: underline dotted #babdb6;
 	    text-shadow: 0 0 1px rgb(46, 52, 54, 0.3); /* #2e3436 + opacity */
     }
-}
 
-.alectryon-io .coq-sentence:hover .coq-output {
-    z-index: 2; /* Place hovered goals above .coq-sentence.alectryon-target ones */
+    .alectryon-io .coq-sentence:hover .coq-output {
+        z-index: 2; /* Place hovered goals above .coq-sentence.alectryon-target ones */
+    }
 }
 
 .alectryon-toggle:checked + .alectryon-toggle-label:before,
@@ -162,7 +167,12 @@ In any case, make an exception for comments:
     font-size: inherit; /* Undo <small>, added to improve RSS rendering */
 }
 
-.alectryon-io .coq-sentence:hover .coq-output:not(:hover),
+@media (any-hover: hover) { /* See note above about this @media query */
+    .alectryon-io .coq-sentence:hover .coq-output:not(:hover) {
+        display: block;
+    }
+}
+
 .alectryon-io .coq-sentence.alectryon-target .coq-output {
     display: block;
 }
