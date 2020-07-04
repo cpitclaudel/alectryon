@@ -61,6 +61,7 @@ import docutils
 from docutils import nodes, frontend
 
 from docutils.parsers.rst import directives, roles, Directive
+from docutils.parsers.rst.directives.body import Sidebar
 from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
 from docutils.writers import get_writer_class
@@ -280,7 +281,6 @@ class AlectryonToggleDirective(Directive):
     def run(self):
         return [alectryon_pending_toggle()]
 
-
 class AlectryonHeaderDirective(Directive):
     """Display an explanatory header."""
     name = "alectryon-header"
@@ -293,6 +293,25 @@ class AlectryonHeaderDirective(Directive):
     def run(self):
         from .core import SerAPI
         return [nodes.raw('', gen_header(SerAPI.version_info()))]
+
+# This is just a small example
+class ExperimentalExerciseDirective(Sidebar):
+    """Introduce an exercise."""
+    name = "exercise"
+
+    node_class = nodes.sidebar
+    required_arguments = 1
+    option_spec = { **Sidebar.option_spec,
+                    "difficulty": directives.nonnegative_int,
+                    "optional": directives.flag }
+
+    def run(self):
+        [node] = super().run()
+        node['difficulty'] = self.options['difficulty']
+        node['optional'] = self.options['optional']
+        for title in node.traverse(nodes.title):
+            title.children.insert(0, nodes.Text("Exercise: "))
+        return [node]
 
 # Roles
 # -----
@@ -453,7 +472,9 @@ class HtmlWriter(DefaultWriter):
 
 NODES = [alectryon_pending, alectryon_pending_toggle]
 TRANSFORMS = [AlectryonTransform]
-DIRECTIVES = [CoqDirective, AlectryonToggleDirective, AlectryonHeaderDirective]
+DIRECTIVES = [CoqDirective,
+              AlectryonToggleDirective, AlectryonHeaderDirective,
+              ExperimentalExerciseDirective]
 ROLES = [alectryon_bubble, coq_code_role]
 
 def register():

@@ -75,7 +75,7 @@
 
 ;;; Code:
 
-(require 'flycheck nil t)
+(require 'flycheck)
 (require 'proof-general nil t)
 (require 'proof-shell nil t)
 

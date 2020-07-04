@@ -6,4 +6,6 @@
 (depends-on "flycheck")
 (depends-on "proof-general")
 
-(development)
+(development
+ (depends-on "company-coq")
+ (depends-on "adaptive-wrap"))
