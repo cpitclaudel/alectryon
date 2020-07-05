@@ -76,7 +76,6 @@ In any case, make an exception for comments:
 
 .alectryon-io .coq-input {
     padding: 0.1em 0; /* Enlarge the hitbox slightly to fill interline gaps */
-    padding-right: 1rem; /* Prevent line wraps before the checkbox bubble */
 }
 
 .alectryon-io .coq-sentence.alectryon-target .coq-input {
@@ -107,6 +106,10 @@ In any case, make an exception for comments:
 
 .alectryon-io .coq-extra-goal-label::before {
     margin-top: -0.35rem;
+}
+
+.alectryon-io label.coq-input {
+    padding-right: 1rem; /* Prevent line wraps before the checkbox bubble */
 }
 
 .alectryon-io label.coq-input:after {
