@@ -292,3 +292,12 @@ Authoring support
 -----------------
 
 The ``etc/elisp`` folder of this directory includes an Emacs mode, ``alectryon.el``, which makes it easy to switch between the Coq and reStructuredText views of a document.
+
+Caching results
+---------------
+
+The ``alectryon.json`` module has facilities to cache annotations.
+
+To use it with docutils, set the ``alectryon.docutils.CACHE_DIRECTORY`` to a directory in which annotations can be saved.  Alectryon will produce one ``.cache`` file per input, mirroring the source's directory tree in the cache directory (you can set ``CACHE_DIRECTORY`` to the directory of your input files to store cache files along the corresponding files).
+
+To use it in your own code, instantiate the ``FileCache`` class.
