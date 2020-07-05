@@ -93,6 +93,10 @@ Display all goals and responses
 </label>""".replace('\n', '')
 
 LONG_LINE_THRESHOLD = 72
+"""Threshold above which to warn about long lines."""
+
+CACHE_DIRECTORY = None
+"""Directory in which to store cached annotations."""
 
 class Config:
     def __init__(self, document):
@@ -156,12 +160,22 @@ class AlectryonTransform(Transform):
             self.document.reporter.warning(msg, base_node=node)
             return
 
+    def annotate_cached(self, chunks, serapi_args):
+        from .json import Cache
+        serapi_args = (*self.SERAPI_ARGS, *serapi_args)
+        cache = Cache(CACHE_DIRECTORY, self.document['source'], serapi_args)
+        annotated = cache.get(chunks)
+        if annotated is None:
+            annotated = annotate(chunks, serapi_args)
+            cache.put(chunks, annotated)
+        return annotated
+
     def apply_coq(self):
         config = Config(self.document)
         writer = HtmlGenerator(highlight, gensym_stem=self.document_id(self.document))
         pending_nodes = list(self.document.traverse(alectryon_pending))
-        pending = (n['content'] for n in pending_nodes)
-        annotated = annotate(pending, (*self.SERAPI_ARGS, *config.serapi_args))
+        pending_contents = [n['content'] for n in pending_nodes]
+        annotated = self.annotate_cached(pending_contents, config.serapi_args)
         for node, fragments in zip(pending_nodes, annotated):
             annots = transforms.IOAnnots(*node['options'])
             if annots.hide:
