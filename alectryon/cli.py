@@ -255,15 +255,8 @@ COQ_TYPE_NAMES = {
 }
 
 def prepare_json(obj):
-    if isinstance(obj, list):
-        return [prepare_json(x) for x in obj]
-    if isinstance(obj, dict):
-        return {k: prepare_json(v) for k, v in obj.items()}
-    type_name = COQ_TYPE_NAMES.get(type(obj).__name__)
-    if type_name:
-        d = {k: prepare_json(v) for k, v in zip(obj._fields, obj)}
-        return {"_type": type_name, **d}
-    return obj
+    from .json import json_of_annotated
+    return json_of_annotated(obj)
 
 def dump_json(js):
     from json import dumps
