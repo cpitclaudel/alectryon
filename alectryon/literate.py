@@ -224,6 +224,33 @@ def regexp_opt(tokens):
 SCANNERS = { state: regexp_opt(tokens)
              for (state, tokens) in TRANSITIONS.items() }
 
+class ParsingError(Exception):
+    def __init__(self, document, state, position, end):
+        super().__init__()
+        self.document = document
+        self.state = state
+        self.position, self.end = position, end
+        self.line, self.column = self.line_col_of_pos(position)
+        self.end_line, self.end_column = self.line_col_of_pos(end)
+
+    def line_col_of_pos(self, pos):
+        assert pos >= 0
+        # Lines and columns are 1-based
+        bol = self.document.rfind("\n", 0, pos) + 1 # 0 if not found
+        line = 1 + self.document.count("\n", 0, pos)
+        column = 1 + pos - bol
+        return line, column
+
+    def __repr__(self):
+        pattern = SCANNERS[self.state].pattern
+        MSG = "{}:{}: Parsing failed (looking for {} in state {} at offset {})"
+        return MSG.format(self.line, self.column, pattern, self.state, self.position)
+
+    def __str__(self):
+        expected = " or ".join(t.name for t in TRANSITIONS[self.state])
+        MSG = "Unterminated {} (looking for {})"
+        return MSG.format(self.state.name.lower(), expected)
+
 def coq_partition(doc):
     """Partition `doc` into runs of code and comments (both ``StringView``\\s).
 
@@ -246,23 +273,22 @@ def coq_partition(doc):
     """
     pos = 0
     spans = []
-    stack = [(0, State.CODE)]
+    stack = [(0, 0, State.CODE)]
     spans = []
     while True:
-        start, state = stack[-1]
+        start, token_end, state = stack[-1]
         m = SCANNERS[state].search(doc, pos)
         if not m:
-            MSG = "Parsing failed (looking for {} in state {} at position {})"
-            raise ValueError(MSG.format(SCANNERS[state].pattern, state, pos))
+            raise ParsingError(doc, state, start, token_end)
         tok = Token(m.lastgroup)
-        mstart, pos = m.start(), m.end()
+        mstart, mend, pos = m.start(), m.end(), m.end()
         if state is State.CODE:
             if tok is Token.COMMENT_OPEN:
                 stack.pop()
-                stack.append((mstart, State.COMMENT))
+                stack.append((mstart, mend, State.COMMENT))
                 spans.append(Code(StringView(doc, start, mstart)))
             elif tok is Token.STRING_DELIM:
-                stack.append((mstart, State.STRING))
+                stack.append((mstart, mend, State.STRING))
             elif tok is Token.EOF:
                 stack.pop()
                 spans.append(Code(StringView(doc, start, pos)))
@@ -278,22 +304,22 @@ def coq_partition(doc):
                 assert False
         elif state is State.COMMENT:
             if tok is Token.COMMENT_OPEN:
-                stack.append((mstart, State.NESTED_COMMENT))
+                stack.append((mstart, mend, State.NESTED_COMMENT))
             elif tok is Token.COMMENT_CLOSE:
                 stack.pop()
-                stack.append((pos, State.CODE))
+                stack.append((pos, pos, State.CODE))
                 spans.append(Comment(StringView(doc, start, pos)))
             elif tok is Token.STRING_DELIM:
-                stack.append((mstart, State.STRING))
+                stack.append((mstart, mend, State.STRING))
             else:
                 assert False
         elif state is State.NESTED_COMMENT:
             if tok is Token.COMMENT_OPEN:
-                stack.append((mstart, State.NESTED_COMMENT))
+                stack.append((mstart, mend, State.NESTED_COMMENT))
             elif tok is Token.COMMENT_CLOSE:
                 stack.pop()
             elif tok is Token.STRING_DELIM:
-                stack.append((mstart, State.STRING))
+                stack.append((mstart, mend, State.STRING))
             else:
                 assert False
         else:
