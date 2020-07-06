@@ -82,6 +82,9 @@ class Line(namedtuple("Line", "num parts")):
         s = "".join(str(p) for p in self.parts)
         return s if not s.isspace() else ""
 
+    def __radd__(self, s):
+        self.parts.append(s)
+
     def isspace(self):
         return all(p.isspace() for p in self.parts)
 
@@ -146,7 +149,6 @@ def sliding_window(seq, n):
         yield tuple(window) + (None,) * (n - len(window))
         window.popleft()
 
-
 def mark_point(lines, point, marker):
     for l, nextl in sliding_window(lines, 2):
         last_line = nextl is None
@@ -160,12 +162,13 @@ def mark_point(lines, point, marker):
                         point = None
                     else:
                         parts.append(p)
-                if point is not None and last_line:
-                    parts.append(marker)
                 l.parts[:] = parts
-            elif last_line:
-                l = marker + l
+            if point is not None and last_line:
+                l += marker
+                point = None
         yield l
+    if point is not None:
+        yield marker # Reached if no lines
 
 def join_lines(lines):
     return "\n".join(str(l) for l in lines)
