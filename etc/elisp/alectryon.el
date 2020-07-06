@@ -217,12 +217,14 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   (mapcar
    (lambda (js)
      (flycheck-error-new-at
-      (alist-get 'line js) nil
+      (alist-get 'line js) (alist-get 'column js)
       (or (cdr (assoc (alist-get 'level js) alectryon--error-levels)) 'error)
       (alist-get 'message js)
       :checker checker
       :filename (alist-get 'source js)
-      :buffer buffer))
+      :buffer buffer
+      :end-line (alist-get 'end_line js)
+      :end-column (alist-get 'end_column js)))
    (flycheck-parse-json output)))
 
 (defun alectryon--flycheck-verify-enabled ()

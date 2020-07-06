@@ -351,11 +351,16 @@ coq_code_role.name = "coq"
 
 class JsErrorPrinter:
     @staticmethod
-    def json_of_message(level, message, source, line):
+    def json_of_message(msg):
+        message = msg.children[0].astext() if msg.children else "Unknown error"
+        level = docutils.utils.Reporter.levels[msg['level']].lower()
         js = { "level": level,
                "message": message,
-               "source": source,
-               "line": line }
+               "source": msg['source'],
+               "line": msg.get('line', 1),
+               "column": msg.get('column'),
+               "end_line": msg.get('end_line'),
+               "end_column": msg.get('end_column'), }
         return js
 
     def __init__(self, stream, settings):
@@ -364,11 +369,8 @@ class JsErrorPrinter:
 
     def __call__(self, msg):
         import json
-        message = msg.children[0].astext() if msg.children else "Unknown error"
-        level, source, line = msg['level'], msg['source'], msg.get('line', 1)
-        if level >= self.report_level:
-            level = docutils.utils.Reporter.levels[level].lower()
-            js = JsErrorPrinter.json_of_message(level, message, source, line)
+        if msg['level'] >= self.report_level:
+            js = self.json_of_message(msg)
             json.dump(js, self.stream)
             self.stream.write('\n')
 
@@ -409,16 +411,25 @@ class RSTCoqParser(docutils.parsers.rst.Parser):
             items.append((source, i))
         return StringList(initlist, source, items)
 
+    def report_parsing_error(self, e):
+        self.document.append(self.document.reporter.severe(
+            str(e), line=e.line, column=e.column,
+            end_line=e.end_line, end_column=e.end_column))
+
     def parse(self, inputstring, document):
         """Parse `inputstring` and populate `document`, a document tree."""
+        from .literate import ParsingError
         self.setup_parse(inputstring, document)
         # pylint: disable=attribute-defined-outside-init
         self.statemachine = docutils.parsers.rst.states.RSTStateMachine(
               state_classes=self.state_classes,
               initial_state=self.initial_state,
               debug=document.reporter.debug_flag)
-        lines = RSTCoqParser.coq_input_lines(inputstring, document['source'])
-        self.statemachine.run(lines, document, inliner=self.inliner)
+        try:
+            lines = RSTCoqParser.coq_input_lines(inputstring, document['source'])
+            self.statemachine.run(lines, document, inliner=self.inliner)
+        except ParsingError as e:
+            self.report_parsing_error(e)
         if '' in roles._roles: # Reset the default role
             del roles._roles['']
         self.finish_parse()
