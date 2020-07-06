@@ -224,7 +224,7 @@ def regexp_opt(tokens):
 SCANNERS = { state: regexp_opt(tokens)
              for (state, tokens) in TRANSITIONS.items() }
 
-class ParsingError(Exception):
+class ParsingError(ValueError):
     def __init__(self, document, state, position, end):
         super().__init__()
         self.document = document
@@ -241,15 +241,14 @@ class ParsingError(Exception):
         column = 1 + pos - bol
         return line, column
 
-    def __repr__(self):
-        pattern = SCANNERS[self.state].pattern
-        MSG = "{}:{}: Parsing failed (looking for {} in state {} at offset {})"
-        return MSG.format(self.line, self.column, pattern, self.state, self.position)
-
-    def __str__(self):
+    @property
+    def message(self):
         expected = " or ".join(t.name for t in TRANSITIONS[self.state])
         MSG = "Unterminated {} (looking for {})"
         return MSG.format(self.state.name.lower(), expected)
+
+    def __str__(self):
+        return "{}:{}: {}".format(self.line, self.column, self.message)
 
 def coq_partition(doc):
     """Partition `doc` into runs of code and comments (both ``StringView``\\s).

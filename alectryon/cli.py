@@ -36,13 +36,20 @@ def load_json(contents):
 def parse_coq_plain(contents):
     return [contents]
 
-def coq_to_rst(coq, point, marker):
-    from .literate import coq2rst_marked
-    return coq2rst_marked(coq, point, marker)
+def _catch_parsing_errors(fpath, k, *args):
+    from .literate import ParsingError
+    try:
+        return k(*args)
+    except ParsingError as e:
+        raise ValueError("{}:{}".format(fpath, e))
 
-def rst_to_coq(coq, point, marker):
+def coq_to_rst(coq, fpath, point, marker):
+    from .literate import coq2rst_marked
+    return _catch_parsing_errors(fpath, coq2rst_marked, coq, point, marker)
+
+def rst_to_coq(coq, fpath, point, marker):
     from .literate import rst2coq_marked
-    return rst2coq_marked(coq, point, marker)
+    return _catch_parsing_errors(fpath, rst2coq_marked, coq, point, marker)
 
 def annotate_chunks(chunks, serapi_args):
     from .core import annotate
@@ -547,7 +554,8 @@ def main():
     except (ValueError, FileNotFoundError) as e:
         if args.traceback:
             raise e
-        sys.stderr.write("Exception: {}\n".format(e))
+        sys.stderr.write("Exiting early due to an error:\n")
+        sys.stderr.write(str(e))
         sys.exit(1)
 
 # Alternative CLIs

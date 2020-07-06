@@ -413,7 +413,7 @@ class RSTCoqParser(docutils.parsers.rst.Parser):
 
     def report_parsing_error(self, e):
         self.document.append(self.document.reporter.severe(
-            str(e), line=e.line, column=e.column,
+            e.message, line=e.line, column=e.column,
             end_line=e.end_line, end_column=e.end_column))
 
     def parse(self, inputstring, document):
