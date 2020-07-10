@@ -77,7 +77,6 @@
 
 (require 'flycheck)
 (require 'proof-general nil t)
-(require 'proof-shell nil t)
 
 (defgroup alectryon nil
   "reStructuredText support Coq files."
@@ -127,6 +126,13 @@
   "Find the full path to alectryon.py."
   (expand-file-name "alectryon.py" alectryon--directory))
 
+(defun alectryon--refontify ()
+  "Recompute fontification for visible part of current buffer."
+  (if (and (fboundp 'font-lock-flush) (fboundp 'font-lock-ensure))
+      (progn (setq font-lock-fontified t)
+             (font-lock-flush) (font-lock-ensure))
+    (with-no-warnings (font-lock-fontify-buffer))))
+
 ;;; Conversion between Coq and reST
 
 (defun alectryon--run-converter (input args)
@@ -144,13 +150,15 @@ The output goes into the current buffer."
       (unless (eq 0 ex)
         (error "Conversion error (%s):\n%s" ex (alectryon--buffer-string))))))
 
-(defun alectryon--mode-case (coq rst &optional mode)
+(defmacro alectryon--mode-case (coq rst &optional mode)
   "Choose between COQ and RST based on MODE."
-  (setq mode (or mode major-mode))
-  (cond
-   ((provided-mode-derived-p mode 'coq-mode) coq)
-   ((provided-mode-derived-p mode 'rst-mode) rst)
-   (t (user-error "Unrecognized mode: %S" mode))))
+  (let ((m (make-symbol "mode")))
+    `(progn
+       (let ((,m (or ,mode major-mode)))
+         (cond
+          ((provided-mode-derived-p ,m 'coq-mode) ,coq)
+          ((provided-mode-derived-p ,m 'rst-mode) ,rst)
+          (t (user-error "Unrecognized mode: %S" ,m)))))))
 
 (defun alectryon--converter-args (&optional mode)
   "Compute conversion arguments to convert from MODE."
@@ -159,7 +167,7 @@ The output goes into the current buffer."
    `("--frontend" "rst" "--backend" "coq+rst")
    mode))
 
-(defun alectryon--toggle (mode)
+(defun alectryon--convert-from (mode)
   "Convert current buffer from MODE."
   (let* ((pt (point))
          (marker "")
@@ -186,18 +194,22 @@ Please open an issue at https://github.com/cpitclaudel/alectryon.")
   (alectryon--invoke mode)
   (funcall #'alectryon-mode))
 
-(defun alectryon-toggle ()
+(defun alectryon--toggle ()
   "Switch between Coq and reST views of the same file."
-  (interactive)
-  (alectryon-mode) ;; Set alectryon--original-mode
+  (alectryon--record-original-mode)
   (when (derived-mode-p 'coq-mode)
     (ignore-errors (alectryon--invoke 'proof-shell-exit t)))
   (let ((modified (buffer-modified-p)))
-    (alectryon--toggle major-mode)
+    (alectryon--convert-from major-mode)
     (push `(apply ,(apply-partially #'alectryon--set-mode major-mode))
           buffer-undo-list)
     (alectryon--set-mode (alectryon--mode-case 'rst-mode 'coq-mode))
-    (set-buffer-modified-p modified))
+    (set-buffer-modified-p modified)))
+
+(defun alectryon-toggle ()
+  "Switch between Coq and reST views of the same file."
+  (interactive)
+  (alectryon--toggle)
   (message "Switched to %s mode.  Press %s to go back." mode-name
            (substitute-command-keys "\\[alectryon-toggle]")))
 
@@ -269,7 +281,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   "Face used to highlight (*| … |*) marker."
   :group 'alectryon)
 
-(defun alectryon--syntactic-face-function (state)
+(defun alectryon--coq-syntactic-face-function (state)
   "Determine which face to use based on parsing state STATE."
   (let ((comment-opener-pos (nth 8 state)))
     (when comment-opener-pos
@@ -283,8 +295,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
      ;; No space allowed at EOL (the :align-to would push it to the next line)
      1 '(face alectryon-comment-marker display (space :align-to right)) append)))
 
-(defconst alectryon--rst-font-lock-keywords
-  '()) ;; TODO highlight .. coq:: blocks
+;; TODO highlight .. coq:: blocks in reST mode
 
 ;;; Editing
 
@@ -300,10 +311,14 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   "Major mode when `alectryon-mode' was enabled.")
 (put 'alectryon--original-mode 'permanent-local t)
 
+(defun alectryon--in-original-mode ()
+  "Check if current buffer is in its original mode."
+  (eq major-mode (or alectryon--original-mode major-mode)))
+
 (defun alectryon--save ()
   "Translate back to `alectryon--original-mode' and save the result.
 Current document must have a file name."
-  (unless (eq major-mode (or alectryon--original-mode major-mode))
+  (unless (alectryon--in-original-mode)
     (let ((mode major-mode)
           (input (current-buffer))
           (fname buffer-file-name))
@@ -317,37 +332,65 @@ Current document must have a file name."
 (defvar alectryon-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-S-a") #'alectryon-toggle)
+    map))
+
+(defvar alectryon-coq-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map alectryon-mode-map)
     (define-key map (kbd "C-c C-=") #'alectryon-insert-literate-block)
     map))
+
+(define-minor-mode alectryon--coq-mode
+  "Enable or disable the Coq-specific parts of `alectryon-mode'."
+  :keymap alectryon-coq-mode-map
+  (cond
+   (alectryon--coq-mode
+    (visual-line-mode)
+    (font-lock-add-keywords nil alectryon--coq-font-lock-keywords)
+    (add-to-list 'font-lock-extra-managed-props 'display)
+    (add-function :before-until (local 'font-lock-syntactic-face-function)
+                  #'alectryon--coq-syntactic-face-function '((depth . -100))))
+   (t
+    (visual-line-mode -1)
+    (font-lock-remove-keywords nil alectryon--coq-font-lock-keywords)
+    (remove-function (local 'font-lock-syntactic-face-function)
+                     #'alectryon--coq-syntactic-face-function))))
+
+(defvar alectryon-rst-mode-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map alectryon-mode-map)
+    map))
+
+(define-minor-mode alectryon--rst-mode
+  "Enable or disable the reST-specific parts of `alectryon-mode'."
+  :keymap alectryon-rst-mode-map)
+
+(defun alectryon--record-original-mode ()
+  "Initialize `alectryon--original-mode'."
+  (setq-local alectryon--original-mode (or alectryon--original-mode major-mode)))
 
 (define-minor-mode alectryon-mode
   "Mode for Literate Coq files.
 
-\\{alectryon-mode-map}."
+In Coq mode:
+\\{alectryon-coq-mode-map}
+In reST mode:
+\\{alectryon-rst-mode-map}"
   :lighter " 📚"
   (cond
    (alectryon-mode
-    (visual-line-mode)
+    (alectryon--record-original-mode)
     (alectryon--invoke 'flycheck-mode)
-    (add-to-list 'font-lock-extra-managed-props 'display)
-    (font-lock-add-keywords
-     nil (alectryon--mode-case alectryon--coq-font-lock-keywords alectryon--rst-font-lock-keywords))
-    (add-function :before-until (local 'font-lock-syntactic-face-function)
-                  #'alectryon--syntactic-face-function '((depth . -100)))
-    (setq-local alectryon--original-mode (or alectryon--original-mode major-mode))
-    (add-hook 'write-contents-functions #'alectryon--save t t))
+    (add-hook 'write-contents-functions #'alectryon--save t t)
+    (alectryon--mode-case (alectryon--coq-mode 1) (alectryon--rst-mode 1)))
    (t
-    (visual-line-mode -1)
-    (font-lock-remove-keywords
-     nil (alectryon--mode-case alectryon--coq-font-lock-keywords alectryon--rst-font-lock-keywords))
-    (remove-function (local 'font-lock-syntactic-face-function)
-                     #'alectryon--syntactic-face-function)
+    (unless (alectryon--in-original-mode)
+      (alectryon--toggle)
+      (message "Reverted to %s mode." mode-name))
     (kill-local-variable 'alectryon--original-mode)
-    (remove-hook 'write-contents-functions #'alectryon--save t)))
-  (if (and (fboundp 'font-lock-flush) (fboundp 'font-lock-ensure))
-      (progn (setq font-lock-fontified t)
-             (font-lock-flush) (font-lock-ensure))
-    (with-no-warnings (font-lock-fontify-buffer))))
+    (remove-hook 'write-contents-functions #'alectryon--save t)
+    (alectryon--mode-case (alectryon--coq-mode -1) (alectryon--rst-mode -1))))
+  (alectryon--refontify))
 
 ;;;###autoload
 (add-hook 'coq-mode-hook #'alectryon-mode t)
