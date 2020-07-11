@@ -2,7 +2,7 @@ alectryon := ../alectryon.py --output-directory output --no-header
 assets := alectryon.css alectryon.js
 all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html document.v literate.v.rst fragments.io.json fragments.snippets.html
 
-all: $(patsubst %,output/%,$(all) $(assets));
+all: $(patsubst %,output/%,$(all) $(assets)) sphinx/_build/html/index.html;
 
 output:
 	mkdir $@
@@ -43,11 +43,15 @@ output/fragments.io.json: fragments.json | output
 output/fragments.snippets.html: fragments.json | output
 	$(alectryon) $< -o $@
 
+# Sphinx
+sphinx/_build/html/index.html: sphinx/index.rst
+	+$(MAKE) -C sphinx html
+
 output/alectryon%css output/alectryon%js: FORCE
 	cp --link --force ../assets/* output/
 FORCE:
 
 clean:
-	rm -rf output/
+	rm -rf output/ sphinx/_build
 
 .PHONY: clean assets
