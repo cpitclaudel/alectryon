@@ -133,10 +133,10 @@
              (font-lock-flush) (font-lock-ensure))
     (with-no-warnings (font-lock-fontify-buffer))))
 
-;;; Conversion between Coq and reST
+;;;; Conversion between Coq and reST
 
 (defun alectryon--run-converter (input args)
-  "Convert contents of buffer INPUT with ARGS.
+  "Run Alectryon with ARGS on contents of buffer INPUT.
 
 The output goes into the current buffer."
   (let* ((python (executable-find alectryon-python-executable))
@@ -213,7 +213,7 @@ Please open an issue at https://github.com/cpitclaudel/alectryon.")
   (message "Switched to %s mode.  Press %s to go back." mode-name
            (substitute-command-keys "\\[alectryon-toggle]")))
 
-;;; Flycheck
+;;;; Flycheck
 
 (defvar alectryon-mode)
 
@@ -269,7 +269,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 
 (add-to-list 'flycheck-checkers 'alectryon)
 
-;;; Font-locking
+;;;; Font-locking
 
 (defface alectryon-comment
   '((t :inherit font-lock-doc-face))
@@ -297,7 +297,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 
 ;; TODO highlight .. coq:: blocks in reST mode
 
-;;; Editing
+;;;; Editing
 
 (defun alectryon-insert-literate-block ()
   "Insert a pair of (*| … |*) markers."
@@ -305,7 +305,24 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   (insert "(*|\n")
   (save-excursion (insert "\n|*)\n")))
 
-;;; Minor mode
+;;;; Preview
+
+(defun alectryon-preview ()
+  "Display an HTML preview of the current buffer."
+  (interactive)
+  (let* ((html-fname (make-temp-file "alectryon" nil ".html"))
+         (input (current-buffer))
+         (frontend (alectryon--mode-case "coq+rst" "rst"))
+         (args `("--frontend" ,frontend "--backend" "webpage"
+                 "-o" ,html-fname)))
+    (with-temp-buffer
+      (alectryon--run-converter input args)
+      (let ((msg (string-trim (buffer-string))))
+        (message "Compilation complete%s%s"
+                 (if (string-empty-p msg) "" ": ") msg)))
+    (browse-url html-fname)))
+
+;;;; Minor mode
 
 (defvar-local alectryon--original-mode nil
   "Major mode when `alectryon-mode' was enabled.")
