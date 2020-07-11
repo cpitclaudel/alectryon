@@ -190,7 +190,7 @@ Please open an issue at https://github.com/cpitclaudel/alectryon.")
       (goto-char (min pt (point-max))))))
 
 (defun alectryon--set-mode (mode)
-  "Switch to MODE and enable `alecrtyon-mode'."
+  "Switch to MODE and enable `alectryon-mode'."
   (alectryon--invoke mode)
   (funcall #'alectryon-mode))
 
