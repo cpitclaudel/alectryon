@@ -36,9 +36,9 @@ def add_html_assets(app):
         app.config.html_static_path.append(ASSETS.PATH)
 
         for css in ASSETS.ALECTRYON_CSS + ASSETS.PYGMENTS_CSS:
-            app.add_stylesheet(css)
+            app.add_css_file(css)
         for js in ASSETS.ALECTRYON_JS:
-            app.add_javascript(js)
+            app.add_js_file(js)
 
 def setup(app):
     """Register Alectryon's directives, transforms, etc."""
@@ -47,7 +47,7 @@ def setup(app):
         app.add_role(role.name, role)
 
     for node in docutils.NODES:
-        visit, depart = getattr(node, 'visit'), getattr(node, 'depart')
+        visit, depart = getattr(node, 'visit', None), getattr(node, 'depart', None)
         if visit and depart:
             app.add_node(node,
                          html=(visit, depart),
