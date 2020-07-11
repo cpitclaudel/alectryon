@@ -22,6 +22,8 @@
 
 If you start from reST files, this script is enough.  If you start from Coq
 files, you also need literate.py to convert .v files to .rst.
+
+Invoke with ``python3 -m alectryon.minimal --help``.
 """
 
 from docutils.parsers.rst import directives, roles, Directive
