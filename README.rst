@@ -250,6 +250,21 @@ These annotations can also be added to individual Coq sentences (⚠ *sentences*
         Fail exact 1. (* .in .messages *) ← Goal omitted
         Fail fail. (* .messages *)        ← Error message shown, input hidden
 
+Extra roles and directives
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For convenience, alectryon includes a few extra roles and directives:
+
+- ``:coqid:`` can be used to link to the documentation or definition of a Coq identifier in an external file.  Some examples:
+
+  - :literal:`:coqid:\`Coq.Init.Nat.even\`` → `Coq.Init.Nat.even <https://coq.inria.fr/library/Coq.Init.Nat.html#even>`__
+  - :literal:`:coqid:\`Coq.Init.Nat#even\`` → `even <https://coq.inria.fr/library/Coq.Init.Nat.html#even>`__
+  - :literal:`:coqid:\`a predicate <Coq.Init.Nat.even>\`` → `a predicate <https://coq.inria.fr/library/Coq.Init.Nat.html#even>`__
+  - :literal:`:coqid:\`Coq.Arith.PeanoNat#\`` → `Coq.Arith.PeanoNat <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#>`__
+  - :literal:`:coqid:\`a library <Coq.Arith.PeanoNat#>\`` → `a library <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#>`__
+  - :literal:`:coqid:\`Coq.Arith.PeanoNat#Nat.Even\`` → `Nat.Even <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#Nat.Even>`__
+  - :literal:`:coqid:\`a predicate <Coq.Arith.PeanoNat#Nat.Even>\`` → `a predicate <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#Nat.Even>`__
+
 Tips
 ====
 
