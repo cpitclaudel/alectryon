@@ -98,4 +98,7 @@ But writing a fixpoint (either with the :coq:`Fixpoint` command or with the `fix
        + inversion 1; apply even_Even_fp; assumption.
    Qed.
 
-Note that the standard library already contains a :coqid:`boolean <Coq.Init.Nat.even>` :coqid:`predicate <Coq.Init.Nat#even>` for `even` (called :coqid:`Coq.Init.Nat.even`, or :coqid:`Coq.Init.Nat#even` for short), as well as an :coqid:`inductive one <Coq.Arith.PeanoNat#Nat.Even>` (called :coqid:`Coq.Arith.PeanoNat#Nat.Even` in module :coqid:`Coq.Arith.PeanoNat#`).
+.. role:: mycoqid(coqid)
+   :url: https://coq.inria.fr/library/Coq.$modpath.html#$ident
+
+Note that the standard library already contains a :mycoqid:`boolean <Init.Nat.even>` :coqid:`predicate <Coq.Init.Nat#even>` for `even` (called :coqid:`Coq.Init.Nat.even`, or :coqid:`Coq.Init.Nat#even` for short), as well as an :mycoqid:`inductive one <Arith.PeanoNat#Nat.Even>` (called :coqid:`Coq.Arith.PeanoNat#Nat.Even` in module :coqid:`Coq.Arith.PeanoNat#`).
