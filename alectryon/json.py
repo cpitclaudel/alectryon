@@ -121,7 +121,7 @@ class FileCache:
             data = { "metadata": self.metadata,
                      "chunks": list(chunks),
                      "annotated": json_of_annotated(annotated) }
-            json.dump(data, cache, indent=None, separators=(',', ':'))
+            json.dump(data, cache, indent=2)
 
 class DummyCache:
     def __init__(self, *_args):
