@@ -265,6 +265,17 @@ For convenience, alectryon includes a few extra roles and directives:
   - :literal:`:coqid:\`Coq.Arith.PeanoNat#Nat.Even\`` → `Nat.Even <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#Nat.Even>`__
   - :literal:`:coqid:\`a predicate <Coq.Arith.PeanoNat#Nat.Even>\`` → `a predicate <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#Nat.Even>`__
 
+Caching
+~~~~~~~
+
+The ``alectryon.json`` module has facilities to cache annotations.  Caching has multiple benefits:
+
+1. Recompiling documents with unchanged code is much faster, since Coq snippets do not have to be re-evaluated.
+2. Deploying a website or recompiling a book does not require setting up a complete Coq development environment.
+3. Changes in output can be inspected by comparing cache files.  Caches contain just as much information as needed to recreate input/output listings, so they can be checked-in into source control, making it easy to assess whether a Coq update meaningfully affects a document (it's easy to miss breakage or subtle changes in output otherwise, as when using the copy-paste approach or even Alectryon without caching).
+
+To enable caching, chose a directory to hold cache files and assign its path to  ``alectryon.docutils.CACHE_DIRECTORY`` (it can be the same directory as the one containing your source files, if you'd like to store caches alongside inputs).  Alectryon will record inputs and outputs in individual JSON files (one ``.cache`` file per source file) in subdirectories of the ``CACHE_DIRECTORY`` folder.
+
 Tips
 ====
 
@@ -308,11 +319,7 @@ Authoring support
 
 The ``etc/elisp`` folder of this directory includes an Emacs mode, ``alectryon.el``, which makes it easy to switch between the Coq and reStructuredText views of a document.
 
-Caching results
----------------
+Caching
+-------
 
-The ``alectryon.json`` module has facilities to cache annotations.
-
-To use it with docutils, set the ``alectryon.docutils.CACHE_DIRECTORY`` to a directory in which annotations can be saved.  Alectryon will produce one ``.cache`` file per input, mirroring the source's directory tree in the cache directory (you can set ``CACHE_DIRECTORY`` to the directory of your input files to store cache files along the corresponding files).
-
-To use it in your own code, instantiate the ``FileCache`` class.
+To use Alectryon's caching facilities independently of its ``docutils`` module, instantiate the ``FileCache`` class of ``alectryon.json``.
