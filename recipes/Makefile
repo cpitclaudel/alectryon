@@ -1,13 +1,15 @@
 alectryon := ../alectryon.py --output-directory output --no-header
+minimal := python3 -m alectryon.minimal
+
 assets := alectryon.css alectryon.js
-all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html document.v literate.v.rst fragments.io.json fragments.snippets.html
+all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html document.minimal.html document.v literate.v.rst fragments.io.json fragments.snippets.html
 
 all: $(patsubst %,output/%,$(all) $(assets)) sphinx/_build/html/index.html;
 
 output:
 	mkdir $@
 
-# HTML ← Coq
+# Coq → HTML
 output/plain.v.html: plain.v | output
 	$(alectryon) --frontend coq $<
 output/literate.v.html: literate.v | output
@@ -15,31 +17,35 @@ output/literate.v.html: literate.v | output
 output/coqdoc.v.html: coqdoc.v | output
 	$(alectryon) --frontend coq $<
 
-# HTML ← Coqdoc
+# Coqdoc → HTML
 output/coqdoc.html: coqdoc.v | output
 	$(alectryon) $< --frontend coqdoc
 
-# HTML ← Coq+reST
+# Coq+reST → HTML
 output/literate.html: literate.v | output
 	$(alectryon) $<
 
-# HTML ← reST+Coq
+# reST+Coq → HTML
 output/document.html: document.v.rst | output
 	$(alectryon) $<
 
-# Coq+reST ← reST+Coq
+# Minimal reST+Coq → HTML
+output/document.minimal.html: document.v.rst | output
+	cd ..; $(minimal) recipes/$< recipes/$@
+
+# reST+Coq → Coq+reST
 output/document.v: document.v.rst | output
 	$(alectryon) $< -o $@
 
-# reST+Coq ← Coq+reST
+# Coq+reST → reST+Coq
 output/literate.v.rst: literate.v | output
 	$(alectryon) $< -o $@
 
-# JSON ← JSON
+# JSON → JSON
 output/fragments.io.json: fragments.json | output
 	$(alectryon) $<
 
-# HTML snippets ← JSON
+# JSON → HTML snippets
 output/fragments.snippets.html: fragments.json | output
 	$(alectryon) $< -o $@
 
