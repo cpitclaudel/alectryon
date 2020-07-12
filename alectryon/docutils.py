@@ -330,13 +330,13 @@ class ExperimentalExerciseDirective(Sidebar):
 # Roles
 # -----
 
-def alectryon_bubble(# pylint: disable=dangerous-default-value
-        _role, rawtext, _text, _lineno, _inliner, _options={}, _content=[]):
+def alectryon_bubble(# pylint: disable=dangerous-default-value,unused-argument
+        role, rawtext, text, lineno, inliner, options={}, content=[]):
     return [nodes.inline(rawtext, classes=['alectryon-bubble'])], []
 
 alectryon_bubble.name = "alectryon-bubble"
 
-def coq_code_role(# pylint: disable=dangerous-default-value
+def coq_code_role(# pylint: disable=dangerous-default-value,unused-argument
         role, rawtext, text, lineno, inliner, options={}, content=[]):
     options = options.copy()
     roles.set_classes(options)
@@ -345,6 +345,63 @@ def coq_code_role(# pylint: disable=dangerous-default-value
     return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
 
 coq_code_role.name = "coq"
+
+COQ_ID_RE = re.compile("^(?P<title>.*?)(?: <(?P<target>.*)>)?$")
+COQ_IDENT_DB_URLS = [
+    ("Coq", "https://coq.inria.fr/library/$modpath.html#$ident")
+]
+
+def coq_id_role(# pylint: disable=dangerous-default-value,unused-argument
+        role, rawtext, text, lineno, inliner, options={}, content=[]):
+    mid = COQ_ID_RE.match(text)
+    title, target = mid.group("title"), mid.group("target")
+    implicit = target is None
+    if implicit:
+        target = title
+
+    if "#" in target:
+        modpath, ident = target.rsplit("#", 1)
+        if implicit:
+            # Convert `A#b` to `b` and `A#` to `A`
+            title = ident if ident else modpath
+    elif "." in target:
+        modpath, ident = target.rsplit(".", 1)
+    else:
+        modpath, ident = "", target
+
+    # Options are set using the ‘.. role’ directive
+    url = options.get('url', None)
+    if url is None:
+        if not modpath:
+            MSG = "{target!r} is not a fully-qualified name."
+            msg = inliner.reporter.error(MSG.format(target=target), line=lineno)
+            return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+
+        for prefix, url in COQ_IDENT_DB_URLS:
+            if prefix == modpath or modpath.startswith(prefix + "."):
+                break
+        else:
+            MSG = ("Not sure where to find documentation for {target}.\n"
+                   "Make sure that ‘{target}’ is fully qualified"
+                   " and that Alectryon knows where to find it.\n"
+                   "Known prefixes: {prefixes}\n"
+                   "(Add prefixes to alectryon.docutils.COQ_IDENT_DB_URLS or"
+                   " derive a new role from ‘coqid’ with a custom :url:).")
+            prefixes = [prefix for (prefix, _) in COQ_IDENT_DB_URLS]
+            msg = MSG.format(target=target, prefixes=prefixes)
+            err = inliner.reporter.error(msg, line=lineno)
+            return [inliner.problematic(rawtext, rawtext, err)], [err]
+
+    from string import Template
+    uri = Template(url).safe_substitute(modpath=modpath, ident=ident)
+
+    roles.set_classes(options)
+    node = nodes.reference(rawtext, title, refuri=uri, **options)
+
+    return [node], []
+
+coq_id_role.name = "coqid"
+coq_id_role.options = {'url': directives.unchanged}
 
 # Error printer
 # -------------
@@ -500,14 +557,10 @@ TRANSFORMS = [AlectryonTransform]
 DIRECTIVES = [CoqDirective,
               AlectryonToggleDirective, AlectryonHeaderDirective,
               ExperimentalExerciseDirective]
-ROLES = [alectryon_bubble, coq_code_role]
+ROLES = [alectryon_bubble, coq_code_role, coq_id_role]
 
 def register():
-    """Tell Docutils about our directives (.. coq and .. alectryon-toggle).
-
-    You can customize the name under which these are registered by adjusting the
-    ``name`` field of ``CoqDirective`` and ``AlectryonToggleDirective``.
-    """
+    """Tell Docutils about our roles and directives."""
     for directive in DIRECTIVES:
         directives.register_directive(directive.name, directive)
     for role in ROLES:

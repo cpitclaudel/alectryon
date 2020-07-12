@@ -56,10 +56,13 @@ def coq_code_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
 
 def no_op(role, rawtext, text, lineno, inliner, options={}, content=[]):
-    return [], []
+    return roles.generic_custom_role(
+        role, rawtext, text, lineno, inliner, options, content)
+no_op.options = {'url': directives.unchanged}
 
-ROLES = { "alectryon-bubble": no_op,
-          "coq_code_role": coq_code_role }
+ROLES = {"coqid": no_op,
+         "coq": coq_code_role,
+         "alectryon-bubble": no_op}
 
 def docutils_setup():
     for name, directive in DIRECTIVES.items():
