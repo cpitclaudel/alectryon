@@ -332,3 +332,8 @@ Caching
 -------
 
 To use Alectryon's caching facilities independently of its ``docutils`` module, instantiate the ``FileCache`` class of ``alectryon.json``.
+
+Building without Alectryon
+--------------------------
+
+The ``alectryon.minimal`` Python module provides trivial shims for Alectryon's roles and directives, allowing you continue compiling your documents even if support for Alectryon stops in the future.
