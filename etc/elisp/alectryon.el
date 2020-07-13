@@ -278,7 +278,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 
 (defface alectryon-comment-marker
   '((t :strike-through t :height 0.5))
-  "Face used to highlight (*| … |*) marker."
+  "Face used to highlight (*| … |*) markers."
   :group 'alectryon)
 
 (defun alectryon--coq-syntactic-face-function (state)
@@ -351,6 +351,11 @@ Current document must have a file name."
     (define-key map (kbd "C-c C-S-a") #'alectryon-toggle)
     map))
 
+(defun alectryon-customize ()
+  "Open `alectryon-mode''s customization menu."
+  (interactive)
+  (customize-group 'alectryon))
+
 (defvar alectryon-coq-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map alectryon-mode-map)
@@ -385,6 +390,16 @@ Current document must have a file name."
 (defun alectryon--record-original-mode ()
   "Initialize `alectryon--original-mode'."
   (setq-local alectryon--original-mode (or alectryon--original-mode major-mode)))
+
+;; Adding the menu to a parent keymap causes it to be duplicated (?!), so add it
+;; to both submaps instead.
+(easy-menu-define alectryon-mode-menu (list alectryon-coq-mode-map alectryon-rst-mode-map)
+  "Alectryon's main menu"
+  '("Alectryon"
+    ["Convert to reStructuredText" alectryon-toggle :visible (alectryon--mode-case t nil)]
+    ["Convert to Coq + reST" alectryon-toggle :visible (alectryon--mode-case nil t)]
+    ["Preview the current buffer as a webpage." alectryon-preview]
+    ["Configure alectryon-mode" alectryon-customize]))
 
 (define-minor-mode alectryon-mode
   "Mode for Literate Coq files.
