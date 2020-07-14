@@ -112,14 +112,15 @@ class Config:
             token = name[len("alectryon/pygments/"):]
             self.tokens.setdefault(token, []).extend(body.split())
         elif name == "alectryon/serapi/args":
-            self.parse_args(body)
+            import shlex
+            self.serapi_args.extend(self.parse_args(shlex.split(body)))
         else:
             return
         node.parent.remove(node)
 
-    def parse_args(self, args):
+    @staticmethod
+    def parse_args(args):
         import argparse
-        import shlex
         p = argparse.ArgumentParser(prog=":alectryon/serapi/args:", add_help=False)
         p.add_argument("-I", "--ml-include-path", dest="I", metavar="DIR",
                        nargs=1, action="append", default=[])
@@ -127,17 +128,17 @@ class Config:
                        nargs=2, action="append", default=[])
         p.add_argument("-R", "--rec-load-path", dest="R", metavar=("DIR", "COQDIR"),
                        nargs=2, action="append", default=[])
-        for (arg, instances) in p.parse_args(shlex.split(args))._get_kwargs():
+        for (arg, instances) in p.parse_args(args)._get_kwargs():
             for vals in instances:
-                self.serapi_args.append("-" + arg)
-                self.serapi_args.append(",".join(vals))
+                yield "-" + arg
+                yield ",".join(vals)
 
 class AlectryonTransform(Transform):
     default_priority = 995
     auto_toggle = True
 
     SERAPI_ARGS = ()
-    """Arguments to pass to SerAPI"""
+    """Arguments to pass to SerAPI, in SerAPI format."""
 
     @staticmethod
     def set_fragment_annots(fragments, annots):
@@ -549,8 +550,8 @@ class HtmlWriter(DefaultWriter):
         super().__init__(*args, **kwargs)
         self.translator_class = HtmlTranslator
 
-# Entry point
-# ===========
+# Entry points
+# ============
 
 NODES = [alectryon_pending, alectryon_pending_toggle]
 TRANSFORMS = [AlectryonTransform]
