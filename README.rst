@@ -216,12 +216,15 @@ I test regularly with Pelican; other systems will likely need minimal adjustment
 With Sphinx
 ~~~~~~~~~~~
 
-For Sphinx, add the following to your ``config.py`` file instead:
+For Sphinx, add the following to your ``conf.py`` file:
 
 .. code-block:: python
 
-    import alectryon.sphinx
-    alectryon.sphinx.setup()
+   import os
+   import sys
+   sys.path.insert(0, os.path.abspath('../path/to/alectryon/repo/'))
+
+   extensions = ["alectryon.sphinx"]
 
 Controlling output
 ~~~~~~~~~~~~~~~~~~
