@@ -102,7 +102,9 @@ class Config:
     def __init__(self, document):
         self.tokens = {}
         self.serapi_args = []
-        for di in document.traverse(nodes.docinfo):
+        # Sphinx doesn't translate ``field_list`` to ``docinfo``
+        filter = lambda n: isinstance(n, (nodes.field_list, nodes.docinfo))
+        for di in document.traverse(filter):
             for field in di.traverse(nodes.field):
                 name, body = field.children
                 self.parse_docinfo_field(field, name.rawsource, body.rawsource)
