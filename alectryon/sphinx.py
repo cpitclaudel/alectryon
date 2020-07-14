@@ -46,6 +46,9 @@ def setup(app):
     for role in docutils.ROLES:
         app.add_role(role.name, role)
 
+    for directive in docutils.DIRECTIVES:
+        app.add_directive(directive.name, directive)
+
     for node in docutils.NODES:
         visit, depart = getattr(node, 'visit', None), getattr(node, 'depart', None)
         if visit and depart:
@@ -54,9 +57,9 @@ def setup(app):
                          latex=(visit, depart),
                          text=(visit, depart))
 
-    for directive in docutils.DIRECTIVES:
-        getattr(directive, "setup", lambda _: None)(app.srcdir)
-        app.add_directive(directive.name, directive)
+    if app.config.default_role is None:
+        print("Setting default role")
+        app.config.default_role = docutils.coq_code_role.name
 
     for transform in docutils.TRANSFORMS:
         app.add_transform(transform)

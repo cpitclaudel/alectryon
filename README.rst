@@ -226,6 +226,11 @@ For Sphinx, add the following to your ``conf.py`` file:
 
    extensions = ["alectryon.sphinx"]
 
+If left unset in your config file, the default role (the one you get with single backticks) will be set to ``:coq:``.  To get syntax highlighting for inline snippets, create a docutils.conf file with the `following contents <https://stackoverflow.com/questions/21591107/sphinx-inline-code-highlight>`_ along your ``conf.py`` file::
+
+   [restructuredtext parser]
+   syntax_highlight = short
+
 Controlling output
 ~~~~~~~~~~~~~~~~~~
 
