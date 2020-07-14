@@ -310,6 +310,13 @@ When compiling reStructuredText documents, besides the ``-I``, ``-Q``, ``-R`` an
 
    :alectryon/serapi/args: -R . Lib -I mldir
 
+To set SerAPI's arguments for all input files, modify ``AlectryonTransform.SERAPI_ARGS`` in ``alectryon.docutils``.  Here's an example that you could use in a Sphinx config file::
+
+   from alectryon.docutils import AlectryonTransform
+   AlectryonTransform.SERAPI_ARGS = ["-Q", "/coq/source/path/,LibraryName"]
+
+Note that the syntax is the one of ``sertop``, not the one of ``coqc`` (https://github.com/ejgallego/coq-serapi/issues/215).
+
 Adding custom keywords
 ----------------------
 
