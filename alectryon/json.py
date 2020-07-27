@@ -45,8 +45,27 @@ def json_of_annotated(obj):
         return {k: json_of_annotated(v) for k, v in obj.items()}
     type_name = ALIASES_OF_COQ_TYPE.get(type(obj).__name__)
     if type_name:
-        d = {k: json_of_annotated(v) for k, v in zip(obj._fields, obj)}
-        return {"_type": type_name, **d}
+        d = {"_type": type_name}
+        for k, v in zip(obj._fields, obj):
+            d[k] = json_of_annotated(v)
+        return d
+    return obj
+
+def minimal_json_of_annotated(obj):
+    if isinstance(obj, list):
+        return [minimal_json_of_annotated(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: minimal_json_of_annotated(v) for k, v in obj.items()}
+    type_name = ALIASES_OF_COQ_TYPE.get(type(obj).__name__)
+    if type_name:
+        if isinstance(obj, CoqText):
+            return obj.contents
+        d = {k: minimal_json_of_annotated(v) for k, v in zip(obj._fields, obj)}
+        contents = d.pop("contents", None)
+        d = {k: v for k, v in d.items() if v}
+        if contents:
+            d[type_name] = contents
+        return d
     return obj
 
 def annotated_of_json(js):
