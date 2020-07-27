@@ -295,8 +295,8 @@ class SerAPI():
     def run(self, chunk):
         """Send a `chunk` to sertop.
 
-        A chunk is a string containing one or more sentences.  The sentences are
-        split, sent to Coq, and returned as a list of ``CoqText`` instances
+        A chunk is a string containing Coq sentences or comments.  The sentences
+        are split, sent to Coq, and returned as a list of ``CoqText`` instances
         (for whitespace and comments) and ``CoqSentence`` instances (for code).
         """
         if isinstance(chunk, str):
