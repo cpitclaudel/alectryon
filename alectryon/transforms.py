@@ -81,6 +81,7 @@ class IOAnnots:
             self.unfold, self.fails, self.filters)
 
 def htmlify_sentences(fragments):
+    """Change each ``CoqSentence`` in `fragments` into an ``HTMLSentence``."""
     for fr in fragments:
         if isinstance(fr, CoqSentence):
             yield HTMLSentence(prefixes=[], suffixes=[], annots=IOAnnots(),
