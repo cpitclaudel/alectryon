@@ -483,7 +483,7 @@ class CoqLexer(RegexLexer):
 
         '_keywords': [
             (r"\bforall\b|\bexists\b|∀|∃", Keyword.Reserved, 'quantifier args'),
-            (r"\bfun\b", Keyword.Reserved, 'fun args'),
+            (r"\bfun\b|λ", Keyword.Reserved, 'fun args'),
             (let_binder_re, Keyword.Reserved, 'let args'),
             (ws(kwds['ltac-keywords']), TOKEN_TYPES['ltac-keywords']),
             (ws(kwds['ltac-builtins']), TOKEN_TYPES['ltac-builtins']),
