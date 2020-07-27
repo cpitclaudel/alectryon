@@ -571,6 +571,7 @@ def register():
 
 def set_default_role():
     """Set the default role (the one used with single backticks) to :coq:."""
+    roles.register_canonical_role(coq_code_role.name, coq_code_role)
     roles.DEFAULT_INTERPRETED_ROLE = coq_code_role.name
 
 def setup():
