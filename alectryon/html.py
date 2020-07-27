@@ -132,7 +132,7 @@ class HtmlGenerator:
         return self.gen_checkbox(fr.annots.unfold, "coq-toggle")
 
     def gen_input(self, fr, toggle):
-        cls = {"cls": "coq-input"}
+        cls = {"cls": "coq-input" + (" alectryon-failed" if fr.annots.fails else "")}
         contents = self.highlight(fr.contents)
         if toggle:
             tags.label(contents, **cls, **{"for": toggle})

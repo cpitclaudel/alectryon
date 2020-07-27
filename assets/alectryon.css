@@ -117,6 +117,16 @@ In any case, make an exception for comments:
     margin-right: -1rem; /* Compensate for the anti-wrapping space */
 }
 
+.alectryon-failed {
+    /* Underlines are broken in Chrome (they reset at each element boundary)… */
+    /* text-decoration: red wavy underline; */
+    /* … but it isn't too noticeable with dots */
+    text-decoration: red dotted underline;
+    text-decoration-skip-ink: none;
+    /* Chrome prints background images in low resolution, yielding a blurry underline */
+    /* background: bottom / 0.3rem auto repeat-x url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyLjY0NiAxLjg1MiIgaGVpZ2h0PSI4IiB3aWR0aD0iMTAiPjxwYXRoIGQ9Ik0wIC4yNjVjLjc5NCAwIC41MyAxLjMyMiAxLjMyMyAxLjMyMi43OTQgMCAuNTMtMS4zMjIgMS4zMjMtMS4zMjIiIGZpbGw9Im5vbmUiIHN0cm9rZT0icmVkIiBzdHJva2Utd2lkdGg9Ii41MjkiLz48L3N2Zz4=); */
+}
+
 /* Wrapping :hover rules in a media query ensures that tapping a Coq sentence
    doesn't trigger its :hover state (otherwise, on mobile, tapping a sentence to
    hide its output causes it to remain visible (its :hover state gets triggered.
