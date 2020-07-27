@@ -299,7 +299,9 @@ PIPELINES = {
         'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
                           dump_html_snippets, write_file(".snippets.html")),
         'lint': (register_docutils, lint_rstcoq, write_file(".lint.json")),
-        'rst': (coq_to_rst, write_file(".v.rst"))
+        'rst': (coq_to_rst, write_file(".v.rst")),
+        'json': (parse_coq_plain, annotate_chunks,
+                 prepare_json, dump_json, write_file(".io.json"))
     },
     'coq+rst': {
         'webpage': (register_docutils, gen_rstcoq_html,
