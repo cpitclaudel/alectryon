@@ -182,7 +182,12 @@ def _gen_coqdoc_html(coqdoc_comments):
     coqdoc_output = _run_coqdoc(coqdoc_comments)
     soup = BeautifulSoup(coqdoc_output, "html.parser")
     docs = soup.find_all(class_='doc')
-    assert len(docs) == len(coqdoc_comments)
+    if len(docs) != len(coqdoc_comments):
+        from pprint import pprint
+        print("Coqdoc mismatch:", file=sys.stderr)
+        pprint(docs)
+        pprint(coqdoc_comments)
+        raise AssertionError()
     return docs
 
 def _gen_html_snippets_with_coqdoc(annotated, fname):

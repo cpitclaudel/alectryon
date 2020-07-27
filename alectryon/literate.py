@@ -332,7 +332,7 @@ def coq_partition(doc):
 LIT_OPEN = re.compile(r"[(][*][|][ \t]*")
 LIT_CLOSE = re.compile(r"[ \t]*[|]?[*][)]\Z")
 
-COQDOC_OPEN = re.compile(r"[(][*]{2,}[ \t]*")
+COQDOC_OPEN = re.compile(r"[(][*][*]\s[ \t]*")
 COQDOC_CLOSE = re.compile(r"[ \t]*[*]+[)]\Z")
 
 DEFAULT_HEADER = ".. coq::"
