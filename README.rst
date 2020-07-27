@@ -238,7 +238,7 @@ The ``.. coq::`` directive takes a list of space-separated flags to control the 
 
 - One option controls whether output is folded (``fold``) or unfolded (``unfold``).  When output is folded, users can reveal the output corresponding to each input line selectively.
 
-- Multiple options control what is included on each line.
+- Multiple options control what is included in the output.
   - ``in``: Include input sentences (``no-in``: hide them)
   - ``goals``: Include goals (``no-goals``: hide them)
   - ``messages``: Include messages (``no-messages``: hide them)
