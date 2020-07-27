@@ -8,9 +8,9 @@ from os.path import join, dirname, realpath
 root = dirname(dirname(realpath(__file__)))
 sys.path.insert(0, root)
 
-from alectryon.pygments import FORMATTER
+from alectryon.pygments import FORMATTER, LATEX_FORMATTER
 
-def main():
+def css():
     pth = realpath(join(root, 'assets/tango_subtle.css'))
     min_pth = realpath(join(root, 'assets/tango_subtle.min.css'))
     with open(pth, mode='w') as cssf:
@@ -19,5 +19,12 @@ def main():
     check_call(["cleancss", pth, "-o", min_pth])
     print("Minified as {}".format(min_pth))
 
+def ltx():
+    pth = realpath(join(root, 'assets/tango_subtle.sty'))
+    with open(pth, mode='w') as ltxf:
+        ltxf.write(LATEX_FORMATTER.get_style_defs())
+    print("Saved as {}".format(pth))
+
 if __name__ == '__main__':
-    main()
+    css()
+    ltx()

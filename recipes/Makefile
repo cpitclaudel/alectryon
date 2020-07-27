@@ -54,7 +54,7 @@ sphinx/_build/html/index.html: sphinx/index.rst
 	+$(MAKE) -C sphinx html
 
 output/alectryon%css output/alectryon%js: FORCE
-	cp --link --force ../assets/* output/
+	cp --link --force $(patsubst %,../assets/%,$(assets)) output/
 FORCE:
 
 clean:
