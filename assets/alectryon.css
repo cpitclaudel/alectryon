@@ -302,7 +302,7 @@ In any case, make an exception for comments:
     flex-flow: column nowrap; /* re-stated in windowed mode */
     justify-content: space-around;
     /* LATER use a ‘gap’ property instead of margins once supported */
-    margin: -0.15rem -1rem; /* -0.15rem to cancel the item spacing */
+    margin: -0.15rem -0.25rem; /* -0.15rem to cancel the item spacing */
     padding-bottom: 0.5rem;
 }
 
@@ -315,7 +315,7 @@ In any case, make an exception for comments:
 
 .alectryon-io .goal-hyp {
     display: inline-flex;
-    margin: 0.15rem 1rem;
+    margin: 0.15rem 0.25rem;
     z-index: 1;
 }
 
