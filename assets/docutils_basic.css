@@ -25,7 +25,6 @@ THE SOFTWARE.
 
 body {
     font-family: Palatino, "Palatino LT STD", "Palatino Linotype", "Book Antiqua", Georgia, serif;
-    font-size: 16px;
     color: #111;
 }
 
@@ -115,13 +114,10 @@ object[type="application/x-shockwave-flash"] {
 
 /* ========== Literal Blocks ========== */
 
-pre, .docutils.literal {
-    font-family: "Lucida Sans Typewriter", "Lucida Console", Monaco, "Bitstream Vera Sans Mono", monospace;
-    font-size: 14px;
-}
-
 .docutils.literal {
-    background-color: #ffa;
+    background-color: #eee;
+    padding: 0 0.2em;
+    border-radius: 0.1em;
 }
 
 pre.address {
@@ -190,8 +186,8 @@ table {
     border-spacing:         0;
     border-collapse:        collapse;
     border-style:           none;
-    border-top:             solid 1px #111;
-    border-bottom:          solid 1px #111;
+    border-top:             solid thin #111;
+    border-bottom:          solid thin #111;
 }
 
 td, 
@@ -202,8 +198,8 @@ th {
 }
 
 th {
-    border-top:             solid 1px #111;
-    border-bottom:          solid 1px #111;
+    border-top:             solid thin #111;
+    border-bottom:          solid thin #111;
     background-color:       #ddd;
 }
 
@@ -235,13 +231,13 @@ table.docinfo th.docinfo-name {
 
 table.docutils.booktabs {
     border:                 none;
-    border-top:             2px solid;
-    border-bottom:          2px solid;
+    border-top:             medium solid;
+    border-bottom:          medium solid;
     border-collapse:        collapse;
 }
 
 table.docutils.booktabs * {
-    border:                 0px;
+    border:                 none;
 }
 table.docutils.booktabs th {
     border-bottom:          thin solid;
@@ -301,7 +297,7 @@ dl.docutils dt {
 
 div.sidebar {
     margin: 0 0 0.5em 1em ;
-    border-left: solid 2px #111;
+    border-left: solid medium #111;
     padding: 1em ;
     width: 40% ;
     float: right ;
@@ -309,11 +305,11 @@ div.sidebar {
 }
 
 div.sidebar {
-    font-size: 14px;
+    font-size: 0.9rem;
 }
 
 p.sidebar-title {
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: bold ;
 }
 
@@ -327,11 +323,8 @@ p.sidebar-subtitle {
 /* ========== Topic ========== */
 
 div.topic {
-    margin: 2em;
-    padding: 1em 0;
-    border-width: 1px;
-    border-color: #111;
-    border-style: solid none;
+    border-left: thin solid #111;
+    padding-left: 1em;
 }
 
 div.topic p {
@@ -349,7 +342,7 @@ p.topic-title {
 
 div.header {
     font-family:        "Century Gothic", CenturyGothic, Geneva, AppleGothic, sans-serif;
-    font-size:          14px;
+    font-size:          0.9rem;
     margin:             2em auto 4em auto;
     max-width:          960px;
     clear:              both;
@@ -369,7 +362,7 @@ hr.header {
 
 div.footer {
     font-family:        "Century Gothic", CenturyGothic, Geneva, AppleGothic, sans-serif;
-    font-size:          14px;
+    font-size:          0.9rem;
     margin:             6em auto 2em auto;
     max-width:          960px;
     clear:              both;
@@ -398,10 +391,8 @@ div.important,
 div.note, 
 div.tip, 
 div.warning {
-    margin: 2em;
-    border: solid 1px #111;
+    border: solid thin #111;
     padding: 0 1em;
-    background-color: #eee;
 }
 
 div.error,
