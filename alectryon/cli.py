@@ -294,6 +294,7 @@ PIPELINES = {
                           dump_html_snippets, write_file(".snippets.html"))
     },
     'coq': {
+        'null': (parse_coq_plain, annotate_chunks, write_file(None)),
         'webpage': (parse_coq_plain, annotate_chunks, gen_html_snippets,
                     dump_html_standalone, copy_assets, write_file(".v.html")),
         'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
@@ -537,6 +538,8 @@ def strip_extension(fname):
     return fname
 
 def write_output(in_fname, out_fpath, outdir, contents, ext):
+    if ext is None:
+        return
     if out_fpath == "-" or (out_fpath is None and in_fname == "-"):
         sys.stdout.write(contents)
     else:
