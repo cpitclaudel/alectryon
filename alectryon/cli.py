@@ -51,13 +51,13 @@ def rst_to_coq(coq, fpath, point, marker):
     from .literate import rst2coq_marked
     return _catch_parsing_errors(fpath, rst2coq_marked, coq, point, marker)
 
-def annotate_chunks(chunks, serapi_args):
+def annotate_chunks(chunks, sertop_args):
     from .core import annotate
-    return annotate(chunks, serapi_args)
+    return annotate(chunks, sertop_args)
 
-def register_docutils(v, serapi_args):
+def register_docutils(v, sertop_args):
     from .docutils import setup, AlectryonTransform
-    AlectryonTransform.SERAPI_ARGS = serapi_args
+    AlectryonTransform.SERTOP_ARGS = sertop_args
     setup()
     return v
 
@@ -460,11 +460,11 @@ and produce reStructuredText, HTML, or JSON output.""")
     SUBP_HELP = "Pass arguments to the SerAPI process"
     subp = parser.add_argument_group("Subprocess arguments", SUBP_HELP)
 
-    SERAPI_ARGS_HELP = "Pass a single argument to SerAPI (e.g. -Q dir,lib)."
-    subp.add_argument("--serapi-arg", dest="serapi_args",
+    SERTOP_ARGS_HELP = "Pass a single argument to SerAPI (e.g. -Q dir,lib)."
+    subp.add_argument("--sertop-arg", dest="sertop_args",
                       action="append", default=[],
                       metavar="SERAPI_ARG",
-                      help=SERAPI_ARGS_HELP)
+                      help=SERTOP_ARGS_HELP)
 
     I_HELP="Pass -I DIR to the SerAPI subprocess."
     subp.add_argument("-I", "--ml-include-path", dest="coq_args_I",
@@ -493,11 +493,11 @@ and produce reStructuredText, HTML, or JSON output.""")
 
     args = parser.parse_args()
     for dir in args.coq_args_I:
-        args.serapi_args.extend(("-I", dir))
+        args.sertop_args.extend(("-I", dir))
     for pair in args.coq_args_R:
-        args.serapi_args.extend(("-R", ",".join(pair)))
+        args.sertop_args.extend(("-R", ",".join(pair)))
     for pair in args.coq_args_Q:
-        args.serapi_args.extend(("-Q", ",".join(pair)))
+        args.sertop_args.extend(("-Q", ",".join(pair)))
 
     # argparse applies ‘type’ before ‘choices’, so we do the conversion here
     args.copy_fn = COPY_ASSETS_CHOICES[args.copy_fn]

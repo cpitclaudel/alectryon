@@ -326,16 +326,16 @@ class SerAPI():
                 fragment.responses.append(message.pp)
         return fragments
 
-def annotate(chunks, serapi_args=()):
+def annotate(chunks, sertop_args=()):
     """Annotate multiple `chunks` of Coq code.
 
     All fragments are executed in the same Coq instance, started with arguments
-    `serapi_args`.  The return value is a list with as many elements as in
+    `sertop_args`.  The return value is a list with as many elements as in
     `chunks`, but each element is a list of fragments: either ``CoqText``
     instances (whitespace and comments) and ``CoqSentence`` instances (code).
 
     >>> annotate(["Check 1.", ("-Q", "directory,logical_name")])
     [[CoqSentence(contents='Check 1.', responses=['1\n     : nat'], goals=[])]]
     """
-    with SerAPI(args=serapi_args) as api:
+    with SerAPI(args=sertop_args) as api:
         return [api.run(chunk) for chunk in chunks]

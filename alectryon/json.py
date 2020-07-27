@@ -133,7 +133,7 @@ class DummyCache:
     def put(self, *_args):
         pass
 
-def Cache(cache_root, doc_path, serapi_args):
-    metadata = { "serapi_args": serapi_args }
+def Cache(cache_root, doc_path, sertop_args):
+    metadata = { "sertop_args": sertop_args }
     cls = FileCache if cache_root is not None else DummyCache
     return cls(cache_root, doc_path, metadata)

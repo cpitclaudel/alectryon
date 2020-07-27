@@ -101,7 +101,7 @@ CACHE_DIRECTORY = None
 class Config:
     def __init__(self, document):
         self.tokens = {}
-        self.serapi_args = []
+        self.sertop_args = []
         # Sphinx doesn't translate ``field_list`` to ``docinfo``
         filter = lambda n: isinstance(n, (nodes.field_list, nodes.docinfo))
         for di in document.traverse(filter):
@@ -115,7 +115,7 @@ class Config:
             self.tokens.setdefault(token, []).extend(body.split())
         elif name == "alectryon/serapi/args":
             import shlex
-            self.serapi_args.extend(self.parse_args(shlex.split(body)))
+            self.sertop_args.extend(self.parse_args(shlex.split(body)))
         else:
             return
         node.parent.remove(node)
@@ -139,7 +139,7 @@ class AlectryonTransform(Transform):
     default_priority = 995
     auto_toggle = True
 
-    SERAPI_ARGS = ()
+    SERTOP_ARGS = ()
     """Arguments to pass to SerAPI, in SerAPI format."""
 
     @staticmethod
@@ -163,13 +163,13 @@ class AlectryonTransform(Transform):
             self.document.reporter.warning(msg, base_node=node)
             return
 
-    def annotate_cached(self, chunks, serapi_args):
+    def annotate_cached(self, chunks, sertop_args):
         from .json import Cache
-        serapi_args = (*self.SERAPI_ARGS, *serapi_args)
-        cache = Cache(CACHE_DIRECTORY, self.document['source'], serapi_args)
+        sertop_args = (*self.SERTOP_ARGS, *sertop_args)
+        cache = Cache(CACHE_DIRECTORY, self.document['source'], sertop_args)
         annotated = cache.get(chunks)
         if annotated is None:
-            annotated = annotate(chunks, serapi_args)
+            annotated = annotate(chunks, sertop_args)
             cache.put(chunks, annotated)
         return annotated
 
@@ -178,7 +178,7 @@ class AlectryonTransform(Transform):
         writer = HtmlGenerator(highlight, gensym_stem=self.document_id(self.document))
         pending_nodes = list(self.document.traverse(alectryon_pending))
         pending_contents = [n['content'] for n in pending_nodes]
-        annotated = self.annotate_cached(pending_contents, config.serapi_args)
+        annotated = self.annotate_cached(pending_contents, config.sertop_args)
         for node, fragments in zip(pending_nodes, annotated):
             annots = transforms.IOAnnots(*node['options'])
             if annots.hide:

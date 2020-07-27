@@ -304,16 +304,16 @@ Programming fonts with ligatures are a good way to display prettified symbols wi
 Passing arguments to SerAPI
 ---------------------------
 
-When compiling reStructuredText documents, besides the ``-I``, ``-Q``, ``-R`` and ``--serapi-args`` flags, you can specify custom SerAPI arguments in docinfo section at the beginning of your document, like this:
+When compiling reStructuredText documents, besides the ``-I``, ``-Q``, ``-R`` and ``--sertop-args`` flags, you can specify custom SerAPI arguments in docinfo section at the beginning of your document, like this:
 
 .. code-block:: rst
 
    :alectryon/serapi/args: -R . Lib -I mldir
 
-To set SerAPI's arguments for all input files, modify ``AlectryonTransform.SERAPI_ARGS`` in ``alectryon.docutils``.  Here's an example that you could use in a Sphinx config file::
+To set SerAPI's arguments for all input files, modify ``AlectryonTransform.SERTOP_ARGS`` in ``alectryon.docutils``.  Here's an example that you could use in a Sphinx config file::
 
    from alectryon.docutils import AlectryonTransform
-   AlectryonTransform.SERAPI_ARGS = ["-Q", "/coq/source/path/,LibraryName"]
+   AlectryonTransform.SERTOP_ARGS = ["-Q", "/coq/source/path/,LibraryName"]
 
 Note that the syntax is the one of ``sertop``, not the one of ``coqc`` (https://github.com/ejgallego/coq-serapi/issues/215).
 
