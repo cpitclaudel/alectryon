@@ -85,23 +85,32 @@ class HtmlGenerator:
         self.highlight = highlighter
         self.gensym = Gensym(gensym_stem + "-" if gensym_stem else "")
 
+    def gen_hyps(self, hyps):
+        with tags.div(cls="goal-hyps"):
+            for hyp in hyps:
+                with tags.div(cls="goal-hyp"):
+                    tags.span(", ".join(hyp.names), cls="hyp-names")
+                    with tags.span():
+                        if hyp.body:
+                            with tags.span(cls="hyp-body"):
+                                tags.span(":=", cls="hyp-punct")
+                                self.highlight(hyp.body)
+                        with tags.span(cls="hyp-type"):
+                            tags.span(":", cls="hyp-punct")
+                            self.highlight(hyp.type)
+
     def gen_goal(self, goal, toggle=None):
         """Serialize a goal to HTML."""
         with tags.blockquote(cls="coq-goal"):
-            with tags.div(cls="goal-hyps"):
-                for hyp in goal.hypotheses:
-                    with tags.div(cls="goal-hyp"):
-                        tags.span(", ".join(hyp.names), cls="hyp-names")
-                        with tags.span():
-                            if hyp.body:
-                                with tags.span(cls="hyp-body"):
-                                    tags.span(":=", cls="hyp-punct")
-                                    self.highlight(hyp.body)
-                            with tags.span(cls="hyp-type"):
-                                tags.span(":", cls="hyp-punct")
-                                self.highlight(hyp.type)
+            if goal.hypotheses:
+                # Chrome doesn't support the ‘gap’ property in flex containers,
+                # so properly spacing hypotheses requires giving them margins
+                # and giving negative margins to their container.  This breaks
+                # when the container is empty, so just omit the hypotheses if
+                # there are none.
+                self.gen_hyps(goal.hypotheses)
             sep_attrs = {"cls": "goal-separator"}
-            if toggle:
+            if toggle and goal.hypotheses:
                 sep_attrs["for"] = toggle
                 sep_attrs["cls"] += " coq-extra-goal-label"
             with tags.label(**sep_attrs):
