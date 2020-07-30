@@ -1,0 +1,118 @@
+{
+  "metadata": {
+    "sertop_args": []
+  },
+  "chunks": [
+    "Definition example_from_sphinx: nat. (* .unfold *)\nProof. (*. no-goals *)\n  simple apply Nat.add.\n  exact 1.\n  exact 2.\nDefined.\n\nPrint example_from_sphinx. (* .unfold *)"
+  ],
+  "annotated": [
+    [
+      {
+        "contents": "Definition example_from_sphinx: nat.",
+        "responses": [],
+        "goals": [
+          {
+            "name": null,
+            "conclusion": "nat",
+            "hypotheses": [],
+            "_type": "goal"
+          }
+        ],
+        "_type": "sentence"
+      },
+      {
+        "contents": " (* .unfold *)\n",
+        "_type": "text"
+      },
+      {
+        "contents": "Proof.",
+        "responses": [],
+        "goals": [
+          {
+            "name": null,
+            "conclusion": "nat",
+            "hypotheses": [],
+            "_type": "goal"
+          }
+        ],
+        "_type": "sentence"
+      },
+      {
+        "contents": " (*. no-goals *)\n  ",
+        "_type": "text"
+      },
+      {
+        "contents": "simple apply Nat.add.",
+        "responses": [],
+        "goals": [
+          {
+            "name": null,
+            "conclusion": "nat",
+            "hypotheses": [],
+            "_type": "goal"
+          },
+          {
+            "name": null,
+            "conclusion": "nat",
+            "hypotheses": [],
+            "_type": "goal"
+          }
+        ],
+        "_type": "sentence"
+      },
+      {
+        "contents": "\n  ",
+        "_type": "text"
+      },
+      {
+        "contents": "exact 1.",
+        "responses": [],
+        "goals": [
+          {
+            "name": null,
+            "conclusion": "nat",
+            "hypotheses": [],
+            "_type": "goal"
+          }
+        ],
+        "_type": "sentence"
+      },
+      {
+        "contents": "\n  ",
+        "_type": "text"
+      },
+      {
+        "contents": "exact 2.",
+        "responses": [],
+        "goals": [],
+        "_type": "sentence"
+      },
+      {
+        "contents": "\n",
+        "_type": "text"
+      },
+      {
+        "contents": "Defined.",
+        "responses": [],
+        "goals": [],
+        "_type": "sentence"
+      },
+      {
+        "contents": "\n\n",
+        "_type": "text"
+      },
+      {
+        "contents": "Print example_from_sphinx.",
+        "responses": [
+          "example_from_sphinx = 1 + 2\n     : nat"
+        ],
+        "goals": [],
+        "_type": "sentence"
+      },
+      {
+        "contents": " (* .unfold *)",
+        "_type": "text"
+      }
+    ]
+  ]
+}
