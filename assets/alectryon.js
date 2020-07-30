@@ -127,6 +127,7 @@ var Alectryon;
 
         slideshow.start = start;
         slideshow.end = unhighlight;
+        slideshow.navigate = navigate;
         slideshow.next = function() { navigate(slideshow.pos + 1); };
         slideshow.previous = function() { navigate(slideshow.pos + -1); };
         window.addEventListener('DOMContentLoaded', init);
