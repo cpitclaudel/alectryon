@@ -59,7 +59,6 @@ def setup(app):
                          text=(visit, depart))
 
     if app.config.default_role is None:
-        print("Setting default role")
         app.config.default_role = docutils.coq_code_role.name
 
     for transform in docutils.TRANSFORMS:
