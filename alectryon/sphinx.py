@@ -42,6 +42,7 @@ def add_html_assets(app):
 
 def setup(app):
     """Register Alectryon's directives, transforms, etc."""
+    register_coq_parser(app)
 
     for role in docutils.ROLES:
         app.add_role(role.name, role)
@@ -65,6 +66,5 @@ def setup(app):
         app.add_transform(transform)
 
     app.connect('builder-inited', add_html_assets)
-    app.connect('builder-inited', register_coq_parser)
 
     return {'version': '0.1', "parallel_read_safe": True}
