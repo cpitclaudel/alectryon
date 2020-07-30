@@ -165,7 +165,6 @@ class AlectryonTransform(Transform):
 
     def annotate_cached(self, chunks, sertop_args):
         from .json import Cache
-        sertop_args = (*self.SERTOP_ARGS, *sertop_args)
         cache = Cache(CACHE_DIRECTORY, self.document['source'], sertop_args)
         annotated = cache.get(chunks)
         if annotated is None:
@@ -173,23 +172,30 @@ class AlectryonTransform(Transform):
             cache.put(chunks, annotated)
         return annotated
 
+    def annotate(self, pending_nodes, config):
+        sertop_args = (*self.SERTOP_ARGS, *config.sertop_args)
+        chunks = [n['content'] for n in pending_nodes]
+        return self.annotate_cached(chunks, sertop_args) # if chunks else []
+
+    def replace_node(self, config, writer, node, fragments):
+        annots = transforms.IOAnnots(*node['options'])
+        if annots.hide:
+            node.parent.remove(node)
+            return
+        fragments = self.set_fragment_annots(fragments, annots)
+        fragments = transforms.default_transform(fragments)
+        self.check_for_long_lines(node, fragments)
+        with added_tokens(config.tokens):
+            html = writer.gen_fragments(fragments).render(pretty=False)
+        node.replace_self(nodes.raw(node['content'], html, format='html'))
+
     def apply_coq(self):
         config = Config(self.document)
+        pending_nodes = self.document.traverse(alectryon_pending)
+        annotated = self.annotate(pending_nodes, config)
         writer = HtmlGenerator(highlight, gensym_stem=self.document_id(self.document))
-        pending_nodes = list(self.document.traverse(alectryon_pending))
-        pending_contents = [n['content'] for n in pending_nodes]
-        annotated = self.annotate_cached(pending_contents, config.sertop_args)
         for node, fragments in zip(pending_nodes, annotated):
-            annots = transforms.IOAnnots(*node['options'])
-            if annots.hide:
-                node.parent.remove(node)
-                continue
-            fragments = self.set_fragment_annots(fragments, annots)
-            fragments = transforms.default_transform(fragments)
-            self.check_for_long_lines(node, fragments)
-            with added_tokens(config.tokens):
-                html = writer.gen_fragments(fragments).render(pretty=False)
-            node.replace_self(nodes.raw(node['content'], html, format='html'))
+            self.replace_node(config, writer, node, fragments)
 
     @staticmethod
     def split_around(node):
