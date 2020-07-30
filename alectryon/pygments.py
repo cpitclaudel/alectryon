@@ -26,7 +26,7 @@ from contextlib import contextmanager
 import pygments
 from pygments.token import Error, STANDARD_TYPES, Name, Operator
 from pygments.filters import Filter, TokenMergeFilter, NameHighlightFilter
-from pygments.formatters import HtmlFormatter
+from pygments.formatters import HtmlFormatter, LatexFormatter
 
 from dominate import tags
 from dominate.util import raw as dom_raw
@@ -37,6 +37,7 @@ from .pygments_style import TangoSubtleStyle
 LEXER = CoqLexer(ensurenl=False)  # pylint: disable=no-member
 LEXER.add_filter(TokenMergeFilter())
 FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
+LATEX_FORMATTER = LatexFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
 WHITESPACE_RE = re.compile(r"^(\s*)((?:.*\S)?)(\s*)$", re.DOTALL)
 
 def add_tokens(tokens):
