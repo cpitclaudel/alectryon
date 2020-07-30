@@ -10,6 +10,8 @@ Welcome to alectryon-demo's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   coqchapter
+
 The default role produces Coq code: `let a := 1 in a + a`.
 
 .. coq::

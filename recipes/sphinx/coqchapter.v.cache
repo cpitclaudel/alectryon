@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "sertop_args": []
+  },
+  "chunks": [
+    "Compute ((fun (n: nat) (opt: option nat) (eq: opt = Some n) => n)\n           _ (Some 3) eq_refl)."
+  ],
+  "annotated": [
+    [
+      {
+        "contents": "Compute ((fun (n: nat) (opt: option nat) (eq: opt = Some n) => n)\n           _ (Some 3) eq_refl).",
+        "responses": [
+          "     = 3\n     : nat"
+        ],
+        "goals": [],
+        "_type": "sentence"
+      }
+    ]
+  ]
+}
