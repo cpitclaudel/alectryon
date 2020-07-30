@@ -85,6 +85,12 @@ class HtmlGenerator:
         self.highlight = highlighter
         self.gensym = Gensym(gensym_stem + "-" if gensym_stem else "")
 
+    @staticmethod
+    def gen_label(toggle, cls, *contents):
+        if toggle:
+            return tags.label(*contents, cls=cls, **{"for": toggle})
+        return tags.span(*contents, cls=cls)
+
     def gen_hyps(self, hyps):
         with tags.div(cls="goal-hyps"):
             for hyp in hyps:
@@ -109,11 +115,9 @@ class HtmlGenerator:
                 # when the container is empty, so just omit the hypotheses if
                 # there are none.
                 self.gen_hyps(goal.hypotheses)
-            sep_attrs = {"cls": "goal-separator"}
-            if toggle and goal.hypotheses:
-                sep_attrs["for"] = toggle
-                sep_attrs["cls"] += " coq-extra-goal-label"
-            with tags.label(**sep_attrs):
+            toggle = goal.hypotheses and toggle
+            cls = "goal-separator" + (" coq-extra-goal-label" if toggle else "")
+            with self.gen_label(toggle, cls):
                 tags.hr()
                 if goal.name:
                     tags.span(goal.name, cls="goal-name")
@@ -141,12 +145,8 @@ class HtmlGenerator:
         return self.gen_checkbox(fr.annots.unfold, "coq-toggle")
 
     def gen_input(self, fr, toggle):
-        cls = {"cls": "coq-input" + (" alectryon-failed" if fr.annots.fails else "")}
-        contents = self.highlight(fr.contents)
-        if toggle:
-            tags.label(contents, **cls, **{"for": toggle})
-        else:
-            tags.span(contents, **cls)
+        cls = "coq-input" + (" alectryon-failed" if fr.annots.fails else "")
+        self.gen_label(toggle, cls, self.highlight(fr.contents))
 
     def gen_output(self, fr):
         # Using <small> improves rendering in RSS feeds

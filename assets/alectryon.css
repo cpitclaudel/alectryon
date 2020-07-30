@@ -202,7 +202,7 @@ In any case, make an exception for comments:
     display: none;
 }
 
-.alectryon-io .coq-extra-goals .coq-extra-goal-toggle:not(:checked) + .coq-goal .goal-separator hr {
+.alectryon-io .coq-extra-goals .coq-extra-goal-toggle:not(:checked) + .coq-goal label.goal-separator hr {
     /* Dashes indicate that the hypotheses are hidden */
     border-top-style: dashed;
 }
