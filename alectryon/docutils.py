@@ -77,10 +77,10 @@ from .pygments import highlight, added_tokens, replace_builtin_coq_lexer
 # Nodes
 # -----
 
-class alectryon_pending(nodes.Special, nodes.Invisible, nodes.Element):
+class alectryon_pending(nodes.pending):
     pass
 
-class alectryon_pending_toggle(nodes.Special, nodes.Invisible, nodes.Element):
+class alectryon_pending_toggle(nodes.pending):
     pass
 
 # Transforms
@@ -174,20 +174,21 @@ class AlectryonTransform(Transform):
 
     def annotate(self, pending_nodes, config):
         sertop_args = (*self.SERTOP_ARGS, *config.sertop_args)
-        chunks = [n['content'] for n in pending_nodes]
+        chunks = [pending.details["contents"] for pending in pending_nodes]
         return self.annotate_cached(chunks, sertop_args) # if chunks else []
 
-    def replace_node(self, config, writer, node, fragments):
-        annots = transforms.IOAnnots(*node['options'])
+    def replace_node(self, config, writer, pending, fragments):
+        annots = transforms.IOAnnots(*pending.details['options'])
         if annots.hide:
-            node.parent.remove(node)
+            pending.parent.remove(pending)
             return
         fragments = self.set_fragment_annots(fragments, annots)
         fragments = transforms.default_transform(fragments)
-        self.check_for_long_lines(node, fragments)
+        self.check_for_long_lines(pending, fragments)
         with added_tokens(config.tokens):
             html = writer.gen_fragments(fragments).render(pretty=False)
-        node.replace_self(nodes.raw(node['content'], html, format='html'))
+        contents = pending.details["contents"]
+        pending.replace_self(nodes.raw(contents, html, format='html'))
 
     def apply_coq(self):
         config = Config(self.document)
@@ -224,8 +225,7 @@ class AlectryonTransform(Transform):
                 self.insert_toggle_after(di, toggle(0), True)
 
     def apply(self, **_kwargs):
-        assert self.startnode is None
-        # The transform is added multiple times: one per directive, and one by
+        # The transform is added multiple times: once per directive, and once by
         # add_transform in Sphinx, so we need to make sure that running it twice
         # is safe (in particular, we must not overwrite the cache).
         if not getattr(self.document, 'alectryon_transform_executed', False):
@@ -265,8 +265,7 @@ def recompute_contents(directive, real_indentation):
     block_header_len = directive.content_offset - directive.lineno + 1
     block_indentation = measure_indentation(directive.block_text)
     code_indentation = block_indentation + real_indentation
-    lines = [ln[code_indentation:] for ln in block_lines[block_header_len:]]
-    return lines
+    return "\n".join(ln[code_indentation:] for ln in block_lines[block_header_len:])
 
 class CoqDirective(Directive):
     """Highlight and annotate a Coq snippet."""
@@ -282,17 +281,12 @@ class CoqDirective(Directive):
 
     def run(self):
         self.assert_has_content()
-
-        stm = self.state_machine
-        pos = stm.get_source_and_line(self.lineno)
-        content_pos = stm.get_source_and_line(self.content_offset)
-        stm.document.transformer.add_transform(AlectryonTransform)
-
         arguments = self.arguments[0].split() if self.arguments else []
-        lines = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
-        return [alectryon_pending(
-            content="\n".join(lines),
-            pos=pos, content_pos=content_pos, options=set(arguments))]
+        contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
+        details = {"options": set(arguments), "contents": contents}
+        pending = alectryon_pending(AlectryonTransform, details=details)
+        self.state_machine.document.note_pending(pending)
+        return [pending]
 
 class AlectryonToggleDirective(Directive):
     """Display a checkbox allowing readers to show all output at once."""
@@ -304,7 +298,9 @@ class AlectryonToggleDirective(Directive):
     has_content = False
 
     def run(self):
-        return [alectryon_pending_toggle()]
+        pending = alectryon_pending_toggle(AlectryonTransform)
+        self.state_machine.document.note_pending(pending)
+        return [pending]
 
 class AlectryonHeaderDirective(Directive):
     """Display an explanatory header."""
