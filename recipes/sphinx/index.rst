@@ -17,9 +17,12 @@ The default role produces Coq code: `let a := 1 in a + a`.
 .. coq::
 
    Definition example_from_sphinx: nat. (* .unfold *)
-   Proof. (*. no-goals *)
+   Proof. (* .no-goals *)
      simple apply Nat.add.
      exact 1.
+     assert (n: nat).
+     2: clear n.
+     exact 3.
      exact 2.
    Defined.
 
