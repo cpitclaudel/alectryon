@@ -225,8 +225,13 @@ class AlectryonTransform(Transform):
 
     def apply(self, **_kwargs):
         assert self.startnode is None
-        self.apply_coq()
-        self.apply_toggle()
+        # The transform is added multiple times: one per directive, and one by
+        # add_transform in Sphinx, so we need to make sure that running it twice
+        # is safe (in particular, we must not overwrite the cache).
+        if not getattr(self.document, 'alectryon_transform_executed', False):
+            self.document.alectryon_transform_executed = True
+            self.apply_coq()
+            self.apply_toggle()
 
 # Directives
 # ----------
@@ -281,10 +286,7 @@ class CoqDirective(Directive):
         stm = self.state_machine
         pos = stm.get_source_and_line(self.lineno)
         content_pos = stm.get_source_and_line(self.content_offset)
-
-        if not getattr(stm.document, 'alectryon_transform_added', False):
-            stm.document.alectryon_transform_added = True
-            stm.document.transformer.add_transform(AlectryonTransform)
+        stm.document.transformer.add_transform(AlectryonTransform)
 
         arguments = self.arguments[0].split() if self.arguments else []
         lines = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
