@@ -49,6 +49,7 @@ def json_of_annotated(obj):
         for k, v in zip(obj._fields, obj):
             d[k] = json_of_annotated(v)
         return d
+    assert obj is None or isinstance(obj, (int, str))
     return obj
 
 def minimal_json_of_annotated(obj):
@@ -95,6 +96,8 @@ def validate_inputs(annotated, reference):
 
 
 class FileCache:
+    CACHE_VERSION = "0"
+
     def __init__(self, cache_root, doc_path, metadata):
         self.cache_root = path.realpath(cache_root)
         doc_root = path.commonpath((self.cache_root, path.realpath(doc_path)))
@@ -103,6 +106,7 @@ class FileCache:
         self.cache_dir = path.dirname(self.cache_file)
         makedirs(self.cache_dir, exist_ok=True)
         self.metadata = self.normalize(metadata)
+        self.metadata["cache_version"] = self.CACHE_VERSION
 
     @staticmethod
     def normalize(obj):
