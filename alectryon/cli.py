@@ -156,8 +156,8 @@ def _scrub_fname(fname):
 
 def gen_html_snippets(annotated, fname):
     from .html import HtmlGenerator
-    from .pygments import highlight
-    return HtmlGenerator(highlight, _scrub_fname(fname)).gen(annotated)
+    from .pygments import highlight_html
+    return HtmlGenerator(highlight_html, _scrub_fname(fname)).gen(annotated)
 
 COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
                   '-s', '--html', '--stdout', '--utf8']
@@ -193,10 +193,10 @@ def _gen_coqdoc_html(coqdoc_comments):
 def _gen_html_snippets_with_coqdoc(annotated, fname):
     from dominate.util import raw
     from .html import HtmlGenerator
-    from .pygments import highlight
+    from .pygments import highlight_html
     from .transforms import isolate_coqdoc, default_transform, CoqdocFragment
 
-    writer = HtmlGenerator(highlight, _scrub_fname(fname))
+    writer = HtmlGenerator(highlight_html, _scrub_fname(fname))
 
     coqdoc = [part.contents for fragments in annotated
               for part in isolate_coqdoc(fragments)
@@ -229,7 +229,7 @@ def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets,
     from dominate.util import raw
     from .core import SerAPI
     from .html import gen_header, wrap_classes, GENERATOR, ASSETS
-    from .pygments import FORMATTER
+    from .pygments import HTML_FORMATTER
 
     doc = document(title=fname)
     doc.head.add(tags.meta(charset="utf-8"))
@@ -246,7 +246,7 @@ def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets,
     html_assets.extend(ASSETS.ALECTRYON_CSS)
     html_assets.extend(ASSETS.ALECTRYON_JS)
 
-    pygments_css = FORMATTER.get_style_defs('.highlight')
+    pygments_css = HTML_FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
 
     cls = wrap_classes("standalone", webpage_style, *html_classes)

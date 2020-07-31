@@ -69,7 +69,7 @@ from docutils.writers import get_writer_class
 from . import transforms
 from .core import annotate
 from .html import ASSETS, HtmlGenerator, gen_header, wrap_classes
-from .pygments import highlight, added_tokens, replace_builtin_coq_lexer
+from .pygments import highlight_html, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
 # ===============
@@ -194,7 +194,7 @@ class AlectryonTransform(Transform):
         config = Config(self.document)
         pending_nodes = self.document.traverse(alectryon_pending)
         annotated = self.annotate(pending_nodes, config)
-        writer = HtmlGenerator(highlight, gensym_stem=self.document_id(self.document))
+        writer = HtmlGenerator(highlight_html, gensym_stem=self.document_id(self.document))
         for node, fragments in zip(pending_nodes, annotated):
             self.replace_node(config, writer, node, fragments)
 

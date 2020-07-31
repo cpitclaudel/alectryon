@@ -34,9 +34,9 @@ from dominate.util import raw as dom_raw
 from .pygments_lexer import CoqLexer
 from .pygments_style import TangoSubtleStyle
 
-LEXER = CoqLexer(ensurenl=False)  # pylint: disable=no-member
+LEXER = CoqLexer(ensurenl=False) # pylint: disable=no-member
 LEXER.add_filter(TokenMergeFilter())
-FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
+HTML_FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
 LATEX_FORMATTER = LatexFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
 WHITESPACE_RE = re.compile(r"^(\s*)((?:.*\S)?)(\s*)$", re.DOTALL)
 
@@ -79,7 +79,13 @@ def added_tokens(tokens):
     finally:
         LEXER.filters[:] = [f for f in LEXER.filters if f not in added]
 
-def highlight(coqstr):
+def _highlight(coqstr, lexer, formatter):
+    # See https://bitbucket.org/birkenfeld/pygments-main/issues/1522/ to
+    # understand why we munge the STANDARD_TYPES dictionary
+    with munged_dict(STANDARD_TYPES, {Name: '', Operator: ''}):
+        return pygments.highlight(coqstr, lexer, formatter).strip()
+
+def highlight_html(coqstr):
     """Highlight a Coq string `coqstr`.
 
     Return a ``dominate`` span with class ``highlight`` instead of raw html.
@@ -94,16 +100,21 @@ def highlight(coqstr):
     If you use Alectryon's command line interface directly, you won't have to
     jump through these last two hoops; it renders and writes out the HTML for
     you, with the appropriate CSS inlined.  It might be instructive to consult
-    the implementation of ``alectryon.cli.write_webpage`` to see how it does it.
+    the implementation of ``alectryon.cli.dump_html_standalone`` to see how the
+    CLI does it.
     """
-    # Pygments HTML formatter adds an unconditional newline, so we pass it only
+    # Pygments' HTML formatter adds an unconditional newline, so we pass it only
     # the code, and we restore the spaces after highlighting.
     before, code, after = WHITESPACE_RE.match(coqstr).groups()
-    # See https://bitbucket.org/birkenfeld/pygments-main/issues/1522/ to
-    # understand why we munge the STANDARD_TYPES dictionary
-    with munged_dict(STANDARD_TYPES, {Name: '', Operator: ''}):
-        highlighted = pygments.highlight(code, LEXER, FORMATTER).strip()
+    highlighted = _highlight(code, LEXER, HTML_FORMATTER)
     return tags.span(before, dom_raw(highlighted), after, cls="highlight")
+
+def highlight_latex(coqstr):
+    """Highlight a Coq string `coqstr`.
+
+    Like ``highlight_html``, but return a plain LaTeX string.
+    """
+    return _highlight(coqstr, LEXER, LATEX_FORMATTER)
 
 @contextmanager
 def munged_dict(d, updates):
@@ -139,7 +150,7 @@ def replace_builtin_coq_lexer():
     entry points dynamically, so we could use that to play nice with pygments
     architecture, but it wouldn't pick up our Lexer (it would stick with the
     built-in one).
-    """
+    """ # FIXME replace the formatter too?
     from pygments.lexers import _lexer_cache
     from pygments.lexers._mapping import LEXERS
     (_mod, name, aliases, ext, mime) = LEXERS['CoqLexer']
