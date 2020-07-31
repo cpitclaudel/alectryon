@@ -195,7 +195,9 @@ class HtmlGenerator:
         """Serialize a list of `fragments` to HTML."""
         with tags.pre(cls=" ".join(("alectryon-io", *classes))) as div:
             tags.comment(" Generator: {} ".format(GENERATOR))
-            for fr in transforms.filter_fragments(transforms.group_whitespace_with_code(fragments)):
+            fragments = transforms.group_whitespace_with_code(fragments)
+            fragments = transforms.commit_io_annotations(fragments)
+            for fr in fragments:
                 self.gen_fragment(fr)
             return div
 

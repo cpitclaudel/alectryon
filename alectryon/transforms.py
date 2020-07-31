@@ -95,10 +95,14 @@ def enrich_sentences(fragments):
 IO_COMMENT_RE = re.compile(r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(IOAnnots.RE.pattern))
 
 def process_io_annotations(fragments):
+    """Strip IO comments and update ``.annots`` fields accordingly.
+
+    This pass assumes that ``CoqText`` fragments have been coalesced."""
     annotated = []
     for fr in enrich_sentences(fragments):
         if isinstance(fr, CoqText):
             target = annotated[-1] if annotated else None
+            assert not isinstance(target, CoqText)
         else:
             target = fr
         if target:
@@ -109,6 +113,7 @@ def process_io_annotations(fragments):
         annotated.append(fr)
     return annotated
 
+# pylint: disable=inconsistent-return-statements
 def should_keep_output(output, annots):
     if isinstance(output, CoqMessages):
         return annots["messages"] and output.messages
@@ -116,13 +121,22 @@ def should_keep_output(output, annots):
         return annots["goals"] and output.goals
     assert False
 
-def filter_fragments(fragments):
+def commit_io_annotations(fragments, discard_folded=False):
+    """Use I/O annotations to filter `fragments`.
+
+    Hidden outputs of each `RichSentence` in `fragments` are discarded.
+    Sentences with hidden inputs are set to ``contents=None``.  If
+    `discard_folded` is ``True``, folded outputs are also discarded.
+    """
     for fr in fragments:
         if isinstance(fr, RichSentence):
             if fr.annots.hide:
                 continue
             contents = fr.contents if fr.annots["in"] else None
-            outputs = [o for o in fr.outputs if should_keep_output(o, fr.annots)]
+            if discard_folded and not fr.annots.unfold:
+                outputs = []
+            else:
+                outputs = [o for o in fr.outputs if should_keep_output(o, fr.annots)]
             fr = fr._replace(contents=contents, outputs=outputs)
         yield fr
 
@@ -130,13 +144,19 @@ LEADING_BLANKS_RE = re.compile(r'\A([ \t]*(?:\n|\Z))?(.*?)([ \t]*)\Z',
                                flags=re.DOTALL)
 
 def isolate_blanks(txt):
+    """Split `txt` into blanks and an optional newline, text, and blanks."""
     return LEADING_BLANKS_RE.match(txt).groups()
 
 def group_whitespace_with_code(fragments):
-    # Attach all spaces following a code fragment, up to the first newline, to
-    # the code fragment itself.  This makes sure that (1) we can hide the
-    # newline when we display the goals as a block, and (2) that we don't hide
-    # the goals when the user hovers on spaces between two tactics.
+    """Attach surrounding spaces (but not newlines) to sentences.
+
+    This pass gathers all spaces following a sentence, up to the first newline,
+    and embeds them in the sentence itself.  This ensures that we can hide the
+    newline when we display the goals as a block, and that we don't hide the
+    goals when the user hovers on spaces between two tactics.
+
+    This function assumes that ``CoqText`` fragments have been coalesced.
+    """
     grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
         if isinstance(fr, CoqText):
@@ -144,12 +164,14 @@ def group_whitespace_with_code(fragments):
 
             if before:
                 if idx > 0:
+                    assert not isinstance(grouped[idx - 1], CoqText)
                     grouped[idx - 1].suffixes.append(before)
                 else:
                     rest = before + rest
 
             if after:
                 if idx + 1 < len(grouped):
+                    assert not isinstance(grouped[idx + 1], CoqText)
                     grouped[idx + 1].prefixes.append(after)
                 else:
                     rest = rest + after
