@@ -38,10 +38,15 @@ def debug(text, prefix):
 
 CoqHypothesis = namedtuple("CoqHypothesis", "names body type")
 CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
-CoqSentence = namedtuple("CoqSentence", "contents responses goals")
-HTMLSentence = namedtuple("HTMLSentence", "contents responses goals annots prefixes suffixes")
-CoqPrettyPrinted = namedtuple("CoqPrettyPrinted", "sid pp")
+CoqMessage = namedtuple("CoqMessage", "contents")
+CoqSentence = namedtuple("CoqSentence", "contents messages goals")
 CoqText = namedtuple("CoqText", "contents")
+
+CoqGoals =  namedtuple("CoqGoals", "goals")
+CoqMessages =  namedtuple("CoqMessages", "messages")
+RichSentence = namedtuple("RichSentence", "contents outputs annots prefixes suffixes")
+
+CoqPrettyPrinted = namedtuple("CoqPrettyPrinted", "sid pp")
 
 def sexp_hd(sexp):
     if isinstance(sexp, list):
@@ -214,7 +219,7 @@ class SerAPI():
             err += LOC_FMT.format(indent(src.decode('utf-8', 'ignore'), ' ' * 7))
         stderr.write(err)
 
-    def _collect_responses(self, types, chunk, sid):
+    def _collect_messages(self, types, chunk, sid):
         if isinstance(types, Iterable):
             warn_on_exn = ApiExn not in types
         else:
@@ -242,7 +247,7 @@ class SerAPI():
                   [b'pp_depth', utf8(pp_depth)],
                   [b'pp_margin', utf8(pp_margin)]]]]
         self._send([b'Print', meta, sexp])
-        strings = list(self._collect_responses(ApiString, None, sid))
+        strings = list(self._collect_messages(ApiString, None, sid))
         if strings:
             assert len(strings) == 1
             return CoqPrettyPrinted(sid, strings[0].string)
@@ -253,13 +258,13 @@ class SerAPI():
 
     def _exec(self, sid, chunk):
         self._send([b'Exec', sid])
-        messages = list(self._collect_responses(ApiMessage, chunk, sid))
+        messages = list(self._collect_messages(ApiMessage, chunk, sid))
         return [self._pprint_message(msg) for msg in messages]
 
     def _add(self, chunk):
         self._send([b'Add', [], sx.escape(chunk)])
         prev_end, spans, messages = 0, [], []
-        for response in self._collect_responses((ApiAdded, ApiMessage), chunk, None):
+        for response in self._collect_messages((ApiAdded, ApiMessage), chunk, None):
             if isinstance(response, ApiAdded):
                 start, end = response.loc
                 if start != prev_end:
@@ -289,7 +294,7 @@ class SerAPI():
         # LATER Goals instead and CoqGoal and CoqConstr?
         # LATER We'd like to retrieve the formatted version directly
         self._send([b'Query', [[b'sid', sid]], b'EGoals'])
-        goals = list(self._collect_responses(CoqGoal, chunk, sid))
+        goals = list(self._collect_messages(CoqGoal, chunk, sid))
         yield from (self._pprint_goal(g, sid) for g in goals)
 
     def run(self, chunk):
@@ -311,7 +316,7 @@ class SerAPI():
             else:
                 messages.extend(self._exec(span_id, chunk))
                 goals = list(self._goals(span_id, chunk))
-                fragment = CoqSentence(contents, [], goals)
+                fragment = CoqSentence(contents, messages=[], goals=goals)
                 fragments.append(fragment)
                 fragments_by_id[span_id] = fragment
         # Messages for span n + δ can arrive during processing of span n or
@@ -323,7 +328,7 @@ class SerAPI():
                 MSG = "!! Orphaned message for sid {}:{}\n"
                 stderr.write(MSG.format(message.sid, pp))
             else:
-                fragment.responses.append(message.pp)
+                fragment.messages.append(CoqMessage(message.pp))
         return fragments
 
 def annotate(chunks, sertop_args=()):
@@ -334,8 +339,8 @@ def annotate(chunks, sertop_args=()):
     `chunks`, but each element is a list of fragments: either ``CoqText``
     instances (whitespace and comments) and ``CoqSentence`` instances (code).
 
-    >>> annotate(["Check 1.", ("-Q", "directory,logical_name")])
-    [[CoqSentence(contents='Check 1.', responses=['1\n     : nat'], goals=[])]]
+    >>> annotate(["Check 1."], ("-Q", "..,logical_name"))
+    [[CoqSentence(contents='Check 1.', messages=[CoqMessage(contents='1\n     : nat')], goals=[])]]
     """
     with SerAPI(args=sertop_args) as api:
         return [api.run(chunk) for chunk in chunks]

@@ -3,7 +3,7 @@
         {
             "_type": "sentence",
             "contents": "Example xyz (H: False): True.",
-            "responses": [],
+            "messages": [],
             "goals": [
                 {
                     "_type": "goal",
@@ -29,7 +29,7 @@
         {
             "_type": "sentence",
             "contents": "exact I.",
-            "responses": [],
+            "messages": [],
             "goals": []
         },
         {
@@ -39,7 +39,7 @@
         {
             "_type": "sentence",
             "contents": "Qed.",
-            "responses": [],
+            "messages": [],
             "goals": []
         }
     ],
@@ -47,8 +47,11 @@
         {
             "_type": "sentence",
             "contents": "Print xyz.",
-            "responses": [
-                "xyz = fun _ : False => I\n     : False -> True"
+            "messages": [
+                {
+                    "_type": "message",
+                    "contents": "xyz = fun _ : False => I\n     : False -> True"
+                }
             ],
             "goals": []
         }

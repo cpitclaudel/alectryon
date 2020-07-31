@@ -213,8 +213,8 @@ In any case, make an exception for comments:
 }
 
 /* Indicate active (hovered or targeted) goals with a shadow. */
-.alectryon-io .coq-sentence:hover .coq-output:not(:hover) .coq-responses,
-.alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-responses,
+.alectryon-io .coq-sentence:hover .coq-output:not(:hover) .coq-messages,
+.alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-messages,
 .alectryon-io .coq-sentence:hover .coq-output:not(:hover) .coq-goals,
 .alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-goals {
     box-shadow: 0 0 3px gray;
@@ -241,14 +241,14 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .coq-goals,
-.alectryon-io .coq-responses {
+.alectryon-io .coq-messages {
     background: #eeeeec;
 	border: thin solid #d3d7cf; /* Convenient when pre's background is already #EEE */
     display: block;
     padding: 0.25rem;
 }
 
-.coq-response::before {
+.coq-message::before {
     content: '';
     float: right;
     /* etc/svg/square-bubble-xl.svg */
@@ -297,8 +297,8 @@ In any case, make an exception for comments:
     display: none;
 }
 
-.alectryon-io .coq-responses,
-.alectryon-io .coq-response,
+.alectryon-io .coq-messages,
+.alectryon-io .coq-message,
 .alectryon-io .coq-goals,
 .alectryon-io .coq-goal,
 .alectryon-io .goal-hyp,
@@ -307,12 +307,12 @@ In any case, make an exception for comments:
 }
 
 .alectryon-io .coq-goal,
-.alectryon-io .coq-response {
+.alectryon-io .coq-message {
     margin: 0.25rem;
 }
 
 .alectryon-io .coq-goal,
-.alectryon-io .coq-response {
+.alectryon-io .coq-message {
     align-items: center;
     background: #d3d7cf;
     display: block;
@@ -496,8 +496,8 @@ In any case, make an exception for comments:
     overflow-y: auto; /* Windowed contents may need to scroll */
 }
 
-.alectryon-windowed .alectryon-io .coq-sentence:hover .coq-output:not(:hover) .coq-responses,
-.alectryon-windowed .alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-responses,
+.alectryon-windowed .alectryon-io .coq-sentence:hover .coq-output:not(:hover) .coq-messages,
+.alectryon-windowed .alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-messages,
 .alectryon-windowed .alectryon-io .coq-sentence:hover .coq-output:not(:hover) .coq-goals,
 .alectryon-windowed .alectryon-io .coq-sentence.alectryon-target .coq-output  .coq-goals {
     box-shadow: none; /* A shadow is unnecessary here and incompatible with overflow-y set to auto */

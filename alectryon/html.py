@@ -24,7 +24,7 @@ import shutil
 
 from dominate import tags
 
-from .core import CoqText, HTMLSentence
+from .core import CoqText, RichSentence, CoqGoals, CoqMessages
 from . import transforms, __version__
 
 GENERATOR = "Alectryon v{}".format(__version__)
@@ -140,7 +140,7 @@ class HtmlGenerator:
                     self.gen_goal(goal, toggle=nm)
 
     def gen_input_toggle(self, fr):
-        if not (fr.goals or fr.responses):
+        if not (fr.outputs):
             return None
         return self.gen_checkbox(fr.annots.unfold, "coq-toggle")
 
@@ -152,13 +152,17 @@ class HtmlGenerator:
         # Using <small> improves rendering in RSS feeds
         wrapper = tags.div(cls="coq-output-sticky-wrapper")
         with tags.small(cls="coq-output").add(wrapper):
-            if fr.responses:
-                with tags.div(cls="coq-responses"):
-                    for response in fr.responses:
-                        tags.blockquote(self.highlight(response), cls="coq-response")
-            if fr.goals:
-                with tags.div(cls="coq-goals"):
-                    self.gen_goals(fr.goals[0], fr.goals[1:])
+            for output in fr.outputs:
+                if isinstance(output, CoqMessages):
+                    assert output.messages, "transforms.filter_fragments"
+                    with tags.div(cls="coq-messages"):
+                        for message in output.messages:
+                            tags.blockquote(self.highlight(message.contents),
+                                            cls="coq-message")
+                if isinstance(output, CoqGoals):
+                    assert output.goals, "transforms.filter_fragments"
+                    with tags.div(cls="coq-goals"):
+                        self.gen_goals(output.goals[0], output.goals[1:])
 
     @staticmethod
     def gen_whitespace(wsps):
@@ -166,39 +170,32 @@ class HtmlGenerator:
             tags.span(wsp, cls="coq-wsp")
 
     def gen_sentence(self, fr):
-        if fr.annots.hide:
-            return
-
-        responses = fr.annots['messages'] and fr.responses
-        goals = fr.annots['goals'] and fr.goals
-        fr = fr._replace(responses=responses, goals=goals)
-
-        if fr.annots['in']:
+        if fr.contents is not None:
             self.gen_whitespace(fr.prefixes)
         with tags.span(cls="coq-sentence"):
             toggle = self.gen_input_toggle(fr)
-            if fr.annots['in']:
+            if fr.contents is not None:
                 self.gen_input(fr, toggle)
-            if fr.responses or fr.goals:
-                if not fr.annots['in'] and not fr.annots.unfold:
+            if fr.outputs:
+                if fr.contents is None and not fr.annots.unfold:
                     MSG = "Cannot show output of {!r} without .in or .unfold."
                     raise ValueError(MSG.format(fr.contents))
                 self.gen_output(fr)
-            if fr.annots['in']:
+            if fr.contents is not None:
                 self.gen_whitespace(fr.suffixes)
 
     def gen_fragment(self, fr):
         if isinstance(fr, CoqText):
             tags.span(self.highlight(fr.contents), cls="coq-nc")
         else:
-            assert isinstance(fr, HTMLSentence)
+            assert isinstance(fr, RichSentence)
             self.gen_sentence(fr)
 
     def gen_fragments(self, fragments, classes=()):
         """Serialize a list of `fragments` to HTML."""
         with tags.pre(cls=" ".join(("alectryon-io", *classes))) as div:
             tags.comment(" Generator: {} ".format(GENERATOR))
-            for fr in transforms.group_whitespace_with_code(fragments):
+            for fr in transforms.filter_fragments(transforms.group_whitespace_with_code(fragments)):
                 self.gen_fragment(fr)
             return div
 

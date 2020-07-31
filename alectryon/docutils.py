@@ -145,7 +145,7 @@ class AlectryonTransform(Transform):
     @staticmethod
     def set_fragment_annots(fragments, annots):
         """Apply relevant annotations to all unannotated fragments."""
-        for fr in transforms.htmlify_sentences(fragments):
+        for fr in transforms.enrich_sentences(fragments):
             if hasattr(fr, 'annots'):
                 fr.annots.inherit(annots)
             yield fr

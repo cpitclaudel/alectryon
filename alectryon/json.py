@@ -22,14 +22,17 @@ import json
 from os import path, makedirs
 from itertools import zip_longest
 
-from .core import CoqHypothesis, CoqGoal, CoqSentence, HTMLSentence, CoqText
+from . import core
 
 COQ_TYPE_OF_ALIASES = {
-    "hypothesis": CoqHypothesis,
-    "goal": CoqGoal,
-    "sentence": CoqSentence,
-    "html_sentence": HTMLSentence,
-    "text": CoqText,
+    "text": core.CoqText,
+    "hypothesis": core.CoqHypothesis,
+    "goal": core.CoqGoal,
+    "message": core.CoqMessage,
+    "sentence": core.CoqSentence,
+    "goals": core.CoqGoals,
+    "messages": core.CoqMessages,
+    "rich_sentence": core.RichSentence,
 }
 
 ALIASES_OF_COQ_TYPE = {
@@ -59,7 +62,7 @@ def minimal_json_of_annotated(obj):
         return {k: minimal_json_of_annotated(v) for k, v in obj.items()}
     type_name = ALIASES_OF_COQ_TYPE.get(type(obj).__name__)
     if type_name:
-        if isinstance(obj, CoqText):
+        if isinstance(obj, core.CoqText):
             return obj.contents
         d = {k: minimal_json_of_annotated(v) for k, v in zip(obj._fields, obj)}
         contents = d.pop("contents", None)
@@ -96,7 +99,7 @@ def validate_inputs(annotated, reference):
 
 
 class FileCache:
-    CACHE_VERSION = "0"
+    CACHE_VERSION = "1"
 
     def __init__(self, cache_root, doc_path, metadata):
         self.cache_root = path.realpath(cache_root)

@@ -58,6 +58,6 @@ output/alectryon%css output/alectryon%js: FORCE
 FORCE:
 
 clean:
-	rm -rf output/ sphinx/_build
+	rm -rf output/ sphinx/_build sphinx/*.cache
 
 .PHONY: clean assets

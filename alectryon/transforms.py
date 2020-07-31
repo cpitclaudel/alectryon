@@ -23,7 +23,8 @@ import re
 import textwrap
 from copy import copy
 from collections import namedtuple
-from .core import CoqText, CoqSentence, HTMLSentence
+from itertools import chain
+from .core import CoqText, CoqGoal, CoqSentence, RichSentence, CoqGoals, CoqMessages
 
 class IOAnnots:
     def __init__(self, *annots):
@@ -80,12 +81,14 @@ class IOAnnots:
         return "IOAnnots(unfold={}, fails={}, filters={})".format(
             self.unfold, self.fails, self.filters)
 
-def htmlify_sentences(fragments):
-    """Change each ``CoqSentence`` in `fragments` into an ``HTMLSentence``."""
+def enrich_sentences(fragments):
+    """Change each ``CoqSentence`` in `fragments` into an ``RichSentence``."""
     for fr in fragments:
         if isinstance(fr, CoqSentence):
-            yield HTMLSentence(prefixes=[], suffixes=[], annots=IOAnnots(),
-                           **fr._asdict())
+            # Always add goals & messages; empty lists are filtered out later
+            outputs = [CoqMessages(fr.messages), CoqGoals(fr.goals)]
+            yield RichSentence(contents=fr.contents, outputs=outputs,
+                           prefixes=[], suffixes=[], annots=IOAnnots())
         else:
             yield fr
 
@@ -93,7 +96,7 @@ IO_COMMENT_RE = re.compile(r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(IOAnnots.RE
 
 def process_io_annotations(fragments):
     annotated = []
-    for fr in htmlify_sentences(fragments):
+    for fr in enrich_sentences(fragments):
         if isinstance(fr, CoqText):
             target = annotated[-1] if annotated else None
         else:
@@ -106,6 +109,23 @@ def process_io_annotations(fragments):
         annotated.append(fr)
     return annotated
 
+def should_keep_output(output, annots):
+    if isinstance(output, CoqMessages):
+        return annots["messages"] and output.messages
+    if isinstance(output, CoqGoals):
+        return annots["goals"] and output.goals
+    assert False
+
+def filter_fragments(fragments):
+    for fr in fragments:
+        if isinstance(fr, RichSentence):
+            if fr.annots.hide:
+                continue
+            contents = fr.contents if fr.annots["in"] else None
+            outputs = [o for o in fr.outputs if should_keep_output(o, fr.annots)]
+            fr = fr._replace(contents=contents, outputs=outputs)
+        yield fr
+
 LEADING_BLANKS_RE = re.compile(r'\A([ \t]*(?:\n|\Z))?(.*?)([ \t]*)\Z',
                                flags=re.DOTALL)
 
@@ -117,7 +137,7 @@ def group_whitespace_with_code(fragments):
     # the code fragment itself.  This makes sure that (1) we can hide the
     # newline when we display the goals as a block, and (2) that we don't hide
     # the goals when the user hovers on spaces between two tactics.
-    grouped = list(htmlify_sentences(fragments))
+    grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
         if isinstance(fr, CoqText):
             before, rest, after = isolate_blanks(fr.contents)
@@ -160,10 +180,10 @@ def attach_comments_to_code(fragments, predicate=lambda _: True):
     restrict the behavior to just bullets, pass ``is_bullet``.
     """
     from .literate import coq_partition, StringView, Code, Comment
-    grouped = list(htmlify_sentences(fragments))
+    grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
         prev = idx > 0 and grouped[idx - 1]
-        prev_is_sentence = isinstance(prev, (CoqSentence, HTMLSentence))
+        prev_is_sentence = isinstance(prev, (CoqSentence, RichSentence))
         if prev_is_sentence and predicate(prev) and isinstance(fr, CoqText):
             best = prefix = StringView(fr.contents, 0, 0)
             for part in coq_partition(fr.contents):
@@ -180,19 +200,30 @@ def attach_comments_to_code(fragments, predicate=lambda _: True):
                 grouped[idx] = CoqText(rest) if rest else None
     return [g for g in grouped if g is not None]
 
+def fragment_goal_sets(fr):
+    if isinstance(fr, RichSentence):
+        yield from (gs.goals for gs in fr.outputs if isinstance(gs, CoqGoals))
+    if isinstance(fr, CoqSentence):
+        yield fr.goals
+
+def fragment_message_sets(fr):
+    if isinstance(fr, RichSentence):
+        yield from (ms.messages for ms in fr.outputs if isinstance(ms, CoqMessages))
+    if isinstance(fr, CoqSentence):
+        yield fr.messages
+
 def group_hypotheses(fragments):
     for fr in fragments:
-        if isinstance(fr, (HTMLSentence, CoqSentence)):
-            for g in fr.goals:
-                hyps = []
-                for hyp in g.hypotheses:
-                    if (hyps
-                        and hyp.body is None and hyps[-1].body is None
-                        and hyps[-1].type == hyp.type):
-                        hyps[-1].names.extend(hyp.names)
-                    else:
-                        hyps.append(hyp)
-                g.hypotheses[:] = hyps
+        for g in chain(*fragment_goal_sets(fr)):
+            hyps = []
+            for hyp in g.hypotheses:
+                if (hyps
+                    and hyp.body is None and hyps[-1].body is None
+                    and hyps[-1].type == hyp.type):
+                    hyps[-1].names.extend(hyp.names)
+                else:
+                    hyps.append(hyp)
+            g.hypotheses[:] = hyps
     return fragments
 
 FAIL_RE = re.compile(r"^Fail\s+")
@@ -200,17 +231,18 @@ FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
 
 def strip_failures(fragments):
     for fr in fragments:
-        if hasattr(fr, 'annots') and fr.annots.fails and FAIL_RE.match(fr.contents):
-            for idx, r in enumerate(fr.responses):
-                fr.responses[idx] = FAIL_MSG_RE.sub("", r)
+        if isinstance(fr, RichSentence) and fr.annots.fails and FAIL_RE.match(fr.contents):
+            for msgs in fragment_message_sets(fr):
+                for idx, r in enumerate(msgs):
+                    msgs[idx] = r._replace(contents=FAIL_MSG_RE.sub("", r.contents))
             fr = fr._replace(contents=FAIL_RE.sub("", fr.contents))
         yield fr
 
 def dedent(fragments):
     for fr in fragments:
-        if hasattr(fr, 'responses'):
-            for idx, r in enumerate(fr.responses):
-                fr.responses[idx] = textwrap.dedent(r)
+        for msgs in fragment_message_sets(fr):
+            for idx, r in enumerate(msgs):
+                msgs[idx] = r._replace(contents=textwrap.dedent(r.contents))
         yield fr
 
 def find_long_lines(fragments, threshold):
@@ -290,7 +322,7 @@ def isolate_coqdoc(fragments):
     return partitioned
 
 DEFAULT_TRANSFORMS = [
-    htmlify_sentences,
+    enrich_sentences,
     attach_comments_to_code,
     group_hypotheses,
     process_io_annotations,

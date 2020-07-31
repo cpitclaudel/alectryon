@@ -1,6 +1,7 @@
 {
   "metadata": {
-    "sertop_args": []
+    "sertop_args": [],
+    "cache_version": "1"
   },
   "chunks": [
     "Definition example_from_sphinx: nat. (* .unfold *)\nProof. (* .no-goals *)\n  simple apply Nat.add.\n  exact 1.\n  assert (n: nat).\n  2: clear n.\n  exact 3.\n  exact 2.\nDefined.\n\nPrint example_from_sphinx. (* .unfold *)"
@@ -10,7 +11,7 @@
       {
         "_type": "sentence",
         "contents": "Definition example_from_sphinx: nat.",
-        "responses": [],
+        "messages": [],
         "goals": [
           {
             "_type": "goal",
@@ -27,7 +28,7 @@
       {
         "_type": "sentence",
         "contents": "Proof.",
-        "responses": [],
+        "messages": [],
         "goals": [
           {
             "_type": "goal",
@@ -44,7 +45,7 @@
       {
         "_type": "sentence",
         "contents": "simple apply Nat.add.",
-        "responses": [],
+        "messages": [],
         "goals": [
           {
             "_type": "goal",
@@ -67,7 +68,7 @@
       {
         "_type": "sentence",
         "contents": "exact 1.",
-        "responses": [],
+        "messages": [],
         "goals": [
           {
             "_type": "goal",
@@ -84,7 +85,7 @@
       {
         "_type": "sentence",
         "contents": "assert (n: nat).",
-        "responses": [],
+        "messages": [],
         "goals": [
           {
             "_type": "goal",
@@ -116,7 +117,7 @@
       {
         "_type": "sentence",
         "contents": "2: clear n.",
-        "responses": [],
+        "messages": [],
         "goals": [
           {
             "_type": "goal",
@@ -139,7 +140,7 @@
       {
         "_type": "sentence",
         "contents": "exact 3.",
-        "responses": [],
+        "messages": [],
         "goals": [
           {
             "_type": "goal",
@@ -156,7 +157,7 @@
       {
         "_type": "sentence",
         "contents": "exact 2.",
-        "responses": [],
+        "messages": [],
         "goals": []
       },
       {
@@ -166,7 +167,7 @@
       {
         "_type": "sentence",
         "contents": "Defined.",
-        "responses": [],
+        "messages": [],
         "goals": []
       },
       {
@@ -176,8 +177,11 @@
       {
         "_type": "sentence",
         "contents": "Print example_from_sphinx.",
-        "responses": [
-          "example_from_sphinx = 1 + (let n := 3 in 2)\n     : nat"
+        "messages": [
+          {
+            "_type": "message",
+            "contents": "example_from_sphinx = 1 + (let n := 3 in 2)\n     : nat"
+          }
         ],
         "goals": []
       },
