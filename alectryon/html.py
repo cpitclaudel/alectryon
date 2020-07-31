@@ -25,9 +25,7 @@ import shutil
 from dominate import tags
 
 from .core import CoqText, RichSentence, CoqGoals, CoqMessages
-from . import transforms, __version__
-
-GENERATOR = "Alectryon v{}".format(__version__)
+from . import transforms, __version__, GENERATOR
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
 
@@ -190,13 +188,13 @@ class HtmlGenerator:
 
     def gen_fragments(self, fragments, classes=()):
         """Serialize a list of `fragments` to HTML."""
-        with tags.pre(cls=" ".join(("alectryon-io", *classes))) as div:
+        with tags.pre(cls=" ".join(("alectryon-io", *classes))) as pre:
             tags.comment(" Generator: {} ".format(GENERATOR))
             fragments = transforms.group_whitespace_with_code(fragments)
             fragments = transforms.commit_io_annotations(fragments)
             for fr in fragments:
                 self.gen_fragment(fr)
-            return div
+            return pre
 
     def gen(self, annotated):
         for fragments in annotated:

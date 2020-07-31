@@ -22,3 +22,4 @@
 
 __version__ = "0.2"
 __author__ = 'Clément Pit-Claudel'
+GENERATOR = "Alectryon v{}".format(__version__)
