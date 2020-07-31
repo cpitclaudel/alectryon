@@ -177,9 +177,6 @@ class HtmlGenerator:
             if fr.contents is not None:
                 self.gen_input(fr, toggle)
             if fr.outputs:
-                if fr.contents is None and not fr.annots.unfold:
-                    MSG = "Cannot show output of {!r} without .in or .unfold."
-                    raise ValueError(MSG.format(fr.contents))
                 self.gen_output(fr)
             if fr.contents is not None:
                 self.gen_whitespace(fr.suffixes)

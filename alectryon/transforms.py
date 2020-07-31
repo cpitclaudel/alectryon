@@ -137,6 +137,9 @@ def commit_io_annotations(fragments, discard_folded=False):
                 outputs = []
             else:
                 outputs = [o for o in fr.outputs if should_keep_output(o, fr.annots)]
+            if contents is None and outputs and not fr.annots.unfold:
+                MSG = "Cannot show output of {!r} without .in or .unfold."
+                raise ValueError(MSG.format(fr.contents))
             fr = fr._replace(contents=contents, outputs=outputs)
         yield fr
 
