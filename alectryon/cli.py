@@ -258,14 +258,6 @@ def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets,
 
     return doc.render(pretty=False)
 
-COQ_TYPE_NAMES = {
-    "CoqHypothesis": "hypothesis",
-    "CoqGoal": "goal",
-    "CoqSentence": "sentence",
-    "HTMLSentence": "html_sentence",
-    "CoqText": "text",
-}
-
 def prepare_json(obj):
     from .json import json_of_annotated
     return json_of_annotated(obj)
