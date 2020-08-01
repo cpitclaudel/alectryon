@@ -221,8 +221,8 @@ def regexp_opt(tokens):
     labeled = ("(?P<{}>{})".format(tok.name, REGEXPS[tok]) for tok in tokens)
     return re.compile("|".join(labeled), re.DOTALL)
 
-SCANNERS = { state: regexp_opt(tokens)
-             for (state, tokens) in TRANSITIONS.items() }
+SCANNERS = {state: regexp_opt(tokens)
+            for (state, tokens) in TRANSITIONS.items()}
 
 class ParsingError(ValueError):
     def __init__(self, document, state, position, end):
@@ -543,8 +543,9 @@ def main():
             contents = fstream.read()
     sys.stdout.write(args.fn(contents))
 
-def doctest():
-    import doctest, sys
+def run_doctest():
+    import sys
+    import doctest
     doctest.debug(sys.modules.get('__main__'), "__main__.partition", pm=True)
 
 if __name__ == '__main__':

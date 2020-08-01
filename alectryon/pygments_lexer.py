@@ -33,8 +33,8 @@ Rewritten from the one in pygments.lexers.theorem.
 
 from pygments.lexer import RegexLexer, default, words, bygroups, include
 from pygments.regexopt import regex_opt, regex_opt_inner
-from pygments.token import Text, Comment, Operator, Keyword, Name, String, \
-    Number, Punctuation, Generic
+from pygments.token import \
+    Text, Comment, Operator, Keyword, Name, String, Number
 
 class CoqLexer(RegexLexer):
     """
@@ -388,9 +388,9 @@ class CoqLexer(RegexLexer):
               '🄮🄰-🅫🅰-🆬🇦-🈂🈐-🈻🉀-🉈🉐-🉑🌀-🛒🛠-🛬🛰-🛶🜀-🝳🞀-🟔🠀-🠋🠐-🡇🡐-🡙🡠-🢇🢐-🢭🤐-🤞🤠-🤧🤰🤳-🤾🥀-🥋'
               '🥐-🥞🦀-🦑🧀')
 
-    local_global = regex_opt_inner(("Local","Global","Export"), '(?:')
-    set_unset_test = regex_opt_inner(("Set","Unset","Test"), '(?:')
-    add_remove_test = regex_opt_inner(("Add","Remove","Test"), '(?:')
+    local_global = regex_opt_inner(("Local", "Global", "Export"), '(?:')
+    set_unset_test = regex_opt_inner(("Set", "Unset", "Test"), '(?:')
+    add_remove_test = regex_opt_inner(("Add", "Remove", "Test"), '(?:')
 
     opts = regex_opt(kwds['flag'] + kwds['opt'])
     opts_re = r"\b(?:{} )?(?:{} ){}\b".format(local_global, set_unset_test, opts)
@@ -523,9 +523,5 @@ class CoqLexer(RegexLexer):
             (r"[{}]".format(symbol), Operator),
         ],
     }
-
-    def analyse_text(text):
-        if text.startswith('(*'):
-            return True
 
 __all__ = ["CoqLexer"]

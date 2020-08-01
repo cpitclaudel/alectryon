@@ -63,6 +63,7 @@ class Gensym():
         self.counters[prefix] += 1
         return self.stem + prefix + hex(self.counters[prefix])[len("0x"):]
 
+# pylint: disable=line-too-long
 HEADER = (
     '<div class="alectryon-header">'
     'Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running <a href="https://coq.inria.fr/">Coq</a>+<a href="https://github.com/ejgallego/coq-serapi">SerAPI</a> v{}. '
@@ -138,7 +139,7 @@ class HtmlGenerator:
                     self.gen_goal(goal, toggle=nm)
 
     def gen_input_toggle(self, fr):
-        if not (fr.outputs):
+        if not fr.outputs:
             return None
         return self.gen_checkbox(fr.annots.unfold, "coq-toggle")
 

@@ -91,6 +91,7 @@ def validate_inputs(annotated, reference):
             print(f"Mismatch: {annotated} {reference}")
             return False
         return all(validate_inputs(*p) for p in zip_longest(annotated, reference))
+    # pylint: disable=isinstance-second-argument-not-valid-type
     if isinstance(annotated, COQ_TYPES):
         if annotated.contents != reference:
             print(f"Mismatch: {annotated.contents} {reference}")
@@ -144,22 +145,22 @@ class FileCache:
 
     def put(self, chunks, annotated):
         with open(self.cache_file, mode="w") as cache:
-            data = { "metadata": self.metadata,
-                     "chunks": list(chunks),
-                     "annotated": json_of_annotated(annotated) }
+            data = {"metadata": self.metadata,
+                    "chunks": list(chunks),
+                    "annotated": json_of_annotated(annotated)}
             json.dump(data, cache, indent=2)
 
 class DummyCache:
     def __init__(self, *_args):
         pass
 
-    def get(self, *_args):
+    def get(self, *_args): # pylint: disable=no-self-use
         return None
 
     def put(self, *_args):
         pass
 
 def Cache(cache_root, doc_path, sertop_args):
-    metadata = { "sertop_args": sertop_args }
+    metadata = {"sertop_args": sertop_args}
     cls = FileCache if cache_root is not None else DummyCache
     return cls(cache_root, doc_path, metadata)

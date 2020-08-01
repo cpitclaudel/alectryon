@@ -24,7 +24,7 @@ import textwrap
 from copy import copy
 from collections import namedtuple
 from itertools import chain
-from .core import CoqText, CoqGoal, CoqSentence, RichSentence, CoqGoals, CoqMessages
+from .core import CoqText, CoqSentence, RichSentence, CoqGoals, CoqMessages
 
 class IOAnnots:
     def __init__(self, *annots):
@@ -35,8 +35,8 @@ class IOAnnots:
             self.update(annot)
 
     NO = re.compile("no-")
-    FILTER_ALL = { 'in': True, 'goals': True, 'messages': True }
-    FILTER_NONE = { 'in': False, 'goals': False, 'messages': False }
+    FILTER_ALL = {'in': True, 'goals': True, 'messages': True}
+    FILTER_NONE = {'in': False, 'goals': False, 'messages': False}
     RE = re.compile("[.]([-a-z]+)")
 
     def update(self, annot):

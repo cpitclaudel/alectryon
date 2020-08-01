@@ -24,8 +24,6 @@ import os.path
 import shutil
 import sys
 
-# pylint: disable=import-outside-toplevel
-
 # Pipelines
 # =========
 
@@ -61,7 +59,8 @@ def register_docutils(v, sertop_args):
     setup()
     return v
 
-def _gen_docutils_html(source, fpath, webpage_style, no_header, html_assets, traceback, Parser, Reader):
+def _gen_docutils_html(source, fpath, webpage_style, no_header,
+                       html_assets, traceback, Parser, Reader):
     from docutils.core import publish_string
     from .docutils import HtmlTranslator, HtmlWriter
 
@@ -173,7 +172,8 @@ def _run_coqdoc(coq_snippets, coqdoc_bin=None):
             os.write(fd, snippet.encode("utf-8"))
             os.write(fd, b"\n(* --- *)\n") # Separator to prevent fusing
         os.close(fd)
-        return check_output([coqdoc_bin] + COQDOC_OPTIONS + [filename], timeout = 10).decode("utf-8")
+        coqdoc = [coqdoc_bin, *COQDOC_OPTIONS, filename]
+        return check_output(coqdoc, timeout=10).decode("utf-8")
     finally:
         os.remove(filename)
 
@@ -466,17 +466,17 @@ and produce reStructuredText, HTML, or JSON output.""")
                       metavar="SERAPI_ARG",
                       help=SERTOP_ARGS_HELP)
 
-    I_HELP="Pass -I DIR to the SerAPI subprocess."
+    I_HELP = "Pass -I DIR to the SerAPI subprocess."
     subp.add_argument("-I", "--ml-include-path", dest="coq_args_I",
                       metavar="DIR", nargs=1, action="append",
                       default=[], help=I_HELP)
 
-    Q_HELP="Pass -Q DIR COQDIR to the SerAPI subprocess."
+    Q_HELP = "Pass -Q DIR COQDIR to the SerAPI subprocess."
     subp.add_argument("-Q", "--load-path", dest="coq_args_Q",
                       metavar=("DIR", "COQDIR"), nargs=2, action="append",
                       default=[], help=Q_HELP)
 
-    R_HELP="Pass -R DIR COQDIR to the SerAPI subprocess."
+    R_HELP = "Pass -R DIR COQDIR to the SerAPI subprocess."
     subp.add_argument("-R", "--rec-load-path", dest="coq_args_R",
                       metavar=("DIR", "COQDIR"), nargs=2, action="append",
                       default=[], help=R_HELP)
@@ -492,8 +492,8 @@ and produce reStructuredText, HTML, or JSON output.""")
 
 
     args = parser.parse_args()
-    for dir in args.coq_args_I:
-        args.sertop_args.extend(("-I", dir))
+    for dirpath in args.coq_args_I:
+        args.sertop_args.extend(("-I", dirpath))
     for pair in args.coq_args_R:
         args.sertop_args.extend(("-R", ",".join(pair)))
     for pair in args.coq_args_Q:
@@ -549,7 +549,7 @@ def main():
     try:
         for fpath, pipeline in args.pipelines:
             fpath, fname, state = read_input(fpath, args)
-            ctx = { "fpath": fpath, "fname": fname, **vars(args) }
+            ctx = {"fpath": fpath, "fname": fname, **vars(args)}
             for step in pipeline:
                 state = call_pipeline_step(step, state, ctx)
             write_output(fname, args.output, args.output_directory, *state)

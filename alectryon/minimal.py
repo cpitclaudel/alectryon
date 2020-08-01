@@ -26,8 +26,10 @@ files, you also need literate.py to convert .v files to .rst.
 Invoke with ``python3 -m alectryon.minimal --help``.
 """
 
+# pylint: disable=dangerous-default-value
+
 from docutils.parsers.rst import directives, roles, Directive
-import docutils.parsers.rst.directives.body
+import docutils.parsers.rst.directives.body # pylint: disable=unused-import
 
 ## Directives
 
@@ -52,7 +54,7 @@ DIRECTIVES = {"coq": CoqDirective,
 ## Map :coq: to plain literals
 
 def coq_code_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
-    options = { **options.copy(), "language": "coq", "classes": "highlight" }
+    options = {**options.copy(), "language": "coq", "classes": "highlight"}
     return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
 
 def no_op(role, rawtext, text, lineno, inliner, options={}, content=[]):

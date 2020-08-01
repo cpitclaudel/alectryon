@@ -26,7 +26,7 @@ from contextlib import contextmanager
 import pygments
 from pygments.token import Error, STANDARD_TYPES, Name, Operator
 from pygments.filters import Filter, TokenMergeFilter, NameHighlightFilter
-from pygments.formatters import HtmlFormatter, LatexFormatter
+from pygments.formatters import HtmlFormatter, LatexFormatter # pylint: disable=no-name-in-module
 
 from dominate import tags
 from dominate.util import raw as dom_raw

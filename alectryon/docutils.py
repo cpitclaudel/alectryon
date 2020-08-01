@@ -103,8 +103,8 @@ class Config:
         self.tokens = {}
         self.sertop_args = []
         # Sphinx doesn't translate ``field_list`` to ``docinfo``
-        filter = lambda n: isinstance(n, (nodes.field_list, nodes.docinfo))
-        for di in document.traverse(filter):
+        selector = lambda n: isinstance(n, (nodes.field_list, nodes.docinfo))
+        for di in document.traverse(selector):
             for field in di.traverse(nodes.field):
                 name, body = field.children
                 self.parse_docinfo_field(field, name.rawsource, body.rawsource)
@@ -322,9 +322,9 @@ class ExperimentalExerciseDirective(Sidebar):
 
     node_class = nodes.sidebar
     required_arguments = 1
-    option_spec = { **Sidebar.option_spec,
-                    "difficulty": directives.nonnegative_int,
-                    "optional": directives.flag }
+    option_spec = {**Sidebar.option_spec,
+                   "difficulty": directives.nonnegative_int,
+                   "optional": directives.flag}
 
     def run(self):
         [node] = super().run()
@@ -337,17 +337,16 @@ class ExperimentalExerciseDirective(Sidebar):
 # Roles
 # -----
 
-def alectryon_bubble(# pylint: disable=dangerous-default-value,unused-argument
-        role, rawtext, text, lineno, inliner, options={}, content=[]):
+# pylint: disable=dangerous-default-value,unused-argument
+def alectryon_bubble(role, rawtext, text, lineno, inliner, options={}, content=[]):
     return [nodes.inline(rawtext, classes=['alectryon-bubble'])], []
 
 alectryon_bubble.name = "alectryon-bubble"
 
-def coq_code_role(# pylint: disable=dangerous-default-value,unused-argument
-        role, rawtext, text, lineno, inliner, options={}, content=[]):
-    options = options.copy()
+#pylint: disable=dangerous-default-value,unused-argument
+def coq_code_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    options = {**options, "language": "coq"}
     roles.set_classes(options)
-    options["language"] = "coq"
     options.setdefault("classes", []).append("highlight")
     return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
 
@@ -418,13 +417,13 @@ class JsErrorPrinter:
     def json_of_message(msg):
         message = msg.children[0].astext() if msg.children else "Unknown error"
         level = docutils.utils.Reporter.levels[msg['level']].lower()
-        js = { "level": level,
-               "message": message,
-               "source": msg['source'],
-               "line": msg.get('line', 1),
-               "column": msg.get('column'),
-               "end_line": msg.get('end_line'),
-               "end_column": msg.get('end_column'), }
+        js = {"level": level,
+              "message": message,
+              "source": msg['source'],
+              "line": msg.get('line', 1),
+              "column": msg.get('column'),
+              "end_line": msg.get('end_line'),
+              "end_column": msg.get('end_column')}
         return js
 
     def __init__(self, stream, settings):

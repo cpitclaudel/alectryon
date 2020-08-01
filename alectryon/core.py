@@ -42,8 +42,8 @@ CoqMessage = namedtuple("CoqMessage", "contents")
 CoqSentence = namedtuple("CoqSentence", "contents messages goals")
 CoqText = namedtuple("CoqText", "contents")
 
-CoqGoals =  namedtuple("CoqGoals", "goals")
-CoqMessages =  namedtuple("CoqMessages", "messages")
+CoqGoals = namedtuple("CoqGoals", "goals")
+CoqMessages = namedtuple("CoqMessages", "messages")
 RichSentence = namedtuple("RichSentence", "contents outputs annots prefixes suffixes")
 
 CoqPrettyPrinted = namedtuple("CoqPrettyPrinted", "sid pp")
