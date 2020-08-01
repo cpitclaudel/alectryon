@@ -353,7 +353,7 @@ def coq_code_role(# pylint: disable=dangerous-default-value,unused-argument
 
 coq_code_role.name = "coq"
 
-COQ_ID_RE = re.compile("^(?P<title>.*?)(?:\s*<(?P<target>.*)>)?$")
+COQ_ID_RE = re.compile(r"^(?P<title>.*?)(?:\s*<(?P<target>.*)>)?$")
 COQ_IDENT_DB_URLS = [
     ("Coq", "https://coq.inria.fr/library/$modpath.html#$ident")
 ]
