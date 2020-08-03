@@ -31,6 +31,8 @@ def format_macro(name, args, optargs):
 
 CONTEXT_STACK = []
 
+## FIXME just set Verbatim to true by default, and special-case comments?
+
 def add_top(element):
     if CONTEXT_STACK:
         CONTEXT_STACK[-1].add(element)
@@ -40,7 +42,7 @@ class Context:
         self.name = name
         self.args = args
         self.optargs = optargs
-        self.verbatim=verbatim
+        self.verbatim = verbatim
         self.children = []
         add_top(self)
         for c in children:
@@ -72,16 +74,11 @@ class Context:
         return self.format(indent=0, verbatim=False)
 
 class Environment(Context):
-    INDENT = {} # FIXME separator should be a Text element, not plain, so verbatim would work on it
-    CHILDREN_SEPARATOR = {
-        "coqHyps": "\n\\coqHypSep{}\n",
-        "coqOutput": "\n\\coqOutputSep{}\n",
-    }
+    INDENT = {}
 
     def __init__(self, name, *children, args=(), optargs=(), verbatim=False):
         super().__init__(name, children, args, optargs, verbatim)
         self.indent = Environment.INDENT.get(name, 2)
-        self.children_sep = Environment.CHILDREN_SEPARATOR.get(name, "\n")
 
     def format(self, indent, verbatim):
         args = (self.name, *self.args)
@@ -90,26 +87,18 @@ class Environment(Context):
         outside_indent = "" if verbatim else ' ' * indent
         verbatim = verbatim or self.verbatim
         indent = indent + self.indent
-        inside_indent = "" if verbatim else ' ' * indent
+        inside_indent = ' ' * indent
         children = [c.format(indent, verbatim) for c in self.children]
-        if verbatim:
-            children_sep = Raw.VERB_REPLACE(self.children_sep)
-        else:
-            children_sep = self.children_sep.replace("\n", "\n" + inside_indent)
+        children_sep = "" if verbatim else "\n\\sep\n".replace("\n", "\n" + inside_indent)
         if children:
-            return (begin +
-               ("" if self.verbatim else "\n" + inside_indent) +
-               children_sep.join(children) +
-               ("" if self.verbatim else "\n" + outside_indent) +
-               end)
+            return (begin + "\n" +
+               inside_indent + children_sep.join(children) + "\n" +
+               outside_indent + end)
         return begin + end
 
 class Macro(Context):
-    CHILDREN_SEPARATOR = {}
-
     def __init__(self, name, *children, args=(), optargs=(), verbatim=False):
         super().__init__(name, children, args, optargs, verbatim)
-        self.children_sep = Macro.CHILDREN_SEPARATOR.get(name, "")
 
     def format(self, indent, verbatim):
         children = "".join(c.format(indent, self.verbatim or verbatim) for c in self.children)
@@ -128,24 +117,30 @@ class Replacements:
         return self.regexp.sub(self.replace_one, s)
 
 class Raw:
-    VERB_REPLACE = Replacements({" ": "~", "\n": "\n\\coqNl{}"})
+    VERB_REPLACE = Replacements({
+        " ": "~",
+        "\n": "\\nl\n"})
 
     def __init__(self, s):
         self.s = s
         self.parent = None
         add_top(self)
 
+    @classmethod
+    def raw_format(cls, tex, indent, verbatim):
+        if verbatim:
+            # strip final spaces to avoid a blank line causing a \par
+            tex = cls.VERB_REPLACE(tex).strip()
+        return tex.replace('\n', '\n' + ' ' * indent)
+
     def format(self, indent, verbatim):
-        return self.VERB_REPLACE(self.s) if verbatim else self.s
+        return self.raw_format(self.s, indent, verbatim)
 
 class Text(Raw):
-    ESCAPES = Replacements({"\\": "\\textbackslash"}) # FIXME
+    ESCAPES = Replacements({"\\": "\\bsl"}) # FIXME # Use pygments directly?
 
     def format(self, indent, verbatim):
-        quoted = self.ESCAPES(self.s)
-        if verbatim:
-            return self.VERB_REPLACE(quoted)
-        return textwrap.indent(quoted, ' ' * indent)
+        return self.raw_format(self.ESCAPES(self.s), indent, verbatim)
 
 class environments:
     def __getattribute__(self, env_name):
@@ -163,67 +158,75 @@ class LatexGenerator:
 
     def gen_goal(self, goal):
         """Serialize a goal to HTML."""
-        with environments.coqGoal():
-            with environments.coqHyps():
+        with environments.goal():
+            with environments.hyps():
                 for hyp in goal.hypotheses:
-                    names = macros.coqHypNames(", ".join(hyp.names))
+                    names = macros.hypn(", ".join(hyp.names)) # FIXME
                     htype = self.highlight(hyp.type)
                     hbody = self.highlight(hyp.body) if hyp.body else []
-                    environments.coqHyp(*htype, args=[names], optargs=hbody, verbatim=True)
-            environments.coqConclusion(*self.highlight(goal.conclusion), verbatim=True)
+                    environments.hyp(*htype, args=[names], optargs=hbody, verbatim=True)
+            environments.conclusion(*self.highlight(goal.conclusion), verbatim=True)
 
     def gen_goals(self, first, more):
         self.gen_goal(first)
         if more:
-            with environments.coqExtraGoals():
+            with environments.extragoals():
                 for goal in more:
                     self.gen_goal(goal)
 
+    @staticmethod
+    def gen_whitespace(wsps):
+        # Unlike in HTML, we don't need a separate wsp environment
+        for wsp in wsps:
+            yield Text(wsp)
+
     def gen_input(self, fr):
-        environments.coqInput(*self.highlight(fr.contents), verbatim=True)
+        input = []
+        input.extend(self.gen_whitespace(fr.prefixes))
+        input.extend(self.highlight(fr.contents))
+        # In HTML this space is hidden dynamically when the outputs are
+        # visible; in LaTeX we hide it statically.
+        if not fr.outputs:
+            input.extend(self.gen_whitespace(fr.suffixes))
+        environments.input(*input, verbatim=True)
 
     def gen_output(self, fr):
-        with environments.coqOuput():
+        with environments.output():
             for output in fr.outputs:
                 if isinstance(output, CoqMessages):
                     assert output.messages, "transforms.commit_io_annotations"
-                    with environments.coqMessages():
+                    with environments.messages():
                         for message in output.messages:
-                            environments.coqMessage(*self.highlight(message.contents), verbatim=True)
+                            environments.message(*self.highlight(message.contents), verbatim=True)
                 if isinstance(output, CoqGoals):
                     assert output.goals, "transforms.commit_io_annotations"
-                    with environments.coqGoals():
+                    with environments.goals():
                         self.gen_goals(output.goals[0], output.goals[1:])
 
-    @staticmethod
-    def gen_whitespace(wsps):
-        for wsp in wsps:
-            macros.coqWsp(wsp, verbatim=True)
-
     def gen_sentence(self, fr):
-        if fr.contents is not None:
-            self.gen_whitespace(fr.prefixes)
-        with environments.coqSentence():
+        with environments.sentence():
             if fr.contents is not None:
                 self.gen_input(fr)
             if fr.outputs:
                 self.gen_output(fr)
-            if fr.contents is not None:
-                self.gen_whitespace(fr.suffixes)
 
     def gen_fragment(self, fr):
         if isinstance(fr, CoqText):
-            macros.coqWsp(*self.highlight(fr.contents), verbatim=True)
+            if fr.contents:
+                environments.txt(*self.highlight(fr.contents), verbatim=True)
         else:
             assert isinstance(fr, RichSentence)
             self.gen_sentence(fr)
 
-    def gen_fragments(self, fragments, classes=()):
+    def gen_fragments(self, fragments, _classes=()):
         """Serialize a list of `fragments` to LaTeX."""
-        with environments.alectryonIo(optargs=[",".join(classes)] if classes else []) as env:
+        # FIXME: classes. optargs=[",".join(classes)] if classes else [] ?
+        with environments.alectryon() as env:
             Raw("% Generator: {}".format(GENERATOR))
+            fragments = transforms.default_transform(fragments) # FIXME
+            # fragments = transforms.merge_fragments_by_line(fragments) # FIXME
             fragments = transforms.group_whitespace_with_code(fragments)
-            fragments = transforms.commit_io_annotations(fragments)
+            fragments = transforms.commit_io_annotations(fragments)#, discard_folded=True)
             for fr in fragments:
                 self.gen_fragment(fr)
             return env
