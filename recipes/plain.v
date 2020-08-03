@@ -1,7 +1,5 @@
 Require Import List.
 
-
-
 Lemma skipn_app {A}:
   forall (l1 l2: list A) n,
     n <= List.length l1 ->

@@ -182,7 +182,7 @@ class HtmlGenerator:
 
     def gen_fragment(self, fr):
         if isinstance(fr, CoqText):
-            tags.span(self.highlight(fr.contents), cls="coq-nc")
+            tags.span(self.highlight(fr.contents), cls="coq-wsp")
         else:
             assert isinstance(fr, RichSentence)
             self.gen_sentence(fr)
