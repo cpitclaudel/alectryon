@@ -153,13 +153,13 @@ class HtmlGenerator:
         with tags.small(cls="coq-output").add(wrapper):
             for output in fr.outputs:
                 if isinstance(output, CoqMessages):
-                    assert output.messages, "transforms.filter_fragments"
+                    assert output.messages, "transforms.commit_io_annotations"
                     with tags.div(cls="coq-messages"):
                         for message in output.messages:
                             tags.blockquote(self.highlight(message.contents),
                                             cls="coq-message")
                 if isinstance(output, CoqGoals):
-                    assert output.goals, "transforms.filter_fragments"
+                    assert output.goals, "transforms.commit_io_annotations"
                     with tags.div(cls="coq-goals"):
                         self.gen_goals(output.goals[0], output.goals[1:])
 
