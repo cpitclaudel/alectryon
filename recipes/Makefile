@@ -2,7 +2,7 @@ alectryon := ../alectryon.py --output-directory output --no-header
 minimal := python3 -m alectryon.minimal
 
 assets := alectryon.css alectryon.js
-all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html document.minimal.html document.v literate.v.rst fragments.io.json fragments.snippets.html
+all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html document.minimal.html document.v literate.v.rst fragments.io.json fragments.snippets.html fragments.snippets.tex latex.snippets.tex
 
 all: $(patsubst %,output/%,$(all) $(assets)) sphinx/_build/html/index.html;
 
@@ -48,6 +48,14 @@ output/fragments.io.json: fragments.json | output
 # JSON → HTML snippets
 output/fragments.snippets.html: fragments.json | output
 	$(alectryon) $< -o $@
+
+# JSON → Latex snippets
+output/fragments.snippets.tex: fragments.json | output
+	$(alectryon) $< -o $@
+
+# Coq → Latex snippets
+output/latex.snippets.tex: latex.v | output
+	$(alectryon) --frontend coq $< -o $@
 
 # Sphinx
 sphinx/_build/html/index.html: sphinx/index.rst
