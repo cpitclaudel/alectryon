@@ -38,7 +38,7 @@ LEXER = CoqLexer(ensurenl=False) # pylint: disable=no-member
 LEXER.add_filter(TokenMergeFilter())
 HTML_FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
 LATEX_FORMATTER = LatexFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
-WHITESPACE_RE = re.compile(r"^(\s*)((?:.*\S)?)(\s*)$", re.DOTALL)
+WHITESPACE_RE = re.compile(r"\A(\s*)(.*?)(\s*)\Z", re.DOTALL)
 
 def add_tokens(tokens):
     """Register additional `tokens` to add custom syntax highlighting.
@@ -83,7 +83,10 @@ def _highlight(coqstr, lexer, formatter):
     # See https://bitbucket.org/birkenfeld/pygments-main/issues/1522/ to
     # understand why we munge the STANDARD_TYPES dictionary
     with munged_dict(STANDARD_TYPES, {Name: '', Operator: ''}):
-        return pygments.highlight(coqstr, lexer, formatter).strip()
+        # Pygments' HTML formatter adds an unconditional newline, so we pass it only
+        # the code, and we restore the spaces after highlighting.
+        before, code, after = WHITESPACE_RE.match(coqstr).groups()
+        return before, pygments.highlight(code, lexer, formatter).strip(), after
 
 def highlight_html(coqstr):
     """Highlight a Coq string `coqstr`.
@@ -103,18 +106,20 @@ def highlight_html(coqstr):
     the implementation of ``alectryon.cli.dump_html_standalone`` to see how the
     CLI does it.
     """
-    # Pygments' HTML formatter adds an unconditional newline, so we pass it only
-    # the code, and we restore the spaces after highlighting.
-    before, code, after = WHITESPACE_RE.match(coqstr).groups()
-    highlighted = _highlight(code, LEXER, HTML_FORMATTER)
+    before, highlighted, after = _highlight(coqstr, LEXER, HTML_FORMATTER)
     return tags.span(before, dom_raw(highlighted), after, cls="highlight")
 
-def highlight_latex(coqstr):
+PYGMENTS_LATEX_OPEN = r"\begin{Verbatim}[commandchars=\\\{\}]" + "\n"
+PYGMENTS_LATEX_CLOSE = r"\end{Verbatim}"
+
+def highlight_latex(coqstr, open=PYGMENTS_LATEX_OPEN, close=PYGMENTS_LATEX_CLOSE):
     """Highlight a Coq string `coqstr`.
 
     Like ``highlight_html``, but return a plain LaTeX string.
     """
-    return _highlight(coqstr, LEXER, LATEX_FORMATTER)
+    before, tex, after = _highlight(coqstr, LEXER, LATEX_FORMATTER)
+    assert tex.startswith(PYGMENTS_LATEX_OPEN) and tex.endswith(PYGMENTS_LATEX_CLOSE), tex
+    return open + before + tex[len(PYGMENTS_LATEX_OPEN):-len(PYGMENTS_LATEX_CLOSE)] + after +close
 
 @contextmanager
 def munged_dict(d, updates):
