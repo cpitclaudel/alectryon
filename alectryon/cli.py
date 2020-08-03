@@ -158,6 +158,11 @@ def gen_html_snippets(annotated, fname):
     from .pygments import highlight_html
     return HtmlGenerator(highlight_html, _scrub_fname(fname)).gen(annotated)
 
+def gen_latex_snippets(annotated):
+    from .latex import LatexGenerator
+    from .pygments import highlight_latex
+    return LatexGenerator(highlight_latex).gen(annotated)
+
 COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
                   '-s', '--html', '--stdout', '--utf8']
 
@@ -267,13 +272,18 @@ def dump_json(js):
     return dumps(js, indent=4)
 
 def dump_html_snippets(snippets):
-    from io import StringIO
-    io = StringIO()
+    s = ""
     for snippet in snippets:
-        io.write(snippet.render(pretty=False))
-        io.write("<!-- alectryon-block-end -->")
-        io.write('\n')
-    return io.getvalue()
+        s += snippet.render(pretty=True)
+        s += "<!-- alectryon-block-end -->\n"
+    return s
+
+def dump_latex_snippets(snippets):
+    s = ""
+    for snippet in snippets:
+        s += str(snippet)
+        s += "\n%% alectryon-block-end\n"
+    return s
 
 def write_file(ext):
     return lambda contents: (contents, ext)
@@ -283,7 +293,9 @@ PIPELINES = {
         'json': (load_json, annotate_chunks,
                  prepare_json, dump_json, write_file(".io.json")),
         'snippets-html': (load_json, annotate_chunks, gen_html_snippets,
-                          dump_html_snippets, write_file(".snippets.html"))
+                          dump_html_snippets, write_file(".snippets.html")),
+        'snippets-latex': (load_json, annotate_chunks, gen_latex_snippets,
+                           dump_latex_snippets, write_file(".snippets.tex"))
     },
     'coq': {
         'null': (parse_coq_plain, annotate_chunks, write_file(None)),
@@ -291,6 +303,8 @@ PIPELINES = {
                     dump_html_standalone, copy_assets, write_file(".v.html")),
         'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
                           dump_html_snippets, write_file(".snippets.html")),
+        'snippets-latex': (parse_coq_plain, annotate_chunks, gen_latex_snippets,
+                           dump_latex_snippets, write_file(".snippets.tex")),
         'lint': (register_docutils, lint_rstcoq, write_file(".lint.json")),
         'rst': (coq_to_rst, write_file(".v.rst")),
         'json': (parse_coq_plain, annotate_chunks,
@@ -325,7 +339,9 @@ FRONTENDS_BY_EXTENSION = [
 ]
 BACKENDS_BY_EXTENSION = [
     ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst'),
-    ('.lint.json', 'lint'), ('.snippets.html', 'snippets-html'),
+    ('.lint.json', 'lint'),
+    ('.snippets.html', 'snippets-html'),
+    ('.snippets.tex', 'snippets-latex'),
     ('.v.html', 'webpage'), ('.html', 'webpage')
 ]
 
