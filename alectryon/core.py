@@ -195,6 +195,9 @@ class SerAPI():
         elif tag == b'Feedback':
             yield from SerAPI._deserialize_feedback(sexp[1])
         else:
+            UNEXPECTED = "Unexpected response: {}"
+            # Print early to get some information out even if sertop hangs
+            print(UNEXPECTED.format(self.last_response), file=stderr)
             MSG = "Unexpected response: {}\nFull output: {}"
             raise ValueError(MSG.format(self.last_response, self.sertop.stdout.read()))
 

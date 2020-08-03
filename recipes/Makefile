@@ -2,7 +2,7 @@ alectryon := ../alectryon.py --output-directory output --no-header
 minimal := python3 -m alectryon.minimal
 
 assets := alectryon.css alectryon.js
-all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html document.minimal.html document.v literate.v.rst fragments.io.json fragments.snippets.html fragments.snippets.tex latex.snippets.tex
+all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html document.minimal.html document.v literate.v.rst fragments.io.json fragments.snippets.html fragments.snippets.tex latex.snippets.tex api.out
 
 all: $(patsubst %,output/%,$(all) $(assets)) sphinx/_build/html/index.html;
 
@@ -60,6 +60,10 @@ output/latex.snippets.tex: latex.v | output
 # Sphinx
 sphinx/_build/html/index.html: sphinx/index.rst
 	+$(MAKE) -C sphinx html
+
+# API
+output/api.out: api.py
+	python3 $< > $@
 
 output/alectryon%css output/alectryon%js: FORCE
 	cp --link --force $(patsubst %,../assets/%,$(assets)) output/
