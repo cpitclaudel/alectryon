@@ -97,7 +97,9 @@ IO_COMMENT_RE = re.compile(r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(IOAnnots.RE
 def process_io_annotations(fragments):
     """Strip IO comments and update ``.annots`` fields accordingly.
 
-    This pass assumes that ``CoqText`` fragments have been coalesced."""
+    This pass assumes that consecutive ``CoqText`` fragments have been
+    coalesced.
+    """
     annotated = []
     for fr in enrich_sentences(fragments):
         if isinstance(fr, CoqText):
@@ -151,14 +153,16 @@ def isolate_blanks(txt):
     return LEADING_BLANKS_RE.match(txt).groups()
 
 def group_whitespace_with_code(fragments):
-    """Attach surrounding spaces (but not newlines) to sentences.
+    """Attach spaces to neighboring sentences.
 
-    This pass gathers all spaces following a sentence, up to the first newline,
-    and embeds them in the sentence itself.  This ensures that we can hide the
-    newline when we display the goals as a block, and that we don't hide the
-    goals when the user hovers on spaces between two tactics.
+    This pass gathers all spaces following a sentence, up to the first
+    (included) newline, and embeds them in the sentence itself (this ensures
+    that we can hide the newline when we display the goals as a block).  It also
+    collects spaces found at the beginning of a line (not including the
+    preceding newline) and attaches them to the following sentence.
 
-    This function assumes that ``CoqText`` fragments have been coalesced.
+    This pass assumes that consecutive ``CoqText`` fragments have been
+    coalesced.
     """
     grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
