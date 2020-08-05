@@ -221,11 +221,9 @@ def gen_html_snippets_with_coqdoc(annotated, html_classes, fname):
     # ‘return’ instead of ‘yield from’ to update html_classes eagerly
     return _gen_html_snippets_with_coqdoc(annotated, fname)
 
-def copy_assets(state, html_assets, copy_fn, output, output_directory):
+def copy_assets(state, html_assets, copy_fn, output_directory):
     from .html import copy_assets as cp
     if copy_fn:
-        if output:
-            output_directory = os.path.dirname(os.path.abspath(output))
         cp(output_directory, assets=html_assets, copy_fn=copy_fn)
     return state
 
@@ -285,8 +283,24 @@ def dump_latex_snippets(snippets):
         s += "\n%% alectryon-block-end\n"
     return s
 
+def strip_extension(fname):
+    for ext in EXTENSIONS:
+        if fname.endswith(ext):
+            return fname[:-len(ext)]
+    return fname
+
+def write_output(ext, contents, fname, output, output_directory):
+    if output == "-" or (output is None and fname == "-"):
+        sys.stdout.write(contents)
+    else:
+        if not output:
+            output = os.path.join(output_directory, strip_extension(fname) + ext)
+        with open(output, mode="w") as f:
+            f.write(contents)
+
 def write_file(ext):
-    return lambda contents: (contents, ext)
+    return lambda contents, fname, output, output_directory: \
+        write_output(ext, contents, fname, output, output_directory)
 
 PIPELINES = {
     'json': {
@@ -298,7 +312,7 @@ PIPELINES = {
                            dump_latex_snippets, write_file(".snippets.tex"))
     },
     'coq': {
-        'null': (parse_coq_plain, annotate_chunks, write_file(None)),
+        'null': (parse_coq_plain, annotate_chunks),
         'webpage': (parse_coq_plain, annotate_chunks, gen_html_snippets,
                     dump_html_standalone, copy_assets, write_file(".v.html")),
         'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
@@ -445,8 +459,8 @@ and produce reStructuredText, HTML, or JSON output.""")
     parser.add_argument("-o", "--output", default=None,
                         help=OUT_FILE_HELP)
 
-    OUT_DIR_HELP = "Set the output directory."
-    parser.add_argument("--output-directory", default=".",
+    OUT_DIR_HELP = "Set the output directory (default: same as each INPUT)."
+    parser.add_argument("--output-directory", default=None,
                         help=OUT_DIR_HELP)
 
     COPY_ASSETS_HELP = ("Chose the method to use to copy assets " +
@@ -539,22 +553,14 @@ def read_input(fpath, args):
     with open(fpath) as f:
         return fpath, fname, f.read()
 
-def strip_extension(fname):
-    for ext in EXTENSIONS:
-        if fname.endswith(ext):
-            return fname[:-len(ext)]
-    return fname
-
-def write_output(in_fname, out_fpath, outdir, contents, ext):
-    if ext is None:
-        return
-    if out_fpath == "-" or (out_fpath is None and in_fname == "-"):
-        sys.stdout.write(contents)
-    else:
-        out_fname = strip_extension(in_fname) + ext
-        out_fpath = out_fpath or os.path.join(outdir, out_fname)
-        with open(out_fpath, mode="w") as f:
-            f.write(contents)
+def build_context(fpath, fname, args):
+    ctx = {"fpath": fpath, "fname": fname, **vars(args)}
+    if args.output_directory is None:
+        if fpath == "-":
+            ctx["output_directory"] = "."
+        else:
+            ctx["output_directory"] = os.path.dirname(os.path.abspath(fpath))
+    return ctx
 
 def main():
     args = parse_arguments()
@@ -565,10 +571,9 @@ def main():
     try:
         for fpath, pipeline in args.pipelines:
             fpath, fname, state = read_input(fpath, args)
-            ctx = {"fpath": fpath, "fname": fname, **vars(args)}
+            ctx = build_context(fpath, fname, args)
             for step in pipeline:
                 state = call_pipeline_step(step, state, ctx)
-            write_output(fname, args.output, args.output_directory, *state)
     except (ValueError, FileNotFoundError) as e:
         if args.traceback:
             raise e
