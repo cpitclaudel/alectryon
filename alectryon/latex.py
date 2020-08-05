@@ -184,8 +184,11 @@ class LatexGenerator:
         input = []
         input.extend(self.gen_whitespace(fr.prefixes))
         input.extend(self.highlight(fr.contents))
-        # In HTML this space is hidden dynamically when the outputs are
-        # visible; in LaTeX we hide it statically.
+        # In HTML this space is hidden dynamically when the outputs are visible;
+        # in LaTeX we hide it statically.  Hiding these spaces makes our lives
+        # easier because we can unconditionally add a line break before output
+        # blocks; otherwise we'd have to handle sentences that end the line
+        # differently from sentences in the middle of a line.
         if not fr.outputs:
             input.extend(self.gen_whitespace(fr.suffixes))
         environments.input(*input, verbatim=True)
