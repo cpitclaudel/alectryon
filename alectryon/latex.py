@@ -153,7 +153,7 @@ macros = macros()
 
 class LatexGenerator:
     def __init__(self, highlighter):
-        self.highlight = lambda s: [Raw(highlighter(s, open="", close=""))]
+        self.highlight = lambda s: [Raw(highlighter(s, prefix="", suffix=""))]
 
     def gen_goal(self, goal):
         """Serialize a goal to HTML."""
@@ -180,17 +180,17 @@ class LatexGenerator:
             yield Text(wsp)
 
     def gen_input(self, fr):
-        input = []
-        input.extend(self.gen_whitespace(fr.prefixes))
-        input.extend(self.highlight(fr.contents))
+        contents = []
+        contents.extend(self.gen_whitespace(fr.prefixes))
+        contents.extend(self.highlight(fr.contents))
         # In HTML this space is hidden dynamically when the outputs are visible;
         # in LaTeX we hide it statically.  Hiding these spaces makes our lives
         # easier because we can unconditionally add a line break before output
         # blocks; otherwise we'd have to handle sentences that end the line
         # differently from sentences in the middle of a line.
         if not fr.outputs:
-            input.extend(self.gen_whitespace(fr.suffixes))
-        environments.input(*input, verbatim=True)
+            contents.extend(self.gen_whitespace(fr.suffixes))
+        environments.input(*contents, verbatim=True)
 
     def gen_output(self, fr):
         with environments.output():

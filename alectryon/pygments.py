@@ -109,17 +109,18 @@ def highlight_html(coqstr):
     before, highlighted, after = _highlight(coqstr, LEXER, HTML_FORMATTER)
     return tags.span(before, dom_raw(highlighted), after, cls="highlight")
 
-PYGMENTS_LATEX_OPEN = r"\begin{Verbatim}[commandchars=\\\{\}]" + "\n"
-PYGMENTS_LATEX_CLOSE = r"\end{Verbatim}"
+PYGMENTS_LATEX_PREFIX = r"\begin{Verbatim}[commandchars=\\\{\}]" + "\n"
+PYGMENTS_LATEX_SUFFIX = r"\end{Verbatim}"
 
-def highlight_latex(coqstr, open=PYGMENTS_LATEX_OPEN, close=PYGMENTS_LATEX_CLOSE):
+def highlight_latex(coqstr, prefix=PYGMENTS_LATEX_PREFIX, suffix=PYGMENTS_LATEX_SUFFIX):
     """Highlight a Coq string `coqstr`.
 
     Like ``highlight_html``, but return a plain LaTeX string.
     """
     before, tex, after = _highlight(coqstr, LEXER, LATEX_FORMATTER)
-    assert tex.startswith(PYGMENTS_LATEX_OPEN) and tex.endswith(PYGMENTS_LATEX_CLOSE), tex
-    return open + before + tex[len(PYGMENTS_LATEX_OPEN):-len(PYGMENTS_LATEX_CLOSE)] + after +close
+    assert tex.startswith(PYGMENTS_LATEX_PREFIX) and tex.endswith(PYGMENTS_LATEX_SUFFIX), tex
+    body = tex[len(PYGMENTS_LATEX_PREFIX):-len(PYGMENTS_LATEX_SUFFIX)]
+    return prefix + before + body + after + suffix
 
 @contextmanager
 def munged_dict(d, updates):
