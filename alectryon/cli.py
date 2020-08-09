@@ -27,9 +27,18 @@ import sys
 # Pipelines
 # =========
 
-def load_json(contents):
-    from json import loads
-    return loads(contents)
+def read_plain(_, fpath, fname):
+    if fname == "-":
+        return sys.stdin.read()
+    with open(fpath) as f:
+        return f.read()
+
+def read_json(_, fpath, fname):
+    from json import load
+    if fname == "-":
+        return load(sys.stdin.read())
+    with open(fpath) as f:
+        return load(f)
 
 def parse_coq_plain(contents):
     return [contents]
@@ -304,43 +313,49 @@ def write_file(ext):
 
 PIPELINES = {
     'json': {
-        'json': (load_json, annotate_chunks,
+        'json': (read_json, annotate_chunks,
                  prepare_json, dump_json, write_file(".io.json")),
-        'snippets-html': (load_json, annotate_chunks, gen_html_snippets,
+        'snippets-html': (read_json, annotate_chunks, gen_html_snippets,
                           dump_html_snippets, write_file(".snippets.html")),
-        'snippets-latex': (load_json, annotate_chunks, gen_latex_snippets,
+        'snippets-latex': (read_json, annotate_chunks, gen_latex_snippets,
                            dump_latex_snippets, write_file(".snippets.tex"))
     },
     'coq': {
-        'null': (parse_coq_plain, annotate_chunks),
-        'webpage': (parse_coq_plain, annotate_chunks, gen_html_snippets,
-                    dump_html_standalone, copy_assets, write_file(".v.html")),
-        'snippets-html': (parse_coq_plain, annotate_chunks, gen_html_snippets,
-                          dump_html_snippets, write_file(".snippets.html")),
-        'snippets-latex': (parse_coq_plain, annotate_chunks, gen_latex_snippets,
-                           dump_latex_snippets, write_file(".snippets.tex")),
-        'lint': (register_docutils, lint_rstcoq, write_file(".lint.json")),
-        'rst': (coq_to_rst, write_file(".v.rst")),
-        'json': (parse_coq_plain, annotate_chunks,
-                 prepare_json, dump_json, write_file(".io.json"))
+        'null': (read_plain, parse_coq_plain, annotate_chunks),
+        'webpage': (read_plain, parse_coq_plain, annotate_chunks,
+                    gen_html_snippets, dump_html_standalone, copy_assets,
+                    write_file(".v.html")),
+        'snippets-html': (read_plain, parse_coq_plain, annotate_chunks,
+                          gen_html_snippets, dump_html_snippets,
+                          write_file(".snippets.html")),
+        'snippets-latex': (read_plain, parse_coq_plain, annotate_chunks,
+                           gen_latex_snippets, dump_latex_snippets,
+                           write_file(".snippets.tex")),
+        'lint': (read_plain, register_docutils, lint_rstcoq,
+                 write_file(".lint.json")),
+        'rst': (read_plain, coq_to_rst, write_file(".v.rst")),
+        'json': (read_plain, parse_coq_plain, annotate_chunks, prepare_json,
+                 dump_json, write_file(".io.json"))
     },
     'coq+rst': {
-        'webpage': (register_docutils, gen_rstcoq_html,
-                    copy_assets, write_file(".html")),
-        'lint': (register_docutils, lint_rstcoq, write_file(".lint.json")),
-        'rst': (coq_to_rst, write_file(".v.rst"))
+        'webpage': (read_plain, register_docutils, gen_rstcoq_html, copy_assets,
+                    write_file(".html")),
+        'lint': (read_plain, register_docutils, lint_rstcoq,
+                 write_file(".lint.json")),
+        'rst': (read_plain, coq_to_rst, write_file(".v.rst"))
     },
     'coqdoc': {
-        'webpage': (parse_coq_plain, annotate_chunks,
-                    gen_html_snippets_with_coqdoc,
-                    dump_html_standalone, copy_assets, write_file(".html")),
+        'webpage': (read_plain, parse_coq_plain, annotate_chunks,
+                    gen_html_snippets_with_coqdoc, dump_html_standalone,
+                    copy_assets, write_file(".html")),
     },
     'rst': {
-        'webpage': (register_docutils, gen_rst_html,
-                    copy_assets, write_file(".html")),
-        'lint': (register_docutils, lint_rst, write_file(".lint.json")),
-        'coq': (rst_to_coq, write_file(".v")),
-        'coq+rst': (rst_to_coq, write_file(".v"))
+        'webpage': (read_plain, register_docutils, gen_rst_html, copy_assets,
+                    write_file(".html")),
+        'lint': (read_plain, register_docutils, lint_rst,
+                 write_file(".lint.json")),
+        'coq': (read_plain, rst_to_coq, write_file(".v")),
+        'coq+rst': (read_plain, rst_to_coq, write_file(".v"))
     }
 }
 
@@ -398,29 +413,46 @@ expecting one of {}"""
 
     return supported_backends[backend]
 
-def fill_in_arguments(args):
+COPY_FUNCTIONS = {
+    "copy": shutil.copy,
+    "symlink": os.symlink,
+    "hardlink": os.link,
+    "none": None
+}
+
+def post_process_arguments(parser, args):
+    if len(args.input) > 1 and args.output:
+        parser.error("argument --output: Not valid with multiple inputs")
+
+    if args.stdin_filename and "-" not in args.input:
+        parser.error("argument --stdin-filename: input must be '-'")
+
+    for dirpath in args.coq_args_I:
+        args.sertop_args.extend(("-I", dirpath))
+    for pair in args.coq_args_R:
+        args.sertop_args.extend(("-R", ",".join(pair)))
+    for pair in args.coq_args_Q:
+        args.sertop_args.extend(("-Q", ",".join(pair)))
+
+    # argparse applies ‘type’ before ‘choices’, so we do the conversion here
+    args.copy_fn = COPY_FUNCTIONS[args.copy_fn]
+
     args.point, args.marker = args.mark_point
     if args.point is not None:
         try:
             args.point = int(args.point)
         except ValueError:
             MSG = "argument --mark-point: Expecting a number, not {!r}"
-            raise argparse.ArgumentTypeError(MSG.format(args.point))
-
-    if len(args.input) > 1 and args.output:
-        MSG = "argument --output: Not valid with multiple inputs"
-        raise argparse.ArgumentTypeError(MSG)
-
-    if args.stdin_filename and "-" not in args.input:
-        MSG = "argument --stdin-filename: input must be '-'"
-        raise argparse.ArgumentTypeError(MSG)
+            parser.error(MSG.format(args.point))
 
     args.html_assets = []
     args.html_classes = []
     args.pipelines = [(fpath, resolve_pipeline(fpath, args))
                       for fpath in args.input]
 
-def parse_arguments():
+    return args
+
+def build_parser():
     parser = argparse.ArgumentParser(description="""\
 Annotate segments of Coq code with responses and goals.
 Take input in Coq, reStructuredText, or JSON format \
@@ -465,9 +497,7 @@ and produce reStructuredText, HTML, or JSON output.""")
 
     COPY_ASSETS_HELP = ("Chose the method to use to copy assets " +
                         "along the generated file(s) when creating webpages.")
-    COPY_ASSETS_CHOICES = {"copy": shutil.copy, "symlink": os.symlink,
-                           "hardlink": os.link, "none": None}
-    parser.add_argument("--copy-assets", choices=list(COPY_ASSETS_CHOICES.keys()),
+    parser.add_argument("--copy-assets", choices=list(COPY_FUNCTIONS.keys()),
                         default="copy", dest="copy_fn",
                         help=COPY_ASSETS_HELP)
 
@@ -520,24 +550,12 @@ and produce reStructuredText, HTML, or JSON output.""")
     parser.add_argument("--traceback", action="store_true",
                         default=False, help=TRACEBACK_HELP)
 
+    return parser
 
-    args = parser.parse_args()
-    for dirpath in args.coq_args_I:
-        args.sertop_args.extend(("-I", dirpath))
-    for pair in args.coq_args_R:
-        args.sertop_args.extend(("-R", ",".join(pair)))
-    for pair in args.coq_args_Q:
-        args.sertop_args.extend(("-Q", ",".join(pair)))
+def parse_arguments():
+    parser = build_parser()
+    return post_process_arguments(parser, parser.parse_args())
 
-    # argparse applies ‘type’ before ‘choices’, so we do the conversion here
-    args.copy_fn = COPY_ASSETS_CHOICES[args.copy_fn]
-
-    try:
-        fill_in_arguments(args)
-    except argparse.ArgumentTypeError as e:
-        parser.error(str(e))
-
-    return args
 
 # Entry point
 # ===========
@@ -546,40 +564,43 @@ def call_pipeline_step(step, state, ctx):
     params = list(inspect.signature(step).parameters.keys())[1:]
     return step(state, **{p: ctx[p] for p in params})
 
-def read_input(fpath, args):
+def build_context(fpath, args):
     if fpath == "-":
-        return (args.stdin_filename or "-"), "-", sys.stdin.read()
-    fname = os.path.basename(fpath)
-    with open(fpath) as f:
-        return fpath, fname, f.read()
+        fname, fpath = "-", (args.stdin_filename or "-")
+    else:
+        fname = os.path.basename(fpath)
 
-def build_context(fpath, fname, args):
     ctx = {"fpath": fpath, "fname": fname, **vars(args)}
+
     if args.output_directory is None:
-        if fpath == "-":
+        if fname == "-":
             ctx["output_directory"] = "."
         else:
             ctx["output_directory"] = os.path.dirname(os.path.abspath(fpath))
+
     return ctx
 
-def main():
-    args = parse_arguments()
-
+def process_pipelines(args):
     if args.debug:
         from . import core
         core.DEBUG = True
+
     try:
         for fpath, pipeline in args.pipelines:
-            fpath, fname, state = read_input(fpath, args)
-            ctx = build_context(fpath, fname, args)
+            state, ctx = None, build_context(fpath, args)
             for step in pipeline:
                 state = call_pipeline_step(step, state, ctx)
     except (ValueError, FileNotFoundError) as e:
         if args.traceback:
             raise e
-        sys.stderr.write("Exiting early due to an error:\n")
-        sys.stderr.write(str(e))
+        print("Exiting early due to an error:", file=sys.stderr)
+        print(str(e), file=sys.stderr)
         sys.exit(1)
+
+
+def main():
+    args = parse_arguments()
+    process_pipelines(args)
 
 # Alternative CLIs
 # ================
