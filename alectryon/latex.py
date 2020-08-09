@@ -19,7 +19,6 @@
 # SOFTWARE.
 
 import re
-import textwrap
 
 from .core import CoqText, RichSentence, CoqMessages, CoqGoals
 from . import transforms, __version__, GENERATOR
