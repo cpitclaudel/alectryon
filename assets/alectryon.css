@@ -39,6 +39,18 @@ SOFTWARE.
     margin: 0;
 }
 
+/* Undo <small> and <blockquote>, added to improve RSS rendering. */
+
+.alectryon-io small.coq-output {
+    font-size: inherit;
+}
+
+.alectryon-io blockquote.coq-goal,
+.alectryon-io blockquote.coq-message {
+    font-weight: normal;
+    font-size: inherit;
+}
+
 /***************/
 /* Main styles */
 /***************/
@@ -199,7 +211,6 @@ In any case, make an exception for comments:
     padding: 0.25rem 0;
     overflow: visible; /* Let box-shadows overflow */
     z-index: 1; /* Default to an index lower than that used by :hover */
-    font-size: inherit; /* Undo <small>, added to improve RSS rendering */
 }
 
 @media (any-hover: hover) { /* See note above about this @media query */
