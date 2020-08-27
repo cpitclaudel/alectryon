@@ -127,7 +127,7 @@ class HtmlGenerator:
         attrs = {"style": "display: none"} # Most RSS readers ignore stylesheets
         if checked:
             attrs["checked"] = "checked"
-        tags.input(type="checkbox", id=nm, cls=cls, **attrs)
+        tags.input_(type="checkbox", id=nm, cls=cls, **attrs)
         return nm
 
     def gen_goals(self, first, more):
