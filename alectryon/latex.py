@@ -141,15 +141,15 @@ class Text(Raw):
     def format(self, indent, verbatim):
         return self.raw_format(self.ESCAPES(self.s), indent, verbatim)
 
-class environments:
+class Environments:
     def __getattribute__(self, env_name):
         return lambda *args, **kwargs: Environment(env_name, *args, **kwargs)
-environments = environments()
+environments = Environments()
 
-class macros:
+class Macros:
     def __getattribute__(self, macro_name):
         return lambda *args, **kwargs: Macro(macro_name, *args, **kwargs)
-macros = macros()
+macros = Macros()
 
 class LatexGenerator:
     def __init__(self, highlighter):
