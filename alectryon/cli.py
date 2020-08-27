@@ -20,6 +20,7 @@
 
 import argparse
 import inspect
+import os
 import os.path
 import shutil
 import sys
@@ -36,7 +37,7 @@ def read_plain(_, fpath, fname):
 def read_json(_, fpath, fname):
     from json import load
     if fname == "-":
-        return load(sys.stdin.read())
+        return load(sys.stdin)
     with open(fpath) as f:
         return load(f)
 
