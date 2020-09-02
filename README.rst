@@ -12,7 +12,7 @@ Alectryon is typically used in one of three ways:
 
 - As a standalone compiler, allowing you to include prose delimited by special ``(*| … |*)`` comments directly into your Coq source files (in the style of coqdoc).  When invoked, Alectryon translates your Coq file into a reStructuredText document and compiles it using the standard reStructuredText toolchain.
 
-For background information and live examples, see the `quickstart guide <FIXME>` on the PLV blog.
+For background information and live examples, check out the `latest draft <https://pit-claudel.fr/clement/papers/drafts/alectryon.pdf>`__ (currently under review at SLE), or the `quickstart guide <https://plv.csail.mit.edu/blog/drafts/alectryon.html>`__ on the PLV blog.
 
 Setup
 =====
