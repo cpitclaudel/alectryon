@@ -2,6 +2,8 @@
  Alectryon
 ===========
 
+**Currently under peer-review; please don't tweet or share too widely.  Thanks!**
+
 A library to process Coq snippets embedded in documents, showing goals and messages for each Coq sentence.  The goal of Alectryon is to make it easy to write papers, webpages, and other documents that show bits of Coq code along with their output.
 
 Alectryon is typically used in one of three ways:
