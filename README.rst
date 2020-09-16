@@ -20,8 +20,8 @@ Setup
 =====
 
 Dependencies (OCaml, Python 3):
-    ``opam install coq-serapi=8.10.0+0.7.0``
-    ``python3 -m pip install --user pygments==2.5.2 dominate==2.4.0 docutils==0.16``
+    | ``opam install coq-serapi=8.10.0+0.7.0``
+    | ``python3 -m pip install --user pygments==2.5.2 dominate==2.4.0 docutils==0.16``
 
 The core library only depends on ``coq-serapi``.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires the ``docutils`` library.
 
