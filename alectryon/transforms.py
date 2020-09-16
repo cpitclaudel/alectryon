@@ -35,9 +35,13 @@ class IOAnnots:
             self.update(annot)
 
     NO = re.compile("no-")
-    FILTER_ALL = {'in': True, 'goals': True, 'messages': True}
-    FILTER_NONE = {'in': False, 'goals': False, 'messages': False}
     RE = re.compile("[.]([-a-z]+)")
+    FILTER_ALL = {'in': True, 'hyps': True, 'ccls': True, 'messages': True}
+    FILTER_NONE = {'in': False, 'hyps': False, 'ccls': False, 'messages': False}
+    META_FLAGS = {
+        'out': ('messages', 'hyps', 'ccls'),
+        'goals': ('hyps', 'ccls')
+    }
 
     def update(self, annot):
         if annot == 'fails':
@@ -59,7 +63,7 @@ class IOAnnots:
             negated, annot = self.NO.match(annot), self.NO.sub("", annot)
             if self.filters is None:
                 self.filters = copy(self.FILTER_ALL if negated else self.FILTER_NONE)
-            flags = ('messages', 'goals') if annot == 'out' else (annot,)
+            flags = self.META_FLAGS.get(annot, (annot,))
             for flag in flags:
                 if flag not in self.filters:
                     raise ValueError("Unknown flag {}".format(flag))
@@ -120,7 +124,7 @@ def should_keep_output(output, annots):
     if isinstance(output, CoqMessages):
         return annots["messages"] and output.messages
     if isinstance(output, CoqGoals):
-        return annots["goals"] and output.goals
+        return (annots["hyps"] or annots["ccls"]) and output.goals
     assert False
 
 def commit_io_annotations(fragments, discard_folded=False):
@@ -134,11 +138,19 @@ def commit_io_annotations(fragments, discard_folded=False):
         if isinstance(fr, RichSentence):
             if fr.annots.hide:
                 continue
+
             contents = fr.contents if fr.annots["in"] else None
             if discard_folded and not fr.annots.unfold:
                 outputs = []
             else:
                 outputs = [o for o in fr.outputs if should_keep_output(o, fr.annots)]
+
+            if not fr.annots["hyps"]:
+                for o in outputs:
+                    if isinstance(o, CoqGoals):
+                        for g in o.goals:
+                            g.hypotheses.clear()
+
             if contents is None and outputs and not fr.annots.unfold:
                 MSG = "Cannot show output of {!r} without .in or .unfold."
                 raise ValueError(MSG.format(fr.contents))
