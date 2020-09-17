@@ -502,6 +502,10 @@ and produce reStructuredText, HTML, or JSON output.""")
                         default="copy", dest="copy_fn",
                         help=COPY_ASSETS_HELP)
 
+    CACHE_DIRECTORY_HELP = ("Cache Coq's output in DIRECTORY.")
+    parser.add_argument("--cache-directory", default=None, metavar="DIRECTORY",
+                        help=CACHE_DIRECTORY_HELP)
+
     NO_HEADER_HELP = "Do not insert a header with usage instructions in webpages."
     parser.add_argument("--no-header", action='store_true',
                         help=NO_HEADER_HELP)
@@ -585,6 +589,10 @@ def process_pipelines(args):
     if args.debug:
         from . import core
         core.DEBUG = True
+
+    if args.cache_directory:
+        from . import docutils
+        docutils.CACHE_DIRECTORY = args.cache_directory
 
     try:
         for fpath, pipeline in args.pipelines:
