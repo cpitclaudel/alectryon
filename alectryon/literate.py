@@ -11,13 +11,15 @@ class StringView:
     def __init__(self, s, beg=0, end=None):
         end = end if end is not None else len(s)
         self.s, self.beg, self.end = s, beg, end
+        assert self.beg <= len(s)
+        assert self.beg <= self.end, (self.beg, self.end)
 
     def __len__(self):
         return self.end - self.beg
 
     def __getitem__(self, idx):
         if isinstance(idx, slice):
-            beg = self.beg + (idx.start or 0)
+            beg = min(self.beg + (idx.start or 0), self.end)
             if idx.stop is None:
                 end = self.end
             elif idx.stop < 0:
