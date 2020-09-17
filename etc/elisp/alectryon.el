@@ -142,7 +142,7 @@ The output goes into the current buffer."
   (let* ((python (executable-find alectryon-python-executable))
          (converter (alectryon--locate-executable))
          (buffer (current-buffer))
-         (args `(,@args "-")))
+         (args `(,@args "--traceback" "-")))
     (let* ((ex (with-current-buffer input
                  (alectryon--widened
                    (apply #'call-process-region nil nil python
