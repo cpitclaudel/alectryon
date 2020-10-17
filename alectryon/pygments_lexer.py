@@ -407,6 +407,7 @@ class CoqLexer(RegexLexer):
     cmd = kwds['cmd'] + kwds['decls'] + kwds['expects_name'] + kwds['expects_binders']
 
     name_re = r"[{}][{}]*".format(identstart, identpart)
+    evar_re = r"[?]{}".format(name_re)
 
     not_identpart = r"\b(?![{}])".format(identpart)
     ws = lambda w, suffix=not_identpart: words(w, prefix=r'\b', suffix=suffix)
@@ -520,6 +521,7 @@ class CoqLexer(RegexLexer):
         # running other filters) using a ``TokenMergeFilter``.
         '_other': [
             (name_re, Name),
+            (evar_re, Name.Label),
             (r"[{}]".format(symbol), Operator),
         ],
     }
