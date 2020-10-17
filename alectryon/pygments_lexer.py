@@ -522,7 +522,10 @@ class CoqLexer(RegexLexer):
         '_other': [
             (name_re, Name),
             (evar_re, Name.Label),
-            (r"[{}]".format(symbol), Operator),
+            # ['] is not a symbol character according to the grammar, but it has
+            # so many uses (plus notations) that handling all of them properly
+            # is just too complicated.  Bail out and recognize it here.
+            (r"['{}]".format(symbol), Operator),
         ],
     }
 
