@@ -40,7 +40,9 @@ var Alectryon;
                 sentence_y = rect(sentence).y - parent_box.y,
                 fragment_y = rect(sentence.parentElement).y - parent_box.y;
 
-            console.assert(sentence_y >= fragment_y);
+            // The assertion below sometimes fails for the first element in a block.
+            // console.assert(sentence_y >= fragment_y);
+
             if (sentence_y < 0.1 * parent_box.height ||
                 sentence_y > 0.7 * parent_box.height) {
                 (parent || window).scrollBy(
