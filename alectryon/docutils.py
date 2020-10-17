@@ -516,9 +516,7 @@ class HtmlTranslator(DefaultWriter().translator_class):
     CSS = (*ASSETS.ALECTRYON_CSS, *ASSETS.DOCUTILS_CSS, *ASSETS.PYGMENTS_CSS)
 
     JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>'
-    MATHJAX_URL = ("MathJax "
-                   "https://cdnjs.cloudflare.com/ajax/libs/"
-                   "mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML-full")
+    MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.min.js"
 
     def stylesheet_call(self, name):
         if self.settings.embed_stylesheet:
@@ -529,7 +527,7 @@ class HtmlTranslator(DefaultWriter().translator_class):
     def __init__(self, document):
         super().__init__(document)
         self.settings.syntax_highlight = "short"
-        self.settings.math_output = self.MATHJAX_URL
+        self.settings.math_output = "MathJax " + self.MATHJAX_URL
         self.stylesheet.extend(self.stylesheet_call(css) for css in self.CSS)
         self.stylesheet.extend(self.JS_TEMPLATE.format(js) for js in self.JS)
         cls = wrap_classes("standalone", self.settings.webpage_style)
