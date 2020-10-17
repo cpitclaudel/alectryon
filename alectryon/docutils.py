@@ -514,8 +514,9 @@ DefaultWriter = get_writer_class('html')
 class HtmlTranslator(DefaultWriter().translator_class):
     JS = ASSETS.ALECTRYON_JS
     CSS = (*ASSETS.ALECTRYON_CSS, *ASSETS.DOCUTILS_CSS, *ASSETS.PYGMENTS_CSS)
+    ADDITIONAL_HEADS = [ASSETS.IBM_PLEX_CDN, ASSETS.FIRA_CODE_CDN]
 
-    JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>'
+    JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>\n'
     MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.min.js"
 
     def stylesheet_call(self, name):
@@ -530,6 +531,7 @@ class HtmlTranslator(DefaultWriter().translator_class):
         self.settings.math_output = "MathJax " + self.MATHJAX_URL
         self.stylesheet.extend(self.stylesheet_call(css) for css in self.CSS)
         self.stylesheet.extend(self.JS_TEMPLATE.format(js) for js in self.JS)
+        self.stylesheet.extend(hd + "\n" for hd in self.ADDITIONAL_HEADS)
         cls = wrap_classes("standalone", self.settings.webpage_style)
         self.body_prefix.append('<div class="{}">'.format(cls))
         if not self.settings.no_header:

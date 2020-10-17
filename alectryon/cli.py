@@ -248,11 +248,10 @@ def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets,
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
 
-    PLEX_CDN = ("https://fonts.googleapis.com/css2?family=IBM+Plex+Serif"
-                ":ital,wght@0,400;0,700;1,400;1,700&display=swap")
-    FIRA_CODE_CDN = "https://unpkg.com/firacode/distr/fira_code.css"
-    for css in (PLEX_CDN, FIRA_CODE_CDN, *ASSETS.ALECTRYON_CSS):
+    for css in ASSETS.ALECTRYON_CSS:
         doc.head.add(tags.link(rel="stylesheet", href=css))
+    for link in (ASSETS.IBM_PLEX_CDN, ASSETS.FIRA_CODE_CDN):
+        doc.head.add(raw(link))
     for js in ASSETS.ALECTRYON_JS:
         doc.head.add(tags.script(src=js))
 

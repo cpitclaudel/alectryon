@@ -2,6 +2,7 @@
 The MIT License (MIT)
 
 Copyright (c) 2014 Matthias Eisen
+Further changes Copyright (c) 2020 Clément Pit-Claudel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +23,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ******************************************************************************/
 
+code,
+kbd,
+pre,
+samp,
+tt,
+.docutils.literal {
+    font-family: 'Iosevka Slab Web', 'Iosevka Web', 'Iosevka Slab', 'Iosevka', 'Fira Code', monospace;
+    font-feature-settings: "XV00" 1; /* Use Coq ligatures when Iosevka is available */
+}
 
 body {
-    font-family: Palatino, "Palatino LT STD", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    font-family: 'IBM Plex Serif', 'PT Serif', 'Merriweather', 'DejaVu Serif', serif;
     color: #111;
 }
 
