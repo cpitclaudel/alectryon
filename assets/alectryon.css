@@ -587,7 +587,9 @@ In any case, make an exception for comments:
 }
 
 .alectryon-standalone.alectryon-windowed > * {
+    /* Override properties of docutils_basic.css */
     margin-left: 0;
+    max-width: unset;
 }
 
 .alectryon-standalone.alectryon-windowed .alectryon-io {
