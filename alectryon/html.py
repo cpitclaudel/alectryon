@@ -100,12 +100,14 @@ class HtmlGenerator:
                     tags.span(", ".join(hyp.names), cls="hyp-names")
                     with tags.span():
                         if hyp.body:
-                            with tags.span(cls="hyp-body"):
+                            with tags.span(cls="hyp-body-block"):
                                 tags.span(":=", cls="hyp-punct")
-                                self.highlight(hyp.body)
-                        with tags.span(cls="hyp-type"):
+                                with tags.span(cls="hyp-body"):
+                                    self.highlight(hyp.body)
+                        with tags.span(cls="hyp-type-block"):
                             tags.span(":", cls="hyp-punct")
-                            self.highlight(hyp.type)
+                            with tags.span(cls="hyp-type"):
+                                self.highlight(hyp.type)
 
     def gen_goal(self, goal, toggle=None):
         """Serialize a goal to HTML."""

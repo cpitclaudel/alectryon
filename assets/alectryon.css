@@ -369,8 +369,8 @@ In any case, make an exception for comments:
     margin: 0 0.5rem;
 }
 
-.alectryon-io .hyp-body,
-.alectryon-io .hyp-type {
+.alectryon-io .hyp-body-block,
+.alectryon-io .hyp-type-block {
     display: flex;
     align-items: baseline;
 }
