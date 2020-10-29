@@ -247,6 +247,7 @@ def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets,
     doc = document(title=fname)
     doc.head.add(tags.meta(charset="utf-8"))
     doc.head.add(tags.meta(name="generator", content=GENERATOR))
+    doc.set_attribute("class", "alectryon-standalone")
 
     for css in ASSETS.ALECTRYON_CSS:
         doc.head.add(tags.link(rel="stylesheet", href=css))
@@ -261,7 +262,7 @@ def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets,
     pygments_css = HTML_FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
 
-    cls = wrap_classes("standalone", webpage_style, *html_classes)
+    cls = wrap_classes(webpage_style, *html_classes)
     root = doc.body.add(tags.article(cls=cls))
     if not no_header:
         root.add(raw(gen_header(SerAPI.version_info())))

@@ -519,6 +519,9 @@ class HtmlTranslator(DefaultWriter().translator_class):
     JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>\n'
     MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.min.js"
 
+    head_prefix_template = ('<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone"'
+                            ' xml:lang="%(lang)s" lang="%(lang)s">\n<head>\n')
+
     def stylesheet_call(self, name):
         if self.settings.embed_stylesheet:
             # Expand only if we're going to inline; otherwise keep relative
@@ -532,7 +535,7 @@ class HtmlTranslator(DefaultWriter().translator_class):
         self.stylesheet.extend(self.stylesheet_call(css) for css in self.CSS)
         self.stylesheet.extend(self.JS_TEMPLATE.format(js) for js in self.JS)
         self.stylesheet.extend(hd + "\n" for hd in self.ADDITIONAL_HEADS)
-        cls = wrap_classes("standalone", self.settings.webpage_style)
+        cls = wrap_classes(self.settings.webpage_style)
         self.body_prefix.append('<div class="{}">'.format(cls))
         if not self.settings.no_header:
             from .core import SerAPI

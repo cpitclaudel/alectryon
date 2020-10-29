@@ -541,6 +541,14 @@ In any case, make an exception for comments:
     font-family: 'IBM Plex Serif', 'PT Serif', 'Merriweather', 'DejaVu Serif', serif;
 }
 
+@media screen and (min-width: 50rem) {
+    html.alectryon-standalone {
+        /* Prevent flickering when hovering a block causes scrollbars to appear. */
+        margin-left: calc(100vw - 100%);
+        margin-right: 0;
+    }
+}
+
 /* Coqdoc */
 
 .alectryon-coqdoc .doc .code,
@@ -559,18 +567,18 @@ In any case, make an exception for comments:
 
 /* Centered, Floating */
 
-.alectryon-standalone.alectryon-centered,
-.alectryon-standalone.alectryon-floating {
+.alectryon-standalone .alectryon-centered,
+.alectryon-standalone .alectryon-floating {
     max-width: 50rem;
     margin: auto;
 }
 
 @media (min-width: 80rem) {
-    .alectryon-standalone.alectryon-floating {
+    .alectryon-standalone .alectryon-floating {
         max-width: 80rem;
     }
 
-    .alectryon-standalone.alectryon-floating > * {
+    .alectryon-standalone .alectryon-floating > * {
         width: 50%;
         margin-left: 0;
     }
@@ -578,7 +586,7 @@ In any case, make an exception for comments:
 
 /* Windowed */
 
-.alectryon-standalone.alectryon-windowed {
+.alectryon-standalone .alectryon-windowed {
     display: block;
     margin: 0;
     overflow-y: auto;
@@ -586,13 +594,13 @@ In any case, make an exception for comments:
     padding: 0 1rem;
 }
 
-.alectryon-standalone.alectryon-windowed > * {
+.alectryon-standalone .alectryon-windowed > * {
     /* Override properties of docutils_basic.css */
     margin-left: 0;
     max-width: unset;
 }
 
-.alectryon-standalone.alectryon-windowed .alectryon-io {
+.alectryon-standalone .alectryon-windowed .alectryon-io {
     box-sizing: border-box;
     width: 100%;
 }
@@ -613,7 +621,7 @@ In any case, make an exception for comments:
 }
 
 @media screen and (min-width: 60rem) {
-    .alectryon-standalone.alectryon-windowed {
+    .alectryon-standalone .alectryon-windowed {
         border-right-width: thin;
         bottom: 0;
         left: 0;
@@ -621,8 +629,8 @@ In any case, make an exception for comments:
         top: 0;
     }
 
-    .alectryon-standalone.alectryon-windowed .coq-sentence:hover .coq-output,
-    .alectryon-standalone.alectryon-windowed .coq-sentence.alectryon-target .coq-output {
+    .alectryon-standalone .alectryon-windowed .coq-sentence:hover .coq-output,
+    .alectryon-standalone .alectryon-windowed .coq-sentence.alectryon-target .coq-output {
         bottom: 0;
         left: 50%;
         right: 0;
@@ -631,7 +639,7 @@ In any case, make an exception for comments:
 }
 
 @media screen and (max-width: 60rem) {
-    .alectryon-standalone.alectryon-windowed {
+    .alectryon-standalone .alectryon-windowed {
         border-bottom-width: 1px;
         bottom: 40%;
         left: 0;
@@ -639,8 +647,8 @@ In any case, make an exception for comments:
         top: 0;
     }
 
-    .alectryon-standalone.alectryon-windowed .coq-sentence:hover .coq-output,
-    .alectryon-standalone.alectryon-windowed .coq-sentence.alectryon-target .coq-output {
+    .alectryon-standalone .alectryon-windowed .coq-sentence:hover .coq-output,
+    .alectryon-standalone .alectryon-windowed .coq-sentence.alectryon-target .coq-output {
         bottom: 0;
         left: 0;
         right: 0;
