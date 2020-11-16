@@ -14,7 +14,7 @@ Alectryon is typically used in one of three ways:
 
 - As a standalone compiler, allowing you to include prose delimited by special ``(*| … |*)`` comments directly into your Coq source files (in the style of coqdoc).  When invoked, Alectryon translates your Coq file into a reStructuredText document and compiles it using the standard reStructuredText toolchain.
 
-For background information, check out the  `quickstart guide <https://plv.csail.mit.edu/blog/drafts/alectryon.html>`__ on the MIT PLV blog or the `SLE2020 paper <https://doi.org/10.1145/3426425.3426940>`__ (open access after the conference, for now see the `preprint <https://pit-claudel.fr/clement/papers/alectryon-SLE20.pdf>`__) and its `live examples <https://alectryon-paper.github.io/>`__.
+For background information, check out the  `quickstart guide <https://plv.csail.mit.edu/blog/alectryon.html>`__ on the MIT PLV blog or the `SLE2020 paper <https://doi.org/10.1145/3426425.3426940>`__ (open access after the conference, for now see the `preprint <https://pit-claudel.fr/clement/papers/alectryon-SLE20.pdf>`__) and its `live examples <https://alectryon-paper.github.io/>`__.
 
 Alectryon is free software under a very permissive license.  If you use it, please remember to `cite it <https://pit-claudel.fr/clement/papers/alectryon-SLE20.bib>`__ and let me know!
 
