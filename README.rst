@@ -2,8 +2,6 @@
  Alectryon
 ===========
 
-**Accepted at SLE 2020!** Come see `the talk <https://conf.researchr.org/details/sle-2020/sle-2020-papers/11/Untangling-mechanized-proofs>`__ on November 16!
-
 A library to process Coq snippets embedded in documents, showing goals and messages for each Coq sentence.  Also a literate programming toolkit for Coq.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix Coq code and prose.
 
 Alectryon is typically used in one of three ways:
@@ -14,7 +12,7 @@ Alectryon is typically used in one of three ways:
 
 - As a standalone compiler, allowing you to include prose delimited by special ``(*| … |*)`` comments directly into your Coq source files (in the style of coqdoc).  When invoked, Alectryon translates your Coq file into a reStructuredText document and compiles it using the standard reStructuredText toolchain.
 
-For background information, check out the  `quickstart guide <https://plv.csail.mit.edu/blog/alectryon.html>`__ on the MIT PLV blog or the `SLE2020 paper <https://doi.org/10.1145/3426425.3426940>`__ (open access after the conference, for now see the `preprint <https://pit-claudel.fr/clement/papers/alectryon-SLE20.pdf>`__) and its `live examples <https://alectryon-paper.github.io/>`__.
+For background information, check out the  `quickstart guide <https://plv.csail.mit.edu/blog/alectryon.html>`__ on the MIT PLV blog, the `SLE2020 paper <https://doi.org/10.1145/3426425.3426940>`__ (open access) and its `live examples <https://alectryon-paper.github.io/>`__, or the `conference talk <https://www.youtube.com/watch?v=f8CKGoP3_us>`__.
 
 Alectryon is free software under a very permissive license.  If you use it, please remember to `cite it <https://pit-claudel.fr/clement/papers/alectryon-SLE20.bib>`__ and let me know!
 
