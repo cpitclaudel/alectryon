@@ -20,10 +20,10 @@ Setup
 =====
 
 Dependencies (OCaml, Python 3):
-    | ``opam install coq-serapi=8.10.0+0.7.0``
-    | ``python3 -m pip install --user pygments==2.5.2 dominate==2.4.0 beautifulsoup4==4.8.2 docutils==0.16``
+    | ``opam install "coq-serapi>=8.10.0+0.7.0"``
+    | ``python3 -m pip install --user --upgrade pygments dominate beautifulsoup4 docutils``
 
-The core library only depends on ``coq-serapi``.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires ``docutils``; Coqdoc support requires ``beautifulsoup4``.
+The core library only depends on ``coq-serapi``.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires ``docutils``; Coqdoc support requires ``beautifulsoup4``.  Support for Coq versions follows SerAPI; Coq ≥ 8.10 works well and ≥ 8.12 works best.
 
 Usage
 =====
