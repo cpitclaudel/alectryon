@@ -111,6 +111,7 @@ class FileCache:
         makedirs(self.cache_dir, exist_ok=True)
         self.metadata = self.normalize(metadata)
         self.metadata["cache_version"] = self.CACHE_VERSION
+        self.data = self._read()
 
     @staticmethod
     def normalize(obj):
@@ -120,7 +121,7 @@ class FileCache:
             return {k: FileCache.normalize(v) for (k, v) in obj.items()}
         return obj
 
-    def validate(self, data, reference):
+    def _validate(self, data, reference):
         metadata = data.get("metadata")
         if self.metadata != metadata:
             MSG = "Outdated metadata in {} ({} != {}): recomputing annotations"
@@ -133,22 +134,29 @@ class FileCache:
             return False
         return True
 
-    def get(self, chunks):
+    def _read(self):
         try:
             with open(self.cache_file) as cache:
-                data = self.normalize(json.load(cache))
+                return self.normalize(json.load(cache))
         except FileNotFoundError:
             return None
-        if not self.validate(data, chunks):
-            return None
-        return annotated_of_json(data.get("annotated"))
 
-    def put(self, chunks, annotated):
+    def get(self, chunks):
+        if self.data is None or not self._validate(self.data, chunks):
+            return None
+        return annotated_of_json(self.data.get("annotated"))
+
+    @property
+    def generator(self):
+        return self.data.get("generator", ["Coq+SerAPI", "??"])
+
+    def put(self, chunks, annotated, generator):
         with open(self.cache_file, mode="w") as cache:
-            data = {"metadata": self.metadata,
-                    "chunks": list(chunks),
-                    "annotated": json_of_annotated(annotated)}
-            json.dump(data, cache, indent=2)
+            self.data = {"generator": generator,
+                       "metadata": self.metadata,
+                       "chunks": list(chunks),
+                       "annotated": json_of_annotated(annotated)}
+            json.dump(self.data, cache, indent=2)
 
 class DummyCache:
     def __init__(self, *_args):

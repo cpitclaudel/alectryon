@@ -67,7 +67,7 @@ from docutils.transforms import Transform
 from docutils.writers import get_writer_class
 
 from . import transforms
-from .core import annotate
+from .core import annotate, SerAPI
 from .html import ASSETS, HtmlGenerator, gen_header, wrap_classes
 from .pygments import highlight_html, added_tokens, replace_builtin_coq_lexer
 
@@ -168,14 +168,15 @@ class AlectryonTransform(Transform):
         cache = Cache(CACHE_DIRECTORY, self.document['source'], sertop_args)
         annotated = cache.get(chunks)
         if annotated is None:
+            # Later: decouple from .core by generalizing over `annotate`
             annotated = annotate(chunks, sertop_args)
-            cache.put(chunks, annotated)
+            cache.put(chunks, annotated, SerAPI.version_info())
         return annotated
 
     def annotate(self, pending_nodes, config):
         sertop_args = (*self.SERTOP_ARGS, *config.sertop_args)
         chunks = [pending.details["contents"] for pending in pending_nodes]
-        return self.annotate_cached(chunks, sertop_args) # if chunks else []
+        return self.annotate_cached(chunks, sertop_args)
 
     def replace_node(self, config, writer, pending, fragments):
         annots = transforms.IOAnnots(*pending.details['options'])
@@ -312,7 +313,6 @@ class AlectryonHeaderDirective(Directive):
     has_content = False
 
     def run(self):
-        from .core import SerAPI
         return [nodes.raw('', gen_header(SerAPI.version_info()))]
 
 # This is just a small example
@@ -538,7 +538,6 @@ class HtmlTranslator(DefaultWriter().translator_class):
         cls = wrap_classes(self.settings.webpage_style)
         self.body_prefix.append('<div class="{}">'.format(cls))
         if not self.settings.no_header:
-            from .core import SerAPI
             self.body_prefix.append(gen_header(SerAPI.version_info()))
         self.body_suffix.insert(0, '</div>')
 
