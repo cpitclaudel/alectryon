@@ -61,6 +61,9 @@ def setup(app):
     if app.config.default_role is None:
         app.config.default_role = docutils.coq_code_role.name
 
+    for (_doc, _flags, opts) in docutils.ALECTRYON_SETTINGS:
+        app.add_config_value(opts["dest"], opts["default"], "env")
+
     for transform in docutils.TRANSFORMS:
         app.add_transform(transform)
 

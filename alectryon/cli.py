@@ -69,7 +69,8 @@ def register_docutils(v, sertop_args):
     setup()
     return v
 
-def _gen_docutils_html(source, fpath, webpage_style, no_header,
+def _gen_docutils_html(source, fpath,
+                       webpage_style, include_banner, include_vernums,
                        html_assets, traceback, Parser, Reader):
     from docutils.core import publish_string
     from .docutils import HtmlTranslator, HtmlWriter
@@ -85,7 +86,8 @@ def _gen_docutils_html(source, fpath, webpage_style, no_header,
         'embed_stylesheet': False,
         'stylesheet_path': None,
         'stylesheet_dirs': [],
-        'no_header': no_header,
+        'alectryon_banner': include_banner,
+        'alectryon_vernums': include_vernums,
         'webpage_style': webpage_style,
         'input_encoding': 'utf-8',
         'output_encoding': 'utf-8'
@@ -102,15 +104,23 @@ def _gen_docutils_html(source, fpath, webpage_style, no_header,
         settings_overrides=settings_overrides, config_section=None,
         enable_exit_status=True).decode("utf-8")
 
-def gen_rstcoq_html(coq, fpath, webpage_style, no_header, html_assets, traceback):
+def gen_rstcoq_html(coq, fpath, webpage_style,
+                    include_banner, include_vernums,
+                    html_assets, traceback):
     from .docutils import RSTCoqParser, RSTCoqStandaloneReader
-    return _gen_docutils_html(coq, fpath, webpage_style, no_header, html_assets, traceback,
+    return _gen_docutils_html(coq, fpath, webpage_style,
+                         include_banner, include_vernums,
+                         html_assets, traceback,
                          RSTCoqParser, RSTCoqStandaloneReader)
 
-def gen_rst_html(rst, fpath, webpage_style, no_header, html_assets, traceback):
+def gen_rst_html(rst, fpath, webpage_style,
+                 include_banner, include_vernums,
+                 html_assets, traceback):
     from docutils.parsers.rst import Parser
     from docutils.readers.standalone import Reader
-    return _gen_docutils_html(rst, fpath, webpage_style, no_header, html_assets, traceback,
+    return _gen_docutils_html(rst, fpath, webpage_style,
+                         include_banner, include_vernums,
+                         html_assets, traceback,
                          Parser, Reader)
 
 def _docutils_cmdline(description, Reader, Parser):
@@ -163,7 +173,7 @@ def _scrub_fname(fname):
     import re
     return re.sub("[^-a-zA-Z0-9]", "-", fname)
 
-def gen_html_snippets(annotated, fname):
+def gen_html_snippets(annotated, include_vernums, fname):
     from .html import HtmlGenerator
     from .pygments import highlight_html
     return HtmlGenerator(highlight_html, _scrub_fname(fname)).gen(annotated)
@@ -237,11 +247,14 @@ def copy_assets(state, html_assets, copy_fn, output_directory):
         cp(output_directory, assets=html_assets, copy_fn=copy_fn)
     return state
 
-def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets, html_classes):
+def dump_html_standalone(snippets, fname, webpage_style,
+                         include_banner, include_vernums,
+                         html_assets, html_classes):
     from dominate import tags, document
     from dominate.util import raw
+    from . import GENERATOR
     from .core import SerAPI
-    from .html import gen_header, wrap_classes, GENERATOR, ASSETS
+    from .html import gen_banner, wrap_classes, ASSETS
     from .pygments import HTML_FORMATTER
 
     doc = document(title=fname)
@@ -264,8 +277,8 @@ def dump_html_standalone(snippets, fname, webpage_style, no_header, html_assets,
 
     cls = wrap_classes(webpage_style, *html_classes)
     root = doc.body.add(tags.article(cls=cls))
-    if not no_header:
-        root.add(raw(gen_header(SerAPI.version_info())))
+    if include_banner:
+        root.add(raw(gen_banner(SerAPI.version_info(), include_vernums)))
     for snippet in snippets:
         root.add(snippet)
 
@@ -507,8 +520,14 @@ and produce reStructuredText, HTML, or JSON output.""")
                         help=CACHE_DIRECTORY_HELP)
 
     NO_HEADER_HELP = "Do not insert a header with usage instructions in webpages."
-    parser.add_argument("--no-header", action='store_true',
+    parser.add_argument("--no-header", action='store_false',
+                        dest="include_banner", default="True",
                         help=NO_HEADER_HELP)
+
+    NO_VERSION_NUMBERS = "Omit version numbers in meta tags and headers."
+    parser.add_argument("--no-version-numbers", action='store_false',
+                        dest="include_vernums", default=True,
+                        help=NO_VERSION_NUMBERS)
 
     WEBPAGE_STYLE_HELP = "Choose a style for standalone webpages."
     WEBPAGE_STYLE_CHOICES = ("centered", "floating", "windowed")

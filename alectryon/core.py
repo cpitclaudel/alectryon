@@ -36,6 +36,10 @@ def debug(text, prefix):
     if DEBUG:
         print(indent(text.rstrip(), prefix), flush=True)
 
+class GeneratorInfo(namedtuple("GeneratorInfo", "name version")):
+    def fmt(self, include_version_info=True):
+        return "{} v{}".format(self.name, self.version) if include_version_info else self.name
+
 CoqHypothesis = namedtuple("CoqHypothesis", "names body type")
 CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
 CoqMessage = namedtuple("CoqMessage", "contents")
@@ -73,7 +77,7 @@ class SerAPI():
     @staticmethod
     def version_info(sertop_bin=SERTOP_BIN):
         bs = check_output([sertop_bin, "--version"])
-        return bs.decode('ascii', 'ignore').strip()
+        return GeneratorInfo("Coq+SerAPI", bs.decode('ascii', 'ignore').strip())
 
     def __init__(self, args=(), # pylint: disable=dangerous-default-value
                  sertop_bin=SERTOP_BIN,

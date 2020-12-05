@@ -68,7 +68,7 @@ from docutils.writers import get_writer_class
 
 from . import transforms
 from .core import annotate, SerAPI
-from .html import ASSETS, HtmlGenerator, gen_header, wrap_classes
+from .html import ASSETS, HtmlGenerator, gen_banner, wrap_classes
 from .pygments import highlight_html, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
@@ -81,6 +81,9 @@ class alectryon_pending(nodes.pending):
     pass
 
 class alectryon_pending_toggle(nodes.pending):
+    pass
+
+class alectryon_pending_banner(nodes.pending):
     pass
 
 # Transforms
@@ -97,6 +100,25 @@ LONG_LINE_THRESHOLD = 72
 
 CACHE_DIRECTORY = None
 """Directory in which to store cached annotations."""
+
+# LATER: dataclass
+class AlectryonState:
+    def __init__(self):
+        self.generator = "??"
+        self.transform_executed = False
+
+def _alectryon_state(document):
+    st = getattr(document, "alectryon_state", None)
+    if st is None:
+        st = document.alectryon_state = AlectryonState()
+    return st
+
+def _alectryon_banner(document):
+    generator = _alectryon_state(document).generator
+    opts = document.settings
+    if hasattr(opts, "env"):
+        opts = opts.env.config
+    return gen_banner(generator, opts.alectryon_vernums)
 
 class Config:
     def __init__(self, document):
@@ -171,7 +193,7 @@ class AlectryonTransform(Transform):
             # Later: decouple from .core by generalizing over `annotate`
             annotated = annotate(chunks, sertop_args)
             cache.put(chunks, annotated, SerAPI.version_info())
-        return annotated
+        return cache.generator, annotated
 
     def annotate(self, pending_nodes, config):
         sertop_args = (*self.SERTOP_ARGS, *config.sertop_args)
@@ -194,7 +216,8 @@ class AlectryonTransform(Transform):
     def apply_coq(self):
         config = Config(self.document)
         pending_nodes = self.document.traverse(alectryon_pending)
-        annotated = self.annotate(pending_nodes, config)
+        generator, annotated = self.annotate(pending_nodes, config)
+        _alectryon_state(self.document).generator = generator
         writer = HtmlGenerator(highlight_html, gensym_stem=self.document_id(self.document))
         for node, fragments in zip(pending_nodes, annotated):
             self.replace_node(config, writer, node, fragments)
@@ -225,14 +248,21 @@ class AlectryonTransform(Transform):
             if di:
                 self.insert_toggle_after(di, toggle(0), True)
 
+    def apply_banner(self):
+        header = _alectryon_banner(self.document)
+        for banner in self.document.traverse(alectryon_pending_banner):
+            banner.replace_self(nodes.raw('', header))
+
     def apply(self, **_kwargs):
         # The transform is added multiple times: once per directive, and once by
         # add_transform in Sphinx, so we need to make sure that running it twice
         # is safe (in particular, we must not overwrite the cache).
-        if not getattr(self.document, 'alectryon_transform_executed', False):
-            self.document.alectryon_transform_executed = True
+        state = _alectryon_state(self.document)
+        if not state.transform_executed:
+            state.transform_executed = True
             self.apply_coq()
             self.apply_toggle()
+            self.apply_banner()
 
 # Directives
 # ----------
@@ -303,7 +333,7 @@ class AlectryonToggleDirective(Directive):
         self.state_machine.document.note_pending(pending)
         return [pending]
 
-class AlectryonHeaderDirective(Directive):
+class AlectryonBannerDirective(Directive):
     """Display an explanatory header."""
     name = "alectryon-header"
 
@@ -313,7 +343,9 @@ class AlectryonHeaderDirective(Directive):
     has_content = False
 
     def run(self):
-        return [nodes.raw('', gen_header(SerAPI.version_info()))]
+        pending = alectryon_pending_banner(AlectryonTransform)
+        self.state_machine.document.note_pending(pending)
+        return [pending]
 
 # This is just a small example
 class ExperimentalExerciseDirective(Sidebar):
@@ -537,21 +569,32 @@ class HtmlTranslator(DefaultWriter().translator_class):
         self.stylesheet.extend(hd + "\n" for hd in self.ADDITIONAL_HEADS)
         cls = wrap_classes(self.settings.webpage_style)
         self.body_prefix.append('<div class="{}">'.format(cls))
-        if not self.settings.no_header:
-            self.body_prefix.append(gen_header(SerAPI.version_info()))
+        if self.settings.alectryon_banner:
+            self.body_prefix.append(_alectryon_banner(self.document))
         self.body_suffix.insert(0, '</div>')
+
+ALECTRYON_SETTINGS = [
+    ("Choose an Alectryon style",
+     ["--webpage-style"],
+     {"choices": ("centered", "floating", "windowed"),
+      "dest": "webpage_style",
+      "default": "centered", "metavar": "STYLE"}),
+    ("Omit Alectryon's explanatory header",
+     ["--no-header"],
+     {'default': True, 'action': 'store_false',
+      'dest': "alectryon_banner",
+      'validator': frontend.validate_boolean}),
+    ("Omit Alectryon's version info",
+     ["--no-version-numbers"],
+     {'default': True, 'action': 'store_false',
+      'dest': "alectryon_vernums",
+      'validator': frontend.validate_boolean})
+]
 
 class HtmlWriter(DefaultWriter):
     settings_spec = ('HTML-Specific Options', None,
-                     (("Choose an Alectryon style",
-                        ["--webpage-style"],
-                        {"choices": ("centered", "floating", "windowed"),
-                         "default": "centered", "metavar": "STYLE"}),
-                       ("Omit Alectryon's explanatory header",
-                        ["--no-header"],
-                        {'default': False, 'action': 'store_true',
-                         'validator': frontend.validate_boolean}),
-                       *DefaultWriter.settings_spec[-1]))
+                     (*ALECTRYON_SETTINGS,
+                      *DefaultWriter.settings_spec[-1]))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -560,10 +603,12 @@ class HtmlWriter(DefaultWriter):
 # Entry points
 # ============
 
-NODES = [alectryon_pending, alectryon_pending_toggle]
+NODES = [alectryon_pending,
+         alectryon_pending_toggle,
+         alectryon_pending_banner]
 TRANSFORMS = [AlectryonTransform]
 DIRECTIVES = [CoqDirective,
-              AlectryonToggleDirective, AlectryonHeaderDirective,
+              AlectryonToggleDirective, AlectryonBannerDirective,
               ExperimentalExerciseDirective]
 ROLES = [alectryon_bubble, coq_code_role, coq_id_role]
 

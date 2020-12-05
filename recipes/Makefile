@@ -1,4 +1,4 @@
-alectryon := ../alectryon.py --output-directory output --no-header
+alectryon := ../alectryon.py --output-directory output --no-version-numbers --traceback
 minimal := python3 -m alectryon.minimal
 
 assets := alectryon.css alectryon.js

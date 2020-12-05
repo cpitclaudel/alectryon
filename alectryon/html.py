@@ -69,15 +69,15 @@ class Gensym():
 # pylint: disable=line-too-long
 HEADER = (
     '<div class="alectryon-header">'
-    'Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running <a href="https://coq.inria.fr/">Coq</a>+<a href="https://github.com/ejgallego/coq-serapi">SerAPI</a> v{}. '
+    'Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running {}. '
     'Coq sources are in this panel; goals and messages will appear in the other. '
     'Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. '
     'Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus.'
     '</div>'
 )
 
-def gen_header(version):
-    return HEADER.format(version)
+def gen_banner(generator, include_version_info=True):
+    return HEADER.format(generator.fmt(include_version_info))
 
 def wrap_classes(*cls):
     return " ".join("alectryon-" + c for c in ("root", *cls))

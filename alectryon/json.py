@@ -160,13 +160,13 @@ class FileCache:
 
 class DummyCache:
     def __init__(self, *_args):
-        pass
+        self.generator = None
 
     def get(self, *_args): # pylint: disable=no-self-use
         return None
 
-    def put(self, *_args):
-        pass
+    def put(self, _chunks, _annotated, generator):
+        self.generator = generator
 
 def Cache(cache_root, doc_path, sertop_args):
     metadata = {"sertop_args": sertop_args}
