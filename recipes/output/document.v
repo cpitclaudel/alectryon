@@ -1,7 +1,7 @@
 (*|
-==================================================================
- Forget abut strengthening induction hypotheses: write fixpoints!
-==================================================================
+===================================================================
+ Forget about strengthening induction hypotheses: write fixpoints!
+===================================================================
 
 Here's an *inductive specification* of evenness:
 |*)
