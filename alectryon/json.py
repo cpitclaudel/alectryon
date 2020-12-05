@@ -24,29 +24,29 @@ from itertools import zip_longest
 
 from . import core
 
-COQ_TYPE_OF_ALIASES = {
-    "text": core.CoqText,
-    "hypothesis": core.CoqHypothesis,
-    "goal": core.CoqGoal,
-    "message": core.CoqMessage,
-    "sentence": core.CoqSentence,
-    "goals": core.CoqGoals,
-    "messages": core.CoqMessages,
+TYPE_OF_ALIASES = {
+    "text": core.Text,
+    "hypothesis": core.Hypothesis,
+    "goal": core.Goal,
+    "message": core.Message,
+    "sentence": core.Sentence,
+    "goals": core.Goals,
+    "messages": core.Messages,
     "rich_sentence": core.RichSentence,
 }
 
-ALIASES_OF_COQ_TYPE = {
-    cls.__name__: alias for (alias, cls) in COQ_TYPE_OF_ALIASES.items()
+ALIASES_OF_TYPE = {
+    cls.__name__: alias for (alias, cls) in TYPE_OF_ALIASES.items()
 }
 
-COQ_TYPES = list(COQ_TYPE_OF_ALIASES.values())
+TYPES = list(TYPE_OF_ALIASES.values())
 
 def json_of_annotated(obj):
     if isinstance(obj, list):
         return [json_of_annotated(x) for x in obj]
     if isinstance(obj, dict):
         return {k: json_of_annotated(v) for k, v in obj.items()}
-    type_name = ALIASES_OF_COQ_TYPE.get(type(obj).__name__)
+    type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
     if type_name:
         d = {"_type": type_name}
         for k, v in zip(obj._fields, obj):
@@ -60,9 +60,9 @@ def minimal_json_of_annotated(obj):
         return [minimal_json_of_annotated(x) for x in obj]
     if isinstance(obj, dict):
         return {k: minimal_json_of_annotated(v) for k, v in obj.items()}
-    type_name = ALIASES_OF_COQ_TYPE.get(type(obj).__name__)
+    type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
     if type_name:
-        if isinstance(obj, core.CoqText):
+        if isinstance(obj, core.Text):
             return obj.contents
         d = {k: minimal_json_of_annotated(v) for k, v in zip(obj._fields, obj)}
         contents = d.pop("contents", None)
@@ -77,12 +77,12 @@ def annotated_of_json(js):
         return [annotated_of_json(x) for x in js]
     if isinstance(js, dict):
         type_name = js.get("_type")
-        type_constr = COQ_TYPE_OF_ALIASES.get(type_name)
-        coq = {k: annotated_of_json(v) for k, v in js.items()}
+        type_constr = TYPE_OF_ALIASES.get(type_name)
+        obj = {k: annotated_of_json(v) for k, v in js.items()}
         if type_constr:
-            del coq["_type"]
-            return type_constr(**coq)
-        return coq
+            del obj["_type"]
+            return type_constr(**obj)
+        return obj
     return js
 
 def validate_inputs(annotated, reference):
@@ -92,7 +92,7 @@ def validate_inputs(annotated, reference):
             return False
         return all(validate_inputs(*p) for p in zip_longest(annotated, reference))
     # pylint: disable=isinstance-second-argument-not-valid-type
-    if isinstance(annotated, COQ_TYPES):
+    if isinstance(annotated, TYPES):
         if annotated.contents != reference:
             print(f"Mismatch: {annotated.contents} {reference}")
         return annotated.contents == reference

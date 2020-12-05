@@ -108,7 +108,7 @@ var Alectryon;
                 var sentence = evt.currentTarget;
 
                 // Ensure that the goal is shown on the side, not inline
-                var checkbox = sentence.getElementsByClassName("coq-toggle")[0];
+                var checkbox = sentence.getElementsByClassName("alectryon-toggle")[0];
                 if (checkbox)
                     checkbox.checked = false;
 
@@ -120,7 +120,7 @@ var Alectryon;
         function init() {
             document.onkeydown = onkeydown;
             slideshow.pos = -1;
-            slideshow.sentences = Array.from(document.getElementsByClassName("coq-sentence"));
+            slideshow.sentences = Array.from(document.getElementsByClassName("alectryon-sentence"));
             slideshow.sentences.forEach(function (s, idx) {
                 s.addEventListener('click', handleClick, false);
                 s.alectryon_index = idx;

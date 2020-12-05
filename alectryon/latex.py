@@ -20,7 +20,7 @@
 
 import re
 
-from .core import CoqText, RichSentence, CoqMessages, CoqGoals
+from .core import Text, RichSentence, Messages, Goals
 from . import transforms, GENERATOR
 
 def format_macro(name, args, optargs):
@@ -54,7 +54,7 @@ class Context:
 
     def add(self, child):
         if isinstance(child, str):
-            child = Text(child)
+            child = PlainText(child)
         self.children.append(child)
         self.claim(child)
 
@@ -135,7 +135,7 @@ class Raw:
     def format(self, indent, verbatim):
         return self.raw_format(self.s, indent, verbatim)
 
-class Text(Raw):
+class PlainText(Raw):
     ESCAPES = Replacements({"\\": "\\bsl"}) # FIXME # Use pygments directly?
 
     def format(self, indent, verbatim):
@@ -177,7 +177,7 @@ class LatexGenerator:
     def gen_whitespace(wsps):
         # Unlike in HTML, we don't need a separate wsp environment
         for wsp in wsps:
-            yield Text(wsp)
+            yield PlainText(wsp)
 
     def gen_input(self, fr):
         contents = []
@@ -195,12 +195,12 @@ class LatexGenerator:
     def gen_output(self, fr):
         with environments.output():
             for output in fr.outputs:
-                if isinstance(output, CoqMessages):
+                if isinstance(output, Messages):
                     assert output.messages, "transforms.commit_io_annotations"
                     with environments.messages():
                         for message in output.messages:
                             environments.message(*self.highlight(message.contents), verbatim=True)
-                if isinstance(output, CoqGoals):
+                if isinstance(output, Goals):
                     assert output.goals, "transforms.commit_io_annotations"
                     with environments.goals():
                         self.gen_goals(output.goals[0], output.goals[1:])
@@ -213,7 +213,7 @@ class LatexGenerator:
                 self.gen_output(fr)
 
     def gen_fragment(self, fr):
-        if isinstance(fr, CoqText):
+        if isinstance(fr, Text):
             if fr.contents:
                 environments.txt(*self.highlight(fr.contents), verbatim=True)
         else:

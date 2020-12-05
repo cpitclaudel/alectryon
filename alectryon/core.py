@@ -40,17 +40,17 @@ class GeneratorInfo(namedtuple("GeneratorInfo", "name version")):
     def fmt(self, include_version_info=True):
         return "{} v{}".format(self.name, self.version) if include_version_info else self.name
 
-CoqHypothesis = namedtuple("CoqHypothesis", "names body type")
-CoqGoal = namedtuple("CoqGoal", "name conclusion hypotheses")
-CoqMessage = namedtuple("CoqMessage", "contents")
-CoqSentence = namedtuple("CoqSentence", "contents messages goals")
-CoqText = namedtuple("CoqText", "contents")
+Hypothesis = namedtuple("Hypothesis", "names body type")
+Goal = namedtuple("Goal", "name conclusion hypotheses")
+Message = namedtuple("Message", "contents")
+Sentence = namedtuple("Sentence", "contents messages goals")
+Text = namedtuple("Text", "contents")
 
-CoqGoals = namedtuple("CoqGoals", "goals")
-CoqMessages = namedtuple("CoqMessages", "messages")
+Goals = namedtuple("Goals", "goals")
+Messages = namedtuple("Messages", "messages")
 RichSentence = namedtuple("RichSentence", "contents outputs annots prefixes suffixes")
 
-CoqPrettyPrinted = namedtuple("CoqPrettyPrinted", "sid pp")
+PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
 def sexp_hd(sexp):
     if isinstance(sexp, list):
@@ -70,6 +70,9 @@ ApiString = namedtuple("ApiString", "string")
 class SerAPI():
     SERTOP_BIN = "sertop"
     DEFAULT_ARGS = ("--printer=sertop", "--implicit")
+
+    # FIXME Pass -topfile (some file in the stdlib fail to compile without it)
+    # FIXME Pass --debug when invoked with --traceback
 
     MIN_PP_MARGIN = 20
     DEFAULT_PP_ARGS = {'pp_depth': 30, 'pp_margin': 55}
@@ -142,14 +145,14 @@ class SerAPI():
         assert len(body) <= 1
         body = body[0] if body else None
         ids = [sx.tostr(p[1]) for p in meta if p[0] == b'Id']
-        yield CoqHypothesis(ids, body, htype)
+        yield Hypothesis(ids, body, htype)
 
     @staticmethod
     def _deserialize_goal(sexp):
         name = dict(sexp[b'info'])[b'name']
         hyps = [h for hs in reversed(sexp[b'hyp'])
                 for h in SerAPI._deserialize_hyp(hs)]
-        return CoqGoal(dict(name).get(b'Id'), sexp[b'ty'], hyps)
+        return Goal(dict(name).get(b'Id'), sexp[b'ty'], hyps)
 
     @staticmethod
     def _deserialize_answer(sexp):
@@ -245,7 +248,7 @@ class SerAPI():
 
     def _pprint(self, sexp, sid, kind, pp_depth, pp_margin):
         if sexp is None:
-            return CoqPrettyPrinted(sid, None)
+            return PrettyPrinted(sid, None)
         if kind is not None:
             sexp = [kind, sexp]
         meta = [[b'sid', sid],
@@ -257,7 +260,7 @@ class SerAPI():
         strings = list(self._collect_messages(ApiString, None, sid))
         if strings:
             assert len(strings) == 1
-            return CoqPrettyPrinted(sid, strings[0].string)
+            return PrettyPrinted(sid, strings[0].string)
         raise ValueError("No string found in Print answer")
 
     def _pprint_message(self, msg):
@@ -290,26 +293,26 @@ class SerAPI():
         w = max(self.pp_args['pp_margin'] - name_w, SerAPI.MIN_PP_MARGIN)
         body = self._pprint(hyp.body, sid, b'CoqExpr', d, w - 2).pp
         htype = self._pprint(hyp.type, sid, b'CoqExpr', d, w - 3).pp
-        return CoqHypothesis(hyp.names, body, htype)
+        return Hypothesis(hyp.names, body, htype)
 
     def _pprint_goal(self, goal, sid):
         ccl = self._pprint(goal.conclusion, sid, b'CoqExpr', **self.pp_args).pp
         hyps = [self._pprint_hyp(h, sid) for h in goal.hypotheses]
-        return CoqGoal(sx.tostr(goal.name) if goal.name else None, ccl, hyps)
+        return Goal(sx.tostr(goal.name) if goal.name else None, ccl, hyps)
 
     def _goals(self, sid, chunk):
         # LATER Goals instead and CoqGoal and CoqConstr?
         # LATER We'd like to retrieve the formatted version directly
         self._send([b'Query', [[b'sid', sid]], b'EGoals'])
-        goals = list(self._collect_messages(CoqGoal, chunk, sid))
+        goals = list(self._collect_messages(Goal, chunk, sid))
         yield from (self._pprint_goal(g, sid) for g in goals)
 
     def run(self, chunk):
         """Send a `chunk` to sertop.
 
         A chunk is a string containing Coq sentences or comments.  The sentences
-        are split, sent to Coq, and returned as a list of ``CoqText`` instances
-        (for whitespace and comments) and ``CoqSentence`` instances (for code).
+        are split, sent to Coq, and returned as a list of ``Text`` instances
+        (for whitespace and comments) and ``Sentence`` instances (for code).
         """
         if isinstance(chunk, str):
             chunk = chunk.encode("utf-8")
@@ -319,11 +322,11 @@ class SerAPI():
         for span_id, contents in spans:
             contents = str(contents, encoding='utf-8')
             if span_id is None:
-                fragments.append(CoqText(contents))
+                fragments.append(Text(contents))
             else:
                 messages.extend(self._exec(span_id, chunk))
                 goals = list(self._goals(span_id, chunk))
-                fragment = CoqSentence(contents, messages=[], goals=goals)
+                fragment = Sentence(contents, messages=[], goals=goals)
                 fragments.append(fragment)
                 fragments_by_id[span_id] = fragment
         # Messages for span n + δ can arrive during processing of span n or
@@ -335,7 +338,7 @@ class SerAPI():
                 MSG = "!! Orphaned message for sid {}:{}\n"
                 stderr.write(MSG.format(message.sid, pp))
             else:
-                fragment.messages.append(CoqMessage(message.pp))
+                fragment.messages.append(Message(message.pp))
         return fragments
 
 def annotate(chunks, sertop_args=()):
@@ -343,11 +346,11 @@ def annotate(chunks, sertop_args=()):
 
     All fragments are executed in the same Coq instance, started with arguments
     `sertop_args`.  The return value is a list with as many elements as in
-    `chunks`, but each element is a list of fragments: either ``CoqText``
-    instances (whitespace and comments) and ``CoqSentence`` instances (code).
+    `chunks`, but each element is a list of fragments: either ``Text``
+    instances (whitespace and comments) and ``Sentence`` instances (code).
 
     >>> annotate(["Check 1."], ("-Q", "..,logical_name"))
-    [[CoqSentence(contents='Check 1.', messages=[CoqMessage(contents='1\n     : nat')], goals=[])]]
+    [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
     """
     with SerAPI(args=sertop_args) as api:
         return [api.run(chunk) for chunk in chunks]

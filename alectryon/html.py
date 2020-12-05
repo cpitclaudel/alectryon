@@ -24,7 +24,7 @@ import shutil
 
 from dominate import tags
 
-from .core import CoqText, RichSentence, CoqGoals, CoqMessages
+from .core import Text, RichSentence, Goals, Messages
 from . import transforms, GENERATOR
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
@@ -111,7 +111,7 @@ class HtmlGenerator:
 
     def gen_goal(self, goal, toggle=None):
         """Serialize a goal to HTML."""
-        with tags.blockquote(cls="coq-goal"):
+        with tags.blockquote(cls="alectryon-goal"):
             if goal.hypotheses:
                 # Chrome doesn't support the ‘gap’ property in flex containers,
                 # so properly spacing hypotheses requires giving them margins
@@ -120,7 +120,7 @@ class HtmlGenerator:
                 # there are none.
                 self.gen_hyps(goal.hypotheses)
             toggle = goal.hypotheses and toggle
-            cls = "goal-separator" + (" coq-extra-goal-label" if toggle else "")
+            cls = "goal-separator" + (" alectryon-extra-goal-label" if toggle else "")
             with self.gen_label(toggle, cls):
                 tags.hr()
                 if goal.name:
@@ -138,45 +138,45 @@ class HtmlGenerator:
     def gen_goals(self, first, more):
         self.gen_goal(first)
         if more:
-            with tags.div(cls='coq-extra-goals'):
+            with tags.div(cls='alectryon-extra-goals'):
                 for goal in more:
-                    nm = self.gen_checkbox(False, "coq-extra-goal-toggle")
+                    nm = self.gen_checkbox(False, "alectryon-extra-goal-toggle")
                     self.gen_goal(goal, toggle=nm)
 
     def gen_input_toggle(self, fr):
         if not fr.outputs:
             return None
-        return self.gen_checkbox(fr.annots.unfold, "coq-toggle")
+        return self.gen_checkbox(fr.annots.unfold, "alectryon-toggle")
 
     def gen_input(self, fr, toggle):
-        cls = "coq-input" + (" alectryon-failed" if fr.annots.fails else "")
+        cls = "alectryon-input" + (" alectryon-failed" if fr.annots.fails else "")
         self.gen_label(toggle, cls, self.highlight(fr.contents))
 
     def gen_output(self, fr):
         # Using <small> improves rendering in RSS feeds
-        wrapper = tags.div(cls="coq-output-sticky-wrapper")
-        with tags.small(cls="coq-output").add(wrapper):
+        wrapper = tags.div(cls="alectryon-output-sticky-wrapper")
+        with tags.small(cls="alectryon-output").add(wrapper):
             for output in fr.outputs:
-                if isinstance(output, CoqMessages):
+                if isinstance(output, Messages):
                     assert output.messages, "transforms.commit_io_annotations"
-                    with tags.div(cls="coq-messages"):
+                    with tags.div(cls="alectryon-messages"):
                         for message in output.messages:
                             tags.blockquote(self.highlight(message.contents),
-                                            cls="coq-message")
-                if isinstance(output, CoqGoals):
+                                            cls="alectryon-message")
+                if isinstance(output, Goals):
                     assert output.goals, "transforms.commit_io_annotations"
-                    with tags.div(cls="coq-goals"):
+                    with tags.div(cls="alectryon-goals"):
                         self.gen_goals(output.goals[0], output.goals[1:])
 
     @staticmethod
     def gen_whitespace(wsps):
         for wsp in wsps:
-            tags.span(wsp, cls="coq-wsp")
+            tags.span(wsp, cls="alectryon-wsp")
 
     def gen_sentence(self, fr):
         if fr.contents is not None:
             self.gen_whitespace(fr.prefixes)
-        with tags.span(cls="coq-sentence"):
+        with tags.span(cls="alectryon-sentence"):
             toggle = self.gen_input_toggle(fr)
             if fr.contents is not None:
                 self.gen_input(fr, toggle)
@@ -186,8 +186,8 @@ class HtmlGenerator:
                 self.gen_whitespace(fr.suffixes)
 
     def gen_fragment(self, fr):
-        if isinstance(fr, CoqText):
-            tags.span(self.highlight(fr.contents), cls="coq-wsp")
+        if isinstance(fr, Text):
+            tags.span(self.highlight(fr.contents), cls="alectryon-wsp")
         else:
             assert isinstance(fr, RichSentence)
             self.gen_sentence(fr)

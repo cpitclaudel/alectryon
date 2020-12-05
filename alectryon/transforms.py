@@ -18,13 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Post-process annotated fragments of Coq code."""
+"""Post-process annotated fragments of source code."""
 import re
 import textwrap
 from copy import copy
 from collections import namedtuple
 from itertools import chain
-from .core import CoqText, CoqSentence, RichSentence, CoqGoals, CoqMessages
+from .core import Text, Sentence, RichSentence, Goals, Messages
 
 class IOAnnots:
     def __init__(self, *annots):
@@ -86,11 +86,11 @@ class IOAnnots:
             self.unfold, self.fails, self.filters)
 
 def enrich_sentences(fragments):
-    """Change each ``CoqSentence`` in `fragments` into an ``RichSentence``."""
+    """Change each ``Sentence`` in `fragments` into an ``RichSentence``."""
     for fr in fragments:
-        if isinstance(fr, CoqSentence):
+        if isinstance(fr, Sentence):
             # Always add goals & messages; empty lists are filtered out later
-            outputs = [CoqMessages(fr.messages), CoqGoals(fr.goals)]
+            outputs = [Messages(fr.messages), Goals(fr.goals)]
             yield RichSentence(contents=fr.contents, outputs=outputs,
                            prefixes=[], suffixes=[], annots=IOAnnots())
         else:
@@ -101,14 +101,14 @@ IO_COMMENT_RE = re.compile(r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(IOAnnots.RE
 def process_io_annotations(fragments):
     """Strip IO comments and update ``.annots`` fields accordingly.
 
-    This pass assumes that consecutive ``CoqText`` fragments have been
+    This pass assumes that consecutive ``Text`` fragments have been
     coalesced.
     """
     annotated = []
     for fr in enrich_sentences(fragments):
-        if isinstance(fr, CoqText):
+        if isinstance(fr, Text):
             target = annotated[-1] if annotated else None
-            assert not isinstance(target, CoqText)
+            assert not isinstance(target, Text)
         else:
             target = fr
         if target:
@@ -121,9 +121,9 @@ def process_io_annotations(fragments):
 
 # pylint: disable=inconsistent-return-statements
 def should_keep_output(output, annots):
-    if isinstance(output, CoqMessages):
+    if isinstance(output, Messages):
         return annots["messages"] and output.messages
-    if isinstance(output, CoqGoals):
+    if isinstance(output, Goals):
         return (annots["hyps"] or annots["ccls"]) and output.goals
     assert False
 
@@ -147,7 +147,7 @@ def commit_io_annotations(fragments, discard_folded=False):
 
             if not fr.annots["hyps"]:
                 for o in outputs:
-                    if isinstance(o, CoqGoals):
+                    if isinstance(o, Goals):
                         for g in o.goals:
                             g.hypotheses.clear()
 
@@ -173,29 +173,29 @@ def group_whitespace_with_code(fragments):
     collects spaces found at the beginning of a line (not including the
     preceding newline) and attaches them to the following sentence.
 
-    This pass assumes that consecutive ``CoqText`` fragments have been
+    This pass assumes that consecutive ``Text`` fragments have been
     coalesced.
     """
     grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
-        if isinstance(fr, CoqText):
+        if isinstance(fr, Text):
             before, rest, after = isolate_blanks(fr.contents)
 
             if before:
                 if idx > 0:
-                    assert not isinstance(grouped[idx - 1], CoqText)
+                    assert not isinstance(grouped[idx - 1], Text)
                     grouped[idx - 1].suffixes.append(before)
                 else:
                     rest = before + rest
 
             if after:
                 if idx + 1 < len(grouped):
-                    assert not isinstance(grouped[idx + 1], CoqText)
+                    assert not isinstance(grouped[idx + 1], Text)
                     grouped[idx + 1].prefixes.append(after)
                 else:
                     rest = rest + after
 
-            grouped[idx] = CoqText(rest) if rest else None
+            grouped[idx] = Text(rest) if rest else None
     return [g for g in grouped if g is not None]
 
 BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
@@ -224,8 +224,8 @@ def attach_comments_to_code(fragments, predicate=lambda _: True):
     grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
         prev = idx > 0 and grouped[idx - 1]
-        prev_is_sentence = isinstance(prev, (CoqSentence, RichSentence))
-        if prev_is_sentence and predicate(prev) and isinstance(fr, CoqText):
+        prev_is_sentence = isinstance(prev, (Sentence, RichSentence))
+        if prev_is_sentence and predicate(prev) and isinstance(fr, Text):
             best = prefix = StringView(fr.contents, 0, 0)
             for part in coq_partition(fr.contents):
                 if "\n" in part.v:
@@ -238,19 +238,19 @@ def attach_comments_to_code(fragments, predicate=lambda _: True):
             if best:
                 rest = fr.contents[len(best):]
                 grouped[idx - 1] = prev._replace(contents=prev.contents + str(best))
-                grouped[idx] = CoqText(rest) if rest else None
+                grouped[idx] = Text(rest) if rest else None
     return [g for g in grouped if g is not None]
 
 def fragment_goal_sets(fr):
     if isinstance(fr, RichSentence):
-        yield from (gs.goals for gs in fr.outputs if isinstance(gs, CoqGoals))
-    if isinstance(fr, CoqSentence):
+        yield from (gs.goals for gs in fr.outputs if isinstance(gs, Goals))
+    if isinstance(fr, Sentence):
         yield fr.goals
 
 def fragment_message_sets(fr):
     if isinstance(fr, RichSentence):
-        yield from (ms.messages for ms in fr.outputs if isinstance(ms, CoqMessages))
-    if isinstance(fr, CoqSentence):
+        yield from (ms.messages for ms in fr.outputs if isinstance(ms, Messages))
+    if isinstance(fr, Sentence):
         yield fr.messages
 
 def group_hypotheses(fragments):
@@ -308,7 +308,7 @@ def partition_fragments(fragments, delim=COQ_CHUNK_DELIMITER):
     """
     partitioned = [[]]
     for fr in fragments:
-        if isinstance(fr, CoqText):
+        if isinstance(fr, Text):
             m = delim.match(fr.contents)
             if m:
                 if partitioned[-1]:
@@ -324,14 +324,14 @@ RBLANKS = re.compile(r"(\n[ \t]*)+\Z")
 
 def strip_text(fragments):
     for idx, fr in enumerate(fragments):
-        if isinstance(fr, CoqText):
-            fragments[idx] = fr = CoqText(contents=LBLANKS.sub("", fr.contents))
+        if isinstance(fr, Text):
+            fragments[idx] = fr = Text(contents=LBLANKS.sub("", fr.contents))
             if not fr.contents:
                 continue
         break
     for idx, fr in reversed(list(enumerate(fragments))):
-        if isinstance(fr, CoqText):
-            fragments[idx] = fr = CoqText(contents=RBLANKS.sub("", fr.contents))
+        if isinstance(fr, Text):
+            fragments[idx] = fr = Text(contents=RBLANKS.sub("", fr.contents))
             if not fr.contents:
                 continue
         break
@@ -343,9 +343,9 @@ def isolate_coqdoc(fragments):
     from .literate import coq_partition_literate, Comment, COQDOC_OPEN
     refined = []
     for fr in fragments:
-        if isinstance(fr, CoqText):
+        if isinstance(fr, Text):
             for span in coq_partition_literate(fr.contents, opener=COQDOC_OPEN):
-                wrapper = CoqdocFragment if isinstance(span, Comment) else CoqText
+                wrapper = CoqdocFragment if isinstance(span, Comment) else Text
                 refined.append(wrapper(str(span.v)))
         else:
             refined.append(fr)
