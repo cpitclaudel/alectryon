@@ -1,4 +1,8 @@
 {
+  "generator": [
+    "Coq+SerAPI",
+    "8.10.0+0.7.0"
+  ],
   "metadata": {
     "sertop_args": [],
     "cache_version": "1"
