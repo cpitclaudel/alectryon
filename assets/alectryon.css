@@ -58,13 +58,13 @@ SOFTWARE.
 .alectryon-coqdoc .doc .code,
 .alectryon-coqdoc .doc .comment,
 .alectryon-coqdoc .doc .inlinecode,
-pre.alectryon-io, .alectryon-toggle-label, .alectryon-header {
+pre.alectryon-io, .alectryon-toggle-label, .alectryon-banner {
     font-family: 'Iosevka Slab Web', 'Iosevka Web', 'Iosevka Slab', 'Iosevka', 'Fira Code', monospace;
     font-feature-settings: "XV00" 1; /* Use Coq ligatures when Iosevka is available */
     line-height: initial;
 }
 
-.alectryon-io, .alectryon-toggle-label, .alectryon-header {
+.alectryon-io, .alectryon-toggle-label, .alectryon-banner {
     overflow: visible;
     overflow-wrap: break-word;
     position: relative;
@@ -400,7 +400,7 @@ In any case, make an exception for comments:
 /* Header */
 /**********/
 
-.alectryon-header {
+.alectryon-banner {
     background: #eeeeec;
     border: 1px solid #babcbd;
     font-size: 0.75em;
@@ -409,12 +409,12 @@ In any case, make an exception for comments:
     margin: 1rem 0;
 }
 
-.alectryon-header a {
+.alectryon-banner a {
     cursor: pointer;
     text-decoration: underline;
 }
 
-.alectryon-header kbd {
+.alectryon-banner kbd {
     background: #d3d7cf;
     border-radius: 0.15em;
     border: 1px solid #babdb6;

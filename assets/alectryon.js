@@ -150,18 +150,18 @@ var Alectryon;
         }
 
         function init() {
-            var header = document.getElementsByClassName("alectryon-header")[0];
-            if (header) {
-                header.append(" Style: ");
+            var banner = document.getElementsByClassName("alectryon-banner")[0];
+            if (banner) {
+                banner.append(" Style: ");
                 styleNames.forEach(function (styleName, idx) {
                     var s = styleName;
                     var a = document.createElement("a");
                     a.onclick = function() { setStyle(s); };
                     a.append(styleName);
-                    if (idx > 0) header.append("; ");
-                    header.appendChild(a);
+                    if (idx > 0) banner.append("; ");
+                    banner.appendChild(a);
                 });
-                header.append(".");
+                banner.append(".");
             }
         }
 
