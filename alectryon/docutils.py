@@ -83,9 +83,6 @@ class alectryon_pending(nodes.pending):
 class alectryon_pending_toggle(nodes.pending):
     pass
 
-class alectryon_pending_banner(nodes.pending):
-    pass
-
 # Transforms
 # ----------
 
@@ -112,13 +109,6 @@ def _alectryon_state(document):
     if st is None:
         st = document.alectryon_state = AlectryonState()
     return st
-
-def _alectryon_banner(document):
-    generator = _alectryon_state(document).generator
-    opts = document.settings
-    if hasattr(opts, "env"):
-        opts = opts.env.config
-    return gen_banner(generator, opts.alectryon_vernums)
 
 class Config:
     def __init__(self, document):
@@ -248,11 +238,6 @@ class AlectryonTransform(Transform):
             if di:
                 self.insert_toggle_after(di, toggle(0), True)
 
-    def apply_banner(self):
-        header = _alectryon_banner(self.document)
-        for banner in self.document.traverse(alectryon_pending_banner):
-            banner.replace_self(nodes.raw('', header))
-
     def apply(self, **_kwargs):
         # The transform is added multiple times: once per directive, and once by
         # add_transform in Sphinx, so we need to make sure that running it twice
@@ -262,7 +247,6 @@ class AlectryonTransform(Transform):
             state.transform_executed = True
             self.apply_coq()
             self.apply_toggle()
-            self.apply_banner()
 
 # Directives
 # ----------
@@ -330,20 +314,6 @@ class AlectryonToggleDirective(Directive):
 
     def run(self):
         pending = alectryon_pending_toggle(AlectryonTransform)
-        self.state_machine.document.note_pending(pending)
-        return [pending]
-
-class AlectryonBannerDirective(Directive):
-    """Display an explanatory header."""
-    name = "alectryon-header"
-
-    required_arguments = 0
-    optional_arguments = 0
-    option_spec = {}
-    has_content = False
-
-    def run(self):
-        pending = alectryon_pending_banner(AlectryonTransform)
         self.state_machine.document.note_pending(pending)
         return [pending]
 
@@ -570,7 +540,9 @@ class HtmlTranslator(DefaultWriter().translator_class):
         cls = wrap_classes(self.settings.webpage_style)
         self.body_prefix.append('<div class="{}">'.format(cls))
         if self.settings.alectryon_banner:
-            self.body_prefix.append(_alectryon_banner(self.document))
+            generator = _alectryon_state(document).generator
+            include_vernums = document.settings.alectryon_vernums
+            self.body_prefix.append(gen_banner(generator, include_vernums))
         self.body_suffix.insert(0, '</div>')
 
 ALECTRYON_SETTINGS = [
@@ -604,11 +576,10 @@ class HtmlWriter(DefaultWriter):
 # ============
 
 NODES = [alectryon_pending,
-         alectryon_pending_toggle,
-         alectryon_pending_banner]
+         alectryon_pending_toggle]
 TRANSFORMS = [AlectryonTransform]
 DIRECTIVES = [CoqDirective,
-              AlectryonToggleDirective, AlectryonBannerDirective,
+              AlectryonToggleDirective,
               ExperimentalExerciseDirective]
 ROLES = [alectryon_bubble, coq_code_role, coq_id_role]
 

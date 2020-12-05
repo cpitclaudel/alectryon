@@ -45,11 +45,9 @@ class NoOp(Directive):
     def run(self):
         pass
 
-# Treat .. coq:: as a regular code block and ignore .. alectryon-toggle:: and
-# .. alectryon-header::.
+# Treat .. coq:: as a regular code block and ignore .. alectryon-toggle::
 DIRECTIVES = {"coq": CoqDirective,
-              "alectryon-toggle": NoOp,
-              "alectryon-header": NoOp}
+              "alectryon-toggle": NoOp}
 
 ## Map :coq: to plain literals
 
