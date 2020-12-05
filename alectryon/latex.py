@@ -21,7 +21,7 @@
 import re
 
 from .core import CoqText, RichSentence, CoqMessages, CoqGoals
-from . import transforms, __version__, GENERATOR
+from . import transforms, GENERATOR
 
 def format_macro(name, args, optargs):
     args = "".join("{" + str(arg) + "}" for arg in args)

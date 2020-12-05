@@ -25,7 +25,7 @@ import shutil
 from dominate import tags
 
 from .core import CoqText, RichSentence, CoqGoals, CoqMessages
-from . import transforms, __version__, GENERATOR
+from . import transforms, GENERATOR
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
 
