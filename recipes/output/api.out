@@ -1,1 +1,1 @@
-[[CoqSentence(contents='Check 1.', messages=[CoqMessage(contents='1\n     : nat')], goals=[])]]
+[[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
