@@ -21,6 +21,11 @@
 from collections import namedtuple
 from textwrap import indent
 
+from shlex import quote
+from shutil import which
+from subprocess import Popen, PIPE, check_output
+from sys import stderr
+
 DEBUG = False
 TRACEBACK = False
 
@@ -39,3 +44,84 @@ Text = namedtuple("Text", "contents")
 Goals = namedtuple("Goals", "goals")
 Messages = namedtuple("Messages", "messages")
 RichSentence = namedtuple("RichSentence", "contents outputs annots prefixes suffixes")
+
+class GeneratorInfo(namedtuple("GeneratorInfo", "name version")):
+    def fmt(self, include_version_info=True):
+        return "{} v{}".format(self.name, self.version) if include_version_info else self.name
+
+class Prover():
+    @classmethod
+    def version_info(cls, binpath=None):
+        raise NotImplementedError()
+
+    @classmethod
+    def annotate(cls, chunks, *args, **kwargs):
+        """Annotate multiple `chunks` of code.
+
+        All fragments are executed in the same prover instance, started with
+        arguments `args`, `kwargs`.  The return value is a list with as many
+        elements as in `chunks`, but each element is a list of fragments: either
+        ``Text`` instances (whitespace and comments) and ``Sentence`` instances (code).
+        """
+        raise NotImplementedError()
+
+class REPLProver(Prover):
+    REPL_BIN = None
+    REPL_NAME = None
+    DEFAULT_ARGS = ()
+
+    def __init__(self, binpath=None, args=()):
+        self.binpath = binpath or self.REPL_BIN
+        self.args = [*args, *self.DEFAULT_ARGS]
+        self.repl = None
+
+    @classmethod
+    def version_info(cls, binpath=None):
+        bs = check_output([cls.resolve_prover(binpath or cls.REPL_BIN), "--version"])
+        return GeneratorInfo(cls.REPL_NAME, bs.decode('ascii', 'ignore').strip())
+
+    def __enter__(self):
+        self.reset()
+        return self
+
+    def __exit__(self, *_exn):
+        self.kill()
+        return False
+
+    def _read(self):
+        response = self.repl.stdout.readline()
+        debug(response, '<< ')
+        return response
+
+    def _write(self, s, end):
+        debug(s, '>> ')
+        self.repl.stdin.write(s + end)
+        self.repl.stdin.flush()
+
+    def kill(self):
+        """Terminate this prover instance."""
+        if self.repl:
+            self.repl.kill()
+            try:
+                self.repl.stdin.close()
+                self.repl.stdout.close()
+            finally:
+                self.repl.wait()
+
+    @classmethod
+    def prover_not_found(cls, binpath):
+        """Raise an error to indicate that ``binpath`` cannot be found."""
+        raise NotImplementedError()
+
+    @classmethod
+    def resolve_prover(cls, binpath):
+        path = which(binpath)
+        if path is None:
+            cls.prover_not_found(binpath)
+        return path
+
+    def reset(self):
+        """Start or restart this proper instance."""
+        cmd = [self.resolve_prover(self.binpath), *self.args]
+        debug(" ".join(quote(s) for s in cmd), '# ')
+        self.repl = Popen(cmd, stdin=PIPE, stderr=stderr, stdout=PIPE)

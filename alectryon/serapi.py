@@ -23,16 +23,8 @@ from collections.abc import Iterable
 from textwrap import indent
 from sys import stderr
 
-from shlex import quote
-from shutil import which
-from subprocess import Popen, PIPE, check_output
-
 from . import sexp as sx
-from .core import Hypothesis, Goal, Message, Sentence, Text, debug
-
-class GeneratorInfo(namedtuple("GeneratorInfo", "name version")):
-    def fmt(self, include_version_info=True):
-        return "{} v{}".format(self.name, self.version) if include_version_info else self.name
+from .core import REPLProver, Hypothesis, Goal, Message, Sentence, Text, debug
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
@@ -51,8 +43,9 @@ ApiExn = namedtuple("ApiExn", "sids exn loc")
 ApiMessage = namedtuple("ApiMessage", "sid level msg")
 ApiString = namedtuple("ApiString", "string")
 
-class SerAPI():
-    SERTOP_BIN = "sertop"
+class SerAPI(REPLProver):
+    REPL_BIN = "sertop"
+    REPL_NAME = "Coq+SerAPI"
     DEFAULT_ARGS = ("--printer=sertop", "--implicit")
 
     # Whether to silently continue past unexpected output
@@ -64,56 +57,23 @@ class SerAPI():
     MIN_PP_MARGIN = 20
     DEFAULT_PP_ARGS = {'pp_depth': 30, 'pp_margin': 55}
 
-    @staticmethod
-    def version_info(sertop_bin=SERTOP_BIN):
-        bs = check_output([SerAPI.resolve_sertop(sertop_bin), "--version"])
-        return GeneratorInfo("Coq+SerAPI", bs.decode('ascii', 'ignore').strip())
-
-    def __init__(self, args=(), # pylint: disable=dangerous-default-value
-                 sertop_bin=SERTOP_BIN,
-                 pp_args=DEFAULT_PP_ARGS):
+    # pylint: disable=dangerous-default-value
+    def __init__(self, binpath=None, args=(), pp_args=DEFAULT_PP_ARGS):
         """Configure and start a ``sertop`` instance."""
-        self.args, self.sertop_bin = [*args, *SerAPI.DEFAULT_ARGS], sertop_bin
-        self.sertop = None
-        self.next_qid = 0
+        super().__init__(binpath, args)
         self.pp_args = {**SerAPI.DEFAULT_PP_ARGS, **pp_args}
+        self.next_qid = 0
         self.last_response = None
 
-    def __enter__(self):
-        self.reset()
-        return self
+    @classmethod
+    def prover_not_found(cls, binpath):
+        MSG = ("`sertop` binary not found (sertop_bin={});"
+               " please run `opam install coq-serapi`")
+        raise ValueError(MSG.format(binpath))
 
-    def __exit__(self, *_exn):
-        self.kill()
-        return False
-
-    def kill(self):
-        if self.sertop:
-            self.sertop.kill()
-            try:
-                self.sertop.stdin.close()
-                self.sertop.stdout.close()
-            finally:
-                self.sertop.wait()
-
-    @staticmethod
-    def resolve_sertop(sertop_bin):
-        path = which(sertop_bin)
-        if path is None:
-            msg = ("sertop not found (sertop_bin={});" +
-                   " please run `opam install coq-serapi`")
-            raise ValueError(msg.format(sertop_bin))
-        return path
-
-    def reset(self):
-        self.kill()
-        cmd = [self.resolve_sertop(self.sertop_bin), *self.args]
-        debug(" ".join(quote(s) for s in cmd), '# ')
-        self.sertop = Popen(cmd, stdin=PIPE, stderr=stderr, stdout=PIPE)
-
-    def next_sexp(self):
+    def _next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceding it."""
-        response = self.sertop.stdout.readline()
+        response = self._read()
         if not response:
             # https://github.com/ejgallego/coq-serapi/issues/212
             MSG = "SerTop printed an empty line.  Last response: {!r}."
@@ -128,9 +88,7 @@ class SerAPI():
     def _send(self, sexp):
         s = sx.dump([b'query%d' % self.next_qid, sexp])
         self.next_qid += 1
-        debug(s, '>> ')
-        self.sertop.stdin.write(s + b'\n')
-        self.sertop.stdin.flush()
+        self._write(s, b'\n')
 
     @staticmethod
     def _deserialize_loc(loc):
@@ -200,8 +158,11 @@ class SerAPI():
         elif tag == b'Feedback':
             yield from SerAPI._deserialize_feedback(sexp[1])
         elif not self.EXPECT_UNEXPECTED:
-            MSG = "Unexpected response: {}".format(self.last_response)
-            raise ValueError(MSG)
+            UNEXPECTED = "Unexpected response: {}"
+            # Print early to get some information out even if sertop hangs
+            print(UNEXPECTED.format(self.last_response), file=stderr)
+            MSG = "Unexpected response: {}\nFull output: {}"
+            raise ValueError(MSG.format(self.last_response, self.repl.stdout.read()))
 
     @staticmethod
     def highlight_substring(chunk, beg, end):
@@ -230,7 +191,7 @@ class SerAPI():
         else:
             warn_on_exn = ApiExn != types
         while True:
-            for response in self._deserialize_response(self.next_sexp()):
+            for response in self._deserialize_response(self._next_sexp()):
                 if isinstance(response, ApiAck):
                     continue
                 if isinstance(response, ApiCompleted):
@@ -336,16 +297,15 @@ class SerAPI():
                 fragment.messages.append(Message(message.pp))
         return fragments
 
-def annotate(chunks, sertop_args=()):
-    """Annotate multiple `chunks` of Coq code.
+    @classmethod
+    def annotate(cls, chunks, *args, **kwargs):
+        with cls(*args, **kwargs) as api:
+            return [api.run(chunk) for chunk in chunks]
 
-    All fragments are executed in the same Coq instance, started with arguments
-    `sertop_args`.  The return value is a list with as many elements as in
-    `chunks`, but each element is a list of fragments: either ``Text``
-    instances (whitespace and comments) and ``Sentence`` instances (code).
+def annotate(chunks, sertop_args=()):
+    """Call ``SerAPI.annotate``.
 
     >>> annotate(["Check 1."], ("-Q", "..,logical_name"))
     [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
     """
-    with SerAPI(args=sertop_args) as api:
-        return [api.run(chunk) for chunk in chunks]
+    return SerAPI.annotate(chunks, args=sertop_args)
