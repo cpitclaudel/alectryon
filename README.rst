@@ -25,7 +25,7 @@ To install from OPAM and PyPI:
     | ``opam install "coq-serapi>=8.10.0+0.7.0"`` (from the `Coq OPAM archive <https://coq.inria.fr/opam-using.html>`__)
     | ``python3 -m pip install alectryon``
 
-**A note on dependencies**: the core library only depends on ``coq-serapi`` from OPAM.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires ``docutils`` (and optionally ``sphinx``); Coqdoc support requires ``beautifulsoup4``.  Support for Coq versions follows SerAPI; Coq ≥ 8.10 works well and ≥ 8.12 works best.
+**A note on dependencies**: the ``serapi`` module only depends on the ``coq-serapi`` OPAM package.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires ``docutils`` (and optionally ``sphinx``); Coqdoc support requires ``beautifulsoup4``.  Support for Coq versions follows SerAPI; Coq ≥ 8.10 works well and ≥ 8.12 works best.
 
 Usage
 =====
@@ -155,11 +155,11 @@ Use ``alectryon --help`` for full command line details.
 As a library
 ------------
 
-Use ``alectryon.core.annotate(chunks: List[str])``, which returns an object with the same structure as the JSON above, but using objects instead of records with a ``_type`` field:
+Use ``alectryon.serapi.annotate(chunks: List[str])``, which returns an object with the same structure as the JSON above, but using objects instead of records with a ``_type`` field:
 
 .. code-block:: python
 
-    >>> from alectryon.core import annotate
+    >>> from alectryon.serapi import annotate
     >>> annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Print xyz."])
     [
         [CoqSentence(sentence='Example xyz (H: False): True.',

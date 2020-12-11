@@ -21,7 +21,7 @@
 import re
 from os import path
 
-from .core import Text, RichSentence, Messages, Goals
+from .serapi import Text, RichSentence, Messages, Goals
 from . import transforms, GENERATOR
 
 _SELF_PATH = path.dirname(path.realpath(__file__))

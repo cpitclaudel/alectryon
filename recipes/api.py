@@ -12,12 +12,12 @@ libdir = recipes / "src"
 # import alectryon.core; alectryon.core.DEBUG = True
 
 def api_annotate():
-    from alectryon.core import annotate
+    from alectryon.serapi import annotate
     annotated = annotate(["Check 1."], ("-Q", "{},lib".format(libdir)))
     pprint(annotated)
 
 def annotated_to_json():
-    from alectryon.core import annotate
+    from alectryon.serapi import annotate
     from alectryon.json import PlainSerializer
     annotated = annotate([r"Goal True /\ True. split. ", "all: eauto."],
                          ("-Q", "{},lib".format(libdir)))

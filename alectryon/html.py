@@ -26,7 +26,7 @@ import pickle
 
 from dominate import tags
 
-from .core import Text, RichSentence, Goals, Messages
+from .serapi import Text, RichSentence, Goals, Messages
 from . import transforms, GENERATOR
 
 _SELF_PATH = path.dirname(path.realpath(__file__))

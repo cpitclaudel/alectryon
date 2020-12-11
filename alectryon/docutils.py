@@ -79,7 +79,7 @@ from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import transforms, html, latex
-from .core import annotate, SerAPI
+from .serapi import annotate, SerAPI
 from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
@@ -212,6 +212,7 @@ class AlectryonTransform(OneTimeTransform):
         from .json import Cache
         metadata = {"sertop_args": sertop_args}
         cache = Cache(CACHE_DIRECTORY, self.document['source'], metadata, CACHE_COMPRESSION)
+        # Later: decouple from SerAPI by generalizing over `annotate`
         annotated = cache.update(chunks, lambda c: annotate(c, sertop_args), SerAPI.version_info())
         return cache.generator, annotated
 
