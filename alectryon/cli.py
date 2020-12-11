@@ -597,7 +597,7 @@ and produce reStructuredText, HTML, or JSON output.""")
     parser.add_argument("--expect-unexpected", action="store_true",
                         default=False, help=EXPECT_UNEXPECTED_HELP)
 
-    DEBUG_HELP = "Print communications with SerAPI."
+    DEBUG_HELP = "Print communications with prover process."
     parser.add_argument("--debug", action="store_true",
                         default=False, help=DEBUG_HELP)
 
