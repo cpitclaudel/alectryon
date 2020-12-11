@@ -24,17 +24,17 @@ from copy import deepcopy
 from os import path, makedirs, unlink
 from itertools import zip_longest
 
-from . import serapi
+from . import core
 
 TYPE_OF_ALIASES = {
-    "text": serapi.Text,
-    "hypothesis": serapi.Hypothesis,
-    "goal": serapi.Goal,
-    "message": serapi.Message,
-    "sentence": serapi.Sentence,
-    "goals": serapi.Goals,
-    "messages": serapi.Messages,
-    "rich_sentence": serapi.RichSentence,
+    "text": core.Text,
+    "hypothesis": core.Hypothesis,
+    "goal": core.Goal,
+    "message": core.Message,
+    "sentence": core.Sentence,
+    "goals": core.Goals,
+    "messages": core.Messages,
+    "rich_sentence": core.RichSentence,
 }
 
 ALIASES_OF_TYPE = {

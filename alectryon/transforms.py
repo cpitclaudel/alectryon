@@ -24,7 +24,7 @@ import textwrap
 from copy import copy
 from collections import namedtuple
 from itertools import chain
-from .serapi import Text, Sentence, RichSentence, Goals, Messages
+from .core import Text, Sentence, RichSentence, Goals, Messages
 
 class IOAnnots:
     def __init__(self, *annots):

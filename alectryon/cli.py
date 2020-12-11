@@ -714,8 +714,8 @@ def except_hook(etype, value, tb):
 
 def process_pipelines(args):
     if args.debug:
-        from . import serapi
-        serapi.DEBUG = True
+        from . import core
+        core.DEBUG = True
 
     if args.traceback:
         from . import core

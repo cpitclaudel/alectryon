@@ -26,30 +26,13 @@ from sys import stderr
 from shlex import quote
 from shutil import which
 from subprocess import Popen, PIPE, check_output
+
 from . import sexp as sx
-
-DEBUG = False
-TRACEBACK = False
-
-def debug(text, prefix):
-    if isinstance(text, (bytes, bytearray)):
-        text = text.decode("utf-8", errors="replace")
-    if DEBUG:
-        print(indent(text.rstrip(), prefix), flush=True)
+from .core import Hypothesis, Goal, Message, Sentence, Text, debug
 
 class GeneratorInfo(namedtuple("GeneratorInfo", "name version")):
     def fmt(self, include_version_info=True):
         return "{} v{}".format(self.name, self.version) if include_version_info else self.name
-
-Hypothesis = namedtuple("Hypothesis", "names body type")
-Goal = namedtuple("Goal", "name conclusion hypotheses")
-Message = namedtuple("Message", "contents")
-Sentence = namedtuple("Sentence", "contents messages goals")
-Text = namedtuple("Text", "contents")
-
-Goals = namedtuple("Goals", "goals")
-Messages = namedtuple("Messages", "messages")
-RichSentence = namedtuple("RichSentence", "contents outputs annots prefixes suffixes")
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
