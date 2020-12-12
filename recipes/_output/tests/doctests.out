@@ -18,6 +18,8 @@ FullyDeduplicatingSerializer (alectryon.json)
 Doctest: alectryon.json.FullyDeduplicatingSerializer ... ok
 PlainSerializer (alectryon.json)
 Doctest: alectryon.json.PlainSerializer ... ok
+annotate (alectryon.lean3.Lean3)
+Doctest: alectryon.lean3.Lean3.annotate ... ok
 __len__ (alectryon.literate.Line)
 Doctest: alectryon.literate.Line.__len__ ... ok
 _last_coq_directive (alectryon.literate)
@@ -56,6 +58,6 @@ partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 28 tests
+Ran 29 tests
 
 OK
