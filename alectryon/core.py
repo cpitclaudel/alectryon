@@ -20,6 +20,7 @@
 
 from collections import namedtuple
 from textwrap import indent
+from io import TextIOWrapper
 
 from shlex import quote
 from shutil import which
@@ -125,3 +126,13 @@ class REPLProver(Prover):
         cmd = [self.resolve_prover(self.binpath), *self.args]
         debug(" ".join(quote(s) for s in cmd), '# ')
         self.repl = Popen(cmd, stdin=PIPE, stderr=stderr, stdout=PIPE)
+
+class TextREPLProver(REPLProver): # pylint: disable=abstract-method
+    REPL_ENCODING = "utf-8"
+
+    def reset(self):
+        super().reset()
+        self.repl.stdin = TextIOWrapper(
+            self.repl.stdin, write_through=True, encoding=self.REPL_ENCODING)
+        self.repl.stdout = TextIOWrapper(
+            self.repl.stdout, encoding=self.REPL_ENCODING)
