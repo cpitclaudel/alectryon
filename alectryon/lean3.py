@@ -151,6 +151,8 @@ class Lean3(TextREPLProver):
             yield Hypothesis(m.group("names").split(), None, m.group("type").replace("\n  ", "\n"))
 
     def _parse_goals(self, state):
+        if state == "no goals":
+            return
         goals = state.split("\n\n")
         if len(goals) > 1:
             goals[0] = goals[0][goals[0].find('\n'):] # Strip "`n` goals"
@@ -163,28 +165,49 @@ class Lean3(TextREPLProver):
         pos = 0
         for (beg, end, st) in self._find_sentence_ranges(doc):
             if beg > pos:
-                yield Text(doc[pos:beg])
-            yield Sentence(doc[beg:end], [], list(self._parse_goals(st)))
+                yield pos, beg, Text(doc[pos:beg])
+            yield beg, end, Sentence(doc[beg:end], [], list(self._parse_goals(st)))
             pos = end
         if pos < len(doc):
-            yield Text(doc[pos:len(doc)])
+            yield pos, len(doc), Text(doc[pos:len(doc)])
 
-    def _sync(self, doc):
+    @staticmethod
+    def _iter_offsets(strs):
+        end = 0
+        for s in strs:
+            beg, end = end, end + len(s)
+            yield (beg, end, s)
+
+    def _rebuild_chunks(self, inputs, fragments):
+        if not inputs:
+            return []
+        chunks = [[]]
+        inputs, fragments = iter(self._iter_offsets(inputs)), iter(fragments)
+        in_beg, in_end, _in = next(inputs)
+        beg, end, fragment = next(fragments)
+        while fragment is not None:
+            assert in_beg <= beg <= end
+            print(f"input: [{in_beg, in_end}[	output: [{beg, end}[	{fragment=}")
+            if end <= in_end: # fragment ⊂ input
+                print(f"[{in_beg, in_end}[ ⊃ [{beg, end}[")
+                chunks[-1].append(fragment)
+                beg, end, fragment = next(fragments, (None, None, None))
+            else: # fragment goes past end of input
+                if beg < in_end: # input and fragment do overlap; truncate fragment
+                    print(f"[{in_beg, in_end}[ ∩ [{beg, end}[")
+                    chunks[-1].append(Text(fragment.contents[:in_end - beg]))
+                    fragment = fragment._replace(contents=fragment.contents[in_end - beg:])
+                    beg = in_end
+                chunks.append([])
+                in_beg, in_end, _in = next(inputs)
+        return chunks
+
+    def _annotate(self, chunks):
+        doc = "".join(chunks)
         _, messages = self._query("sync", file_name=self.fname, content=doc)
-        for elem in self._segment(doc):
-            yield elem
-        # for lnum, line in enumerate(doc.splitlines()):
-        #     print(":: {}".format(line))
-        #     yield from self._query("info", file_name=self.fname, line=lnum + 1, column=0)
-        #     yield from self._query("info", file_name=self.fname, line=lnum + 1, column=len(line))
-
-    def _annotate(self, doc):
-        for elem in list(self._sync(doc)):
-            print(elem)
-            # print(snippet, " → ", repr(state))
+        return self._rebuild_chunks(chunks, list(self._segment(doc)))
 
     @classmethod
     def annotate(cls, chunks, *args, **kwargs):
         with cls(*args, **kwargs) as api:
-            doc = "".join(chunks)
-            return api._annotate(doc)
+            return api._annotate(chunks)
