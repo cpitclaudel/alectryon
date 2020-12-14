@@ -93,15 +93,15 @@ output/literate.v.rst: literate.v | output
 	$(alectryon) $< -o $@
 
 # JSON → JSON
-output/fragments.io.json: fragments.json | output
+output/fragments.io.json: fragments.v.json | output
 	$(alectryon) $<
 
 # JSON → HTML snippets
-output/fragments.snippets.html: fragments.json | output
+output/fragments.snippets.html: fragments.v.json | output
 	$(alectryon) $< -o $@
 
 # JSON → Latex snippets
-output/fragments.snippets.tex: fragments.json | output
+output/fragments.snippets.tex: fragments.v.json | output
 	$(alectryon) $< -o $@
 
 # Sphinx

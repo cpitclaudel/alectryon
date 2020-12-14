@@ -28,6 +28,15 @@ import sys
 # Pipelines
 # =========
 
+INPUT_LANGUAGE = {
+    "coq": "coq",
+    "coqdoc": "coq",
+    "coq+rst": "coq",
+    "lean3": "lean3",
+    "coq.json": "coq",
+    "lean3.json": "lean3",
+}
+
 def read_plain(_, fpath, fname):
     if fname == "-":
         return sys.stdin.read()
@@ -41,7 +50,7 @@ def read_json(_, fpath, fname):
     with open(fpath, encoding="utf-8") as f:
         return load(f)
 
-def parse_coq_plain(contents):
+def parse_plain(contents):
     return [contents]
 
 def _catch_parsing_errors(fpath, k, *args):
@@ -51,20 +60,34 @@ def _catch_parsing_errors(fpath, k, *args):
     except ParsingError as e:
         raise ValueError("{}:{}".format(fpath, e))
 
-def coq_to_rst(coq, fpath, point, marker):
-    from .literate import coq2rst_marked
-    return _catch_parsing_errors(fpath, coq2rst_marked, coq, point, marker)
+def code_to_rst(code, fpath, point, marker, frontend):
+    if INPUT_LANGUAGE[frontend] == "coq":
+        from .literate import coq2rst_marked as converter
+    else:
+        raise ValueError("Unsupported frontend for untangling: {}".format(frontend))
+    return _catch_parsing_errors(fpath, converter, code, point, marker)
 
-def rst_to_coq(coq, fpath, point, marker):
-    from .literate import rst2coq_marked
-    return _catch_parsing_errors(fpath, rst2coq_marked, coq, point, marker)
+def rst_to_code(rst, fpath, point, marker, backend):
+    if backend in ("coq", "coq+rst"):
+        from .literate import rst2coq_marked as converter
+    else:
+        raise ValueError("Unsupported backend for tangling: {}".format(backend))
+    return _catch_parsing_errors(fpath, converter, rst, point, marker)
 
-def annotate_chunks(chunks, fpath, cache_directory, cache_compression, sertop_args):
-    from .serapi import SerAPI, annotate
+def annotate_chunks(chunks, fpath, frontend, cache_directory, cache_compression, sertop_args, lean3_args):
     from .json import Cache
-    metadata = {"sertop_args": sertop_args}
+    if INPUT_LANGUAGE[frontend] == "coq":
+        from .serapi import SerAPI as prover
+        metadata = {"sertop_args": sertop_args}
+        prover_args = sertop_args
+    elif INPUT_LANGUAGE[frontend] == "lean3":
+        from .lean3 import Lean3 as prover
+        metadata = {"lean3_args": sertop_args}
+        prover_args = lean3_args
+    else:
+        raise ValueError("Unsupported frontend for annotate_chunks: {}".format(frontend))
     cache = Cache(cache_directory, fpath, metadata, cache_compression)
-    return cache.update(chunks, lambda c: annotate(c, sertop_args), SerAPI.version_info())
+    return cache.update(chunks, lambda c: prover.annotate(c, prover_args), prover.version_info())
 
 def register_docutils(v, args):
     from . import docutils
@@ -165,9 +188,12 @@ def _lint_docutils(source, fpath, Parser):
 
     return observer.stream.getvalue()
 
-def lint_rstcoq(coq, fpath):
-    from .docutils import RSTCoqParser
-    return _lint_docutils(coq, fpath, RSTCoqParser)
+def lint_embedded_rst(code, fpath, traceback, frontend):
+    if INPUT_LANGUAGE[frontend] == "coq":
+        from .docutils import RSTCoqParser as Parser
+    else: # FIXME should just not appear in the lean list.
+        raise ValueError("Unsupported frontend for `lint` operation: {}".format(frontend))
+    return _lint_docutils(code, fpath, Parser, traceback)
 
 def lint_rst(rst, fpath):
     from docutils.parsers.rst import Parser
@@ -346,26 +372,39 @@ def strip_extension(fname):
             return fname[:-len(ext)]
     return fname
 
-def write_output(ext, contents, fname, output, output_directory):
+def write_output(ext, contents, fname, output, output_directory, replace_ext=True):
     if output == "-" or (output is None and fname == "-"):
         sys.stdout.write(contents)
     else:
         if not output:
-            output = os.path.join(output_directory, strip_extension(fname) + ext)
+            fname = strip_extension(fname) if replace_ext else fname
+            output = os.path.join(output_directory, fname + ext)
         with open(output, mode="w", encoding="utf-8") as f:
             f.write(contents)
 
-def write_file(ext):
+def write_file(ext, replace_ext=True):
     return lambda contents, fname, output, output_directory: \
-        write_output(ext, contents, fname, output, output_directory)
+        write_output(ext, contents, fname, output, output_directory,
+                     replace_ext=replace_ext)
 
 # No ‘apply_transforms’ in JSON pipelines: (we save the prover output without
 # modifications).
 PIPELINES = {
-    'json': {
+    'coq.json': {
         'json':
-        (read_json, annotate_chunks,
-         prepare_json, dump_json, write_file(".io.json")),
+        (read_json, annotate_chunks, prepare_json, dump_json,
+         write_file(".io.json")),
+        'snippets-html':
+        (read_json, annotate_chunks, apply_transforms, gen_html_snippets,
+         dump_html_snippets, write_file(".snippets.html")),
+        'snippets-latex':
+        (read_json, annotate_chunks, apply_transforms, gen_latex_snippets,
+         dump_latex_snippets, write_file(".snippets.tex"))
+    },
+    'lean3.json': {
+        'json':
+        (read_json, annotate_chunks, prepare_json, dump_json,
+         write_file(".io.json")),
         'snippets-html':
         (read_json, annotate_chunks, apply_transforms, gen_html_snippets,
          dump_html_snippets, write_file(".snippets.html")),
@@ -375,25 +414,42 @@ PIPELINES = {
     },
     'coq': {
         'null':
-        (read_plain, parse_coq_plain, annotate_chunks),
+        (read_plain, parse_plain, annotate_chunks),
         'webpage':
-        (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
+        (read_plain, parse_plain, annotate_chunks, apply_transforms,
          gen_html_snippets, dump_html_standalone, copy_assets,
-         write_file(".v.html")),
+         write_file(".html", replace_ext=False)),
         'snippets-html':
-        (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
+        (read_plain, parse_plain, annotate_chunks, apply_transforms,
          gen_html_snippets, dump_html_snippets, write_file(".snippets.html")),
         'snippets-latex':
-        (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
+        (read_plain, parse_plain, annotate_chunks, apply_transforms,
          gen_latex_snippets, dump_latex_snippets, write_file(".snippets.tex")),
         'lint':
-        (read_plain, register_docutils, lint_rstcoq,
+        (read_plain, register_docutils, lint_embedded_rst,
          write_file(".lint.json")),
         'rst':
-        (read_plain, coq_to_rst, write_file(".v.rst")),
+        (read_plain, code_to_rst, write_file(".rst", replace_ext=False)),
         'json':
-        (read_plain, parse_coq_plain, annotate_chunks, prepare_json,
-         dump_json, write_file(".io.json"))
+        (read_plain, parse_plain, annotate_chunks, prepare_json, dump_json,
+         write_file(".io.json"))
+    },
+    'lean3': {
+        'null':
+        (read_plain, parse_plain, annotate_chunks),
+        'webpage':
+        (read_plain, parse_plain, annotate_chunks, apply_transforms,
+         gen_html_snippets, dump_html_standalone, copy_assets,
+         write_file(".html", replace_ext=False)),
+        'snippets-html':
+        (read_plain, parse_plain, annotate_chunks, apply_transforms,
+         gen_html_snippets, dump_html_snippets, write_file(".snippets.html")),
+        'snippets-latex':
+        (read_plain, parse_plain, annotate_chunks, apply_transforms,
+         gen_latex_snippets, dump_latex_snippets, write_file(".snippets.tex")),
+        'json':
+        (read_plain, parse_plain, annotate_chunks, prepare_json, dump_json,
+         write_file(".io.json"))
     },
     'coq+rst': {
         'webpage':
@@ -403,16 +459,16 @@ PIPELINES = {
         (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".tex")),
         'lint':
-        (read_plain, register_docutils, lint_rstcoq,
+        (read_plain, register_docutils, lint_embedded_rst,
          write_file(".lint.json")),
         'rst':
-        (read_plain, coq_to_rst, write_file(".v.rst"))
+        (read_plain, code_to_rst, write_file(".v.rst")),
     },
     'coqdoc': {
-        'webpage': # transforms applied later
-        (read_plain, parse_coq_plain, annotate_chunks,
-         gen_html_snippets_with_coqdoc, dump_html_standalone,
-         copy_assets, write_file(".html")),
+        'webpage':
+        (read_plain, parse_plain, annotate_chunks, # transforms applied later
+         gen_html_snippets_with_coqdoc, dump_html_standalone, copy_assets,
+         write_file(".html")),
     },
     'rst': {
         'webpage':
@@ -422,12 +478,11 @@ PIPELINES = {
         (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".tex")),
         'lint':
-        (read_plain, register_docutils, lint_rst,
-         write_file(".lint.json")),
+        (read_plain, register_docutils, lint_rst, write_file(".lint.json")),
         'coq':
-        (read_plain, rst_to_coq, write_file(".v")),
+        (read_plain, rst_to_code, write_file(".v")),
         'coq+rst':
-        (read_plain, rst_to_coq, write_file(".v"))
+        (read_plain, rst_to_code, write_file(".v")),
     }
 }
 
@@ -437,12 +492,15 @@ PIPELINES['coq+rst']['xelatex'] = PIPELINES['coq+rst']['latex']
 # CLI
 # ===
 
-EXTENSIONS = ['.v', '.json', '.v.rst', '.rst']
+EXTENSIONS = ['.v', '.lean', '.lean.json', '.v.json', '.json', '.v.rst', '.rst']
 FRONTENDS_BY_EXTENSION = [
-    ('.v', 'coq+rst'), ('.json', 'json'), ('.rst', 'rst')
+    ('.v', 'coq+rst'), ('.lean', 'lean3'),
+    ('.v.json', 'coq.json'), ('.lean3.json', 'lean3.json'),
+    ('.rst', 'rst')
 ]
 BACKENDS_BY_EXTENSION = [
-    ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst'),
+    ('.v', 'coq'), ('.lean', 'lean3'),
+    ('.json', 'json'), ('.rst', 'rst'),
     ('.lint.json', 'lint'),
     ('.snippets.html', 'snippets-html'),
     ('.snippets.tex', 'snippets-latex'),
@@ -451,10 +509,12 @@ BACKENDS_BY_EXTENSION = [
 ]
 
 DEFAULT_BACKENDS = {
-    'json': 'json',
+    'coq.json': 'json',
+    'lean3.json': 'json',
     'coq': 'webpage',
     'coqdoc': 'webpage',
     'coq+rst': 'webpage',
+    'lean3': 'webpage',
     'rst': 'webpage'
 }
 
@@ -487,7 +547,7 @@ expecting one of {}"""
         raise argparse.ArgumentTypeError(MSG.format(
             frontend, backend, ", ".join(map(repr, supported_backends))))
 
-    return supported_backends[backend]
+    return (frontend, backend, supported_backends[backend])
 
 COPY_FUNCTIONS = {
     "copy": shutil.copy,
@@ -520,6 +580,8 @@ def post_process_arguments(parser, args):
         except ValueError:
             MSG = "argument --mark-point: Expecting a number, not {!r}"
             parser.error(MSG.format(args.point))
+
+    args.lean3_args = ()
 
     args.assets = []
     args.html_classes = []
@@ -691,7 +753,7 @@ def call_pipeline_step(step, state, ctx):
     params = list(inspect.signature(step).parameters.keys())[1:]
     return step(state, **{p: ctx[p] for p in params})
 
-def build_context(fpath, args):
+def build_context(fpath, frontend, backend, args):
     if fpath == "-":
         fname, fpath = "-", (args.stdin_filename or "-")
     else:
@@ -726,8 +788,8 @@ def process_pipelines(args):
         from . import serapi
         serapi.SerAPI.EXPECT_UNEXPECTED = True
 
-    for fpath, pipeline in args.pipelines:
-        state, ctx = None, build_context(fpath, args)
+    for fpath, (frontend, backend, pipeline) in args.pipelines:
+        state, ctx = None, build_context(fpath, frontend, backend, args)
         for step in pipeline:
             state = call_pipeline_step(step, state, ctx)
 
@@ -747,7 +809,7 @@ def main():
 # Alternative CLIs
 # ================
 
-def rstcoq2html():
+def embedded_rst2html():
     from .docutils import RSTCoqStandaloneReader, RSTCoqParser
     DESCRIPTION = 'Build an HTML document from an Alectryon Coq file.'
     _docutils_cmdline_html(DESCRIPTION, RSTCoqStandaloneReader, RSTCoqParser)

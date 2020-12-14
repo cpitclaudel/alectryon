@@ -77,14 +77,14 @@ Translate a literate Coq file into a reStructuredText document:
 Record goals and responses for fragments contained in a JSON source file:
    .. code::
 
-      alectryon fragments.json
-      alectryon --frontend json --backend json fragments.json -o fragments.io.json
+      alectryon fragments.v.json
+      alectryon --frontend coq.json --backend json fragments.json -o fragments.io.json
 
 Record goals and responses and format them as HTML for fragments contained in a JSON source file:
    .. code::
 
-      alectryon fragments.json -o fragments.snippets.html
-      alectryon --frontend json --backend snippets-html fragments.json -o fragments.snippets.html
+      alectryon fragments.v.json -o fragments.snippets.html
+      alectryon --frontend coq.json --backend snippets-html fragments.json -o fragments.snippets.html
 
 Command-line interface
 ~~~~~~~~~~~~~~~~~~~~~~
