@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>Using MathJax with Alectryon</title>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="tango_subtle.css" type="text/css" />
+<link rel="stylesheet" href="tango_subtle.min.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<link rel="stylesheet" href="math.css" type="text/css" />
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI. Coq sources are in this panel; goals and messages will appear in the other. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus.</div><div class="document" id="using-mathjax-with-alectryon">
+<h1 class="title">Using MathJax with Alectryon</h1>
+
+<p>This example shows how to combine Alectryon with MathJax.  We'll do a pretty-printed version of the proof that <span class="formula"><span class="limits"><span class="limit">∑</span></span><span class="scripts"><sup class="script"><i>n</i></sup><sub class="script"><i>i</i> = 0</sub></span><i>i</i> = <span class="fraction"><span class="ignored">(</span><span class="numerator"><i>n</i>⋅(<i>n</i> + 1)</span><span class="ignored">)/(</span><span class="denominator">2</span><span class="ignored">)</span></span></span>.</p>
+<p>First, we start with a definition of <tt class="docutils literal">sum</tt>:</p>
+<pre class="alectryon-io"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Require Import</span> NArith ArithRing.</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp"><span class="highlight">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Fixpoint</span> <span class="nf">nsum</span> <span class="nv">max</span> <span class="nv">f</span> :=
+  <span class="kr">match</span> max <span class="kr">with</span>
+  | O =&gt; f <span class="mi">0</span>
+  | S max&#39; =&gt; f max + nsum max&#39; f
+  <span class="kr">end</span>.</span></span></span></pre><p>Then, we add notations to print LaTeX code (this is only one way to do it; another way would be to parse Coq's output to reconstruct LaTeX):</p>
+<pre class="alectryon-io"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Notation</span> <span class="s2">&quot;&#39;\ccNat{}&#39;&quot;</span> := nat.</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Notation</span> <span class="s2">&quot;&#39;\ccSucc{&#39; n &#39;}&#39;&quot;</span> := (S n).</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Infix</span> <span class="s2">&quot;\times&quot;</span> := mult
+  (<span class="kn">at level</span> <span class="mi">30</span>).</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Notation</span> <span class="s2">&quot;&#39;\ccNsum{&#39; x &#39;}{&#39; max &#39;}{&#39; f &#39;}&#39;&quot;</span> :=
+  (nsum max (<span class="kr">fun</span> <span class="nv">x</span> =&gt; f))
+    (<span class="kn">format</span> <span class="s2">&quot;&#39;\ccNsum{&#39; x &#39;}{&#39; max &#39;}{&#39; f &#39;}&#39;&quot;</span>).</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Notation</span> <span class="s2">&quot;\ccNot{ x }&quot;</span> := (not x)
+  (<span class="kn">at level</span> <span class="mi">100</span>).</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Infix</span> <span class="s2">&quot;\wedge&quot;</span> := <span class="kn">and</span>
+  (<span class="kn">at level</span> <span class="mi">190</span>, <span class="kn">right associativity</span>).</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Notation</span> <span class="s2">&quot;A \Rightarrow{} B&quot;</span> := (<span class="kr">∀</span> (<span class="nv">_</span> : A), B)
+  (<span class="kn">at level</span> <span class="mi">200</span>, <span class="kn">right associativity</span>).</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Notation</span> <span class="s2">&quot;&#39;\ccForall{&#39; x .. y &#39;}{&#39; P &#39;}&#39;&quot;</span> := (<span class="kr">∀</span> <span class="nv">x</span>, .. (<span class="kr">∀</span> <span class="nv">y</span>, P) ..)
+  (<span class="kn">at level</span> <span class="mi">200</span>, x <span class="kn">binder</span>, y <span class="kn">binder</span>, <span class="kn">right associativity</span>,
+   <span class="kn">format</span> <span class="s2">&quot;&#39;\ccForall{&#39; x .. y &#39;}{&#39; P &#39;}&#39;&quot;</span>).</span></span></span></pre><p>Then, we add setup to load MathJax and render notations:</p>
+<div>
+    \(\newcommand{\ccQ}{\mathbb{Q}}\)
+    \(\newcommand{\ccNat}{\mathbb{N}}\)
+    \(\newcommand{\ccSucc}[1]{\mathrm{S}\:#1}\)
+    \(\newcommand{\ccFrac}[2]{\frac{#1}{#2}}\)
+    \(\newcommand{\ccPow}[2]{{#1}^{#2}}\)
+    \(\newcommand{\ccNot}[1]{{\lnot #1}}\)
+    \(\newcommand{\ccEvar}[1]{\textit{\texttt{#1}}}\)
+    \(\newcommand{\ccForall}[2]{\forall \: #1. \; #2}\)
+    \(\newcommand{\ccNsum}[3]{\sum_{#1 = 0}^{#2} #3}\)
+</div><p>Then, we wrap each conclusion and each hypothesis in math markers, and we load MathJax:</p>
+<script type="text/javascript">
+  function setup() {
+     var spans = document.querySelectorAll(".goal-conclusion .highlight, .goal-hyp .highlight");
+     spans.forEach(function (e) {
+         var text = e.innerText;
+         var node = document.createTextNode('\\[' + text + '\\]');
+         e.parentNode.replaceChild(node, e);
+     });
+  }
+
+  MathJax = {
+      options: {
+          skipHtmlTags: [
+              'script', 'noscript', 'style', 'textarea',
+              'annotation', 'annotation-xml'
+          ]
+      },
+      startup: {
+          pageReady: function () {
+              setup();
+              return MathJax.startup.defaultPageReady();
+          }
+      }
+  };
+</script>
+
+<style type="text/css"> /* Override MathJax margins */
+    .hyp-type > *, .goal-conclusion > * {
+        margin: 0 !important;
+    }
+</style>
+
+<script type="text/javascript" id="MathJax-script" async
+   src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script><p>Finally, here's the actual proof:</p>
+<pre class="alectryon-io"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk0"><span class="highlight"><span class="kn">Lemma</span> <span class="nf">Gauss</span>: <span class="kr">∀</span> <span class="nv">n</span>,
+    <span class="mi">2</span> * (nsum n (<span class="kr">fun</span> <span class="nv">i</span> =&gt; i)) = n * (n + <span class="mi">1</span>).</span></label><small class="alectryon-output"><div class="alectryon-output-sticky-wrapper"><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="highlight">\ccForall{n : \ccNat{}}{<span class="mi">2</span> \times \ccNsum{i}{n}{i} =
+                        n \times (n + <span class="mi">1</span>)}</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk1"><span class="highlight"><span class="nb">induction</span> n; <span class="nb">cbn</span> [nsum].</span></label><small class="alectryon-output"><div class="alectryon-output-sticky-wrapper"><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="highlight"><span class="mi">2</span> \times <span class="mi">0</span> = <span class="mi">0</span> \times (<span class="mi">0</span> + <span class="mi">1</span>)</span></div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="mathjax-rst-chk2" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><div class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type-block"><span class="hyp-punct">:</span><span class="hyp-type"><span class="highlight">\ccNat{}</span></span></span></span></div><div class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type-block"><span class="hyp-punct">:</span><span class="hyp-type"><span class="highlight"><span class="mi">2</span> \times \ccNsum{i}{n}{i} = n \times (n + <span class="mi">1</span>)</span></span></span></span></div></div><label class="goal-separator alectryon-extra-goal-label" for="mathjax-rst-chk2"><hr></label><div class="goal-conclusion"><span class="highlight"><span class="mi">2</span> \times (\ccSucc{ n} + \ccNsum{i}{n}{i}) =
+\ccSucc{ n} \times (\ccSucc{ n} + <span class="mi">1</span>)</span></div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk3"><span class="highlight">- <span class="c">(* n ← 0 *)</span></span></label><small class="alectryon-output"><div class="alectryon-output-sticky-wrapper"><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="highlight"><span class="mi">2</span> \times <span class="mi">0</span> = <span class="mi">0</span> \times (<span class="mi">0</span> + <span class="mi">1</span>)</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="bp">reflexivity</span>.</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk4"><span class="highlight">- <span class="c">(* n ← S _ *)</span></span></label><small class="alectryon-output"><div class="alectryon-output-sticky-wrapper"><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><div class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type-block"><span class="hyp-punct">:</span><span class="hyp-type"><span class="highlight">\ccNat{}</span></span></span></span></div><div class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type-block"><span class="hyp-punct">:</span><span class="hyp-type"><span class="highlight"><span class="mi">2</span> \times \ccNsum{i}{n}{i} = n \times (n + <span class="mi">1</span>)</span></span></span></span></div></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="highlight"><span class="mi">2</span> \times (\ccSucc{ n} + \ccNsum{i}{n}{i}) =
+\ccSucc{ n} \times (\ccSucc{ n} + <span class="mi">1</span>)</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk5" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk5"><span class="highlight"><span class="nb">rewrite</span> Mult.mult_plus_distr_l.</span></label><small class="alectryon-output"><div class="alectryon-output-sticky-wrapper"><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><div class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type-block"><span class="hyp-punct">:</span><span class="hyp-type"><span class="highlight">\ccNat{}</span></span></span></span></div><div class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type-block"><span class="hyp-punct">:</span><span class="hyp-type"><span class="highlight"><span class="mi">2</span> \times \ccNsum{i}{n}{i} = n \times (n + <span class="mi">1</span>)</span></span></span></span></div></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="highlight"><span class="mi">2</span> \times \ccSucc{ n} + <span class="mi">2</span> \times \ccNsum{i}{n}{i} =
+\ccSucc{ n} \times (\ccSucc{ n} + <span class="mi">1</span>)</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk6" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk6"><span class="highlight"><span class="nb">rewrite</span> IHn.</span></label><small class="alectryon-output"><div class="alectryon-output-sticky-wrapper"><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><div class="goal-hyp"><span class="hyp-names">n</span><span><span class="hyp-type-block"><span class="hyp-punct">:</span><span class="hyp-type"><span class="highlight">\ccNat{}</span></span></span></span></div><div class="goal-hyp"><span class="hyp-names">IHn</span><span><span class="hyp-type-block"><span class="hyp-punct">:</span><span class="hyp-type"><span class="highlight"><span class="mi">2</span> \times \ccNsum{i}{n}{i} = n \times (n + <span class="mi">1</span>)</span></span></span></span></div></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="highlight"><span class="mi">2</span> \times \ccSucc{ n} + n \times (n + <span class="mi">1</span>) =
+\ccSucc{ n} \times (\ccSucc{ n} + <span class="mi">1</span>)</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="bp">ring</span>.</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="highlight"><span class="kn">Qed</span>.</span></span></span></pre>
+</div>
+</div></body>
+</html>

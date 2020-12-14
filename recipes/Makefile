@@ -2,7 +2,7 @@ alectryon := ../alectryon.py --output-directory output --no-version-numbers --tr
 minimal := python3 -m alectryon.minimal
 
 assets := alectryon.css alectryon.js
-all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html hyps.html document.minimal.html document.v literate.v.rst fragments.io.json fragments.snippets.html fragments.snippets.tex latex.snippets.tex api.out
+all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html hyps.html mathjax.html document.minimal.html document.v literate.v.rst fragments.io.json fragments.snippets.html fragments.snippets.tex latex.snippets.tex api.out
 
 all: $(patsubst %,output/%,$(all) $(assets)) sphinx/_build/html/index.html;
 
@@ -29,6 +29,8 @@ output/literate.html: literate.v | output
 output/document.html: document.v.rst | output
 	$(alectryon) $<
 output/hyps.html: hyps.rst | output
+	$(alectryon) $<
+output/mathjax.html: mathjax.rst | output
 	$(alectryon) $<
 
 # Minimal reST+Coq → HTML
