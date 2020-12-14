@@ -31,14 +31,14 @@ import sys
 def read_plain(_, fpath, fname):
     if fname == "-":
         return sys.stdin.read()
-    with open(fpath) as f:
+    with open(fpath, encoding="utf-8") as f:
         return f.read()
 
 def read_json(_, fpath, fname):
     from json import load
     if fname == "-":
         return load(sys.stdin)
-    with open(fpath) as f:
+    with open(fpath, encoding="utf-8") as f:
         return load(f)
 
 def parse_coq_plain(contents):
