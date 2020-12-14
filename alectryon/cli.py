@@ -318,7 +318,7 @@ def write_output(ext, contents, fname, output, output_directory):
     else:
         if not output:
             output = os.path.join(output_directory, strip_extension(fname) + ext)
-        with open(output, mode="w") as f:
+        with open(output, mode="w", encoding="utf-8") as f:
             f.write(contents)
 
 def write_file(ext):
