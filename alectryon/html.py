@@ -69,8 +69,8 @@ HEADER = (
     '</div>'
 )
 
-def gen_banner(generator, include_version_info=True):
-    return HEADER.format(generator.fmt(include_version_info)) if generator else ""
+def gen_banner(generators, include_version_info=True):
+    return HEADER.format(", ".join(g.fmt(include_version_info) for g in generators))
 
 def wrap_classes(*cls):
     return " ".join("alectryon-" + c for c in ("root", *cls))

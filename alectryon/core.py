@@ -66,6 +66,15 @@ class Prover():
         """
         raise NotImplementedError()
 
+def get_prover(lang):
+    if lang == "coq":
+        from .serapi import SerAPI as prover
+    elif lang == "lean3":
+        from .lean3 import Lean3 as prover
+    else:
+        raise ValueError("Unsupported language: {}".format(lang))
+    return prover
+
 class REPLProver(Prover):
     REPL_BIN = None
     REPL_NAME = None

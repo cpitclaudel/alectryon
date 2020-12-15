@@ -191,23 +191,66 @@ def validate_inputs(annotated, reference):
         return annotated.contents == reference
     return False
 
-class BaseCache:
-    def get(self, chunks):
-        raise NotImplementedError
+def validate_metadata(metadata, reference, cache_file):
+    if metadata != reference:
+        MSG = "Outdated metadata in {} ({} != {})"
+        print(MSG.format(cache_file, metadata, reference))
+        return False
+    return True
 
-    def put(self, chunks, annotated, generator):
-        raise NotImplementedError
+def validate_data(data, reference, cache_file):
+    if data != reference:
+        MSG = "Outdated contents in {}: recomputing"
+        print(MSG.format(cache_file))
+        return False
+    return True
 
-    # LATER: pass a SerAPI instance instead of update_fn and generator
-    def update(self, chunks, update_fn, generator):
-        annotated = self.get(chunks)
+
+class Cache:
+    def __init__(self, data, cache_file):
+        self.data = data
+        self.cache_file = cache_file
+        self.serializer = PlainSerializer
+
+    @staticmethod
+    def normalize(obj):
+        if isinstance(obj, (list, tuple)):
+            return [Cache.normalize(o) for o in obj]
+        if isinstance(obj, dict):
+            return {k: Cache.normalize(v) for (k, v) in obj.items()}
+        return obj
+
+    def _validate(self, chunks, metadata):
+        return (self.data is not None
+           and validate_metadata(self.data["metadata"], metadata, self.cache_file)
+           and validate_data(self.data.get("chunks"), chunks, self.cache_file))
+
+    def get(self, chunks, metadata):
+        if not self._validate(self.normalize(chunks), self.normalize(metadata)):
+            return None
+        return self.serializer.decode(self.data.get("annotated"))
+
+    @property
+    def generator(self):
+        return core.GeneratorInfo(*self.data.get("generator", ("Coq+SerAPI", "??")))
+
+    def put(self, chunks, metadata, annotated, generator):
+        self.data = {"generator": self.normalize(generator),
+                     "metadata": self.normalize(metadata),
+                     "chunks": list(chunks),
+                     "annotated": self.serializer.encode(annotated)}
+
+    # FIXME: pass a prover instance instead of update_fn and generator
+    def update(self, chunks, metadata, update_fn, generator):
+        annotated = self.get(chunks, metadata)
         if annotated is None:
             annotated = update_fn(chunks)
-            self.put(chunks, annotated, generator)
+            self.put(chunks, metadata, annotated, generator)
         return annotated
 
-class FileCache(BaseCache):
-    CACHE_VERSION = "1"
+class FileCacheSet:
+    CACHE_VERSION = "2"
+    METADATA = {"cache_version": CACHE_VERSION}
 
     KNOWN_COMPRESSIONS = {
         "none": ("builtins", ""),
@@ -215,8 +258,7 @@ class FileCache(BaseCache):
         "xz": ("lzma", ".xz"),
     }
 
-    def __init__(self, cache_root, doc_path, metadata, cache_compression):
-        self.serializer = PlainSerializer
+    def __init__(self, cache_root, doc_path, cache_compression):
         self.cache_root = path.realpath(cache_root)
         self.wanted_compression = cache_compression or "none"
         if self.wanted_compression not in self.KNOWN_COMPRESSIONS:
@@ -228,55 +270,50 @@ class FileCache(BaseCache):
         self.cache_dir = path.dirname(self.cache_file)
         makedirs(self.cache_dir, exist_ok=True)
 
-        self.metadata = self.normalize(metadata)
-        self.metadata["cache_version"] = self.CACHE_VERSION
+        self.ondisk_compression, self.js = self._read()
+        self.caches = {}
+        if self._validate():
+            for lang, data in sorted(self.js["caches"].items()):
+                self.caches[lang] = Cache(data, self.cache_rel_file)
 
-        self.ondisk_compression, self.data = self._read()
+    def __enter__(self):
+        return self
 
-    @staticmethod
-    def normalize(obj):
-        if isinstance(obj, (list, tuple)):
-            return [FileCache.normalize(o) for o in obj]
-        if isinstance(obj, dict):
-            return {k: FileCache.normalize(v) for (k, v) in obj.items()}
-        return obj
+    def __exit__(self, *_exn):
+        self._write()
+        return False
 
     def _open(self, compression, mode):
         mod, ext = self.KNOWN_COMPRESSIONS[compression]
         return __import__(mod).open(self.cache_file + ext, mode=mode)
 
-    def _validate(self, reference):
-        if self.data is None:
-            return False
-        metadata = self.data.get("metadata")
-        if self.metadata != metadata:
-            MSG = "Outdated metadata in {} ({} != {}): recomputing annotations"
-            print(MSG.format(self.cache_rel_file, self.metadata, metadata))
-            return False
-        reference = self.normalize(reference)
-        if reference is not None and reference != self.data.get("chunks"):
-            MSG = "Outdated contents in {}: recomputing"
-            print(MSG.format(self.cache_rel_file))
-            return False
-        return True
-
     def _read(self):
         for compression in self.KNOWN_COMPRESSIONS:
             try:
                 with self._open(compression, mode="rt") as cache:
-                    return compression, self.normalize(json.load(cache))
+                    return compression, json.load(cache)
             except FileNotFoundError:
                 pass
         return None, None
 
-    def get(self, chunks):
-        if not self._validate(chunks):
-            return None
-        return self.serializer.decode(self.data.get("annotated"))
+    def _validate(self):
+        return self.js and validate_metadata(self.js["metadata"], self.METADATA,
+                                           self.cache_rel_file)
 
-    @property
-    def generator(self):
-        return core.GeneratorInfo(*self.data.get("generator", ("Coq+SerAPI", "??")))
+    def __getitem__(self, lang):
+        if lang not in self.caches:
+            self.caches[lang] = Cache(None, self.cache_rel_file)
+        return self.caches[lang]
+
+    def _check_recompression(self):
+        needed = self.ondisk_compression != self.wanted_compression
+        if needed:
+            MSG = "Recompression requested for {} " \
+                "(was {}, now {}): rewriting cache file"
+            print(MSG.format(self.cache_rel_file,
+                             self.ondisk_compression,
+                             self.wanted_compression))
+        return needed
 
     def _delete_old_caches(self):
         for _mod, ext in self.KNOWN_COMPRESSIONS.values():
@@ -285,37 +322,32 @@ class FileCache(BaseCache):
             except FileNotFoundError:
                 pass
 
-    def _write(self):
+    def _force_write(self, js):
         self._delete_old_caches()
         with self._open(self.wanted_compression, mode="wt") as cache:
-            json.dump(self.data, cache, indent=2)
-        self.ondisk_compression = self.wanted_compression
+            json.dump(js, cache, indent=2)
+        self.js, self.ondisk_compression = js, self.wanted_compression
 
-    def put(self, chunks, annotated, generator):
-        self.data = {"generator": generator,
-                     "metadata": self.metadata,
-                     "chunks": list(chunks),
-                     "annotated": self.serializer.encode(annotated)}
-        self._write()
+    def _write(self):
+        js = { "metadata": self.METADATA,
+               "caches": { lang: c.data
+                           for (lang, c) in sorted(self.caches.items()) } }
+        if js != self.js or self._check_recompression():
+            self._force_write(js)
 
-    def update(self, *args, **kwargs):
-        annotated = super().update(*args, **kwargs)
-        if self.ondisk_compression != self.wanted_compression:
-            MSG = "Recompression requested for {} (was {}, now {}): rewriting cache file"
-            print(MSG.format(self.cache_rel_file, self.ondisk_compression, self.wanted_compression))
-            self._write()
-        return annotated
-
-class DummyCache(BaseCache):
+class DummyCacheSet():
     def __init__(self, *_args):
-        self.generator = None
+        pass
 
-    def get(self, *_args): # pylint: disable=no-self-use
-        return None
+    def __enter__(self):
+        return self
 
-    def put(self, _chunks, _annotated, generator):
-        self.generator = generator
+    def __exit__(self, *_exn):
+        return False
 
-def Cache(cache_root, doc_path, metadata, cache_compression):
-    cls = FileCache if cache_root is not None else DummyCache
-    return cls(cache_root, doc_path, metadata, cache_compression)
+    def __getitem__(self, lang):
+        return Cache(None, None)
+
+def CacheSet(cache_root, doc_path, cache_compression):
+    cls = FileCacheSet if cache_root is not None else DummyCacheSet
+    return cls(cache_root, doc_path, cache_compression)

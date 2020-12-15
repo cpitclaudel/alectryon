@@ -65,24 +65,19 @@ def rst_to_code(rst, fpath, point, marker, backend):
         assert False
     return _catch_parsing_errors(fpath, converter, rst, point, marker)
 
-def annotate_chunks(chunks, fpath, input_language, cache_directory, cache_compression, sertop_args, lean3_args):
-    from .json import Cache
-    if input_language == "coq":
-        from .serapi import SerAPI as prover
-        metadata = {"sertop_args": sertop_args}
-        prover_args = sertop_args
-    elif input_language == "lean3":
-        from .lean3 import Lean3 as prover
-        metadata = {"lean3_args": sertop_args}
-        prover_args = lean3_args
-    else:
-        assert False
-    cache = Cache(cache_directory, fpath, metadata, cache_compression)
-    return cache.update(chunks, lambda c: prover.annotate(c, prover_args), prover.version_info())
+def annotate_chunks(chunks, fpath, input_language, prover_args,
+                    cache_directory, cache_compression):
+    from .core import get_prover
+    from .json import CacheSet
+    prover, args = get_prover(input_language), prover_args[input_language]
+    metadata = { "args": args }
+    with CacheSet(cache_directory, fpath, cache_compression) as caches:
+        upd = lambda c: prover.annotate(c, args)
+        return caches[input_language].update(chunks, metadata, upd, prover.version_info())
 
 def register_docutils(v, args):
     from . import docutils
-    docutils.AlectryonTransform.SERTOP_ARGS = args.sertop_args
+    docutils.AlectryonTransform.PROVER_ARGS = args.prover_args
     docutils.CACHE_DIRECTORY = args.cache_directory
     docutils.CACHE_COMPRESSION = args.cache_compression
     docutils.HTML_MINIFICATION = args.html_minification
@@ -293,11 +288,10 @@ def copy_assets(state, assets, copy_fn, output_directory):
 
 def dump_html_standalone(snippets, fname, webpage_style,
                          html_minification, include_banner, include_vernums,
-                         assets, html_classes):
+                         assets, html_classes, input_language):
     from dominate import tags, document
     from dominate.util import raw
     from . import GENERATOR
-    from .serapi import SerAPI
     from .pygments import HTML_FORMATTER
     from .html import ASSETS, ADDITIONAL_HEADS, JS_UNMINIFY, gen_banner, wrap_classes
 
@@ -330,7 +324,9 @@ def dump_html_standalone(snippets, fname, webpage_style,
     cls = wrap_classes(webpage_style, *html_classes)
     root = doc.body.add(tags.article(cls=cls))
     if include_banner:
-        root.add(raw(gen_banner(SerAPI.version_info(), include_vernums)))
+        from .core import get_prover
+        prover = get_prover(input_language)
+        root.add(raw(gen_banner([prover.version_info()], include_vernums)))
     for snippet in snippets:
         root.add(snippet)
 
@@ -583,7 +579,11 @@ def post_process_arguments(parser, args):
             MSG = "argument --mark-point: Expecting a number, not {!r}"
             parser.error(MSG.format(args.point))
 
-    args.lean3_args = ()
+    args.prover_args = {
+        "coq": args.sertop_args,
+        "lean3": (),
+    }
+    delattr(args, "sertop_args")
 
     args.assets = []
     args.html_classes = []

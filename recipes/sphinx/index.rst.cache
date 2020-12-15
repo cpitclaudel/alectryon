@@ -1,198 +1,204 @@
 {
-  "generator": [
-    "Coq+SerAPI",
-    "8.12.0+0.12.0"
-  ],
   "metadata": {
-    "sertop_args": [],
-    "cache_version": "1"
+    "cache_version": "2"
   },
-  "chunks": [
-    "Definition example_from_sphinx: nat. (* .unfold *)\nProof. (* .no-goals *)\n  simple apply Nat.add.\n  exact 1.\n  assert (n: nat).\n  2: clear n.\n  exact 3.\n  exact 2.\nDefined.\n\nPrint example_from_sphinx. (* .unfold *)"
-  ],
-  "annotated": [
-    [
-      {
-        "_type": "sentence",
-        "contents": "Definition example_from_sphinx: nat.",
-        "messages": [],
-        "goals": [
+  "caches": {
+    "coq": {
+      "generator": [
+        "Coq+SerAPI",
+        "8.12.0+0.12.0"
+      ],
+      "metadata": {
+        "args": []
+      },
+      "chunks": [
+        "Definition example_from_sphinx: nat. (* .unfold *)\nProof. (* .no-goals *)\n  simple apply Nat.add.\n  exact 1.\n  assert (n: nat).\n  2: clear n.\n  exact 3.\n  exact 2.\nDefined.\n\nPrint example_from_sphinx. (* .unfold *)"
+      ],
+      "annotated": [
+        [
           {
-            "_type": "goal",
-            "name": null,
-            "conclusion": "nat",
-            "hypotheses": []
-          }
-        ]
-      },
-      {
-        "_type": "text",
-        "contents": " (* .unfold *)\n"
-      },
-      {
-        "_type": "sentence",
-        "contents": "Proof.",
-        "messages": [],
-        "goals": [
-          {
-            "_type": "goal",
-            "name": null,
-            "conclusion": "nat",
-            "hypotheses": []
-          }
-        ]
-      },
-      {
-        "_type": "text",
-        "contents": " (* .no-goals *)\n  "
-      },
-      {
-        "_type": "sentence",
-        "contents": "simple apply Nat.add.",
-        "messages": [],
-        "goals": [
-          {
-            "_type": "goal",
-            "name": null,
-            "conclusion": "nat",
-            "hypotheses": []
-          },
-          {
-            "_type": "goal",
-            "name": null,
-            "conclusion": "nat",
-            "hypotheses": []
-          }
-        ]
-      },
-      {
-        "_type": "text",
-        "contents": "\n  "
-      },
-      {
-        "_type": "sentence",
-        "contents": "exact 1.",
-        "messages": [],
-        "goals": [
-          {
-            "_type": "goal",
-            "name": null,
-            "conclusion": "nat",
-            "hypotheses": []
-          }
-        ]
-      },
-      {
-        "_type": "text",
-        "contents": "\n  "
-      },
-      {
-        "_type": "sentence",
-        "contents": "assert (n: nat).",
-        "messages": [],
-        "goals": [
-          {
-            "_type": "goal",
-            "name": null,
-            "conclusion": "nat",
-            "hypotheses": []
-          },
-          {
-            "_type": "goal",
-            "name": null,
-            "conclusion": "nat",
-            "hypotheses": [
+            "_type": "sentence",
+            "contents": "Definition example_from_sphinx: nat.",
+            "messages": [],
+            "goals": [
               {
-                "_type": "hypothesis",
-                "names": [
-                  "n"
-                ],
-                "body": null,
-                "type": "nat"
+                "_type": "goal",
+                "name": null,
+                "conclusion": "nat",
+                "hypotheses": []
               }
             ]
-          }
-        ]
-      },
-      {
-        "_type": "text",
-        "contents": "\n  "
-      },
-      {
-        "_type": "sentence",
-        "contents": "2: clear n.",
-        "messages": [],
-        "goals": [
-          {
-            "_type": "goal",
-            "name": null,
-            "conclusion": "nat",
-            "hypotheses": []
           },
           {
-            "_type": "goal",
-            "name": null,
-            "conclusion": "nat",
-            "hypotheses": []
+            "_type": "text",
+            "contents": " (* .unfold *)\n"
+          },
+          {
+            "_type": "sentence",
+            "contents": "Proof.",
+            "messages": [],
+            "goals": [
+              {
+                "_type": "goal",
+                "name": null,
+                "conclusion": "nat",
+                "hypotheses": []
+              }
+            ]
+          },
+          {
+            "_type": "text",
+            "contents": " (* .no-goals *)\n  "
+          },
+          {
+            "_type": "sentence",
+            "contents": "simple apply Nat.add.",
+            "messages": [],
+            "goals": [
+              {
+                "_type": "goal",
+                "name": null,
+                "conclusion": "nat",
+                "hypotheses": []
+              },
+              {
+                "_type": "goal",
+                "name": null,
+                "conclusion": "nat",
+                "hypotheses": []
+              }
+            ]
+          },
+          {
+            "_type": "text",
+            "contents": "\n  "
+          },
+          {
+            "_type": "sentence",
+            "contents": "exact 1.",
+            "messages": [],
+            "goals": [
+              {
+                "_type": "goal",
+                "name": null,
+                "conclusion": "nat",
+                "hypotheses": []
+              }
+            ]
+          },
+          {
+            "_type": "text",
+            "contents": "\n  "
+          },
+          {
+            "_type": "sentence",
+            "contents": "assert (n: nat).",
+            "messages": [],
+            "goals": [
+              {
+                "_type": "goal",
+                "name": null,
+                "conclusion": "nat",
+                "hypotheses": []
+              },
+              {
+                "_type": "goal",
+                "name": null,
+                "conclusion": "nat",
+                "hypotheses": [
+                  {
+                    "_type": "hypothesis",
+                    "names": [
+                      "n"
+                    ],
+                    "body": null,
+                    "type": "nat"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "_type": "text",
+            "contents": "\n  "
+          },
+          {
+            "_type": "sentence",
+            "contents": "2: clear n.",
+            "messages": [],
+            "goals": [
+              {
+                "_type": "goal",
+                "name": null,
+                "conclusion": "nat",
+                "hypotheses": []
+              },
+              {
+                "_type": "goal",
+                "name": null,
+                "conclusion": "nat",
+                "hypotheses": []
+              }
+            ]
+          },
+          {
+            "_type": "text",
+            "contents": "\n  "
+          },
+          {
+            "_type": "sentence",
+            "contents": "exact 3.",
+            "messages": [],
+            "goals": [
+              {
+                "_type": "goal",
+                "name": null,
+                "conclusion": "nat",
+                "hypotheses": []
+              }
+            ]
+          },
+          {
+            "_type": "text",
+            "contents": "\n  "
+          },
+          {
+            "_type": "sentence",
+            "contents": "exact 2.",
+            "messages": [],
+            "goals": []
+          },
+          {
+            "_type": "text",
+            "contents": "\n"
+          },
+          {
+            "_type": "sentence",
+            "contents": "Defined.",
+            "messages": [],
+            "goals": []
+          },
+          {
+            "_type": "text",
+            "contents": "\n\n"
+          },
+          {
+            "_type": "sentence",
+            "contents": "Print example_from_sphinx.",
+            "messages": [
+              {
+                "_type": "message",
+                "contents": "example_from_sphinx = 1 + (let n := 3 in 2)\n     : nat"
+              }
+            ],
+            "goals": []
+          },
+          {
+            "_type": "text",
+            "contents": " (* .unfold *)"
           }
         ]
-      },
-      {
-        "_type": "text",
-        "contents": "\n  "
-      },
-      {
-        "_type": "sentence",
-        "contents": "exact 3.",
-        "messages": [],
-        "goals": [
-          {
-            "_type": "goal",
-            "name": null,
-            "conclusion": "nat",
-            "hypotheses": []
-          }
-        ]
-      },
-      {
-        "_type": "text",
-        "contents": "\n  "
-      },
-      {
-        "_type": "sentence",
-        "contents": "exact 2.",
-        "messages": [],
-        "goals": []
-      },
-      {
-        "_type": "text",
-        "contents": "\n"
-      },
-      {
-        "_type": "sentence",
-        "contents": "Defined.",
-        "messages": [],
-        "goals": []
-      },
-      {
-        "_type": "text",
-        "contents": "\n\n"
-      },
-      {
-        "_type": "sentence",
-        "contents": "Print example_from_sphinx.",
-        "messages": [
-          {
-            "_type": "message",
-            "contents": "example_from_sphinx = 1 + (let n := 3 in 2)\n     : nat"
-          }
-        ],
-        "goals": []
-      },
-      {
-        "_type": "text",
-        "contents": " (* .unfold *)"
-      }
-    ]
-  ]
+      ]
+    }
+  }
 }

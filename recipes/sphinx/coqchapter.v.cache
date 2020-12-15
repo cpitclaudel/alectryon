@@ -1,28 +1,34 @@
 {
-  "generator": [
-    "Coq+SerAPI",
-    "8.12.0+0.12.0"
-  ],
   "metadata": {
-    "sertop_args": [],
-    "cache_version": "1"
+    "cache_version": "2"
   },
-  "chunks": [
-    "Compute ((fun (n: nat) (opt: option nat) (eq: opt = Some n) => n)\n           _ (Some 3) eq_refl)."
-  ],
-  "annotated": [
-    [
-      {
-        "_type": "sentence",
-        "contents": "Compute ((fun (n: nat) (opt: option nat) (eq: opt = Some n) => n)\n           _ (Some 3) eq_refl).",
-        "messages": [
+  "caches": {
+    "coq": {
+      "generator": [
+        "Coq+SerAPI",
+        "8.12.0+0.12.0"
+      ],
+      "metadata": {
+        "args": []
+      },
+      "chunks": [
+        "Compute ((fun (n: nat) (opt: option nat) (eq: opt = Some n) => n)\n           _ (Some 3) eq_refl)."
+      ],
+      "annotated": [
+        [
           {
-            "_type": "message",
-            "contents": "     = 3\n     : nat"
+            "_type": "sentence",
+            "contents": "Compute ((fun (n: nat) (opt: option nat) (eq: opt = Some n) => n)\n           _ (Some 3) eq_refl).",
+            "messages": [
+              {
+                "_type": "message",
+                "contents": "     = 3\n     : nat"
+              }
+            ],
+            "goals": []
           }
-        ],
-        "goals": []
-      }
-    ]
-  ]
+        ]
+      ]
+    }
+  }
 }

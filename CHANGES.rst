@@ -2,6 +2,11 @@
  Major changes
 ===============
 
+Lean 3
+======
+
+- Change the cache format to support multi-language caches.
+
 Unreleased
 ==========
 
