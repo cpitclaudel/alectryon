@@ -96,9 +96,11 @@ def enrich_sentences(fragments):
         else:
             yield fr
 
-IO_COMMENT_RE = re.compile(r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(IOAnnots.RE.pattern))
+IO_COMMENT_RE = {
+    "coq": re.compile(r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(IOAnnots.RE.pattern)),
+}
 
-def process_io_annotations(fragments):
+def process_io_annotations(fragments, io_comment_re):
     """Strip IO comments and update ``.annots`` fields accordingly.
 
     This pass assumes that consecutive ``Text`` fragments have been
@@ -112,12 +114,15 @@ def process_io_annotations(fragments):
         else:
             target = fr
         if target:
-            for m in IO_COMMENT_RE.finditer(fr.contents):
+            for m in io_comment_re.finditer(fr.contents):
                 for mannot in IOAnnots.RE.finditer(m.group(0)):
                     target.annots.update(mannot.group(1))
-            fr = fr._replace(contents=IO_COMMENT_RE.sub("", fr.contents))
+            fr = fr._replace(contents=io_comment_re.sub("", fr.contents))
         annotated.append(fr)
     return annotated
+
+def process_coq_io_annotations(fragments):
+    return process_io_annotations(fragments, IO_COMMENT_RE["coq"])
 
 # pylint: disable=inconsistent-return-statements
 def should_keep_output(output, annots):
@@ -199,10 +204,10 @@ def group_whitespace_with_code(fragments):
     return [g for g in grouped if g is not None]
 
 BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
-def is_bullet(fr):
+def is_coq_bullet(fr):
     return BULLET.match(fr.contents)
 
-def attach_comments_to_code(fragments, predicate=lambda _: True):
+def attach_coq_comments_to_code(fragments, predicate=lambda _: True):
     """Attach comments immediately following a sentence to the sentence itself.
 
     This is to support this common pattern::
@@ -218,7 +223,7 @@ def attach_comments_to_code(fragments, predicate=lambda _: True):
     capture ‘(* n = S _ *) (* the hard case *)’, without the final space).
 
     Only sentences for which `predicate` returns ``True`` are considered (to
-    restrict the behavior to just bullets, pass ``is_bullet``.
+    restrict the behavior to just bullets, pass ``is_coq_bullet``.
     """
     from .literate import coq_partition, StringView, Code, Comment
     grouped = list(enrich_sentences(fragments))
@@ -267,16 +272,16 @@ def group_hypotheses(fragments):
             g.hypotheses[:] = hyps
     return fragments
 
-FAIL_RE = re.compile(r"^Fail\s+")
-FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
+COQ_FAIL_RE = re.compile(r"^Fail\s+")
+COQ_FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
 
-def strip_failures(fragments):
+def strip_coq_failures(fragments):
     for fr in fragments:
-        if isinstance(fr, RichSentence) and fr.annots.fails and FAIL_RE.match(fr.contents):
+        if isinstance(fr, RichSentence) and fr.annots.fails and COQ_FAIL_RE.match(fr.contents):
             for msgs in fragment_message_sets(fr):
                 for idx, r in enumerate(msgs):
-                    msgs[idx] = r._replace(contents=FAIL_MSG_RE.sub("", r.contents))
-            fr = fr._replace(contents=FAIL_RE.sub("", fr.contents))
+                    msgs[idx] = r._replace(contents=COQ_FAIL_MSG_RE.sub("", r.contents))
+            fr = fr._replace(contents=COQ_FAIL_RE.sub("", fr.contents))
         yield fr
 
 def dedent(fragments):
@@ -385,16 +390,21 @@ def isolate_coqdoc(fragments):
             strip_text(part.fragments)
     return partitioned
 
-DEFAULT_TRANSFORMS = [
-    enrich_sentences,
-    attach_comments_to_code,
-    group_hypotheses,
-    process_io_annotations,
-    strip_failures,
-    dedent
-]
+DEFAULT_TRANSFORMS = {
+    "coq": [
+        enrich_sentences,
+        attach_coq_comments_to_code,
+        group_hypotheses,
+        process_coq_io_annotations,
+        strip_coq_failures,
+        dedent
+    ],
+    "lean3": [
+        enrich_sentences,
+    ]
+}
 
-def default_transform(fragments):
-    for transform in DEFAULT_TRANSFORMS:
+def default_transform(fragments, lang):
+    for transform in DEFAULT_TRANSFORMS[lang]:
         fragments = transform(fragments)
     return list(fragments)
