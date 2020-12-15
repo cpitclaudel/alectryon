@@ -3,8 +3,8 @@
  Custom highlighting
 =====================
 
-:alectryon/pygments/tacn: app but_first
-:alectryon/pygments/tacn-solve: must_eauto
+:alectryon/pygments/coq/tacn: app but_first
+:alectryon/pygments/coq/tacn-solve: must_eauto
 
 This file shows how to customize syntax highlighting in Alectryon.  To compile it, use::
 

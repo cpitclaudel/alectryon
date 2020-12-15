@@ -148,6 +148,13 @@ def _node_error(document, node, msg):
     err.add_backref(pbid)
     node.replace_self(pb)
 
+def _format_errors(src, *errs):
+    msg = "\n".join(map(str, errs))
+    msg = "\n" + core.indent(msg, "   ") if len(errs) > 1 else  " " + msg
+    if isinstance(src, nodes.Node):
+        src = getattr(src, "text", src.rawsource)
+    return "In {}:{}".format(src, msg)
+
 def _try(document, fn, node, *args, **kwargs):
     try:
         return fn(node, *args, **kwargs)
@@ -155,10 +162,7 @@ def _try(document, fn, node, *args, **kwargs):
         errs = e.args
     except ValueError as e:
         errs = [e]
-    msg = "\n".join(map(str, errs))
-    msg = "\n" + core.indent(msg, "   ") if len(errs) > 1 else  " " + msg
-    msg = "In {}:{}".format(getattr(node, "text", node.rawsource), msg)
-    _node_error(document, node, msg)
+    _node_error(document, node, _format_errors(node, *errs))
     return None
 
 # LATER: dataclass
@@ -203,18 +207,20 @@ class Config:
     def __init__(self, document):
         self.tokens = {}
         self.sertop_args = []
-        self.read_docinfo(document)
+        self.document = document
+        self.read_docinfo()
 
-    def read_docinfo(self, document):
+    def read_docinfo(self):
         # Sphinx doesn't translate ``field_list`` to ``docinfo``
         selector = lambda n: isinstance(n, (nodes.field_list, nodes.docinfo))
-        for di in document.traverse(selector):
+        for di in self.document.traverse(selector):
             for field in di.traverse(nodes.field):
                 name, body = field.children
                 field.text = "`:{}:`".format(name.rawsource)
                 field.rawsource = ":{}: {}".format(name.rawsource, body.rawsource)
-                _try(document, self.parse_docinfo_field, field, name.rawsource, body.rawsource)
-        for di in document.traverse(selector):
+                _try(self.document, self.parse_docinfo_field,
+                     field, name.rawsource, body.rawsource)
+        for di in self.document.traverse(selector):
             errors = []
             for field in di.traverse(nodes.problematic):
                 errors.append(field)
@@ -226,7 +232,13 @@ class Config:
 
     def parse_docinfo_field(self, node, name, body):
         if name.startswith("alectryon/pygments/"):
-            token = name[len("alectryon/pygments/"):]
+            name = name[len("alectryon/pygments/"):]
+            if "/" not in name:
+                name = "coq/" + name # legacy syntax doesn't have coq/
+                MSG = "Missing language name (did you mean `:alectryon/pygments/{}:`?)."
+                msg = _format_errors(node, MSG.format(name))
+                self.document.reporter.warning(msg, base_node=node, line=node.line)
+            lang, token = name.split("/", maxsplit=1)
             resolve_token(token) # Check that this is a valid token
             # LATER: It would be nice to support multi-words tokens.  Using
             # ``shlex.split(body)`` instead of ``body.split()`` would work find
@@ -834,7 +846,7 @@ COQ_IDENT_DB_URLS = [
 ]
 
 def _role_error(inliner, rawtext, msg, lineno):
-    msg = "In {}: {}".format(rawtext, msg)
+    msg = _format_errors(rawtext, msg)
     err = inliner.reporter.error(msg, line=lineno)
     return [inliner.problematic(rawtext, rawtext, err)], [err]
 

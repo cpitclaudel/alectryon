@@ -518,8 +518,8 @@ When compiling reStructuredText documents, you can add per-document highlighting
 
 .. code-block:: rst
 
-   :alectryon/pygments/tacn: intuition_eauto simplify invert
-   :alectryon/pygments/tacn-solve: map_tauto solve_eq
+   :alectryon/pygments/coq/tacn: intuition_eauto simplify invert
+   :alectryon/pygments/coq/tacn-solve: map_tauto solve_eq
 
 Interactivity
 -------------
