@@ -172,10 +172,15 @@ class Lean3(TextREPLProver):
             yield pos, len(doc), Text(doc[pos:len(doc)])
 
     @staticmethod
+    def _collect_message_span(msg, doc):
+        return (doc.pos2offset(msg["pos_line"], msg["pos_col"]),
+           doc.pos2offset(msg["end_pos_line"], msg["end_pos_col"]),
+           msg)
+
+    @staticmethod
     def _collect_message_spans(messages, doc):
-        return sorted((doc.pos2offset(m["pos_line"], m["pos_col"]),
-                  doc.pos2offset(m["end_pos_line"], m["end_pos_col"]),
-                  m) for m in messages)
+        return sorted(Lean3._collect_message_span(m, doc) for m in messages
+                 if "end_pos_line" in m and "end_pos_col" in m)
 
     def _add_messages(self, segments, messages, doc):
         segments = list(segments)
