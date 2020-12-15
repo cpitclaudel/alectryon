@@ -52,7 +52,8 @@ def get_lexer(lang):
         else:
             lexer = get_lexer_by_name(lang, ensurenl=False)
         lexer.add_filter(TokenMergeFilter())
-        lexer.add_filter(WarnOnErrorTokenFilter())
+        if lang == "coq": # The Lean lexer reports plenty of errors
+            lexer.add_filter(WarnOnErrorTokenFilter())
         LEXER_CACHE[lang] = lexer
     return LEXER_CACHE[lang]
 
