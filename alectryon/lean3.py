@@ -119,12 +119,7 @@ class Lean3(TextREPLProver):
             info, _ = self._query("info", file_name=self.fname, line=line, column=column)
             record = info.get("record", {})
             widget, state = record.get("widget"), record.get("state")
-
-            if widget is not None:
-                widget_beg = doc.pos2offset(widget["line"], widget["column"])
-            else:
-                assert marker == "end", "Unexpected marker '{}' without widget: {}".format(marker, info)
-                widget_beg = None
+            widget_beg = widget and doc.pos2offset(widget["line"], widget["column"])
 
             # print(f"[→] {marker=}, {marker_beg=}, {tac_beg=}")
             if marker == "begin":
@@ -132,9 +127,8 @@ class Lean3(TextREPLProver):
                     continue # FIXME needs a stack of begin/end
                 yield (marker_beg, marker_end, state)
             elif marker == ",":
-                assert tac_beg is not None
-                if widget_beg <= marker_end:
-                    continue # Skip over commas within a term
+                if widget_beg is None or tac_beg is None or widget_beg <= marker_end:
+                    continue # Skip over commas within terms
                 yield (tac_beg, marker_end, state)
             elif marker == "end":
                 pass
