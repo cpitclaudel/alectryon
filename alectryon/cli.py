@@ -169,10 +169,10 @@ def _scrub_fname(fname):
     import re
     return re.sub("[^-a-zA-Z0-9]", "-", fname)
 
-def apply_transforms(annotated):
+def apply_transforms(annotated, input_language):
     from .transforms import default_transform
     for fragments in annotated:
-        yield default_transform(fragments)
+        yield default_transform(fragments, input_language)
 
 def gen_html_snippets(annotated, fname, input_language,
                       html_minification, pygments_style):
@@ -247,7 +247,7 @@ def _gen_html_snippets_with_coqdoc(annotated, fname, html_minification,
             if not part.special:
                 yield [raw(str(next(coqdoc_html, None)))]
         else:
-            fragments = default_transform(part.fragments)
+            fragments = default_transform(part.fragments, input_language)
             yield writer.gen_fragments(fragments)
 
 def gen_html_snippets_with_coqdoc(annotated, html_classes, fname,

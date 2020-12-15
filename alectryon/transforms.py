@@ -131,9 +131,11 @@ ONE_IO_ANNOT = r"(?:{}|{})".format(
     IOAnnots.DOTTED_RE.pattern, POLARIZED_PATH_SEGMENT)
 ONE_IO_ANNOT_RE = re.compile(
     ISOLATED.format(ONE_IO_ANNOT), re.VERBOSE)
-IO_COMMENT_RE = re.compile(
-    r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(ONE_IO_ANNOT),
-    re.VERBOSE)
+IO_COMMENT_RE = {
+    "coq": re.compile(
+        r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(ONE_IO_ANNOT),
+        re.VERBOSE)
+}
 
 def _parse_path(path):
     path = markers.parse_path(path)
@@ -182,10 +184,10 @@ def inherit_io_annots(fragments, annots):
             fr.annots.inherit(annots)
         yield fr
 
-def _read_io_comments(annots, contents):
-    for m in IO_COMMENT_RE.finditer(contents):
+def _read_io_comments(annots, contents, lang):
+    for m in IO_COMMENT_RE[lang].finditer(contents):
         _update_io_annots(annots, m.group(0), ONE_IO_ANNOT_RE, required=True)
-    return IO_COMMENT_RE.sub("", contents)
+    return IO_COMMENT_RE[lang].sub("", contents)
 
 def _contents(obj):
     if isinstance(obj, RichSentence):
@@ -197,7 +199,7 @@ def _replace_contents(fr, contents):
         return fr._replace(input=fr.input._replace(contents=contents))
     return fr._replace(contents=contents)
 
-def read_io_comments(fragments):
+def read_io_comments(fragments, lang):
     """Strip IO comments and update ``.annots`` fields accordingly.
 
     This pass assumes that consecutive ``Text`` fragments have been
@@ -209,12 +211,15 @@ def read_io_comments(fragments):
         if sentence:
             assert isinstance(sentence, RichSentence)
             try:
-                contents = _read_io_comments(sentence.annots, _contents(fr)) # type: ignore
+                contents = _read_io_comments(sentence.annots, _contents(fr), lang) # type: ignore
                 fr = _replace_contents(fr, contents)
             except ValueError as e:
                 yield e
         last_sentence = fr
         yield fr
+
+def read_coq_io_comments(fragments):
+    return read_io_comments(fragments, lang="coq")
 
 def _find_marked(sentence, path):
     assert isinstance(sentence, RichSentence)
@@ -424,11 +429,11 @@ def group_whitespace_with_code(fragments):
             grouped[idx] = Text(rest) if rest else None
     return [g for g in grouped if g is not None]
 
-BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
-def is_bullet(fr):
-    return BULLET.match(fr.input.contents)
+COQ_BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
+def is_coq_bullet(fr):
+    return COQ_BULLET.match(fr.input.contents)
 
-def attach_comments_to_code(fragments, predicate=lambda _: True):
+def attach_coq_comments_to_code(fragments, predicate=lambda _: True):
     """Attach comments immediately following a sentence to the sentence itself.
 
     This is to support this common pattern::
@@ -444,14 +449,14 @@ def attach_comments_to_code(fragments, predicate=lambda _: True):
     capture ‘(* n = S _ *) (* the hard case *)’, without the final space).
 
     Only sentences for which `predicate` returns ``True`` are considered (to
-    restrict the behavior to just bullets, pass ``is_bullet``.
+    restrict the behavior to just bullets, pass ``is_coq_bullet``.
 
     >>> from .core import Sentence as S, Text as T
     >>> frs = [S("-", [], []), T(" (* … *) "), S("cbn.", [], []), T("(* … *)")]
-    >>> attach_comments_to_code(frs) # doctest: +ELLIPSIS
+    >>> attach_coq_comments_to_code(frs) # doctest: +ELLIPSIS
     [RichSentence(...contents='- (* … *)'...), Text(contents=' '),
      RichSentence(...contents='cbn.(* … *)'...)]
-    >>> attach_comments_to_code(frs, predicate=is_bullet) # doctest: +ELLIPSIS
+    >>> attach_coq_comments_to_code(frs, predicate=is_coq_bullet) # doctest: +ELLIPSIS
     [RichSentence(...contents='- (* … *)'...), Text(contents=' '),
      RichSentence(...contents='cbn.'...), Text(contents='(* … *)')]
     """
@@ -517,16 +522,20 @@ def group_hypotheses(fragments):
             g.hypotheses[:] = hyps
     return fragments
 
-FAIL_RE = re.compile(r"^Fail\s+")
-FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
+COQ_FAIL_RE = re.compile(r"^Fail\s+")
+COQ_FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
 
-def strip_failures(fragments):
+def is_coq_fail(fr):
+    return (isinstance(fr, RichSentence) and fr.annots.fails
+            and COQ_FAIL_RE.match(fr.input.contents))
+
+def strip_coq_failures(fragments):
     for fr in fragments:
-        if isinstance(fr, RichSentence) and fr.annots.fails and FAIL_RE.match(fr.input.contents):
+        if is_coq_fail(fr):
             for msgs in fragment_message_sets(fr):
                 for idx, r in enumerate(msgs):
-                    msgs[idx] = r._replace(contents=FAIL_MSG_RE.sub("", r.contents))
-            fr = _replace_contents(fr, FAIL_RE.sub("", fr.input.contents))
+                    msgs[idx] = r._replace(contents=COQ_FAIL_MSG_RE.sub("", r.contents))
+            fr = _replace_contents(fr, COQ_FAIL_RE.sub("", fr.input.contents))
         yield fr
 
 def dedent(fragments):
@@ -665,18 +674,24 @@ def isolate_coqdoc(fragments):
             strip_text(part.fragments)
     return partitioned
 
-DEFAULT_TRANSFORMS = [
-    enrich_sentences,
-    attach_comments_to_code,
-    group_hypotheses,
-    read_io_comments,
-    process_io_annots,
-    strip_failures,
-    dedent,
+DEFAULT_TRANSFORMS = {
+    "coq": [
+        enrich_sentences,
+        attach_coq_comments_to_code,
+        group_hypotheses,
+        read_coq_io_comments,
+        process_io_annots,
+        strip_coq_failures,
+        dedent,
+    ],
+    "lean3": [
+        enrich_sentences,
+        process_io_annots,
+    ]
     # Not included:
     #   group_whitespace_with_code (not semantically relevant except)
     #   commit_io_annotations (breaks mref resolution by removing elements)
-]
+}
 
 def filter_errors(outputs, delay_errors=False):
     transformed, errors = [], []
@@ -700,5 +715,5 @@ def apply_transforms(fragments, transforms, delay_errors):
         raise CollectedErrors(*errors)
     return fragments
 
-def default_transform(fragments, delay_errors=False):
-    return apply_transforms(fragments, DEFAULT_TRANSFORMS, delay_errors)
+def default_transform(fragments, lang, delay_errors=False):
+    return apply_transforms(fragments, DEFAULT_TRANSFORMS[lang], delay_errors)

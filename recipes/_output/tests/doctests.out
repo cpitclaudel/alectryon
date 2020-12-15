@@ -36,8 +36,8 @@ annotate (alectryon.serapi)
 Doctest: alectryon.serapi.annotate ... ok
 _all_sub_objects (alectryon.transforms)
 Doctest: alectryon.transforms._all_sub_objects ... ok
-attach_comments_to_code (alectryon.transforms)
-Doctest: alectryon.transforms.attach_comments_to_code ... ok
+attach_coq_comments_to_code (alectryon.transforms)
+Doctest: alectryon.transforms.attach_coq_comments_to_code ... ok
 coalesce_text (alectryon.transforms)
 Doctest: alectryon.transforms.coalesce_text ... ok
 dedent (alectryon.transforms)

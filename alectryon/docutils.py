@@ -375,7 +375,7 @@ class AlectryonTransform(OneTimeTransform):
     def replace_node(self, pending, fragments):
         directive_annots = pending.details["directive_annots"]
         fragments = transforms.inherit_io_annots(fragments, directive_annots)
-        fragments = transforms.default_transform(fragments, delay_errors=True)
+        fragments = transforms.default_transform(fragments, lang="coq", delay_errors=True)
         self.check_for_long_lines(pending, fragments)
         details = {**pending.details, "fragments": fragments}
         io = alectryon_pending_io(AlectryonPostTransform, details)
