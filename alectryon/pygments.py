@@ -54,10 +54,11 @@ def get_lexer(lang):
     # LATER: Upstream Coq lexer, remove this branch
     if lang == "coq":
         lexer = CoqLexer(ensurenl=False)
+        # Coq only, since some lexers report plenty of errors
+        lexer.add_filter(WarnOnErrorTokenFilter())
     else:
         lexer = get_lexer_by_name(lang, ensurenl=False)
     lexer.add_filter(TokenMergeFilter())
-    lexer.add_filter(WarnOnErrorTokenFilter())
     return lexer
 
 def add_tokens(tokens, lang="coq"):
