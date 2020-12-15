@@ -18,6 +18,7 @@ all := .version-info \
 	document.v literate.v.rst \
 	fragments.io.json \
 	fragments.snippets.html fragments.snippets.tex \
+	plain.lean.html \
 	api.out
 
 all: $(patsubst %,output/%,$(all)) $(assets) sphinx/_build/html/index.html;
@@ -106,6 +107,10 @@ output/fragments.snippets.html: fragments.v.json | output
 # JSON → Latex snippets
 output/fragments.snippets.tex: fragments.v.json | output
 	$(alectryon) $< -o $@
+
+# Lean3 → HTML
+output/plain.lean.html: plain.lean | output
+	$(alectryon) --frontend lean3 $<
 
 # Sphinx
 sphinx/_build/html/index.html: sphinx/index.rst
