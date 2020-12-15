@@ -235,7 +235,7 @@ class AlectryonTransform(OneTimeTransform):
             pending.parent.remove(pending)
             return
         fragments = self.set_fragment_annots(fragments, annots)
-        fragments = transforms.default_transform(fragments, lang)
+        fragments = transforms.default_transform(fragments, lang="coq") # FIXME “coq”
         self.check_for_long_lines(pending, fragments)
         contents = pending.details["contents"]
         io = alectryon_pending_io(AlectryonPostTransform,
