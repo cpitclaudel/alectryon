@@ -142,11 +142,14 @@ class Lean3(TextREPLProver):
                 assert False
             tac_beg = widget_beg
 
-    HYP_RE = re.compile("(?P<names>.*?) : (?P<type>(?:.*|\n )+)\n")
+    HYP_RE = re.compile(r"(?P<names>.*?)\s*:\s*(?P<type>(?:.*|\n )+)(?:,\n|\Z)")
     def _parse_hyps(self, hyps):
-        for m in self.HYP_RE.finditer(hyps):
-            yield Hypothesis(m.group("names").split(), None, m.group("type").replace("\n  ", "\n"))
+        for m in self.HYP_RE.finditer(hyps.strip()):
+            names = m.group("names").split()
+            typ = m.group("type").replace("\n  ", "\n")
+            yield Hypothesis(names, None, typ)
 
+    CCL_SEP_RE = re.compile("(?P<hyps>.*?)^⊢(?P<ccl>.*)", re.DOTALL | re.MULTILINE)
     def _parse_goals(self, state):
         if state == "no goals":
             return
@@ -154,8 +157,9 @@ class Lean3(TextREPLProver):
         if len(goals) > 1:
             goals[0] = goals[0][goals[0].find('\n'):] # Strip "`n` goals"
         for goal in goals:
-            hyps, ccl = goal.split("\n⊢", 1)
-            yield Goal(None, ccl.replace("\n  ", "\n").strip(), list(self._parse_hyps(hyps)))
+            m = self.CCL_SEP_RE.match(goal)
+            yield Goal(None, m.group("ccl").replace("\n  ", "\n").strip(),
+                   list(self._parse_hyps(m.group("hyps"))))
 
     def _segment(self, doc):
         pos = 0
