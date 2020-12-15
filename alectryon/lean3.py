@@ -114,7 +114,11 @@ class Lean3(TextREPLProver):
             if tac_beg is not None and marker_beg < tac_beg:
                 # print(f"skipping over {doc[marker_beg - 10:marker_end]} as {marker_beg} < {tac_beg}")
                 continue # Skip over markers in comments
-            line, column = doc.offset2pos(marker_end)
+
+            # Read goal right past end of ``begin``/``end``, but on commas
+            # (commas can be directly followed by text).
+            goal_pos = marker_beg if marker == "," else marker_end
+            line, column = doc.offset2pos(goal_pos)
 
             info, _ = self._query("info", file_name=self.fname, line=line, column=column)
             record = info.get("record", {})
