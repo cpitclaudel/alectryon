@@ -50,9 +50,9 @@ JS = """
 def latex_of_movie():
     from alectryon.json import PlainSerializer
     from alectryon.latex import LatexGenerator
-    from alectryon.pygments import highlight_latex
+    from alectryon.pygments import make_highlighter
     annotated = PlainSerializer.decode(json.loads(JS))
-    for ltx in LatexGenerator(highlight_latex).gen(annotated):
+    for ltx in LatexGenerator(make_highlighter("latex", "coq")).gen(annotated):
         print("<latex>")
         print(ltx)
         print("</latex>")

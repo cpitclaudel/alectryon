@@ -28,15 +28,6 @@ import sys
 # Pipelines
 # =========
 
-INPUT_LANGUAGE = {
-    "coq": "coq",
-    "coqdoc": "coq",
-    "coq+rst": "coq",
-    "lean3": "lean3",
-    "coq.json": "coq",
-    "lean3.json": "lean3",
-}
-
 def read_plain(_, fpath, fname):
     if fname == "-":
         return sys.stdin.read()
@@ -60,32 +51,32 @@ def _catch_parsing_errors(fpath, k, *args):
     except ParsingError as e:
         raise ValueError("{}:{}".format(fpath, e))
 
-def code_to_rst(code, fpath, point, marker, frontend):
-    if INPUT_LANGUAGE[frontend] == "coq":
+def code_to_rst(code, fpath, point, marker, input_language):
+    if input_language == "coq":
         from .literate import coq2rst_marked as converter
     else:
-        raise ValueError("Unsupported frontend for untangling: {}".format(frontend))
+        assert False
     return _catch_parsing_errors(fpath, converter, code, point, marker)
 
 def rst_to_code(rst, fpath, point, marker, backend):
     if backend in ("coq", "coq+rst"):
         from .literate import rst2coq_marked as converter
     else:
-        raise ValueError("Unsupported backend for tangling: {}".format(backend))
+        assert False
     return _catch_parsing_errors(fpath, converter, rst, point, marker)
 
-def annotate_chunks(chunks, fpath, frontend, cache_directory, cache_compression, sertop_args, lean3_args):
+def annotate_chunks(chunks, fpath, input_language, cache_directory, cache_compression, sertop_args, lean3_args):
     from .json import Cache
-    if INPUT_LANGUAGE[frontend] == "coq":
+    if input_language == "coq":
         from .serapi import SerAPI as prover
         metadata = {"sertop_args": sertop_args}
         prover_args = sertop_args
-    elif INPUT_LANGUAGE[frontend] == "lean3":
+    elif input_language == "lean3":
         from .lean3 import Lean3 as prover
         metadata = {"lean3_args": sertop_args}
         prover_args = lean3_args
     else:
-        raise ValueError("Unsupported frontend for annotate_chunks: {}".format(frontend))
+        assert False
     cache = Cache(cache_directory, fpath, metadata, cache_compression)
     return cache.update(chunks, lambda c: prover.annotate(c, prover_args), prover.version_info())
 
@@ -188,11 +179,11 @@ def _lint_docutils(source, fpath, Parser):
 
     return observer.stream.getvalue()
 
-def lint_embedded_rst(code, fpath, traceback, frontend):
-    if INPUT_LANGUAGE[frontend] == "coq":
+def lint_embedded_rst(code, fpath, traceback, input_language):
+    if input_language == "coq":
         from .docutils import RSTCoqParser as Parser
-    else: # FIXME should just not appear in the lean list.
-        raise ValueError("Unsupported frontend for `lint` operation: {}".format(frontend))
+    else:
+        assert False
     return _lint_docutils(code, fpath, Parser, traceback)
 
 def lint_rst(rst, fpath):
@@ -208,16 +199,17 @@ def apply_transforms(annotated):
     for chunk in annotated:
         yield default_transform(chunk)
 
-def gen_html_snippets(annotated, fname, html_minification):
+def gen_html_snippets(annotated, fname, input_language, html_minification):
     from .html import HtmlGenerator
-    from .pygments import highlight_html
-    fname = _scrub_fname(fname)
-    return HtmlGenerator(highlight_html, fname, html_minification).gen(annotated)
+    from .pygments import make_highlighter
+    highlighter = make_highlighter("html", input_language)
+    return HtmlGenerator(highlighter, _scrub_fname(fname), html_minification).gen(annotated)
 
-def gen_latex_snippets(annotated):
+def gen_latex_snippets(annotated, input_language):
     from .latex import LatexGenerator
-    from .pygments import highlight_latex
-    return LatexGenerator(highlight_latex).gen(annotated)
+    from .pygments import make_highlighter
+    highlighter = make_highlighter("latex", input_language)
+    return LatexGenerator(highlighter).gen(annotated)
 
 COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
                   '-s', '--html', '--stdout', '--utf8']
@@ -253,14 +245,14 @@ def _gen_coqdoc_html(coqdoc_fragments):
         raise AssertionError()
     return docs
 
-def _gen_html_snippets_with_coqdoc(annotated, fname, html_minification):
+def _gen_html_snippets_with_coqdoc(annotated, fname, input_language, html_minification):
     from dominate.util import raw
     from .html import HtmlGenerator
-    from .pygments import highlight_html
+    from .pygments import make_highlighter
     from .transforms import isolate_coqdoc, default_transform, CoqdocFragment
 
-    fname = _scrub_fname(fname)
-    writer = HtmlGenerator(highlight_html, fname, html_minification)
+    highlighter = make_highlighter("html", input_language)
+    writer = HtmlGenerator(highlighter, _scrub_fname(fname), html_minification)
 
     parts = [part for fragments in annotated
              for part in isolate_coqdoc(fragments)]
@@ -276,10 +268,10 @@ def _gen_html_snippets_with_coqdoc(annotated, fname, html_minification):
             fragments = default_transform(part.fragments)
             yield writer.gen_fragments(fragments)
 
-def gen_html_snippets_with_coqdoc(annotated, html_classes, fname, html_minification):
+def gen_html_snippets_with_coqdoc(annotated, html_classes, fname, input_language, html_minification):
     html_classes.append("coqdoc")
     # ‘return’ instead of ‘yield from’ to update html_classes eagerly
-    return _gen_html_snippets_with_coqdoc(annotated, fname, html_minification)
+    return _gen_html_snippets_with_coqdoc(annotated, fname, input_language, html_minification)
 
 def copy_assets(state, assets, copy_fn, output_directory):
     from .html import ASSETS
@@ -516,6 +508,16 @@ DEFAULT_BACKENDS = {
     'coq+rst': 'webpage',
     'lean3': 'webpage',
     'rst': 'webpage'
+}
+
+INPUT_LANGUAGE_BY_FRONTEND = {
+    "coq": "coq",
+    "coqdoc": "coq",
+    "coq+rst": "coq",
+    "rst": None,
+    "lean3": "lean3",
+    "coq.json": "coq",
+    "lean3.json": "lean3",
 }
 
 def infer_mode(fpath, kind, arg, table):
@@ -760,6 +762,7 @@ def build_context(fpath, frontend, backend, args):
         fname = os.path.basename(fpath)
 
     ctx = {"fpath": fpath, "fname": fname, "args": args, **vars(args)}
+    ctx["input_language"] = INPUT_LANGUAGE_BY_FRONTEND[frontend]
 
     if args.output_directory is None:
         if fname == "-":

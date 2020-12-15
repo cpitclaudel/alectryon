@@ -80,7 +80,7 @@ from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import transforms, html, latex
 from .serapi import annotate, SerAPI
-from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
+from .pygments import make_highlighter, highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
 # ===============
@@ -290,15 +290,16 @@ class AlectryonPostTransform(OneTimeTransform):
         formats = set(self.document.transformer.components['writer'].supported)
         if 'html' in formats:
             gensym_stem = self.document_id(self.document)
-            return "html", html.HtmlGenerator(
-                highlight_html, gensym_stem, HTML_MINIFICATION)
+            return "html", html.HtmlGenerator( # FIXME “coq”
+                make_highlighter("html", "coq"), gensym_stem, HTML_MINIFICATION)
         if {'latex', 'xelatex', 'lualatex'} & formats:
-            return "latex", latex.LatexGenerator(highlight_latex)
+            return "latex", latex.LatexGenerator(
+                make_highlighter("latex", "coq")) # FIXME “coq”
         raise NotImplementedError("Unknown output format")
 
     def _apply(self, **_kwargs):
         fmt, generator = self.init_generator()
-        with added_tokens(Config(self.document).tokens):
+        with added_tokens(Config(self.document).tokens, lang="coq"):
             for node in self.document.traverse(alectryon_pending_io):
                 fragments, contents = node["fragments"], node["contents"]
                 raw = generator.gen_fragments(fragments).render(pretty=False)
