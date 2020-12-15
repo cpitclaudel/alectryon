@@ -175,12 +175,15 @@ class Lean3(TextREPLProver):
 
     def _add_messages(self, segments, messages, doc):
         segments = list(segments)
+        segments.reverse() # Use as a stack
         messages = iter(self._collect_message_spans(messages, doc))
+
         if not segments:
             return
-        segments.reverse() # Use as a stack
+
         beg, end, msg = next(messages, (None, None, None)) # pylint: disable=stop-iteration-return
         fr_beg, fr_end, fr = segments.pop()
+
         while msg is not None:
             assert fr_beg <= beg <= end
             if beg < fr_end: # Message overlaps current fragment
@@ -204,19 +207,25 @@ class Lean3(TextREPLProver):
         yield from reversed(segments)
 
     @staticmethod
-    def _iter_offsets(strs):
+    def _iter_offsets(strs, padding=0):
         end = 0
         for s in strs:
-            beg, end = end, end + len(s)
+            beg, end = end, end + len(s) + padding
             yield (beg, end, s)
+
+    CHUNK_PADDING = "\n"
 
     def _rebuild_chunks(self, inputs, segments):
         if not inputs:
             return []
         chunks = [[]]
-        segments, inputs = iter(segments), iter(self._iter_offsets(inputs))
+
+        segments = iter(segments)
+        inputs = iter(self._iter_offsets(inputs, padding=len(self.CHUNK_PADDING)))
+
         beg, end, fragment = next(segments)
         in_beg, in_end, _in = next(inputs)
+
         while fragment is not None:
             assert in_beg <= beg <= end
             # print(f"input: [{in_beg, in_end}[	output: [{beg, end}[	{fragment=}")
@@ -232,10 +241,16 @@ class Lean3(TextREPLProver):
                     beg = in_end
                 chunks.append([])
                 in_beg, in_end, _in = next(inputs)
+
+        for chunk in chunks:
+            if chunk:
+                last = chunk[-1]
+                assert last.contents.endswith(self.CHUNK_PADDING)
+                chunk[-1] = last._replace(contents=last.contents[:-1])
         return chunks
 
     def _annotate(self, chunks):
-        doc = Document("".join(chunks))
+        doc = Document("".join(c + self.CHUNK_PADDING for c in chunks))
         _, messages = self._query("sync", file_name=self.fname, content=doc.data)
         segments = self._add_messages(self._segment(doc), messages, doc)
         return self._rebuild_chunks(chunks, segments)
