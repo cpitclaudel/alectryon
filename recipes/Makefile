@@ -10,6 +10,7 @@ all := .version-info \
 	plain.v.html literate.v.html coqdoc.v.html \
 	coqdoc.html \
 	literate.html literate.pdflatex.pdf \
+	custom_highlighting.html \
 	document.html hyps.html mathjax.html \
 	document.pdflatex.pdf hyps.xelatex.pdf \
 	minification.html \
@@ -52,6 +53,8 @@ output/coqdoc.html: coqdoc.v | output
 
 # Coq+reST → HTML
 output/literate.html: literate.v | output
+	$(alectryon) $<
+output/custom_highlighting.html: custom_highlighting.v | output
 	$(alectryon) $<
 
 # Coq+reST → LaTeX
