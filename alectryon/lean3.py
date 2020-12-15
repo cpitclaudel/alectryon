@@ -21,7 +21,7 @@
 import bisect
 import json
 import re
-from collections import namedtuple
+from collections import namedtuple, UserString
 
 from .core import TextREPLProver, Hypothesis, Goal, Message, Sentence, Text, debug
 
@@ -29,6 +29,31 @@ class ProtocolError(ValueError):
     pass
 
 ApiMessages = namedtuple("ApiMessages", "messages")
+
+class Document(UserString):
+    def __init__(self, doc):
+        super().__init__(doc)
+        self.bol_offsets = self._find_bols(self)
+
+    @staticmethod
+    def _find_bols(doc):
+        pos, bols = 0, [0]
+        while True:
+            pos = doc.find('\n', pos) + 1
+            if pos == 0:
+                return bols
+            bols.append(pos)
+
+    def __getitem__(self, index):
+        return super().__getitem__(index).data
+
+    def offset2pos(self, offset):
+        zline = bisect.bisect_right(self.bol_offsets, offset)
+        bol = self.bol_offsets[zline - 1]
+        return zline, offset - bol
+
+    def pos2offset(self, line, col):
+        return self.bol_offsets[line - 1] + col
 
 class Lean3(TextREPLProver):
     REPL_BIN = "lean"
@@ -74,57 +99,29 @@ class Lean3(TextREPLProver):
         self._write(json.dumps(query, indent=None), "\n")
         return self._wait()
 
-    # FIXME
-    # def _last_pos(self, doc):
-    #     line = doc.count('\n')
-    #     last_nl = doc.rfind('\n')
-    #     return (line, len(doc) - last_nl)
-
-    # def _partition(doc, messages):
-
-    @staticmethod
-    def _find_bols(doc):
-        pos, bols = 0, [0]
-        while True:
-            pos = doc.find('\n', pos) + 1
-            if pos == 0:
-                return bols
-            bols.append(pos)
-
-    @staticmethod
-    def _offset2pos(offset, bol_offsets):
-        zline = bisect.bisect_right(bol_offsets, offset)
-        bol = bol_offsets[zline - 1]
-        return zline, offset - bol
-
-    @staticmethod
-    def _pos2offset(line, col, bol_offsets):
-        return bol_offsets[line - 1] + col
-
     MARKERS_RE = re.compile(r"(?:\b(?:begin|end)\b)|,")
 
     @classmethod
     def _find_markers(cls, doc):
-        for m in cls.MARKERS_RE.finditer(doc):
+        for m in cls.MARKERS_RE.finditer(doc.data):
             yield m.group(), m.span()
 
     # FIXME: handle nested begins
     # FIXME: handle errors?
     def _find_sentence_ranges(self, doc):
-        bol_offsets = self._find_bols(doc)
         tac_beg = None
         for (marker, (marker_beg, marker_end)) in self._find_markers(doc):
             if tac_beg is not None and marker_beg < tac_beg:
                 # print(f"skipping over {doc[marker_beg - 10:marker_end]} as {marker_beg} < {tac_beg}")
                 continue # Skip over markers in comments
-            line, column = self._offset2pos(marker_end, bol_offsets)
+            line, column = doc.offset2pos(marker_end)
 
             info, _ = self._query("info", file_name=self.fname, line=line, column=column)
             record = info.get("record", {})
             widget, state = record.get("widget"), record.get("state")
 
             if widget is not None:
-                widget_beg = self._pos2offset(widget["line"], widget["column"], bol_offsets)
+                widget_beg = doc.pos2offset(widget["line"], widget["column"])
             else:
                 assert marker == "end", "Unexpected marker '{}' without widget: {}".format(marker, info)
                 widget_beg = None
@@ -157,7 +154,6 @@ class Lean3(TextREPLProver):
         if len(goals) > 1:
             goals[0] = goals[0][goals[0].find('\n'):] # Strip "`n` goals"
         for goal in goals:
-            print(goal)
             hyps, ccl = goal.split("\n⊢", 1)
             yield Goal(None, ccl.replace("\n  ", "\n").strip(), list(self._parse_hyps(hyps)))
 
@@ -172,29 +168,65 @@ class Lean3(TextREPLProver):
             yield pos, len(doc), Text(doc[pos:len(doc)])
 
     @staticmethod
+    def _collect_message_spans(messages, doc):
+        return sorted((doc.pos2offset(m["pos_line"], m["pos_col"]),
+                  doc.pos2offset(m["end_pos_line"], m["end_pos_col"]),
+                  m) for m in messages)
+
+    def _add_messages(self, segments, messages, doc):
+        segments = list(segments)
+        messages = iter(self._collect_message_spans(messages, doc))
+        if not segments:
+            return
+        segments.reverse() # Use as a stack
+        beg, end, msg = next(messages, (None, None, None)) # pylint: disable=stop-iteration-return
+        fr_beg, fr_end, fr = segments.pop()
+        while msg is not None:
+            assert fr_beg <= beg <= end
+            if beg < fr_end: # Message overlaps current fragment
+                end = min(end, fr_end) # Truncate to current fragment
+                if isinstance(fr, Text): # Split current fragment if it's text
+                    if fr_beg < beg:
+                        # print(f"prefix: {(fr_beg, beg, Text(fr.contents[:beg - fr_beg]))=}")
+                        yield (fr_beg, beg, Text(fr.contents[:beg - fr_beg]))
+                        fr_beg, fr = beg, fr._replace(contents=fr.contents[beg - fr_beg:])
+                    if end < fr_end:
+                        # print(f"suffix: {(end, fr_end, Text(fr.contents[end - fr_beg:]))=}")
+                        segments.append((end, fr_end, Text(fr.contents[end - fr_beg:])))
+                        fr_end, fr = end, fr._replace(contents=fr.contents[:end - fr_beg])
+                    fr = Sentence(contents=fr.contents, messages=[], goals=[])
+                fr.messages.append(Message(msg["text"])) # Don't truncate existing sentences
+                beg, end, msg = next(messages, (None, None, None))
+            else: # msg starts past fr; move to next fragment
+                yield fr_beg, fr_end, fr
+                fr_beg, fr_end, fr = segments.pop()
+        yield fr_beg, fr_end, fr
+        yield from reversed(segments)
+
+    @staticmethod
     def _iter_offsets(strs):
         end = 0
         for s in strs:
             beg, end = end, end + len(s)
             yield (beg, end, s)
 
-    def _rebuild_chunks(self, inputs, fragments):
+    def _rebuild_chunks(self, inputs, segments):
         if not inputs:
             return []
         chunks = [[]]
-        inputs, fragments = iter(self._iter_offsets(inputs)), iter(fragments)
+        segments, inputs = iter(segments), iter(self._iter_offsets(inputs))
+        beg, end, fragment = next(segments)
         in_beg, in_end, _in = next(inputs)
-        beg, end, fragment = next(fragments)
         while fragment is not None:
             assert in_beg <= beg <= end
-            print(f"input: [{in_beg, in_end}[	output: [{beg, end}[	{fragment=}")
+            # print(f"input: [{in_beg, in_end}[	output: [{beg, end}[	{fragment=}")
             if end <= in_end: # fragment ⊂ input
-                print(f"[{in_beg, in_end}[ ⊃ [{beg, end}[")
+                # print(f"[{in_beg, in_end}[ ⊃ [{beg, end}[")
                 chunks[-1].append(fragment)
-                beg, end, fragment = next(fragments, (None, None, None))
+                beg, end, fragment = next(segments, (None, None, None))
             else: # fragment goes past end of input
                 if beg < in_end: # input and fragment do overlap; truncate fragment
-                    print(f"[{in_beg, in_end}[ ∩ [{beg, end}[")
+                    # print(f"[{in_beg, in_end}[ ∩ [{beg, end}[")
                     chunks[-1].append(Text(fragment.contents[:in_end - beg]))
                     fragment = fragment._replace(contents=fragment.contents[in_end - beg:])
                     beg = in_end
@@ -203,9 +235,10 @@ class Lean3(TextREPLProver):
         return chunks
 
     def _annotate(self, chunks):
-        doc = "".join(chunks)
-        _, messages = self._query("sync", file_name=self.fname, content=doc)
-        return self._rebuild_chunks(chunks, list(self._segment(doc)))
+        doc = Document("".join(chunks))
+        _, messages = self._query("sync", file_name=self.fname, content=doc.data)
+        segments = self._add_messages(self._segment(doc), messages, doc)
+        return self._rebuild_chunks(chunks, segments)
 
     @classmethod
     def annotate(cls, chunks, *args, **kwargs):

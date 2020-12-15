@@ -1,5 +1,7 @@
-#check nat
+-- Queries:
+#check nat  #check bool
 
+-- Proofs:
 example (p q r : Prop) : p ∧ q ↔ q ∧ p :=
 begin
   apply iff.intro,
