@@ -396,7 +396,7 @@ In any case, make an exception for comments:
 }
 
 /**********/
-/* Header */
+/* Banner */
 /**********/
 
 .alectryon-banner {
@@ -426,6 +426,14 @@ In any case, make an exception for comments:
     margin: -0.25em 0;
     padding: 0 0.25em;
     vertical-align: middle;
+}
+
+/**********/
+/* Toggle */
+/**********/
+
+.alectryon-toggle-label {
+    margin: 1rem 0;
 }
 
 /******************/
