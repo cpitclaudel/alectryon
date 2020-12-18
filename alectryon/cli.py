@@ -188,19 +188,21 @@ COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
 
 def _run_coqdoc(coq_snippets, coqdoc_bin=None):
     """Get the output of coqdoc on coq_code."""
-    from tempfile import mkstemp
+    from shutil import rmtree
+    from tempfile import mkstemp, mkdtemp
     from subprocess import check_output
     coqdoc_bin = coqdoc_bin or os.path.join(os.getenv("COQBIN", ""), "coqdoc")
-    fd, filename = mkstemp(prefix="coqdoc_", suffix=".v")
+    dpath = mkdtemp(prefix="alectryon_coqdoc_")
+    fd, filename = mkstemp(prefix="alectryon_coqdoc_", suffix=".v", dir=dpath)
     try:
         for snippet in coq_snippets:
             os.write(fd, snippet.encode("utf-8"))
             os.write(fd, b"\n(* --- *)\n") # Separator to prevent fusing
         os.close(fd)
-        coqdoc = [coqdoc_bin, *COQDOC_OPTIONS, filename]
-        return check_output(coqdoc, timeout=10).decode("utf-8")
+        coqdoc = [coqdoc_bin, *COQDOC_OPTIONS, "-d", dpath, filename]
+        return check_output(coqdoc, cwd=dpath, timeout=10).decode("utf-8")
     finally:
-        os.remove(filename)
+        rmtree(dpath)
 
 def _gen_coqdoc_html(coqdoc_comments):
     from bs4 import BeautifulSoup
