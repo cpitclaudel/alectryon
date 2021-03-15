@@ -67,7 +67,7 @@ from docutils.transforms import Transform
 from docutils.writers import get_writer_class
 
 from . import transforms
-from .core import annotate, SerAPI
+from .core import annotate, SerAPI, GeneratorInfo
 from .html import ASSETS, HtmlGenerator, gen_banner, wrap_classes
 from .pygments import highlight_html, added_tokens, replace_builtin_coq_lexer
 
@@ -101,7 +101,7 @@ CACHE_DIRECTORY = None
 # LATER: dataclass
 class AlectryonState:
     def __init__(self):
-        self.generator = "??"
+        self.generator = None
         self.transform_executed = False
 
 def _alectryon_state(document):

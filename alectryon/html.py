@@ -77,7 +77,7 @@ HEADER = (
 )
 
 def gen_banner(generator, include_version_info=True):
-    return HEADER.format(generator.fmt(include_version_info))
+    return HEADER.format(generator.fmt(include_version_info)) if generator else ""
 
 def wrap_classes(*cls):
     return " ".join("alectryon-" + c for c in ("root", *cls))

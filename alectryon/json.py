@@ -148,7 +148,7 @@ class FileCache:
 
     @property
     def generator(self):
-        return self.data.get("generator", ["Coq+SerAPI", "??"])
+        return core.GeneratorInfo(*self.data.get("generator", ("Coq+SerAPI", "??")))
 
     def put(self, chunks, annotated, generator):
         with open(self.cache_file, mode="w") as cache:
