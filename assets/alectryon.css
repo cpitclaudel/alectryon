@@ -354,7 +354,6 @@ In any case, make an exception for comments:
     align-items: baseline;
     display: inline-flex;
     margin: 0.15rem 0.25rem;
-    z-index: 1;
 }
 
 .alectryon-io .hyp-names {
