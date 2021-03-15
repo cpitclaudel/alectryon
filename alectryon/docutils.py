@@ -531,9 +531,9 @@ class HtmlTranslator(DefaultWriter().translator_class):
         return super().stylesheet_call(name)
 
     def __init__(self, document):
+        document.settings.syntax_highlight = "short"
+        document.settings.math_output = "MathJax " + self.MATHJAX_URL
         super().__init__(document)
-        self.settings.syntax_highlight = "short"
-        self.settings.math_output = "MathJax " + self.MATHJAX_URL
         self.stylesheet.extend(self.stylesheet_call(css) for css in self.CSS)
         self.stylesheet.extend(self.JS_TEMPLATE.format(js) for js in self.JS)
         self.stylesheet.extend(hd + "\n" for hd in self.ADDITIONAL_HEADS)
