@@ -75,7 +75,8 @@ HEADER = (
     '<div class="alectryon-banner">'
     'Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running {}. '
     'Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. '
-    'Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus.'
+    'Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. '
+    'On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.'
     '</div>'
 )
 
