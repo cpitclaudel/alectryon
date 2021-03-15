@@ -256,14 +256,17 @@ def dump_html_standalone(snippets, fname, webpage_style,
     from dominate.util import raw
     from . import GENERATOR
     from .core import SerAPI
-    from .html import gen_banner, wrap_classes, ASSETS
     from .pygments import HTML_FORMATTER
+    from .html import ASSETS, ADDITIONAL_HEADS, gen_banner, wrap_classes
 
     doc = document(title=fname)
-    doc.head.add(tags.meta(charset="utf-8"))
-    doc.head.add(tags.meta(name="generator", content=GENERATOR))
     doc.set_attribute("class", "alectryon-standalone")
 
+    doc.head.add(tags.meta(charset="utf-8"))
+    doc.head.add(tags.meta(name="generator", content=GENERATOR))
+
+    for hd in ADDITIONAL_HEADS:
+        doc.head.add(raw(hd))
     for css in ASSETS.ALECTRYON_CSS:
         doc.head.add(tags.link(rel="stylesheet", href=css))
     for link in (ASSETS.IBM_PLEX_CDN, ASSETS.FIRA_CODE_CDN):

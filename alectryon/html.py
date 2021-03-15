@@ -29,6 +29,10 @@ from . import transforms, GENERATOR
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
 
+ADDITIONAL_HEADS = [
+    '<meta name="viewport" content="width=device-width, initial-scale=1">'
+]
+
 class ASSETS:
     PATH = path.join(path.dirname(_SELF_PATH), "assets")
 

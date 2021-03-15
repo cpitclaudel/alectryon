@@ -68,7 +68,7 @@ from docutils.writers import get_writer_class
 
 from . import transforms
 from .core import annotate, SerAPI, GeneratorInfo
-from .html import ASSETS, HtmlGenerator, gen_banner, wrap_classes
+from .html import ASSETS, ADDITIONAL_HEADS, HtmlGenerator, gen_banner, wrap_classes
 from .pygments import highlight_html, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
@@ -516,7 +516,7 @@ DefaultWriter = get_writer_class('html')
 class HtmlTranslator(DefaultWriter().translator_class):
     JS = ASSETS.ALECTRYON_JS
     CSS = (*ASSETS.ALECTRYON_CSS, *ASSETS.DOCUTILS_CSS, *ASSETS.PYGMENTS_CSS)
-    ADDITIONAL_HEADS = [ASSETS.IBM_PLEX_CDN, ASSETS.FIRA_CODE_CDN]
+    ADDITIONAL_HEADS = [ASSETS.IBM_PLEX_CDN, ASSETS.FIRA_CODE_CDN, *ADDITIONAL_HEADS]
 
     JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>\n'
     MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.min.js"
