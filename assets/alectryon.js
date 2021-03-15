@@ -74,7 +74,7 @@ var Alectryon;
 
         function onkeydown(e) {
             e = e || window.event;
-            if (e.ctrlKey) {
+            if (e.ctrlKey || e.metaKey) {
                 if (e.keyCode == keys.ARROW_UP)
                     slideshow.previous();
                 else if (e.keyCode == keys.ARROW_DOWN)
