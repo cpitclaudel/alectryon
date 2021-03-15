@@ -23,19 +23,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ******************************************************************************/
 
-code,
 kbd,
 pre,
 samp,
 tt,
+code,
+code.highlight,
 .docutils.literal {
     font-family: 'Iosevka Slab Web', 'Iosevka Web', 'Iosevka Slab', 'Iosevka', 'Fira Code', monospace;
     font-feature-settings: "XV00" 1; /* Use Coq ligatures when Iosevka is available */
 }
 
 body {
-    font-family: 'IBM Plex Serif', 'PT Serif', 'Merriweather', 'DejaVu Serif', serif;
     color: #111;
+    font-family: 'IBM Plex Serif', 'PT Serif', 'Merriweather', 'DejaVu Serif', serif;
+    line-height: 1.5;
 }
 
 div.document {

@@ -539,6 +539,7 @@ In any case, make an exception for comments:
 
 .alectryon-standalone {
     font-family: 'IBM Plex Serif', 'PT Serif', 'Merriweather', 'DejaVu Serif', serif;
+    line-height: 1.5;
 }
 
 @media screen and (min-width: 50rem) {
