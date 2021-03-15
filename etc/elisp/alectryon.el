@@ -424,6 +424,22 @@ In reST mode:
     (alectryon--mode-case (alectryon--coq-mode -1) (alectryon--rst-mode -1))))
   (alectryon--refontify))
 
+;;;; Presentation mode
+
+(defconst alectryon--coq-presentation-font-lock-keywords
+  '(("([*]\s*\\(\\(?:\s*[.][-a-z]+\\)+\\)\s*[*])"
+     0 '(face '(:height 0.5) display "👻") append)))
+
+(define-minor-mode alectryon-presentation-mode
+  "Hide alectryon annotations in Coq files."
+  :lighter ""
+  (cond
+   (alectryon-presentation-mode
+    (font-lock-add-keywords nil alectryon--coq-presentation-font-lock-keywords))
+   (t
+    (font-lock-remove-keywords nil alectryon--coq-presentation-font-lock-keywords)))
+  (font-lock-flush))
+
 ;;;###autoload
 (add-hook 'coq-mode-hook #'alectryon-mode t)
 
