@@ -354,3 +354,30 @@ Building without Alectryon
 --------------------------
 
 The ``alectryon.minimal`` Python module provides trivial shims for Alectryon's roles and directives, allowing you continue compiling your documents even if support for Alectryon stops in the future.
+
+Including custom JS or CSS in Alectryon's output
+------------------------------------------------
+
+For single-page documents, you can use a ``.. raw::`` directive:
+
+.. code:: rst
+
+   .. raw:: html
+
+      <script src="https://d3js.org/d3.v5.min.js" charset="utf-8"></script>
+      <script src="https://dagrejs.github.io/project/dagre-d3/latest/dagre-d3.js"></script>
+
+      <link rel="stylesheet" href="rbt.css">
+      <script type="text/javascript" src="rbt.js"></script>
+
+For documents with more pages, you can either move the ``.. raw`` part to a separate file and ``.. include`` it, or you can use a custom driver: create a new file ``driver.py`` and use the following:
+
+.. code:: python
+
+   import alectryon.html
+   import alectryon.cli
+
+   alectryon.html.ADDITIONAL_HEADS.append('<link rel="stylesheet" href="…" />')
+   alectryon.cli.main()
+
+But for large collections of related documents, it's likely better to use Sphinx (or some other similar engine).  In that case, you can use Sphinx' built-in support for additional JS and CSS: ``app.add_js_file(js)`` and ``app.add_css_file(css)``.
