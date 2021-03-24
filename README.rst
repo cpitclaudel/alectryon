@@ -14,7 +14,9 @@ Alectryon is typically used in one of three ways:
 
 For background information, check out the  `quickstart guide <https://plv.csail.mit.edu/blog/alectryon.html>`__ on the MIT PLV blog, the `SLE2020 paper <https://doi.org/10.1145/3426425.3426940>`__ (open access) and its `live examples <https://alectryon-paper.github.io/>`__, or the `conference talk <https://www.youtube.com/watch?v=f8CKGoP3_us>`__.
 
-Alectryon is free software under a very permissive license.  If you use it, please remember to `cite it <https://pit-claudel.fr/clement/papers/alectryon-SLE20.bib>`__ and let me know!
+Alectryon is free software under a very permissive license.  If you use it, please remember to `cite it <https://pit-claudel.fr/clement/papers/alectryon-SLE20.bib>`__, and please let me know!
+
+Some examples of use in the wild are linked `at the bottom of this page <#gallery>`__.  Please add your own work by submitting a PR!
 
 Setup
 =====
@@ -381,3 +383,12 @@ For documents with more pages, you can either move the ``.. raw`` part to a sepa
    alectryon.cli.main()
 
 But for large collections of related documents, it's likely better to use Sphinx (or some other similar engine).  In that case, you can use Sphinx' built-in support for additional JS and CSS: ``app.add_js_file(js)`` and ``app.add_css_file(css)``.
+
+.. _gallery:
+
+Gallery
+=======
+
+- Jean-Paul Bodeveix, Érik Martin-Dorel, Pierre Roux, `Types Abstraits et Programmation Fonctionnelle Avancée <https://github.com/pfitaxel/tapfa-coq-alectryon>`__
+- Jade Philipoom, `Silver Oak: Formal specification and verification of hardware, especially for security and privacy. <https://project-oak.github.io/silveroak/demo/tutorial.html>`__
+- Philip Zucker, `Translating My Z3 Tutorial to Coq <https://www.philipzucker.com/translating-z3-to-coq/>`__
