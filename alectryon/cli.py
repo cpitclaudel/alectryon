@@ -359,23 +359,6 @@ def dump_latex_snippets(snippets):
         s += "\n%% alectryon-block-end\n"
     return s
 
-def write_output(ext, contents, fname, output, output_directory, strip_re):
-    if output == "-":
-        sys.stdout.write(contents)
-    else:
-        if not output:
-            fname = strip_re.sub("", fname)
-            output = os.path.join(output_directory, fname + ext)
-        os.makedirs(os.path.dirname(os.path.abspath(output)), exist_ok=True)
-        with open(output, mode="w", encoding="utf-8") as f:
-            f.write(contents)
-
-def write_file(ext, strip):
-    strip_re = re.compile("(" + "|".join(re.escape(ext) for ext in strip) + ")*\\Z")
-    return lambda contents, fname, output, output_directory: \
-        write_output(ext, contents, fname, output,
-                     output_directory, strip_re=strip_re)
-
 # Extensions past the first one are only used for stripping file names (so
 # ``.lean`` is Lean4, but ``xyz.lean`` in ``lean3`` still becomes ``xyz.html``).
 EXTENSIONS_BY_LANGUAGE = {
@@ -386,6 +369,54 @@ EXTENSIONS_BY_LANGUAGE = {
 
 assert EXTENSIONS_BY_LANGUAGE.keys() == core.ALL_LANGUAGES
 CODE_EXTENSIONS = {ext for exts in EXTENSIONS_BY_LANGUAGE.values() for ext in exts}
+
+def strip_extension(fname, extensions=None):
+    basename, ext = os.path.splitext(fname)
+    if extensions is None or ext in extensions:
+        return basename
+    return fname
+
+def modname_with_dot(logical_name):
+    if logical_name in ("", '""', "''"):
+        return ""
+    else:
+        return logical_name + "."
+
+# returns (base modpath, mod name)
+def path_to_modnames(fpath, coq_args_libs):
+    for modpath, modname in coq_args_libs:
+        fpath_rel = os.path.relpath(fpath, modpath)
+        if not fpath_rel.startswith('..' + os.sep) and not os.path.isabs(fpath_rel):
+            yield (modpath, modname_with_dot(modname) + fpath_rel.replace(os.sep, '.'))
+
+def path_to_modname(fpath, coq_args_libs):
+    matches = path_to_modnames(fpath, coq_args_libs)
+    # sort so that the longest normalized modpath match comes first
+    matches = sorted(matches, key=(lambda m: len(os.path.abspath(m[0]))), reverse=True)
+    if len(matches) > 0: return matches[0][1]
+    # If the path is not known, we just replace os.sep with '.'.  This
+    # will result in confusing names if the path starts with '..', so
+    # in that case we use the absolute path
+    fpath = os.path.relpath(os.path.normpath(fpath), '.')
+    if fpath.startswith('..' + os.sep) and not os.path.abspath(fpath): # do we need the second conjunct ever?
+        _, fpath = os.path.splitdrive(os.path.abspath(fpath))
+    return fpath.replace(os.sep, '.')
+
+def write_output(ext, contents, fname, fpath, output, output_directory, strip_re, coq_args_Q, coq_args_R):
+    if output == "-":
+        sys.stdout.write(contents)
+    else:
+        if not output:
+            fname = strip_re.sub("", fname)
+            output = os.path.join(output_directory, path_to_modname(strip_extension(fpath, extensions=EXTENSIONS_BY_LANGUAGE["coq"]), coq_args_Q + coq_args_R) + ext)
+        os.makedirs(os.path.dirname(os.path.abspath(output)), exist_ok=True)
+        with open(output, mode="w", encoding="utf-8") as f:
+            f.write(contents)
+
+def write_file(ext, strip):
+    strip_re = re.compile("(" + "|".join(re.escape(ext) for ext in strip) + ")*\\Z")
+    return lambda contents, fname, fpath, output, output_directory, coq_args_Q, coq_args_R: \
+        write_output(ext, contents=contents, fname=fname, fpath=fpath, output=output, output_directory=output_directory, strip_re=strip_re, coq_args_Q=coq_args_Q, coq_args_R=coq_args_R)
 
 # No ‘apply_transforms’ in JSON pipelines: we save the prover output without
 # modifications.
