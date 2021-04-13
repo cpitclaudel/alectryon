@@ -317,18 +317,44 @@ def strip_extension(fname):
             return fname[:-len(ext)]
     return fname
 
-def write_output(ext, contents, fname, output, output_directory):
+def modname_with_dot(logical_name):
+    if logical_name in ("", '""', "''"):
+        return ""
+    else:
+        return logical_name + "."
+
+# returns (base modpath, mod name)
+def path_to_modnames(fpath, coq_args_libs):
+    for modpath, modname in coq_args_libs:
+        fpath_rel = os.path.relpath(fpath, modpath)
+        if not fpath_rel.startswith('..' + os.sep) and not os.path.isabs(fpath_rel):
+            yield (modpath, modname_with_dot(modname) + fpath_rel.replace(os.sep, '.'))
+
+def path_to_modname(fpath, coq_args_libs):
+    matches = list(path_to_modnames(fpath, coq_args_libs))
+    # sort so that the longest normalized modpath match comes first
+    matches = sorted(matches, key=(lambda m: len(os.path.abspath(m[0]))), reverse=True)
+    if len(matches) > 0: return matches[0][1]
+    # If the path is not known, we just replace os.sep with '.'.  This
+    # will result in confusing names if the path starts with '..', so
+    # in that case we use the absolute path
+    fpath = os.path.relpath(os.path.normpath(fpath), '.')
+    if fpath.startswith('..' + os.sep) and not os.path.abspath(fpath): # do we need the second conjunct ever?
+        _, fpath = os.path.splitdrive(os.path.abspath(fpath))
+    return fpath.replace(os.sep, '.')
+
+def write_output(ext, contents, fname, fpath, output, output_directory, coq_args_Q, coq_args_R):
     if output == "-" or (output is None and fname == "-"):
         sys.stdout.write(contents)
     else:
         if not output:
-            output = os.path.join(output_directory, strip_extension(fname) + ext)
+            output = os.path.join(output_directory, strip_extension(path_to_modname(fpath, coq_args_Q + coq_args_R)) + ext)
         with open(output, mode="w", encoding="utf-8") as f:
             f.write(contents)
 
 def write_file(ext):
-    return lambda contents, fname, output, output_directory: \
-        write_output(ext, contents, fname, output, output_directory)
+    return lambda contents, fname, fpath, output, output_directory, coq_args_Q, coq_args_R: \
+        write_output(ext, contents, fname, fpath, output, output_directory, coq_args_Q, coq_args_R)
 
 PIPELINES = {
     'json': {
