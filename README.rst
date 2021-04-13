@@ -308,7 +308,11 @@ Programming fonts with ligatures are a good way to display prettified symbols wi
 Passing arguments to SerAPI
 ---------------------------
 
-When compiling reStructuredText documents, besides the ``-I``, ``-Q``, ``-R`` and ``--sertop-args`` flags, you can specify custom SerAPI arguments in docinfo section at the beginning of your document, like this:
+When using the command line interface, you can use the ``-I``, ``-Q``, ``-R`` and ``--sertop-arg`` flags to specify custom SerAPI arguments, like this::
+
+   ./alectryon.py -R . Lib --sertop-arg=--async-workers=4
+
+When compiling reStructuredText documents, you can add custom SerAPI arguments in a docinfo section at the beginning of your document, like this:
 
 .. code-block:: rst
 
@@ -319,7 +323,8 @@ To set SerAPI's arguments for all input files, modify ``AlectryonTransform.SERTO
    from alectryon.docutils import AlectryonTransform
    AlectryonTransform.SERTOP_ARGS = ["-Q", "/coq/source/path/,LibraryName"]
 
-Note that the syntax is the one of ``sertop``, not the one of ``coqc`` (https://github.com/ejgallego/coq-serapi/issues/215).
+Note that the syntax of ``SERTOP_ARGS`` is the one of ``sertop``, not the one of
+``coqc`` (https://github.com/ejgallego/coq-serapi/issues/215).
 
 Adding custom keywords
 ----------------------
