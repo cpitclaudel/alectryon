@@ -612,10 +612,18 @@ def build_context(fpath, args):
 
     return ctx
 
+def except_hook(etype, value, tb):
+    from traceback import TracebackException
+    for line in TracebackException(etype, value, tb, capture_locals=True).format():
+        print(line, file=sys.stderr)
+
 def process_pipelines(args):
     if args.debug:
         from . import core
         core.DEBUG = True
+
+    if args.traceback:
+        sys.excepthook = except_hook
 
     if args.cache_directory:
         from . import docutils
