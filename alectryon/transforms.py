@@ -286,16 +286,21 @@ def dedent(fragments):
                 msgs[idx] = r._replace(contents=textwrap.dedent(r.contents))
         yield fr
 
+def _check_line_lengths(lines, first_linum, threshold, upto):
+    for ln, line in enumerate(lines):
+        if ln < upto and len(line) > threshold:
+            yield first_linum + ln, line
+
 def find_long_lines(fragments, threshold):
     linum, prefix = 0, ""
     for fr in fragments:
         prefix += "".join(getattr(fr, "prefixes", ()))
         suffix = "".join(getattr(fr, "suffixes", ()))
         lines = (prefix + fr.contents + suffix).split("\n")
-        for linum, line in enumerate(lines, start=linum):
-            if len(line) > threshold:
-                yield linum, line
+        yield from _check_line_lengths(lines, linum, threshold, len(lines) - 1)
+        linum += len(lines) - 1
         prefix = lines[-1]
+    yield from _check_line_lengths(prefix.split("\n"), linum, threshold, len(lines))
 
 COQ_CHUNK_DELIMITER = re.compile(r"(?:[ \t]*\n){2,}")
 
