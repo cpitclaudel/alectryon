@@ -177,7 +177,6 @@ class AlectryonTransform(Transform):
             msg = "Long line: {!r} ({} characters)".format(s, len(s))
             opts = dict(line=node.line + linum) if hasattr(node, "line") else {}
             self.document.reporter.warning(msg, base_node=node, **opts)
-            return
 
     def annotate_cached(self, chunks, sertop_args):
         from .json import Cache
