@@ -173,9 +173,10 @@ class AlectryonTransform(Transform):
     def check_for_long_lines(self, node, fragments):
         if LONG_LINE_THRESHOLD is None:
             return
-        for line in transforms.find_long_lines(fragments, threshold=LONG_LINE_THRESHOLD):
-            msg = "Long line: {!r} ({} characters)".format(line, len(line))
-            self.document.reporter.warning(msg, base_node=node)
+        for linum, s in transforms.find_long_lines(fragments, threshold=LONG_LINE_THRESHOLD):
+            msg = "Long line: {!r} ({} characters)".format(s, len(s))
+            opts = dict(line=node.line + linum) if hasattr(node, "line") else {}
+            self.document.reporter.warning(msg, base_node=node, **opts)
             return
 
     def annotate_cached(self, chunks, sertop_args):

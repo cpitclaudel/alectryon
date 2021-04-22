@@ -287,14 +287,14 @@ def dedent(fragments):
         yield fr
 
 def find_long_lines(fragments, threshold):
-    prefix = ""
+    linum, prefix = 0, ""
     for fr in fragments:
         prefix += "".join(getattr(fr, "prefixes", ()))
         suffix = "".join(getattr(fr, "suffixes", ()))
         lines = (prefix + fr.contents + suffix).split("\n")
-        for line in lines:
+        for linum, line in enumerate(lines, start=linum):
             if len(line) > threshold:
-                yield line
+                yield linum, line
         prefix = lines[-1]
 
 COQ_CHUNK_DELIMITER = re.compile(r"(?:[ \t]*\n){2,}")
