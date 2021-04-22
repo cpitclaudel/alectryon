@@ -447,9 +447,8 @@ class RSTCoqParser(docutils.parsers.rst.Parser):
 
     supported = ('coq',)
     """Aliases this parser supports."""
-
-    settings_spec = ('Literate Coq Parser Options', None,
-                     docutils.parsers.rst.Parser.settings_spec[2])
+    # settings_spec = docutils.parsers.rst.Parser.settings_spec + \
+    #     ('Literate Coq Parser Options', None, ())
     config_section = 'Literate Coq parser'
     config_section_dependencies = ('parsers',)
 
