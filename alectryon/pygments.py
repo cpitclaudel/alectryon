@@ -19,6 +19,7 @@
 # SOFTWARE.
 
 import re
+import sys
 from collections import deque
 from textwrap import indent
 from contextlib import contextmanager
@@ -144,7 +145,7 @@ class WarnOnErrorTokenFilter(Filter):
                 MSG = ("!! Warning: Unexpected token during syntax-highlighting: {!r}\n"
                        "!! Alectryon's lexer isn't perfect: please send us an example.\n"
                        "!! Context:\n{}")
-                print(MSG.format(val, indent(context, ' ' * 8)))
+                print(MSG.format(val, indent(context, ' ' * 8)), file=sys.stderr)
             yield typ, val
 
 LEXER.add_filter(WarnOnErrorTokenFilter())
