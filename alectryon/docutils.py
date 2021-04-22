@@ -74,6 +74,9 @@ from .pygments import highlight_html, added_tokens, replace_builtin_coq_lexer
 # reST extensions
 # ===============
 
+def set_line(node, lineno, sm):
+    node.source, node.line = sm.get_source_and_line(lineno)
+
 # Nodes
 # -----
 
@@ -300,6 +303,7 @@ class CoqDirective(Directive):
         contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
         details = {"options": set(arguments), "contents": contents}
         pending = alectryon_pending(AlectryonTransform, details=details)
+        set_line(pending, self.lineno, self.state_machine)
         self.state_machine.document.note_pending(pending)
         return [pending]
 
@@ -314,6 +318,7 @@ class AlectryonToggleDirective(Directive):
 
     def run(self):
         pending = alectryon_pending_toggle(AlectryonTransform)
+        set_line(pending, self.lineno, self.state_machine)
         self.state_machine.document.note_pending(pending)
         return [pending]
 
@@ -341,7 +346,9 @@ class ExperimentalExerciseDirective(Sidebar):
 
 # pylint: disable=dangerous-default-value,unused-argument
 def alectryon_bubble(role, rawtext, text, lineno, inliner, options={}, content=[]):
-    return [nodes.inline(rawtext, classes=['alectryon-bubble'])], []
+    node = nodes.inline(rawtext, classes=['alectryon-bubble'])
+    set_line(node, lineno, inliner.reporter)
+    return [node], []
 
 alectryon_bubble.name = "alectryon-bubble"
 
@@ -405,6 +412,7 @@ def coq_id_role(# pylint: disable=dangerous-default-value,unused-argument
 
     roles.set_classes(options)
     node = nodes.reference(rawtext, title, refuri=uri, **options)
+    set_line(node, lineno, inliner.reporter)
 
     return [node], []
 
