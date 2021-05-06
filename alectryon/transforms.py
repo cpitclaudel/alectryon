@@ -342,6 +342,18 @@ def strip_text(fragments):
         break
     return fragments
 
+def coalesce_text(fragments):
+    """Coalesce consecutive ``Text`` objects in `fragments`."""
+    last = None
+    for fr in fragments:
+        if isinstance(last, Text) and isinstance(fr, Text):
+            last._replace(contents=last.contents + fr.contents)
+        else:
+            yield last
+            last = fr
+    if last:
+        yield last
+
 CoqdocFragment = namedtuple("CoqdocFragment", "contents")
 AlectryonFragments = namedtuple("AlectryonFragments", "fragments")
 def isolate_coqdoc(fragments):
