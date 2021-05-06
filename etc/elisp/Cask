@@ -3,7 +3,6 @@
 
 (package-file "alectryon.el")
 
-(depends-on "flycheck")
 (depends-on "proof-general")
 
 (development
