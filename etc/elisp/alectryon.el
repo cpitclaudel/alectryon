@@ -291,6 +291,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
         (when (looking-at-p (regexp-quote "(*|"))
           'alectryon-comment)))))
 
+;; TODO: display as a solid line even when it's on the same line.
 (defconst alectryon--coq-font-lock-keywords
   '(("^\\(([*][|]\\|[|][*])\\)$"
      ;; No space allowed at EOL (the :align-to would push it to the next line)
