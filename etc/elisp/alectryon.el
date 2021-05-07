@@ -402,6 +402,8 @@ Current document must have a file name."
     ["Preview the current buffer as a webpage." alectryon-preview]
     ["Configure alectryon-mode" alectryon-customize]))
 
+(defvar flyspell-prog-text-faces)
+
 ;;;###autoload
 (define-minor-mode alectryon-mode
   "Mode for Literate Coq files.
@@ -416,6 +418,8 @@ In reST mode:
     (alectryon--record-original-mode)
     (alectryon--invoke 'flycheck-mode)
     (add-hook 'write-contents-functions #'alectryon--save t t)
+    (make-local-variable 'flyspell-prog-text-faces)
+    (cl-pushnew 'alectryon-comment flyspell-prog-text-faces)
     (alectryon--mode-case (alectryon--coq-mode 1) (alectryon--rst-mode 1)))
    (t
     (unless (alectryon--in-original-mode)
@@ -423,6 +427,7 @@ In reST mode:
       (message "Reverted to %s mode." mode-name))
     (kill-local-variable 'alectryon--original-mode)
     (remove-hook 'write-contents-functions #'alectryon--save t)
+    (setq-local flyspell-prog-text-faces (remq 'alectryon-comment flyspell-prog-text-faces))
     (alectryon--mode-case (alectryon--coq-mode -1) (alectryon--rst-mode -1))))
   (alectryon--refontify))
 
