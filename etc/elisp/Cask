@@ -4,6 +4,7 @@
 (package-file "alectryon.el")
 
 (depends-on "proof-general")
+(depends-on "polymode")
 
 (development
  (depends-on "company-coq")

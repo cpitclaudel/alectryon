@@ -448,6 +448,38 @@ In reST mode:
     (font-lock-remove-keywords nil alectryon--coq-presentation-font-lock-keywords)))
   (font-lock-flush))
 
+;;;; Polymode support
+(require 'polymode nil t)
+
+(eval-and-compile
+  (when (fboundp 'define-hostmode)
+    (define-hostmode poly-coq-hostmode
+      :mode 'coq-mode)
+
+    (define-innermode poly-coq-alectryon-rst-innermode
+      :mode 'rst-mode
+      :head-matcher "^[ \t]*[(][*][|][ \t]*\n?"
+      :tail-matcher "[ \t]*[|][*][)][ \t]*\n?$"
+      :head-mode 'host
+      :tail-mode 'host)
+
+    (defun alectryon--flycheck-buffer-not-indirect-p (&rest _)
+      "Ensure that the current buffer is not indirect."
+      (null (buffer-base-buffer)))
+
+    (define-polymode poly-coq-mode
+      :hostmode 'poly-coq-hostmode
+      :innermodes '(poly-coq-alectryon-rst-innermode)
+
+      (if poly-coq-mode
+          (add-function :before-while
+                        (local 'flycheck-may-check-automatically)
+                        #'alectryon--flycheck-buffer-not-indirect-p)
+        (remove-function (local 'flycheck-may-check-automatically)
+                         #'alectryon--flycheck-buffer-not-indirect-p)))
+
+    (add-hook 'alectryon-presentation-mode-hook #'poly-coq-mode)))
+
 ;;;###autoload
 (add-hook 'coq-mode-hook #'alectryon-mode t)
 
