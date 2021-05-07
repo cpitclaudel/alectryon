@@ -224,19 +224,19 @@ def _gen_html_snippets_with_coqdoc(annotated, fname):
 
     writer = HtmlGenerator(highlight_html, _scrub_fname(fname))
 
-    coqdoc = [part for fragments in annotated
-              for part in isolate_coqdoc(fragments)
+    parts = [part for fragments in annotated
+             for part in isolate_coqdoc(fragments)]
+    coqdoc = [part for part in parts
               if isinstance(part, CoqdocFragment)]
     coqdoc_html = iter(_gen_coqdoc_html(coqdoc))
 
-    for fragments in annotated:
-        for part in isolate_coqdoc(fragments):
-            if isinstance(part, CoqdocFragment):
-                if not part.special:
-                    yield [raw(str(next(coqdoc_html, None)))]
-            else:
-                fragments = default_transform(part.fragments)
-                yield writer.gen_fragments(fragments)
+    for part in parts:
+        if isinstance(part, CoqdocFragment):
+            if not part.special:
+                yield [raw(str(next(coqdoc_html, None)))]
+        else:
+            fragments = default_transform(part.fragments)
+            yield writer.gen_fragments(fragments)
 
 def gen_html_snippets_with_coqdoc(annotated, html_classes, fname):
     html_classes.append("coqdoc")
