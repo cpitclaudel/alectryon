@@ -80,7 +80,7 @@
 (require 'proof-general nil t)
 
 (defgroup alectryon nil
-  "reStructuredText support Coq files."
+  "ReStructuredText support Coq files."
   :prefix "alectryon-"
   :group 'languages)
 
@@ -395,7 +395,7 @@ Current document must have a file name."
 ;; Adding the menu to a parent keymap causes it to be duplicated (?!), so add it
 ;; to both submaps instead.
 (easy-menu-define alectryon-mode-menu (list alectryon-coq-mode-map alectryon-rst-mode-map)
-  "Alectryon's main menu"
+  "Alectryon's main menu."
   '("Alectryon"
     ["Convert to reStructuredText" alectryon-toggle :visible (alectryon--mode-case t nil)]
     ["Convert to Coq + reST" alectryon-toggle :visible (alectryon--mode-case nil t)]
