@@ -354,7 +354,12 @@ def coalesce_text(fragments):
     if last:
         yield last
 
-CoqdocFragment = namedtuple("CoqdocFragment", "contents")
+class CoqdocFragment(namedtuple("CoqdocFragment", "contents")):
+    COQDOC_SPECIAL = re.compile(r"[(][*][*] +(remove +)?printing ")
+    @property
+    def special(self):
+        return bool(self.COQDOC_SPECIAL.match(self.contents))
+
 AlectryonFragments = namedtuple("AlectryonFragments", "fragments")
 def isolate_coqdoc(fragments):
     from .literate import coq_partition_literate, Comment, COQDOC_OPEN

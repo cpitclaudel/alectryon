@@ -204,12 +204,12 @@ def _run_coqdoc(coq_snippets, coqdoc_bin=None):
     finally:
         rmtree(dpath)
 
-def _gen_coqdoc_html(coqdoc_comments):
+def _gen_coqdoc_html(coqdoc_fragments):
     from bs4 import BeautifulSoup
-    coqdoc_output = _run_coqdoc(coqdoc_comments)
+    coqdoc_output = _run_coqdoc(fr.contents for fr in coqdoc_fragments)
     soup = BeautifulSoup(coqdoc_output, "html.parser")
     docs = soup.find_all(class_='doc')
-    if len(docs) != len(coqdoc_comments):
+    if len(docs) != sum(1 for c in coqdoc_fragments if not c.special):
         from pprint import pprint
         print("Coqdoc mismatch:", file=sys.stderr)
         pprint(list(zip(coqdoc_comments, docs)))
@@ -224,7 +224,7 @@ def _gen_html_snippets_with_coqdoc(annotated, fname):
 
     writer = HtmlGenerator(highlight_html, _scrub_fname(fname))
 
-    coqdoc = [part.contents for fragments in annotated
+    coqdoc = [part for fragments in annotated
               for part in isolate_coqdoc(fragments)
               if isinstance(part, CoqdocFragment)]
     coqdoc_html = iter(_gen_coqdoc_html(coqdoc))
@@ -232,7 +232,8 @@ def _gen_html_snippets_with_coqdoc(annotated, fname):
     for fragments in annotated:
         for part in isolate_coqdoc(fragments):
             if isinstance(part, CoqdocFragment):
-                yield [raw(str(next(coqdoc_html, None)))]
+                if not part.special:
+                    yield [raw(str(next(coqdoc_html, None)))]
             else:
                 fragments = default_transform(part.fragments)
                 yield writer.gen_fragments(fragments)
