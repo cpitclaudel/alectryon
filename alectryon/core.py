@@ -71,6 +71,9 @@ class SerAPI():
     SERTOP_BIN = "sertop"
     DEFAULT_ARGS = ("--printer=sertop", "--implicit")
 
+    # Whether to silently continue past unexpected output
+    EXPECT_UNEXPECTED = False
+
     # FIXME Pass -topfile (some file in the stdlib fail to compile without it)
     # FIXME Pass --debug when invoked with --traceback
 
@@ -201,12 +204,9 @@ class SerAPI():
             yield from SerAPI._deserialize_answer(sexp[2])
         elif tag == b'Feedback':
             yield from SerAPI._deserialize_feedback(sexp[1])
-        else:
-            UNEXPECTED = "Unexpected response: {}"
-            # Print early to get some information out even if sertop hangs
-            print(UNEXPECTED.format(self.last_response), file=stderr)
-            MSG = "Unexpected response: {}\nFull output: {}"
-            raise ValueError(MSG.format(self.last_response, self.sertop.stdout.read()))
+        elif not self.EXPECT_UNEXPECTED:
+            MSG = "Unexpected response: {}".format(self.last_response)
+            raise ValueError(MSG)
 
     @staticmethod
     def highlight_substring(chunk, beg, end):

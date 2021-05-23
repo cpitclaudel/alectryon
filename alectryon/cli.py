@@ -570,6 +570,9 @@ and produce reStructuredText, HTML, or JSON output.""")
                       metavar=("DIR", "COQDIR"), nargs=2, action="append",
                       default=[], help=R_HELP)
 
+    EXPECT_UNEXPECTED_HELP = "Ignore unexpected output from SerAPI"
+    parser.add_argument("--expect-unexpected", action="store_true",
+                        default=False, help=EXPECT_UNEXPECTED_HELP)
 
     DEBUG_HELP = "Print communications with SerAPI."
     parser.add_argument("--debug", action="store_true",
@@ -617,6 +620,10 @@ def process_pipelines(args):
     if args.cache_directory:
         from . import docutils
         docutils.CACHE_DIRECTORY = args.cache_directory
+
+    if args.expect_unexpected:
+        from . import core
+        core.SerAPI.EXPECT_UNEXPECTED = True
 
     try:
         for fpath, pipeline in args.pipelines:
