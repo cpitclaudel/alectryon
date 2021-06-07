@@ -21,11 +21,11 @@ Some examples of use in the wild are linked `at the bottom of this page <#galler
 Setup
 =====
 
-Dependencies (OCaml, Python 3):
-    | ``opam install "coq-serapi>=8.10.0+0.7.0"``
-    | ``python3 -m pip install --user --upgrade pygments dominate beautifulsoup4 docutils``
+To install from OPAM an pip:
+    | ``opam install "coq-serapi>=8.10.0+0.7.0"`` (from the `Coq OPAM archive <https://coq.inria.fr/opam-using.html>`__)
+    | ``python3 -m pip install alectryon``
 
-The core library only depends on ``coq-serapi``.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires ``docutils``; Coqdoc support requires ``beautifulsoup4``.  Support for Coq versions follows SerAPI; Coq ≥ 8.10 works well and ≥ 8.12 works best.
+**A note on dependencies**: the core library only depends on ``coq-serapi`` from OPAM.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires ``docutils`` (and optionally ``sphinx``); Coqdoc support requires ``beautifulsoup4``.  Support for Coq versions follows SerAPI; Coq ≥ 8.10 works well and ≥ 8.12 works best.
 
 Usage
 =====
@@ -41,57 +41,57 @@ Try these recipes in the ``recipes`` directory of this repository (for each task
 Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style):
    .. code::
 
-      ../alectryon.py literate.v
-      ../alectryon.py --frontend coq+rst --backend webpage literate.v -o literate.html
+      alectryon literate.v
+      alectryon --frontend coq+rst --backend webpage literate.v -o literate.html
 
 Generate an interactive webpage from a plain Coq file (Proof General style):
    .. code::
 
-      ../alectryon.py --frontend coq plain.v
-      ../alectryon.py --frontend coq --backend webpage plain.v -o plain.v.html
+      alectryon --frontend coq plain.v
+      alectryon --frontend coq --backend webpage plain.v -o plain.v.html
 
 Generate an interactive webpage from a Coqdoc file (compatibility mode):
    .. code::
 
-      ../alectryon.py --frontend coqdoc literate.v
-      ../alectryon.py --frontend coqdoc --backend webpage literate.v -o literate.html
+      alectryon --frontend coqdoc literate.v
+      alectryon --frontend coqdoc --backend webpage literate.v -o literate.html
 
 Compile a reStructuredText document containing ``.. coq::`` blocks (coqrst style):
    .. code::
 
-      ../alectryon.py literate.v.rst
-      ../alectryon.py --frontend rst --backend webpage literate.v.rst -o literate.html
+      alectryon literate.v.rst
+      alectryon --frontend rst --backend webpage literate.v.rst -o literate.html
 
 Translate a reStructuredText document into a literate Coq file:
    .. code::
 
-      ../alectryon.py literate.v.rst -o literate.v
-      ../alectryon.py --frontend rst --backend coq+rst literate.v.rst -o literate.v
+      alectryon literate.v.rst -o literate.v
+      alectryon --frontend rst --backend coq+rst literate.v.rst -o literate.v
 
 Translate a literate Coq file into a reStructuredText document:
    .. code::
 
-      ../alectryon.py literate.v -o literate.v.rst
-      ../alectryon.py --frontend coq+rst --backend rst literate.v -o literate.v.rst
+      alectryon literate.v -o literate.v.rst
+      alectryon --frontend coq+rst --backend rst literate.v -o literate.v.rst
 
 Record goals and responses for fragments contained in a JSON source file:
    .. code::
 
-      ../alectryon.py fragments.json
-      ../alectryon.py --frontend json --backend json fragments.json -o fragments.io.json
+      alectryon fragments.json
+      alectryon --frontend json --backend json fragments.json -o fragments.io.json
 
 Record goals and responses and format them as HTML for fragments contained in a JSON source file:
    .. code::
 
-      ../alectryon.py fragments.json -o fragments.snippets.html
-      ../alectryon.py --frontend json --backend snippets-html fragments.json -o fragments.snippets.html
+      alectryon fragments.json -o fragments.snippets.html
+      alectryon --frontend json --backend snippets-html fragments.json -o fragments.snippets.html
 
 Command-line interface
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. code::
 
-   python3 alectryon.py [-h] […]
+   alectryon [-h] […]
               [--frontend {coq,coq+rst,json,rst}]
               [--backend {coq,coq+rst,json,snippets-html,webpage}]
               input [input ...]
@@ -110,7 +110,7 @@ Command-line interface
            ["Example xyz (H: False): True. (* ... *) exact I. Qed.",
             "Print xyz."]
 
-    Output (``minimal.json.io.json``) after running ``./alectryon.py --writer json minimal.json``:
+    Output (``minimal.json.io.json``) after running ``alectryon --writer json minimal.json``:
         .. code-block:: js
 
             [ // A list of fragments
@@ -150,7 +150,7 @@ Command-line interface
               ]
             ]
 
-Use ``./alectryon.py --help`` for full command line details.
+Use ``alectryon --help`` for full command line details.
 
 As a library
 ------------
@@ -223,10 +223,6 @@ With Sphinx
 For Sphinx, add the following to your ``conf.py`` file:
 
 .. code-block:: python
-
-   import os
-   import sys
-   sys.path.insert(0, os.path.abspath('../path/to/alectryon/repo/'))
 
    extensions = ["alectryon.sphinx"]
 
@@ -310,7 +306,7 @@ Passing arguments to SerAPI
 
 When using the command line interface, you can use the ``-I``, ``-Q``, ``-R`` and ``--sertop-arg`` flags to specify custom SerAPI arguments, like this::
 
-   ./alectryon.py -R . Lib --sertop-arg=--async-workers=4
+   alectryon -R . Lib --sertop-arg=--async-workers=4
 
 When compiling reStructuredText documents, you can add custom SerAPI arguments in a docinfo section at the beginning of your document, like this:
 
