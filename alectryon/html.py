@@ -34,7 +34,7 @@ ADDITIONAL_HEADS = [
 ]
 
 class ASSETS:
-    PATH = path.join(path.dirname(_SELF_PATH), "assets")
+    PATH = path.join(_SELF_PATH, "assets")
 
     ALECTRYON_CSS = ("alectryon.css",)
     ALECTRYON_JS = ("alectryon.js",)

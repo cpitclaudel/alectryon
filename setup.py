@@ -36,8 +36,9 @@ setup(
     author=alectryon.__author__,
     author_email="clement.pitclaudel@live.com",
     install_requires=REQUIRED,
-    entry_points={'console_scripts': 'alectryon=alectryon.cli:main'},
     packages=['alectryon'],
+    package_data={'':['assets/*']},
+    entry_points={'console_scripts': 'alectryon=alectryon.cli:main'},
     python_requires='>=3.6',
     license='MIT',
 )

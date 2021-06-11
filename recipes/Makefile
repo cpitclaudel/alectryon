@@ -77,7 +77,7 @@ output/api.out: api.py
 	$(PYTHON) $< > $@
 
 output/alectryon%css output/alectryon%js: FORCE
-	cp --link --force $(patsubst %,../assets/%,$(assets)) output/
+	cp --link --force $(patsubst %,../alectryon/assets/%,$(assets)) output/
 FORCE:
 
 clean:
