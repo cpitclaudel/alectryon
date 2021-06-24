@@ -156,7 +156,7 @@ class LatexGenerator:
         self.highlight = lambda s: [Raw(highlighter(s, prefix="", suffix=""))]
 
     def gen_goal(self, goal):
-        """Serialize a goal to HTML."""
+        """Serialize a goal to LaTeX."""
         with environments.goal():
             with environments.hyps():
                 for hyp in goal.hypotheses:
