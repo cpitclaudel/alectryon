@@ -1,25 +1,26 @@
 #!/usr/bin/env python3
 import json
 import sys
-from os.path import join, dirname
+from pathlib import Path
 from pprint import pprint
 
-root = join(dirname(__file__), "..")
-sys.path.insert(0, root)
+recipes = Path(__file__).absolute().parent
+sys.path.insert(0, str(recipes.parent))
 
-# import alectryon.core
-# alectryon.core.DEBUG = True
+libdir = recipes / "src"
+
+# import alectryon.core; alectryon.core.DEBUG = True
 
 def api_annotate():
     from alectryon.core import annotate
-    annotated = annotate(["Check 1."], ("-Q", "{},logical_name".format(root)))
+    annotated = annotate(["Check 1."], ("-Q", "{},lib".format(libdir)))
     pprint(annotated)
 
 def annotated_to_json():
     from alectryon.core import annotate
     from alectryon.json import json_of_annotated
     annotated = annotate([r"Goal True /\ True. split. ", "all: eauto."],
-                         ("-Q", "{},logical_name".format(root)))
+                         ("-Q", "{},lib".format(libdir)))
     print(json.dumps(json_of_annotated(annotated)))
 
 JS = """

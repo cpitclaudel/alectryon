@@ -1,13 +1,20 @@
+PYTHON ?= python3
+
 alectryon := ../alectryon.py --output-directory output --no-version-numbers --traceback
-minimal := python3 -m alectryon.minimal
+minimal := $(PYTHON) -m alectryon.minimal
 
 assets := alectryon.css alectryon.js
-all := plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html hyps.html mathjax.html document.minimal.html document.v literate.v.rst fragments.io.json fragments.snippets.html fragments.snippets.tex latex.snippets.tex api.out
+all := .version-info plain.v.html literate.v.html coqdoc.v.html coqdoc.html literate.html document.html hyps.html mathjax.html document.minimal.html document.v literate.v.rst fragments.io.json fragments.snippets.html fragments.snippets.tex latex.snippets.tex api.out
 
 all: $(patsubst %,output/%,$(all) $(assets)) sphinx/_build/html/index.html;
 
 output:
 	mkdir $@
+
+output/.version-info: | output
+	@echo "Coq: $$(coqc -v)" > $@
+	@echo "Docutils: $$($(PYTHON) -c 'import docutils; print(docutils.__version__)')" >> $@
+	@echo "Sphinx: $$($(PYTHON) -c 'import sphinx; print(sphinx.__version__)')" >> $@
 
 # Coq → HTML
 output/plain.v.html: plain.v | output
@@ -67,7 +74,7 @@ sphinx/_build/html/index.html: sphinx/index.rst
 
 # API
 output/api.out: api.py
-	python3 $< > $@
+	$(PYTHON) $< > $@
 
 output/alectryon%css output/alectryon%js: FORCE
 	cp --link --force $(patsubst %,../assets/%,$(assets)) output/
