@@ -21,6 +21,8 @@
 from . import docutils
 from .html import ASSETS
 
+import sphinx.builders
+
 # Export here so config files can refer to just this module
 RSTCoqParser = docutils.RSTCoqParser
 
@@ -40,6 +42,14 @@ def add_html_assets(app):
         for js in ASSETS.ALECTRYON_JS:
             app.add_js_file(js)
 
+def replace_alectryon_io_nodes(app, doctree, _fromdocname):
+    # It's too late for add_post_transform, so run manually.
+    if isinstance(app.builder, sphinx.builders.latex.LaTeXBuilder):
+        transform = docutils.AlectryonLatexPostTransform
+    else: # default to HTML
+        transform = docutils.AlectryonHTMLPostTransform
+    transform(doctree).apply()
+
 def setup(app):
     """Register Alectryon's directives, transforms, etc."""
     register_coq_parser(app)
@@ -50,13 +60,8 @@ def setup(app):
     for directive in docutils.DIRECTIVES:
         app.add_directive(directive.name, directive)
 
-    for node in docutils.NODES:
-        visit, depart = getattr(node, 'visit', None), getattr(node, 'depart', None)
-        if visit and depart:
-            app.add_node(node,
-                         html=(visit, depart),
-                         latex=(visit, depart),
-                         text=(visit, depart))
+    # All custom nodes are removed by transforms or events,
+    # so no need for ``app.add_node(...)``
 
     if app.config.default_role is None:
         app.config.default_role = docutils.coq_code_role.name
@@ -68,5 +73,6 @@ def setup(app):
         app.add_transform(transform)
 
     app.connect('builder-inited', add_html_assets)
+    app.connect('doctree-resolved', replace_alectryon_io_nodes)
 
     return {'version': '0.1', "parallel_read_safe": True}

@@ -69,17 +69,15 @@ def register_docutils(v, sertop_args):
     setup()
     return v
 
-def _gen_docutils_html(source, fpath,
-                       webpage_style, include_banner, include_vernums,
-                       html_assets, traceback, Parser, Reader):
+def _gen_docutils(source, fpath,
+                  include_banner, include_vernums,
+                  traceback, Parser, Reader, Writer,
+                  settings_overrides):
     from docutils.core import publish_string
-    from .docutils import HtmlTranslator, HtmlWriter
 
     # The encoding/decoding dance below happens because setting output_encoding
     # to "unicode" causes reST to generate a bad <meta> tag, and setting
     # input_encoding to "unicode" breaks the ‘.. include’ directive.
-
-    html_assets.extend(HtmlTranslator.JS + HtmlTranslator.CSS)
 
     settings_overrides = {
         'traceback': traceback,
@@ -88,9 +86,9 @@ def _gen_docutils_html(source, fpath,
         'stylesheet_dirs': [],
         'alectryon_banner': include_banner,
         'alectryon_vernums': include_vernums,
-        'webpage_style': webpage_style,
         'input_encoding': 'utf-8',
-        'output_encoding': 'utf-8'
+        'output_encoding': 'utf-8',
+        **settings_overrides
     }
 
     parser = Parser()
@@ -99,10 +97,22 @@ def _gen_docutils_html(source, fpath,
         source_path=fpath, destination_path=None,
         reader=Reader(parser), reader_name=None,
         parser=parser, parser_name=None,
-        writer=HtmlWriter(), writer_name=None,
+        writer=Writer(), writer_name=None,
         settings=None, settings_spec=None,
         settings_overrides=settings_overrides, config_section=None,
         enable_exit_status=True).decode("utf-8")
+
+def _gen_docutils_html(source, fpath,
+                       webpage_style, include_banner, include_vernums,
+                       html_assets, traceback, Parser, Reader):
+    from docutils.core import publish_string
+    from .docutils import HtmlTranslator, HtmlWriter
+
+    html_assets.extend(HtmlTranslator.JS + HtmlTranslator.CSS)
+
+    return _gen_docutils(source, fpath, include_banner, include_vernums,
+                         traceback, Parser, Reader, HtmlWriter,
+                         { "webpage_style": webpage_style })
 
 def gen_rstcoq_html(coq, fpath, webpage_style,
                     include_banner, include_vernums,
@@ -123,7 +133,31 @@ def gen_rst_html(rst, fpath, webpage_style,
                          html_assets, traceback,
                          Parser, Reader)
 
-def _docutils_cmdline(description, Reader, Parser):
+
+def _gen_docutils_latex(source, fpath, include_banner, include_vernums,
+                        traceback, Parser, Reader):
+    from docutils.core import publish_string
+    from .docutils import LatexWriter
+
+    return _gen_docutils(source, fpath, include_banner, include_vernums,
+                         traceback, Parser, Reader, LatexWriter, {})
+
+def gen_rstcoq_latex(coq, fpath,
+                     include_banner, include_vernums, traceback):
+    from .docutils import RSTCoqParser, RSTCoqStandaloneReader
+    return _gen_docutils_latex(coq, fpath,
+                         include_banner, include_vernums, traceback,
+                         RSTCoqParser, RSTCoqStandaloneReader)
+
+def gen_rst_latex(rst, fpath,
+                 include_banner, include_vernums, traceback):
+    from docutils.parsers.rst import Parser
+    from docutils.readers.standalone import Reader
+    return _gen_docutils_latex(rst, fpath,
+                         include_banner, include_vernums, traceback,
+                         Parser, Reader)
+
+def _docutils_cmdline_html(description, Reader, Parser):
     import locale
     locale.setlocale(locale.LC_ALL, '')
 
@@ -375,6 +409,9 @@ PIPELINES = {
         'webpage':
         (read_plain, register_docutils, gen_rstcoq_html, copy_assets,
          write_file(".html")),
+        'latex':
+        (read_plain, register_docutils, gen_rstcoq_latex, copy_assets,
+         write_file(".tex")),
         'lint':
         (read_plain, register_docutils, lint_rstcoq,
          write_file(".lint.json")),
@@ -391,6 +428,9 @@ PIPELINES = {
         'webpage':
         (read_plain, register_docutils, gen_rst_html, copy_assets,
          write_file(".html")),
+        'latex':
+        (read_plain, register_docutils, gen_rst_latex, copy_assets,
+         write_file(".tex")),
         'lint':
         (read_plain, register_docutils, lint_rst,
          write_file(".lint.json")),
@@ -413,7 +453,8 @@ BACKENDS_BY_EXTENSION = [
     ('.lint.json', 'lint'),
     ('.snippets.html', 'snippets-html'),
     ('.snippets.tex', 'snippets-latex'),
-    ('.v.html', 'webpage'), ('.html', 'webpage')
+    ('.v.html', 'webpage'), ('.html', 'webpage'),
+    ('.v.tex', 'latex'), ('.tex', 'latex')
 ]
 
 DEFAULT_BACKENDS = {
@@ -681,10 +722,10 @@ def main():
 def rstcoq2html():
     from .docutils import RSTCoqStandaloneReader, RSTCoqParser
     DESCRIPTION = 'Build an HTML document from an Alectryon Coq file.'
-    _docutils_cmdline(DESCRIPTION, RSTCoqStandaloneReader, RSTCoqParser)
+    _docutils_cmdline_html(DESCRIPTION, RSTCoqStandaloneReader, RSTCoqParser)
 
 def coqrst2html():
     from docutils.parsers.rst import Parser
     from docutils.readers.standalone import Reader
     DESCRIPTION = 'Build an HTML document from an Alectryon reStructuredText file.'
-    _docutils_cmdline(DESCRIPTION, Reader, Parser)
+    _docutils_cmdline_html(DESCRIPTION, Reader, Parser)

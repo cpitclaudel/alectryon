@@ -69,6 +69,10 @@ class Context:
     def format(self, indent, verbatim):
         raise NotImplementedError()
 
+    def render(self, pretty=False): # pylint: disable=unused-argument
+        # For compatibility with the HTML backend (dominate)
+        return str(self)
+
     def __str__(self):
         return self.format(indent=0, verbatim=False)
 

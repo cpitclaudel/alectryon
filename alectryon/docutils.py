@@ -52,6 +52,16 @@ which will set the default role to ``:coq:``.
 
 For convenience, ``alectryon.docutils.setup()`` can be used to perform all the
 steps above at once.
+
+A note on transforms: Sphinx has a nice API (``app.add_node``) for adding new
+node types, so you can write visitors for each output format without creating
+new translators.  Docutils doesn't have such an API: it forces you to subclass
+the default translator instead, which is a pain.  The alternative is to use a
+transform to replace custom nodes with "raw" nodes, but even this is non-trivial
+because the transform doesn't know which output format the document uses.
+
+To work around this issue we use a writer-dependent transform on the docutils
+side, and a doctree-resolved event on the Sphinx side.
 """
 
 import re
@@ -69,7 +79,8 @@ from docutils.writers import get_writer_class
 from . import transforms
 from .core import annotate, SerAPI, GeneratorInfo
 from .html import ASSETS, ADDITIONAL_HEADS, HtmlGenerator, gen_banner, wrap_classes
-from .pygments import highlight_html, added_tokens, replace_builtin_coq_lexer
+from .latex import LatexGenerator
+from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
 # ===============
@@ -84,6 +95,9 @@ class alectryon_pending(nodes.pending):
     pass
 
 class alectryon_pending_toggle(nodes.pending):
+    pass
+
+class alectryon_io(docutils.nodes.Element):
     pass
 
 # Transforms
@@ -151,7 +165,7 @@ class Config:
                 yield ",".join(vals)
 
 class AlectryonTransform(Transform):
-    default_priority = 995
+    default_priority = 990
     auto_toggle = True
 
     SERTOP_ARGS = ()
@@ -164,11 +178,6 @@ class AlectryonTransform(Transform):
             if hasattr(fr, 'annots'):
                 fr.annots.inherit(annots)
             yield fr
-
-    @staticmethod
-    def document_id(document):
-        source = document.get('source', "")
-        return nodes.make_id(os.path.basename(source))
 
     def check_for_long_lines(self, node, fragments):
         if LONG_LINE_THRESHOLD is None:
@@ -188,12 +197,13 @@ class AlectryonTransform(Transform):
             cache.put(chunks, annotated, SerAPI.version_info())
         return cache.generator, annotated
 
-    def annotate(self, pending_nodes, config):
+    def annotate(self, pending_nodes):
+        config = Config(self.document)
         sertop_args = (*self.SERTOP_ARGS, *config.sertop_args)
         chunks = [pending.details["contents"] for pending in pending_nodes]
         return self.annotate_cached(chunks, sertop_args)
 
-    def replace_node(self, config, writer, pending, fragments):
+    def replace_node(self, pending, fragments):
         annots = transforms.IOAnnots(*pending.details['options'])
         if annots.hide:
             pending.parent.remove(pending)
@@ -201,19 +211,16 @@ class AlectryonTransform(Transform):
         fragments = self.set_fragment_annots(fragments, annots)
         fragments = transforms.default_transform(fragments)
         self.check_for_long_lines(pending, fragments)
-        with added_tokens(config.tokens):
-            html = writer.gen_fragments(fragments).render(pretty=False)
         contents = pending.details["contents"]
-        pending.replace_self(nodes.raw(contents, html, format='html'))
+        io = alectryon_io(fragments=fragments, contents=contents)
+        pending.replace_self(io)
 
     def apply_coq(self):
-        config = Config(self.document)
         pending_nodes = self.document.traverse(alectryon_pending)
-        generator, annotated = self.annotate(pending_nodes, config)
+        generator, annotated = self.annotate(pending_nodes)
         _alectryon_state(self.document).generator = generator
-        writer = HtmlGenerator(highlight_html, gensym_stem=self.document_id(self.document))
         for node, fragments in zip(pending_nodes, annotated):
-            self.replace_node(config, writer, node, fragments)
+            self.replace_node(node, fragments)
 
     @staticmethod
     def split_around(node):
@@ -250,6 +257,35 @@ class AlectryonTransform(Transform):
             state.transform_executed = True
             self.apply_coq()
             self.apply_toggle()
+
+class AlectryonPostTransform(Transform):
+    default_priority = 995
+
+    @staticmethod
+    def document_id(document):
+        source = document.get('source', "")
+        return nodes.make_id(os.path.basename(source))
+
+    def init_writer(self):
+        raise NotImplementedError("Unknown output format")
+
+    def apply(self, **_kwargs):
+        config = Config(self.document)
+        fmt, writer = self.init_writer()
+        with added_tokens(config.tokens):
+            for node in self.document.traverse(alectryon_io):
+                fragments, contents = node["fragments"], node["contents"]
+                raw = writer.gen_fragments(fragments).render(pretty=False)
+                node.replace_self(nodes.raw(contents, raw, format=fmt))
+
+class AlectryonHTMLPostTransform(AlectryonPostTransform):
+    def init_writer(self):
+        gensym_stem = self.document_id(self.document)
+        return "html", HtmlGenerator(highlight_html, gensym_stem=gensym_stem)
+
+class AlectryonLatexPostTransform(AlectryonPostTransform):
+    def init_writer(self):
+        return "latex", LatexGenerator(highlight_latex)
 
 # Directives
 # ----------
@@ -518,9 +554,9 @@ class RSTCoqStandaloneReader(Reader):
 # Writer
 # ------
 
-DefaultWriter = get_writer_class('html')
+DefaultHtmlWriter = get_writer_class('html')
 
-class HtmlTranslator(DefaultWriter().translator_class):
+class HtmlTranslator(DefaultHtmlWriter().translator_class):
     JS = ASSETS.ALECTRYON_JS
     CSS = (*ASSETS.ALECTRYON_CSS, *ASSETS.DOCUTILS_CSS, *ASSETS.PYGMENTS_CSS)
     ADDITIONAL_HEADS = [ASSETS.IBM_PLEX_CDN, ASSETS.FIRA_CODE_CDN, *ADDITIONAL_HEADS]
@@ -553,7 +589,7 @@ class HtmlTranslator(DefaultWriter().translator_class):
         self.body_suffix.insert(0, '</div>')
 
 ALECTRYON_SETTINGS = [
-    ("Choose an Alectryon style",
+    ("Choose an Alectryon webpage style",
      ["--webpage-style"],
      {"choices": ("centered", "floating", "windowed"),
       "dest": "webpage_style",
@@ -570,14 +606,35 @@ ALECTRYON_SETTINGS = [
       'validator': frontend.validate_boolean})
 ]
 
-class HtmlWriter(DefaultWriter):
+class HtmlWriter(DefaultHtmlWriter):
     settings_spec = ('HTML-Specific Options', None,
                      (*ALECTRYON_SETTINGS,
-                      *DefaultWriter.settings_spec[-1]))
+                      *DefaultHtmlWriter.settings_spec[-1]))
+
+    def get_transforms(self):
+        return super().get_transforms() + [AlectryonHTMLPostTransform]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.translator_class = HtmlTranslator
+
+DefaultLatexWriter = get_writer_class('latex')
+
+class LatexTranslator(DefaultLatexWriter().translator_class):
+    pass
+    # FIXME: handle options (as done in ``HtmlTranslator``), add preamble
+
+class LatexWriter(DefaultLatexWriter):
+    settings_spec = ('Latex-Specific Options', None,
+                     (*ALECTRYON_SETTINGS,
+                      *DefaultLatexWriter.settings_spec[-1]))
+
+    def get_transforms(self):
+        return super().get_transforms() + [AlectryonLatexPostTransform]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.translator_class = LatexTranslator
 
 # Entry points
 # ============
