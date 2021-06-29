@@ -78,8 +78,8 @@ from docutils.writers import get_writer_class
 
 from . import transforms
 from .core import annotate, SerAPI, GeneratorInfo
-from .html import ASSETS, ADDITIONAL_HEADS, HtmlGenerator, gen_banner, wrap_classes
-from .latex import LatexGenerator
+from .html import ADDITIONAL_HEADS, HtmlGenerator, gen_banner, wrap_classes, ASSETS as ASSETS_HTML
+from .latex import LatexGenerator, ASSETS as ASSETS_LATEX
 from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
@@ -557,9 +557,9 @@ class RSTCoqStandaloneReader(Reader):
 DefaultHtmlWriter = get_writer_class('html')
 
 class HtmlTranslator(DefaultHtmlWriter().translator_class):
-    JS = ASSETS.ALECTRYON_JS
-    CSS = (*ASSETS.ALECTRYON_CSS, *ASSETS.DOCUTILS_CSS, *ASSETS.PYGMENTS_CSS)
-    ADDITIONAL_HEADS = [ASSETS.IBM_PLEX_CDN, ASSETS.FIRA_CODE_CDN, *ADDITIONAL_HEADS]
+    JS = ASSETS_HTML.ALECTRYON_JS
+    CSS = (*ASSETS_HTML.ALECTRYON_CSS, *ASSETS_HTML.DOCUTILS_CSS, *ASSETS_HTML.PYGMENTS_CSS)
+    ADDITIONAL_HEADS = [ASSETS_HTML.IBM_PLEX_CDN, ASSETS_HTML.FIRA_CODE_CDN, *ADDITIONAL_HEADS]
 
     JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>\n'
     MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.min.js"
@@ -570,7 +570,7 @@ class HtmlTranslator(DefaultHtmlWriter().translator_class):
     def stylesheet_call(self, name):
         if self.settings.embed_stylesheet:
             # Expand only if we're going to inline; otherwise keep relative
-            name = os.path.join(ASSETS.PATH, name)
+            name = os.path.join(ASSETS_HTML.PATH, name)
         return super().stylesheet_call(name)
 
     def __init__(self, document):
@@ -621,8 +621,13 @@ class HtmlWriter(DefaultHtmlWriter):
 DefaultLatexWriter = get_writer_class('latex')
 
 class LatexTranslator(DefaultLatexWriter().translator_class):
-    pass
-    # FIXME: handle options (as done in ``HtmlTranslator``), add preamble
+    STY = ASSETS_LATEX.ALECTRYON_STY + ASSETS_LATEX.PYGMENTS_STY
+
+    def __init__(self, document):
+        document.settings.font_encoding = ''
+        document.settings.latex_preamble = ''
+        document.settings.stylesheet_path = ','.join(self.STY)
+        super().__init__(document)
 
 class LatexWriter(DefaultLatexWriter):
     settings_spec = ('Latex-Specific Options', None,

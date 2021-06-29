@@ -104,58 +104,51 @@ def _gen_docutils(source, fpath,
 
 def _gen_docutils_html(source, fpath,
                        webpage_style, include_banner, include_vernums,
-                       html_assets, traceback, Parser, Reader):
-    from docutils.core import publish_string
+                       assets, traceback, Parser, Reader):
     from .docutils import HtmlTranslator, HtmlWriter
 
-    html_assets.extend(HtmlTranslator.JS + HtmlTranslator.CSS)
+    assets.extend(HtmlTranslator.JS + HtmlTranslator.CSS)
 
     return _gen_docutils(source, fpath, include_banner, include_vernums,
                          traceback, Parser, Reader, HtmlWriter,
                          { "webpage_style": webpage_style })
 
-def gen_rstcoq_html(coq, fpath, webpage_style,
-                    include_banner, include_vernums,
-                    html_assets, traceback):
+def gen_rstcoq_html(coq, fpath, webpage_style, include_banner, include_vernums,
+                    assets, traceback):
     from .docutils import RSTCoqParser, RSTCoqStandaloneReader
     return _gen_docutils_html(coq, fpath, webpage_style,
                          include_banner, include_vernums,
-                         html_assets, traceback,
+                         assets, traceback,
                          RSTCoqParser, RSTCoqStandaloneReader)
 
-def gen_rst_html(rst, fpath, webpage_style,
-                 include_banner, include_vernums,
-                 html_assets, traceback):
+def gen_rst_html(rst, fpath, webpage_style, include_banner, include_vernums,
+                 assets, traceback):
     from docutils.parsers.rst import Parser
     from docutils.readers.standalone import Reader
     return _gen_docutils_html(rst, fpath, webpage_style,
                          include_banner, include_vernums,
-                         html_assets, traceback,
-                         Parser, Reader)
-
+                         assets, traceback, Parser, Reader)
 
 def _gen_docutils_latex(source, fpath, include_banner, include_vernums,
-                        traceback, Parser, Reader):
-    from docutils.core import publish_string
-    from .docutils import LatexWriter
-
+                        assets, traceback, Parser, Reader):
+    from .docutils import LatexWriter, LatexTranslator
+    assets.extend(LatexTranslator.STY)
     return _gen_docutils(source, fpath, include_banner, include_vernums,
                          traceback, Parser, Reader, LatexWriter, {})
 
-def gen_rstcoq_latex(coq, fpath,
-                     include_banner, include_vernums, traceback):
+def gen_rstcoq_latex(coq, fpath, include_banner, include_vernums,
+                     assets, traceback):
     from .docutils import RSTCoqParser, RSTCoqStandaloneReader
-    return _gen_docutils_latex(coq, fpath,
-                         include_banner, include_vernums, traceback,
-                         RSTCoqParser, RSTCoqStandaloneReader)
+    return _gen_docutils_latex(coq, fpath, include_banner, include_vernums,
+                               assets, traceback,
+                               RSTCoqParser, RSTCoqStandaloneReader)
 
-def gen_rst_latex(rst, fpath,
-                 include_banner, include_vernums, traceback):
+def gen_rst_latex(rst, fpath, include_banner, include_vernums,
+                  assets, traceback):
     from docutils.parsers.rst import Parser
     from docutils.readers.standalone import Reader
-    return _gen_docutils_latex(rst, fpath,
-                         include_banner, include_vernums, traceback,
-                         Parser, Reader)
+    return _gen_docutils_latex(rst, fpath, include_banner, include_vernums,
+                               assets, traceback, Parser, Reader)
 
 def _docutils_cmdline_html(description, Reader, Parser):
     import locale
@@ -282,15 +275,27 @@ def gen_html_snippets_with_coqdoc(annotated, html_classes, fname):
     # ‘return’ instead of ‘yield from’ to update html_classes eagerly
     return _gen_html_snippets_with_coqdoc(annotated, fname)
 
-def copy_assets(state, html_assets, copy_fn, output_directory):
-    from .html import copy_assets as cp
-    if copy_fn:
-        cp(output_directory, assets=html_assets, copy_fn=copy_fn)
+def copy_assets(state, assets, copy_fn, output_directory):
+    from .html import ASSETS
+
+    for name in assets:
+        src = os.path.join(ASSETS.PATH, name)
+        dst = os.path.join(output_directory, name)
+        if copy_fn is not shutil.copy:
+            try:
+                os.unlink(dst)
+            except FileNotFoundError:
+                pass
+        try:
+            copy_fn(src, dst)
+        except shutil.SameFileError:
+            pass
+
     return state
 
 def dump_html_standalone(snippets, fname, webpage_style,
                          include_banner, include_vernums,
-                         html_assets, html_classes):
+                         assets, html_classes):
     from dominate import tags, document
     from dominate.util import raw
     from . import GENERATOR
@@ -313,8 +318,8 @@ def dump_html_standalone(snippets, fname, webpage_style,
     for js in ASSETS.ALECTRYON_JS:
         doc.head.add(tags.script(src=js))
 
-    html_assets.extend(ASSETS.ALECTRYON_CSS)
-    html_assets.extend(ASSETS.ALECTRYON_JS)
+    assets.extend(ASSETS.ALECTRYON_CSS)
+    assets.extend(ASSETS.ALECTRYON_JS)
 
     pygments_css = HTML_FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
@@ -528,7 +533,7 @@ def post_process_arguments(parser, args):
             MSG = "argument --mark-point: Expecting a number, not {!r}"
             parser.error(MSG.format(args.point))
 
-    args.html_assets = []
+    args.assets = []
     args.html_classes = []
     args.pipelines = [(fpath, resolve_pipeline(fpath, args))
                       for fpath in args.input]

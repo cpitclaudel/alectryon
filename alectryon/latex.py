@@ -23,6 +23,10 @@ import re
 from .core import Text, RichSentence, Messages, Goals
 from . import transforms, GENERATOR
 
+class ASSETS:
+    PYGMENTS_STY = ("tango_subtle.sty",)
+    ALECTRYON_STY = ("alectryon.sty",)
+
 def format_macro(name, args, optargs):
     args = "".join("{" + str(arg) + "}" for arg in args)
     optargs = "".join("[" + str(optarg) + "]" for optarg in optargs)

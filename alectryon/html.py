@@ -19,8 +19,7 @@
 # SOFTWARE.
 
 from collections import defaultdict
-from os import path, unlink
-import shutil
+from os import path
 
 from dominate import tags
 
@@ -44,22 +43,6 @@ class ASSETS:
 
     IBM_PLEX_CDN = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />'
     FIRA_CODE_CDN = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />'
-
-def copy_assets(output_directory,
-                assets=ASSETS.ALECTRYON_CSS + ASSETS.ALECTRYON_JS,
-                copy_fn=shutil.copy):
-    for name in assets:
-        src = path.join(ASSETS.PATH, name)
-        dst = path.join(output_directory, name)
-        if copy_fn is not shutil.copy:
-            try:
-                unlink(dst)
-            except FileNotFoundError:
-                pass
-        try:
-            copy_fn(src, dst)
-        except shutil.SameFileError:
-            pass
 
 class Gensym():
     def __init__(self, stem):
