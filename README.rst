@@ -21,7 +21,7 @@ Some examples of use in the wild are linked `at the bottom of this page <#galler
 Setup
 =====
 
-To install from OPAM an pip:
+To install from OPAM and PyPI:
     | ``opam install "coq-serapi>=8.10.0+0.7.0"`` (from the `Coq OPAM archive <https://coq.inria.fr/opam-using.html>`__)
     | ``python3 -m pip install alectryon``
 
