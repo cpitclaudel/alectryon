@@ -20,6 +20,6 @@
 
 """Annotate segments of Coq code with responses and goals."""
 
-__version__ = "1.0"
+__version__ = "1.1"
 __author__ = 'Clément Pit-Claudel'
 GENERATOR = "Alectryon"
