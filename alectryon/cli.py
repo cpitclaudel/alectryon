@@ -623,6 +623,8 @@ def process_pipelines(args):
         core.DEBUG = True
 
     if args.traceback:
+        from . import core
+        core.TRACEBACK = True
         sys.excepthook = except_hook
 
     if args.cache_directory:
@@ -633,22 +635,22 @@ def process_pipelines(args):
         from . import core
         core.SerAPI.EXPECT_UNEXPECTED = True
 
+    for fpath, pipeline in args.pipelines:
+        state, ctx = None, build_context(fpath, args)
+        for step in pipeline:
+            state = call_pipeline_step(step, state, ctx)
+
+def main():
     try:
-        for fpath, pipeline in args.pipelines:
-            state, ctx = None, build_context(fpath, args)
-            for step in pipeline:
-                state = call_pipeline_step(step, state, ctx)
-    except (ValueError, FileNotFoundError) as e:
-        if args.traceback:
+        args = parse_arguments()
+        process_pipelines(args)
+    except (ValueError, FileNotFoundError, argparse.ArgumentTypeError) as e:
+        from . import core
+        if core.TRACEBACK:
             raise e
         print("Exiting early due to an error:", file=sys.stderr)
         print(str(e), file=sys.stderr)
         sys.exit(1)
-
-
-def main():
-    args = parse_arguments()
-    process_pipelines(args)
 
 # Alternative CLIs
 # ================

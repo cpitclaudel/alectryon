@@ -29,6 +29,7 @@ from subprocess import Popen, PIPE, STDOUT, check_output
 from . import sexp as sx
 
 DEBUG = False
+TRACEBACK = False
 
 def debug(text, prefix):
     if isinstance(text, (bytes, bytearray)):
