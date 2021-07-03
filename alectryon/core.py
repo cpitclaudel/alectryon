@@ -25,7 +25,7 @@ from sys import stderr
 
 from shlex import quote
 from shutil import which
-from subprocess import Popen, PIPE, STDOUT, check_output
+from subprocess import Popen, PIPE, check_output
 from . import sexp as sx
 
 DEBUG = False
@@ -117,7 +117,7 @@ class SerAPI():
         self.kill()
         cmd = [path, *self.args]
         debug(" ".join(quote(s) for s in cmd), '# ')
-        self.sertop = Popen(cmd, stdin=PIPE, stderr=STDOUT, stdout=PIPE)
+        self.sertop = Popen(cmd, stdin=PIPE, stderr=stderr, stdout=PIPE)
 
     def next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceding it."""
