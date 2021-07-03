@@ -13,6 +13,7 @@ output:
 
 output/.version-info: | output
 	@echo "Coq: $$(coqc -v)" > $@
+	@echo "Pygments: $$($(PYTHON) -c 'import pygments; print(pygments.__version__)')" >> $@
 	@echo "Docutils: $$($(PYTHON) -c 'import docutils; print(docutils.__version__)')" >> $@
 	@echo "Sphinx: $$($(PYTHON) -c 'import sphinx; print(sphinx.__version__)')" >> $@
 
