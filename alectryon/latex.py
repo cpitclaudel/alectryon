@@ -225,7 +225,6 @@ class LatexGenerator:
         # FIXME: classes. optargs=[",".join(classes)] if classes else [] ?
         with environments.alectryon() as env:
             Raw("% Generator: {}".format(GENERATOR))
-            fragments = transforms.default_transform(fragments) # FIXME
             # fragments = transforms.merge_fragments_by_line(fragments) # FIXME
             fragments = transforms.group_whitespace_with_code(fragments)
             fragments = transforms.commit_io_annotations(fragments)#, discard_folded=True)

@@ -173,6 +173,11 @@ def _scrub_fname(fname):
     import re
     return re.sub("[^-a-zA-Z0-9]", "-", fname)
 
+def apply_transforms(annotated):
+    from .transforms import default_transform
+    for chunk in annotated:
+        yield default_transform(chunk)
+
 def gen_html_snippets(annotated, include_vernums, fname):
     from .html import HtmlGenerator
     from .pygments import highlight_html
@@ -330,51 +335,69 @@ def write_file(ext):
     return lambda contents, fname, output, output_directory: \
         write_output(ext, contents, fname, output, output_directory)
 
+# No ‘apply_transforms’ in JSON pipelines: (we save the prover output without
+# modifications).
 PIPELINES = {
     'json': {
-        'json': (read_json, annotate_chunks,
-                 prepare_json, dump_json, write_file(".io.json")),
-        'snippets-html': (read_json, annotate_chunks, gen_html_snippets,
-                          dump_html_snippets, write_file(".snippets.html")),
-        'snippets-latex': (read_json, annotate_chunks, gen_latex_snippets,
-                           dump_latex_snippets, write_file(".snippets.tex"))
+        'json':
+        (read_json, annotate_chunks,
+         prepare_json, dump_json, write_file(".io.json")),
+        'snippets-html':
+        (read_json, annotate_chunks, apply_transforms, gen_html_snippets,
+         dump_html_snippets, write_file(".snippets.html")),
+        'snippets-latex':
+        (read_json, annotate_chunks, apply_transforms, gen_latex_snippets,
+         dump_latex_snippets, write_file(".snippets.tex"))
     },
     'coq': {
-        'null': (read_plain, parse_coq_plain, annotate_chunks),
-        'webpage': (read_plain, parse_coq_plain, annotate_chunks,
-                    gen_html_snippets, dump_html_standalone, copy_assets,
-                    write_file(".v.html")),
-        'snippets-html': (read_plain, parse_coq_plain, annotate_chunks,
-                          gen_html_snippets, dump_html_snippets,
-                          write_file(".snippets.html")),
-        'snippets-latex': (read_plain, parse_coq_plain, annotate_chunks,
-                           gen_latex_snippets, dump_latex_snippets,
-                           write_file(".snippets.tex")),
-        'lint': (read_plain, register_docutils, lint_rstcoq,
-                 write_file(".lint.json")),
-        'rst': (read_plain, coq_to_rst, write_file(".v.rst")),
-        'json': (read_plain, parse_coq_plain, annotate_chunks, prepare_json,
-                 dump_json, write_file(".io.json"))
+        'null':
+        (read_plain, parse_coq_plain, annotate_chunks),
+        'webpage':
+        (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
+         gen_html_snippets, dump_html_standalone, copy_assets,
+         write_file(".v.html")),
+        'snippets-html':
+        (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
+         gen_html_snippets, dump_html_snippets, write_file(".snippets.html")),
+        'snippets-latex':
+        (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
+         gen_latex_snippets, dump_latex_snippets, write_file(".snippets.tex")),
+        'lint':
+        (read_plain, register_docutils, lint_rstcoq,
+         write_file(".lint.json")),
+        'rst':
+        (read_plain, coq_to_rst, write_file(".v.rst")),
+        'json':
+        (read_plain, parse_coq_plain, annotate_chunks, prepare_json,
+         dump_json, write_file(".io.json"))
     },
     'coq+rst': {
-        'webpage': (read_plain, register_docutils, gen_rstcoq_html, copy_assets,
-                    write_file(".html")),
-        'lint': (read_plain, register_docutils, lint_rstcoq,
-                 write_file(".lint.json")),
-        'rst': (read_plain, coq_to_rst, write_file(".v.rst"))
+        'webpage':
+        (read_plain, register_docutils, gen_rstcoq_html, copy_assets,
+         write_file(".html")),
+        'lint':
+        (read_plain, register_docutils, lint_rstcoq,
+         write_file(".lint.json")),
+        'rst':
+        (read_plain, coq_to_rst, write_file(".v.rst"))
     },
     'coqdoc': {
-        'webpage': (read_plain, parse_coq_plain, annotate_chunks,
-                    gen_html_snippets_with_coqdoc, dump_html_standalone,
-                    copy_assets, write_file(".html")),
+        'webpage': # transforms applied later
+        (read_plain, parse_coq_plain, annotate_chunks,
+         gen_html_snippets_with_coqdoc, dump_html_standalone,
+         copy_assets, write_file(".html")),
     },
     'rst': {
-        'webpage': (read_plain, register_docutils, gen_rst_html, copy_assets,
-                    write_file(".html")),
-        'lint': (read_plain, register_docutils, lint_rst,
-                 write_file(".lint.json")),
-        'coq': (read_plain, rst_to_coq, write_file(".v")),
-        'coq+rst': (read_plain, rst_to_coq, write_file(".v"))
+        'webpage':
+        (read_plain, register_docutils, gen_rst_html, copy_assets,
+         write_file(".html")),
+        'lint':
+        (read_plain, register_docutils, lint_rst,
+         write_file(".lint.json")),
+        'coq':
+        (read_plain, rst_to_coq, write_file(".v")),
+        'coq+rst':
+        (read_plain, rst_to_coq, write_file(".v"))
     }
 }
 
