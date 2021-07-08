@@ -490,9 +490,6 @@ class RSTCoqParser(docutils.parsers.rst.Parser):
     """A wrapper around the reStructuredText parser for literate Coq files."""
 
     supported = ('coq',)
-    """Aliases this parser supports."""
-    # settings_spec = docutils.parsers.rst.Parser.settings_spec + \
-    #     ('Literate Coq Parser Options', None, ())
     config_section = 'Literate Coq parser'
     config_section_dependencies = ('parsers',)
 
@@ -589,7 +586,7 @@ class HtmlTranslator(html4css1.HTMLTranslator): \
             self.body_prefix.append(gen_banner(generator, include_vernums))
         self.body_suffix.insert(0, '</div>')
 
-ALECTRYON_SETTINGS = [
+ALECTRYON_SETTINGS = (
     ("Choose an Alectryon webpage style",
      ["--webpage-style"],
      {"choices": ("centered", "floating", "windowed"),
@@ -605,12 +602,12 @@ ALECTRYON_SETTINGS = [
      {'default': True, 'action': 'store_false',
       'dest': "alectryon_vernums",
       'validator': frontend.validate_boolean})
-]
+)
 
 class HtmlWriter(html4css1.Writer):
-    settings_spec = ('HTML-Specific Options', None,
-                     (*ALECTRYON_SETTINGS,
-                      *html4css1.Writer.settings_spec[-1]))
+    settings_spec = (html4css1.Writer.settings_spec +
+                     ('Alectryon HTML writer options',
+                      None, ALECTRYON_SETTINGS))
 
     def get_transforms(self):
         return super().get_transforms() + [AlectryonHTMLPostTransform]
@@ -634,9 +631,6 @@ XeLatexTranslator = make_LatexTranslator(xetex.XeLaTeXTranslator)
 
 def make_LatexWriter(base, translator_class):
     class Writer(base):
-        settings_spec = ('Latex-Specific Options', None,
-                         base.settings_spec[-1])
-
         def get_transforms(self):
             return super().get_transforms() + [AlectryonLatexPostTransform]
 
