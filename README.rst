@@ -393,3 +393,4 @@ Gallery
 - Jean-Paul Bodeveix, Érik Martin-Dorel, Pierre Roux. `Types Abstraits et Programmation Fonctionnelle Avancée <https://github.com/pfitaxel/tapfa-coq-alectryon>`__
 - Silver Oak contributors. `Formal specification and verification of hardware, especially for security and privacy. <https://project-oak.github.io/silveroak/demo/tutorial.html>`__
 - Philip Zucker. `Translating My Z3 Tutorial to Coq <https://www.philipzucker.com/translating-z3-to-coq/>`__
+- Li-yao Xia. `hakyll-alectryon: Hakyll extension for rendering Coq code using Alectryon <https://hackage.haskell.org/package/hakyll-alectryon>`__
