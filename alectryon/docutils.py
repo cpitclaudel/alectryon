@@ -74,7 +74,7 @@ from docutils.parsers.rst import directives, roles, Directive
 from docutils.parsers.rst.directives.body import Sidebar
 from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
-from docutils.writers import html4css1, latex2e
+from docutils.writers import html4css1, latex2e, xetex
 
 from . import transforms
 from .core import annotate, SerAPI
@@ -618,25 +618,34 @@ class HtmlWriter(html4css1.Writer):
         super().__init__(*args, **kwargs)
         self.translator_class = HtmlTranslator
 
-class LatexTranslator(latex2e.LaTeXTranslator): \
-      # pylint: disable=abstract-method
-    STY = ASSETS_LATEX.ALECTRYON_STY + ASSETS_LATEX.PYGMENTS_STY
+def make_LatexTranslator(base):
+    class Translator(base): \
+          # pylint: disable=abstract-method
+        STY = ASSETS_LATEX.ALECTRYON_STY + ASSETS_LATEX.PYGMENTS_STY
 
-    def __init__(self, document):
-        super().__init__(document)
-        register_stylesheets(self, self.STY)
+        def __init__(self, document, *args, **kwargs):
+            super().__init__(document, *args, **kwargs)
+            register_stylesheets(self, self.STY)
+    return Translator
 
-class LatexWriter(latex2e.Writer):
-    settings_spec = ('Latex-Specific Options', None,
-                     (*ALECTRYON_SETTINGS,
-                      *latex2e.Writer.settings_spec[-1]))
+LatexTranslator = make_LatexTranslator(latex2e.LaTeXTranslator)
+XeLatexTranslator = make_LatexTranslator(xetex.XeLaTeXTranslator)
 
-    def get_transforms(self):
-        return super().get_transforms() + [AlectryonLatexPostTransform]
+def make_LatexWriter(base, translator_class):
+    class Writer(base):
+        settings_spec = ('Latex-Specific Options', None,
+                         base.settings_spec[-1])
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.translator_class = LatexTranslator
+        def get_transforms(self):
+            return super().get_transforms() + [AlectryonLatexPostTransform]
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.translator_class = translator_class
+    return Writer
+
+LatexWriter = make_LatexWriter(latex2e.Writer, LatexTranslator)
+XeLatexWriter = make_LatexWriter(xetex.Writer, XeLatexTranslator)
 
 # Entry points
 # ============

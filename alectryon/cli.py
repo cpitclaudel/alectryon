@@ -118,9 +118,12 @@ def gen_docutils(src, frontend, backend, fpath,
         from .docutils import HtmlTranslator, HtmlWriter as Writer
         assets.extend(HtmlTranslator.JS + HtmlTranslator.CSS)
         settings_overrides = {"webpage_style": webpage_style}
-    elif backend == "latex":
-        from .docutils import LatexTranslator, LatexWriter as Writer
-        assets.extend(LatexTranslator.STY)
+    elif backend in ("xelatex", "latex"):
+        if backend == "xelatex":
+            from .docutils import XeLatexTranslator as Translator, XeLatexWriter as Writer
+        else:
+            from .docutils import LatexTranslator as Translator, LatexWriter as Writer
+        assets.extend(Translator.STY)
         settings_overrides = {}
     else:
         raise ValueError("Unsupported docutils backend: {}".format(backend))
@@ -425,6 +428,9 @@ PIPELINES = {
     }
 }
 
+PIPELINES['rst']['xelatex'] = PIPELINES['rst']['latex']
+PIPELINES['coq+rst']['xelatex'] = PIPELINES['coq+rst']['latex']
+
 # CLI
 # ===
 
@@ -466,12 +472,12 @@ def infer_backend(frontend, out_fpath):
     return DEFAULT_BACKENDS[frontend]
 
 def resolve_pipeline(fpath, args):
-    frontend = args.frontend or infer_frontend(fpath)
+    args.frontend = frontend = args.frontend or infer_frontend(fpath)
 
     assert frontend in PIPELINES
     supported_backends = PIPELINES[frontend]
 
-    backend = args.backend or infer_backend(frontend, args.output)
+    args.backend = backend = args.backend or infer_backend(frontend, args.output)
     if backend not in supported_backends:
         MSG = """argument --backend: Frontend {!r} does not support backend {!r}: \
 expecting one of {}"""
