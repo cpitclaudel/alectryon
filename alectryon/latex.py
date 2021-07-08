@@ -144,7 +144,8 @@ class Raw:
         return self.raw_format(self.s, indent, verbatim)
 
 class PlainText(Raw):
-    ESCAPES = Replacements({"\\": "\\bsl"}) # FIXME # Use pygments directly?
+    ESCAPES = Replacements({ c: r"\char`\{}".format(c)
+                             for c in '\\{}&^$">-<%#\'~_' })
 
     def format(self, indent, verbatim):
         return self.raw_format(self.ESCAPES(self.s), indent, verbatim)
@@ -161,7 +162,10 @@ macros = Macros()
 
 class LatexGenerator:
     def __init__(self, highlighter):
-        self.highlight = lambda s: [Raw(highlighter(s, prefix="", suffix=""))]
+        self.highlighter = highlighter
+
+    def highlight(self, s):
+        return [Raw(self.highlighter(s, prefix="", suffix=""))]
 
     def gen_goal(self, goal):
         """Serialize a goal to LaTeX."""
