@@ -1,2 +1,5 @@
 /output/*.css
 /output/*.js
+/output/*.pdf
+/output/*.sty
+/output/latex.aux/

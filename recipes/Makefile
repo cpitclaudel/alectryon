@@ -8,9 +8,9 @@ assets := alectryon.css alectryon.js alectryon.sty
 all := .version-info \
 	plain.v.html literate.v.html coqdoc.v.html \
 	coqdoc.html \
-	literate.html literate.tex \
+	literate.html literate.pdflatex.pdf \
 	document.html hyps.html mathjax.html \
-	document.tex hyps.tex \
+	document.pdflatex.pdf hyps.xelatex.pdf \
 	document.minimal.html \
 	document.v literate.v.rst \
 	fragments.io.json \
@@ -69,7 +69,7 @@ output/mathjax.html: mathjax.rst | output
 output/document.tex: document.v.rst | output
 	$(alectryon) --backend latex $<
 output/hyps.tex: hyps.rst | output
-	$(alectryon) --backend latex $<
+	$(alectryon) --backend xelatex $<
 
 # FIXME
 # output/mathjax.html: mathjax.rst | output
@@ -115,9 +115,14 @@ output/api.out: api.py
 output/latex.aux:
 	mkdir $@
 
-output/%.pdflatex.pdf: output/%.tex | latex.aux
-	pdflatex -output-directory=output/latex.aux -jobname=$*.pdflatex $<
-	mv output/latex.aux/$*.pdflatex.pdf $@
+output/%.pdf: output/latex.aux/%.pdf
+	mv $< $@
+
+output/latex.aux/%.pdflatex.pdf: output/%.tex | output/latex.aux
+	cd output/; pdflatex -output-directory=latex.aux -jobname=$*.pdflatex $*.tex
+
+output/latex.aux/%.xelatex.pdf: output/%.tex | output/latex.aux
+	cd output/; xelatex -output-directory=latex.aux -jobname=$*.xelatex $*.tex
 
 output/alectryon%css output/alectryon%js output/alectryon%sty: FORCE
 	cp --link --force $(patsubst %,../alectryon/assets/%,$(assets)) output/
