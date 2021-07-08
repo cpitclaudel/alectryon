@@ -102,53 +102,32 @@ def _gen_docutils(source, fpath,
         settings_overrides=settings_overrides, config_section=None,
         enable_exit_status=True).decode("utf-8")
 
-def _gen_docutils_html(source, fpath,
-                       webpage_style, include_banner, include_vernums,
-                       assets, traceback, Parser, Reader):
-    from .docutils import HtmlTranslator, HtmlWriter
-
-    assets.extend(HtmlTranslator.JS + HtmlTranslator.CSS)
-
-    return _gen_docutils(source, fpath, include_banner, include_vernums,
-                         traceback, Parser, Reader, HtmlWriter,
-                         { "webpage_style": webpage_style })
-
-def gen_rstcoq_html(coq, fpath, webpage_style, include_banner, include_vernums,
-                    assets, traceback):
-    from .docutils import RSTCoqParser, RSTCoqStandaloneReader
-    return _gen_docutils_html(coq, fpath, webpage_style,
-                         include_banner, include_vernums,
-                         assets, traceback,
-                         RSTCoqParser, RSTCoqStandaloneReader)
-
-def gen_rst_html(rst, fpath, webpage_style, include_banner, include_vernums,
+def gen_docutils(src, frontend, backend, fpath,
+                 webpage_style, include_banner, include_vernums,
                  assets, traceback):
-    from docutils.parsers.rst import Parser
-    from docutils.readers.standalone import Reader
-    return _gen_docutils_html(rst, fpath, webpage_style,
-                         include_banner, include_vernums,
-                         assets, traceback, Parser, Reader)
+    if frontend == "coq+rst":
+        from .docutils import RSTCoqParser as Parser
+        from .docutils import RSTCoqStandaloneReader as Reader
+    elif frontend == "rst":
+        from docutils.parsers.rst import Parser
+        from docutils.readers.standalone import Reader
+    else:
+        raise ValueError("Unsupported docutils frontend: {}".format(frontend))
 
-def _gen_docutils_latex(source, fpath, include_banner, include_vernums,
-                        assets, traceback, Parser, Reader):
-    from .docutils import LatexWriter, LatexTranslator
-    assets.extend(LatexTranslator.STY)
-    return _gen_docutils(source, fpath, include_banner, include_vernums,
-                         traceback, Parser, Reader, LatexWriter, {})
+    if backend == "webpage":
+        from .docutils import HtmlTranslator, HtmlWriter as Writer
+        assets.extend(HtmlTranslator.JS + HtmlTranslator.CSS)
+        settings_overrides = {"webpage_style": webpage_style}
+    elif backend == "latex":
+        from .docutils import LatexTranslator, LatexWriter as Writer
+        assets.extend(LatexTranslator.STY)
+        settings_overrides = {}
+    else:
+        raise ValueError("Unsupported docutils backend: {}".format(backend))
 
-def gen_rstcoq_latex(coq, fpath, include_banner, include_vernums,
-                     assets, traceback):
-    from .docutils import RSTCoqParser, RSTCoqStandaloneReader
-    return _gen_docutils_latex(coq, fpath, include_banner, include_vernums,
-                               assets, traceback,
-                               RSTCoqParser, RSTCoqStandaloneReader)
-
-def gen_rst_latex(rst, fpath, include_banner, include_vernums,
-                  assets, traceback):
-    from docutils.parsers.rst import Parser
-    from docutils.readers.standalone import Reader
-    return _gen_docutils_latex(rst, fpath, include_banner, include_vernums,
-                               assets, traceback, Parser, Reader)
+    return _gen_docutils(src, fpath, include_banner, include_vernums,
+                         traceback, Parser, Reader, Writer,
+                         settings_overrides)
 
 def _docutils_cmdline_html(description, Reader, Parser):
     import locale
@@ -412,10 +391,10 @@ PIPELINES = {
     },
     'coq+rst': {
         'webpage':
-        (read_plain, register_docutils, gen_rstcoq_html, copy_assets,
+        (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".html")),
         'latex':
-        (read_plain, register_docutils, gen_rstcoq_latex, copy_assets,
+        (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".tex")),
         'lint':
         (read_plain, register_docutils, lint_rstcoq,
@@ -431,10 +410,10 @@ PIPELINES = {
     },
     'rst': {
         'webpage':
-        (read_plain, register_docutils, gen_rst_html, copy_assets,
+        (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".html")),
         'latex':
-        (read_plain, register_docutils, gen_rst_latex, copy_assets,
+        (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".tex")),
         'lint':
         (read_plain, register_docutils, lint_rst,
