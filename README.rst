@@ -348,6 +348,17 @@ Authoring support
 
 The ``etc/elisp`` folder of this directory includes an Emacs mode, ``alectryon.el``, which makes it easy to switch between the Coq and reStructuredText views of a document.
 
+Docutils configuration
+----------------------
+
+You can set Docutils settings for your single-page Coq+reST documents using a ``docutils.conf`` file.  See the `documentation <https://docutils.sourceforge.io/docs/user/config.html>`__ or the `example <recipes/docutils.conf>`__ in ``recipes/``.  For example, the following changes ``latex-preamble`` for the XeTeX backend to select a custom monospace font::
+
+   [xetex writer]
+   latex-preamble:
+     \setmainfont{Linux Libertine O}
+     \setsansfont{Linux Biolinum O}
+     \setmonofont[Scale=MatchLowercase]{Fira Code}
+
 Caching
 -------
 
