@@ -187,7 +187,7 @@ def apply_transforms(annotated):
     for chunk in annotated:
         yield default_transform(chunk)
 
-def gen_html_snippets(annotated, include_vernums, fname):
+def gen_html_snippets(annotated, fname):
     from .html import HtmlGenerator
     from .pygments import highlight_html
     return HtmlGenerator(highlight_html, _scrub_fname(fname)).gen(annotated)
@@ -223,7 +223,8 @@ def _gen_coqdoc_html(coqdoc_fragments):
     coqdoc_output = _run_coqdoc(fr.contents for fr in coqdoc_fragments)
     soup = BeautifulSoup(coqdoc_output, "html.parser")
     docs = soup.find_all(class_='doc')
-    if len(docs) != sum(1 for c in coqdoc_fragments if not c.special):
+    coqdoc_comments = [c for c in coqdoc_fragments if not c.special]
+    if len(docs) != len(coqdoc_comments):
         from pprint import pprint
         print("Coqdoc mismatch:", file=sys.stderr)
         pprint(list(zip(coqdoc_comments, docs)))

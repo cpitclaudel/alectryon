@@ -92,7 +92,7 @@ def enrich_sentences(fragments):
             # Always add goals & messages; empty lists are filtered out later
             outputs = [Messages(fr.messages), Goals(fr.goals)]
             yield RichSentence(contents=fr.contents, outputs=outputs,
-                           prefixes=[], suffixes=[], annots=IOAnnots())
+                               prefixes=[], suffixes=[], annots=IOAnnots())
         else:
             yield fr
 

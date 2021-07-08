@@ -530,9 +530,9 @@ class RSTCoqParser(docutils.parsers.rst.Parser):
         self.setup_parse(inputstring, document)
         # pylint: disable=attribute-defined-outside-init
         self.statemachine = docutils.parsers.rst.states.RSTStateMachine(
-              state_classes=self.state_classes,
-              initial_state=self.initial_state,
-              debug=document.reporter.debug_flag)
+            state_classes=self.state_classes,
+            initial_state=self.initial_state,
+            debug=document.reporter.debug_flag)
         try:
             lines = RSTCoqParser.coq_input_lines(inputstring, document['source'])
             self.statemachine.run(lines, document, inliner=self.inliner)
@@ -570,8 +570,9 @@ class HtmlTranslator(html4css1.HTMLTranslator): \
     JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>\n'
     MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.min.js"
 
-    head_prefix_template = ('<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone"'
-                            ' xml:lang="%(lang)s" lang="%(lang)s">\n<head>\n')
+    head_prefix_template = \
+        '<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone"' \
+        ' xml:lang="%(lang)s" lang="%(lang)s">\n<head>\n'
 
     def __init__(self, document):
         document.settings.syntax_highlight = "short"

@@ -99,8 +99,8 @@ class Environment(Context):
         children_sep = "" if verbatim else "\n\\sep\n".replace("\n", "\n" + inside_indent)
         if children:
             return (begin + "\n" +
-               inside_indent + children_sep.join(children) + "\n" +
-               outside_indent + end)
+                    inside_indent + children_sep.join(children) + "\n" +
+                    outside_indent + end)
         return begin + end
 
 class Macro(Context):
@@ -144,8 +144,8 @@ class Raw:
         return self.raw_format(self.s, indent, verbatim)
 
 class PlainText(Raw):
-    ESCAPES = Replacements({ c: r"\char`\{}".format(c)
-                             for c in '\\{}&^$">-<%#\'~_' })
+    ESCAPES = Replacements({c: r"\char`\{}".format(c)
+                            for c in '\\{}&^$">-<%#\'~_'})
 
     def format(self, indent, verbatim):
         return self.raw_format(self.ESCAPES(self.s), indent, verbatim)

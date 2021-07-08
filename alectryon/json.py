@@ -153,9 +153,9 @@ class FileCache:
     def put(self, chunks, annotated, generator):
         with open(self.cache_file, mode="w") as cache:
             self.data = {"generator": generator,
-                       "metadata": self.metadata,
-                       "chunks": list(chunks),
-                       "annotated": json_of_annotated(annotated)}
+                         "metadata": self.metadata,
+                         "chunks": list(chunks),
+                         "annotated": json_of_annotated(annotated)}
             json.dump(self.data, cache, indent=2)
 
 class DummyCache:

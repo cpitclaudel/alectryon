@@ -194,7 +194,7 @@ class SerAPI():
             # LATER: use the 'str' field directly instead of a Pp call
             yield ApiMessage(meta[b'span_id'], mdata[b'level'], mdata[b'pp'])
         elif tag in (b'FileLoaded', b'ProcessingIn',
-                    b'Processed', b'AddedAxiom'):
+                     b'Processed', b'AddedAxiom'):
             pass
         else:
             raise ValueError("Unexpected feedback: {}".format(sexp))
