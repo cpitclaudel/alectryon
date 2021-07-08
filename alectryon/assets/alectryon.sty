@@ -120,8 +120,8 @@
 \newcommand{\alectryon@copymacro}[1]
   {\expandafter\def\csname #1\endcsname{\csname alectryon@#1\endcsname}}
 \newcommand{\alectryon@copyenvironment}[1]
-  {\expandafter\def\csname #1\endcsname{\begin{alectryon@#1}}%
-   \expandafter\def\csname end#1\endcsname{\end{alectryon@#1}}}
+  {\expandafter\def\csname #1\endcsname{\csname alectryon@#1\endcsname}%
+   \expandafter\def\csname end#1\endcsname{\csname endalectryon@#1\endcsname}}
 
 \newenvironment{alectryon}
   {\alectryon@copyenvironment{txt}
