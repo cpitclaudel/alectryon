@@ -74,10 +74,10 @@ from docutils.parsers.rst import directives, roles, Directive
 from docutils.parsers.rst.directives.body import Sidebar
 from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
-from docutils.writers import get_writer_class
+from docutils.writers import html4css1, latex2e
 
 from . import transforms
-from .core import annotate, SerAPI, GeneratorInfo
+from .core import annotate, SerAPI
 from .html import ADDITIONAL_HEADS, HtmlGenerator, gen_banner, wrap_classes, ASSETS as ASSETS_HTML
 from .latex import LatexGenerator, ASSETS as ASSETS_LATEX
 from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
@@ -554,9 +554,15 @@ class RSTCoqStandaloneReader(Reader):
 # Writer
 # ------
 
-DefaultHtmlWriter = get_writer_class('html')
+def register_stylesheets(translator, stylesheets):
+    for name in stylesheets:
+        if translator.settings.embed_stylesheet:
+            # Expand only if we're going to inline; otherwise keep relative
+            name = os.path.join(ASSETS_HTML.PATH, name)
+        translator.stylesheet.append(translator.stylesheet_call(name))
 
-class HtmlTranslator(DefaultHtmlWriter().translator_class):
+class HtmlTranslator(html4css1.HTMLTranslator): \
+      # pylint: disable=abstract-method
     JS = ASSETS_HTML.ALECTRYON_JS
     CSS = (*ASSETS_HTML.ALECTRYON_CSS, *ASSETS_HTML.DOCUTILS_CSS, *ASSETS_HTML.PYGMENTS_CSS)
     ADDITIONAL_HEADS = [ASSETS_HTML.IBM_PLEX_CDN, ASSETS_HTML.FIRA_CODE_CDN, *ADDITIONAL_HEADS]
@@ -567,17 +573,11 @@ class HtmlTranslator(DefaultHtmlWriter().translator_class):
     head_prefix_template = ('<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone"'
                             ' xml:lang="%(lang)s" lang="%(lang)s">\n<head>\n')
 
-    def stylesheet_call(self, name):
-        if self.settings.embed_stylesheet:
-            # Expand only if we're going to inline; otherwise keep relative
-            name = os.path.join(ASSETS_HTML.PATH, name)
-        return super().stylesheet_call(name)
-
     def __init__(self, document):
         document.settings.syntax_highlight = "short"
         document.settings.math_output = "MathJax " + self.MATHJAX_URL
         super().__init__(document)
-        self.stylesheet.extend(self.stylesheet_call(css) for css in self.CSS)
+        register_stylesheets(self, self.CSS)
         self.stylesheet.extend(self.JS_TEMPLATE.format(js) for js in self.JS)
         self.stylesheet.extend(hd + "\n" for hd in self.ADDITIONAL_HEADS)
         cls = wrap_classes(self.settings.webpage_style)
@@ -606,10 +606,10 @@ ALECTRYON_SETTINGS = [
       'validator': frontend.validate_boolean})
 ]
 
-class HtmlWriter(DefaultHtmlWriter):
+class HtmlWriter(html4css1.Writer):
     settings_spec = ('HTML-Specific Options', None,
                      (*ALECTRYON_SETTINGS,
-                      *DefaultHtmlWriter.settings_spec[-1]))
+                      *html4css1.Writer.settings_spec[-1]))
 
     def get_transforms(self):
         return super().get_transforms() + [AlectryonHTMLPostTransform]
@@ -618,21 +618,18 @@ class HtmlWriter(DefaultHtmlWriter):
         super().__init__(*args, **kwargs)
         self.translator_class = HtmlTranslator
 
-DefaultLatexWriter = get_writer_class('latex')
-
-class LatexTranslator(DefaultLatexWriter().translator_class):
+class LatexTranslator(latex2e.LaTeXTranslator): \
+      # pylint: disable=abstract-method
     STY = ASSETS_LATEX.ALECTRYON_STY + ASSETS_LATEX.PYGMENTS_STY
 
     def __init__(self, document):
-        document.settings.font_encoding = ''
-        document.settings.latex_preamble = ''
-        document.settings.stylesheet_path = ','.join(self.STY)
         super().__init__(document)
+        register_stylesheets(self, self.STY)
 
-class LatexWriter(DefaultLatexWriter):
+class LatexWriter(latex2e.Writer):
     settings_spec = ('Latex-Specific Options', None,
                      (*ALECTRYON_SETTINGS,
-                      *DefaultLatexWriter.settings_spec[-1]))
+                      *latex2e.Writer.settings_spec[-1]))
 
     def get_transforms(self):
         return super().get_transforms() + [AlectryonLatexPostTransform]

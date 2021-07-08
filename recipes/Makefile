@@ -77,6 +77,14 @@ sphinx/_build/html/index.html: sphinx/index.rst
 output/api.out: api.py
 	$(PYTHON) $< > $@
 
+# LaTeX → PDF
+output/latex.aux:
+	mkdir $@
+
+output/%.pdflatex.pdf: output/%.tex | latex.aux
+	pdflatex -output-directory=output/latex.aux -jobname=$*.pdflatex $<
+	mv output/latex.aux/$*.pdflatex.pdf $@
+
 output/alectryon%css output/alectryon%js: FORCE
 	cp --link --force $(patsubst %,../alectryon/assets/%,$(assets)) output/
 FORCE:
