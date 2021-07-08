@@ -216,7 +216,7 @@ class AlectryonTransform(Transform):
         pending.replace_self(io)
 
     def apply_coq(self):
-        pending_nodes = self.document.traverse(alectryon_pending)
+        pending_nodes = list(self.document.traverse(alectryon_pending))
         generator, annotated = self.annotate(pending_nodes)
         _alectryon_state(self.document).generator = generator
         for node, fragments in zip(pending_nodes, annotated):
