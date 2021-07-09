@@ -75,14 +75,14 @@ def compact_json_of_annotated(obj):
             return [encode(x) for x in obj]
         if isinstance(obj, dict):
             assert "_type" not in obj
-            return {k: encode(v) for k, v in obj.items()}
+            return {k: encode(v) for k, v in sorted(obj.items())}
         type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
         if type_name:
             key = pickle.dumps(obj)
             ref = obj_table.get(key)
             if ref is not None:
                 return {"&": ref}
-            d = {k: encode(v) for k, v in zip(obj._fields, obj)}
+            d = {k: encode(v) for k, v in sorted(obj._asdict().items())}
             d["_type"] = type_name
             obj_table[key] = len(obj_table)
             return d
@@ -103,7 +103,7 @@ def annotated_of_compact_json(js, copy=False):
                 obj = obj_table[ref]
                 return deepcopy(obj) if copy else obj
             type_name = js.pop("_type", None)
-            obj = {k: decode(v) for k, v in js.items()}
+            obj = {k: decode(v) for k, v in sorted(js.items())}
             if type_name:
                 obj = TYPE_OF_ALIASES[type_name](**obj)
                 obj_table.append(obj)
@@ -126,10 +126,10 @@ def deep_compact_json_of_annotated(obj):
         if isinstance(obj, list):
             return [encode(x) for x in obj]
         if isinstance(obj, dict):
-            return {k: encode(v) for k, v in obj.items()}
+            return {k: encode(v) for k, v in sorted(obj.items())}
         type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
         if type_name:
-            d = {k: encode(v) for k, v in zip(obj._fields, obj)}
+            d = {k: encode(v) for k, v in sorted(obj._asdict().items())}
             d["_type"] = type_name
             return d
         assert obj is None or isinstance(obj, (int, str))
@@ -153,7 +153,7 @@ def annotated_of_deep_compact_json(js, copy=False):
             return [decode(x) for x in js]
         if isinstance(js, dict):
             type_name = js.pop("_type", None)
-            obj = {k: decode(v) for k, v in js.items()}
+            obj = {k: decode(v) for k, v in sorted(js.items())}
             if type_name:
                 obj = TYPE_OF_ALIASES[type_name](**obj)
             return obj
