@@ -83,7 +83,7 @@ class SerAPI():
 
     @staticmethod
     def version_info(sertop_bin=SERTOP_BIN):
-        bs = check_output([sertop_bin, "--version"])
+        bs = check_output([SerAPI.resolve_sertop(sertop_bin), "--version"])
         return GeneratorInfo("Coq+SerAPI", bs.decode('ascii', 'ignore').strip())
 
     def __init__(self, args=(), # pylint: disable=dangerous-default-value
@@ -108,14 +108,18 @@ class SerAPI():
         if self.sertop:
             self.sertop.kill()
 
-    def reset(self):
-        path = which(self.sertop_bin)
+    @staticmethod
+    def resolve_sertop(sertop_bin):
+        path = which(sertop_bin)
         if path is None:
             msg = ("sertop not found (sertop_bin={});" +
                    " please run `opam install coq-serapi`")
-            raise ValueError(msg.format(self.sertop_bin))
+            raise ValueError(msg.format(sertop_bin))
+        return path
+
+    def reset(self):
         self.kill()
-        cmd = [path, *self.args]
+        cmd = [self.resolve_sertop(self.sertop_bin), *self.args]
         debug(" ".join(quote(s) for s in cmd), '# ')
         self.sertop = Popen(cmd, stdin=PIPE, stderr=stderr, stdout=PIPE)
 
