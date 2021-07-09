@@ -84,6 +84,48 @@ def annotated_of_json(js):
         return obj
     return js
 
+def compact_json_of_annotated(obj):
+    obj_table = []
+    def encode(obj):
+        if isinstance(obj, list):
+            return [encode(x) for x in obj]
+        if isinstance(obj, dict):
+            assert "_type" not in obj
+            return {k: encode(v) for k, v in obj.items()}
+        type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
+        if type_name:
+            try:
+                return {"&": obj_table.index(obj)}
+            except ValueError:
+                d = {k: encode(v) for k, v in zip(obj._fields, obj)}
+                d["_type"] = type_name
+                obj_table.append(obj)
+                return d
+        assert obj is None or isinstance(obj, (int, str))
+        return obj
+    return encode(obj)
+
+from copy import deepcopy
+
+def annotated_of_compact_json(js, copy=False):
+    obj_table = []
+    def decode(js):
+        if isinstance(js, list):
+            return [decode(x) for x in js]
+        if isinstance(js, dict):
+            ref = js.get("&")
+            if ref is not None:
+                obj = obj_table[ref]
+                return deepcopy(obj) if copy else obj
+            type_name = js.pop("_type", None)
+            obj = {k: decode(v) for k, v in js.items()}
+            if type_name:
+                obj = TYPE_OF_ALIASES[type_name](**obj)
+                obj_table.append(obj)
+            return obj
+        return js
+    return decode(js)
+
 def validate_inputs(annotated, reference):
     if isinstance(annotated, list):
         if not isinstance(reference, list):
