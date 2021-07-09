@@ -85,7 +85,8 @@ def annotated_of_json(js):
     return js
 
 def compact_json_of_annotated(obj):
-    obj_table = []
+    import pickle # use pickle to memoize unhashable types
+    obj_table = {}
     def encode(obj):
         if isinstance(obj, list):
             return [encode(x) for x in obj]
@@ -94,13 +95,14 @@ def compact_json_of_annotated(obj):
             return {k: encode(v) for k, v in obj.items()}
         type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
         if type_name:
-            try:
-                return {"&": obj_table.index(obj)}
-            except ValueError:
-                d = {k: encode(v) for k, v in zip(obj._fields, obj)}
-                d["_type"] = type_name
-                obj_table.append(obj)
-                return d
+            key = pickle.dumps(obj)
+            ref = obj_table.get(key)
+            if ref is not None:
+                return {"&": ref}
+            d = {k: encode(v) for k, v in zip(obj._fields, obj)}
+            d["_type"] = type_name
+            obj_table[key] = len(obj_table)
+            return d
         assert obj is None or isinstance(obj, (int, str))
         return obj
     return encode(obj)
