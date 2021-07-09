@@ -46,7 +46,7 @@ output/coqdoc.v.html: coqdoc.v | output
 
 # Coqdoc → HTML
 output/coqdoc.html: coqdoc.v | output
-	$(alectryon) $< --frontend coqdoc
+	$(alectryon) $< --frontend coqdoc --cache-directory output/
 
 # Coq+reST → HTML
 output/literate.html: literate.v | output
@@ -70,7 +70,7 @@ output/document.tex: document.v.rst | output
 output/hyps.tex: hyps.rst | output
 	$(alectryon) --backend xelatex $<
 
-# FIXME
+# TODO
 # output/mathjax.html: mathjax.rst | output
 # 	$(alectryon) --backend latex $<
 
