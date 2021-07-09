@@ -121,55 +121,55 @@ class DeduplicatingSerializer:
             return js
         return decode(js)
 
-
-def deep_compact_json_of_annotated(obj):
-    import pickle
-    obj_table = {}
+class FullyDeduplicatingSerializer:
+    """Like `DeduplicatingSerializer`, but also deduplicate basic types."""
+    @staticmethod
     def encode(obj):
-        key = pickle.dumps(obj)
-        ref = obj_table.get(key)
-        if ref is not None:
-            return {"&": ref}
-        val = _encode(obj)
-        obj_table[key] = len(obj_table)
-        return val
-    def _encode(obj):
-        if isinstance(obj, list):
-            return [encode(x) for x in obj]
-        if isinstance(obj, dict):
-            return {k: encode(v) for k, v in sorted(obj.items())}
-        type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
-        if type_name:
-            d = {k: encode(v) for k, v in sorted(obj._asdict().items())}
-            d["_type"] = type_name
-            return d
-        assert obj is None or isinstance(obj, (int, str))
-        return obj
-    return encode(obj)
-
-def annotated_of_deep_compact_json(js, copy=False):
-    obj_table = []
-    def decode(js):
-        ref = js.get("&") if isinstance(js, dict) else None
-        if ref is not None:
-            obj = obj_table[ref]
-            return deepcopy(obj) if copy else obj
-        obj = _decode(js)
-        obj_table.append(obj)
-        if obj == "sentence":
-            breakpoint()
-        return obj
-    def _decode(js):
-        if isinstance(js, list):
-            return [decode(x) for x in js]
-        if isinstance(js, dict):
-            type_name = js.pop("_type", None)
-            obj = {k: decode(v) for k, v in sorted(js.items())}
+        obj_table = {}
+        def encode(obj):
+            key = pickle.dumps(obj)
+            ref = obj_table.get(key)
+            if ref is not None:
+                return {"&": ref}
+            val = _encode(obj)
+            obj_table[key] = len(obj_table)
+            return val
+        def _encode(obj):
+            if isinstance(obj, list):
+                return [encode(x) for x in obj]
+            if isinstance(obj, dict):
+                return {k: encode(v) for k, v in sorted(obj.items())}
+            type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
             if type_name:
-                obj = TYPE_OF_ALIASES[type_name](**obj)
+                d = {k: encode(v) for k, v in sorted(obj._asdict().items())}
+                d["_type"] = type_name
+                return d
+            assert obj is None or isinstance(obj, (int, str))
             return obj
-        return js
-    return decode(js)
+        return encode(obj)
+
+    @staticmethod
+    def decode(js, copy=False):
+        obj_table = []
+        def decode(js):
+            ref = js.get("&") if isinstance(js, dict) else None
+            if ref is not None:
+                obj = obj_table[ref]
+                return deepcopy(obj) if copy else obj
+            obj = _decode(js)
+            obj_table.append(obj)
+            return obj
+        def _decode(js):
+            if isinstance(js, list):
+                return [decode(x) for x in js]
+            if isinstance(js, dict):
+                type_name = js.pop("_type", None)
+                obj = {k: decode(v) for k, v in sorted(js.items())}
+                if type_name:
+                    obj = TYPE_OF_ALIASES[type_name](**obj)
+                return obj
+            return js
+        return decode(js)
 
 def validate_inputs(annotated, reference):
     if isinstance(annotated, list):
