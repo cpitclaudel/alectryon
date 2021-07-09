@@ -318,8 +318,8 @@ def dump_html_standalone(snippets, fname, webpage_style,
     return doc.render(pretty=False)
 
 def prepare_json(obj):
-    from .json import json_of_annotated
-    return json_of_annotated(obj)
+    from .json import PlainSerializer
+    return PlainSerializer.encode(obj)
 
 def dump_json(js):
     from json import dumps

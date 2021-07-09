@@ -41,31 +41,34 @@ ALIASES_OF_TYPE = {
 
 TYPES = list(TYPE_OF_ALIASES.values())
 
-def json_of_annotated(obj):
-    if isinstance(obj, list):
-        return [json_of_annotated(x) for x in obj]
-    if isinstance(obj, dict):
-        assert "_type" not in obj
-        return {k: json_of_annotated(v) for k, v in obj.items()}
-    type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
-    if type_name:
-        d = {"_type": type_name} # Put _type first
-        for k, v in zip(obj._fields, obj):
-            d[k] = json_of_annotated(v)
-        return d
-    assert obj is None or isinstance(obj, (int, str))
-    return obj
-
-def annotated_of_json(js):
-    if isinstance(js, list):
-        return [annotated_of_json(x) for x in js]
-    if isinstance(js, dict):
-        obj = {k: annotated_of_json(v) for k, v in js.items()}
-        type_name = obj.pop("_type", None) # Avoid mutating `js`
+class PlainSerializer:
+    @staticmethod
+    def encode(obj):
+        if isinstance(obj, list):
+            return [PlainSerializer.encode(x) for x in obj]
+        if isinstance(obj, dict):
+            assert "_type" not in obj
+            return {k: PlainSerializer.encode(v) for k, v in obj.items()}
+        type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
         if type_name:
-            return TYPE_OF_ALIASES[type_name](**obj)
+            d = {"_type": type_name} # Put _type first
+            for k, v in zip(obj._fields, obj):
+                d[k] = PlainSerializer.encode(v)
+            return d
+        assert obj is None or isinstance(obj, (int, str))
         return obj
-    return js
+
+    @staticmethod
+    def decode(js):
+        if isinstance(js, list):
+            return [PlainSerializer.decode(x) for x in js]
+        if isinstance(js, dict):
+            obj = {k: PlainSerializer.decode(v) for k, v in js.items()}
+            type_name = obj.pop("_type", None) # Avoid mutating `js`
+            if type_name:
+                return TYPE_OF_ALIASES[type_name](**obj)
+            return obj
+        return js
 
 def compact_json_of_annotated(obj):
     import pickle # use pickle to memoize unhashable types
@@ -192,6 +195,7 @@ class FileCache(BaseCache):
     CACHE_VERSION = "1"
 
     def __init__(self, cache_root, doc_path, metadata):
+        self.serializer = PlainSerializer
         self.cache_root = path.realpath(cache_root)
         doc_root = path.commonpath((self.cache_root, path.realpath(doc_path)))
         self.cache_rel_file = path.relpath(doc_path, doc_root) + ".cache"
@@ -233,7 +237,7 @@ class FileCache(BaseCache):
     def get(self, chunks):
         if self.data is None or not self._validate(self.data, chunks):
             return None
-        return annotated_of_json(self.data.get("annotated"))
+        return self.serializer.decode(self.data.get("annotated"))
 
     @property
     def generator(self):
@@ -244,7 +248,7 @@ class FileCache(BaseCache):
             self.data = {"generator": generator,
                          "metadata": self.metadata,
                          "chunks": list(chunks),
-                         "annotated": json_of_annotated(annotated)}
+                         "annotated": self.serializer.encode(annotated)}
             json.dump(self.data, cache, indent=2)
 
 class DummyCache(BaseCache):

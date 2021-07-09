@@ -18,10 +18,10 @@ def api_annotate():
 
 def annotated_to_json():
     from alectryon.core import annotate
-    from alectryon.json import json_of_annotated
+    from alectryon.json import PlainSerializer
     annotated = annotate([r"Goal True /\ True. split. ", "all: eauto."],
                          ("-Q", "{},lib".format(libdir)))
-    print(json.dumps(json_of_annotated(annotated)))
+    print(json.dumps(PlainSerializer.encode(annotated)))
 
 JS = """
 [[{ "goals": [ { "hypotheses": [],
@@ -48,10 +48,10 @@ JS = """
 """
 
 def latex_of_movie():
-    from alectryon.json import annotated_of_json
+    from alectryon.json import PlainSerializer
     from alectryon.latex import LatexGenerator
     from alectryon.pygments import highlight_latex
-    annotated = annotated_of_json(json.loads(JS))
+    annotated = PlainSerializer.decode(json.loads(JS))
     for ltx in LatexGenerator(highlight_latex).gen(annotated):
         print("<latex>")
         print(ltx)
