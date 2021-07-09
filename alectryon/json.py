@@ -98,8 +98,22 @@ def validate_inputs(annotated, reference):
         return annotated.contents == reference
     return False
 
+class BaseCache:
+    def get(self, chunks):
+        raise NotImplementedError
 
-class FileCache:
+    def put(self, chunks, annotated, generator):
+        raise NotImplementedError
+
+    # LATER: pass a SerAPI instance instead of update_fn and generator
+    def update(self, chunks, update_fn, generator):
+        annotated = self.get(chunks)
+        if annotated is None:
+            annotated = update_fn(chunks)
+            self.put(chunks, annotated, generator)
+        return annotated
+
+class FileCache(BaseCache):
     CACHE_VERSION = "1"
 
     def __init__(self, cache_root, doc_path, metadata):
@@ -158,7 +172,7 @@ class FileCache:
                          "annotated": json_of_annotated(annotated)}
             json.dump(self.data, cache, indent=2)
 
-class DummyCache:
+class DummyCache(BaseCache):
     def __init__(self, *_args):
         self.generator = None
 

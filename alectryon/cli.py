@@ -59,9 +59,11 @@ def rst_to_coq(coq, fpath, point, marker):
     from .literate import rst2coq_marked
     return _catch_parsing_errors(fpath, rst2coq_marked, coq, point, marker)
 
-def annotate_chunks(chunks, sertop_args):
-    from .core import annotate
-    return annotate(chunks, sertop_args)
+def annotate_chunks(chunks, fpath, cache_directory, sertop_args):
+    from .core import SerAPI, annotate
+    from .json import Cache
+    cache = Cache(cache_directory, fpath, sertop_args)
+    return cache.update(chunks, lambda c: annotate(c, sertop_args), SerAPI.version_info())
 
 def register_docutils(v, sertop_args):
     from .docutils import setup, AlectryonTransform
