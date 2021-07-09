@@ -45,10 +45,11 @@ def json_of_annotated(obj):
     if isinstance(obj, list):
         return [json_of_annotated(x) for x in obj]
     if isinstance(obj, dict):
+        assert "_type" not in obj
         return {k: json_of_annotated(v) for k, v in obj.items()}
     type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
     if type_name:
-        d = {"_type": type_name}
+        d = {"_type": type_name} # Put _type first
         for k, v in zip(obj._fields, obj):
             d[k] = json_of_annotated(v)
         return d
@@ -76,12 +77,10 @@ def annotated_of_json(js):
     if isinstance(js, list):
         return [annotated_of_json(x) for x in js]
     if isinstance(js, dict):
-        type_name = js.get("_type")
-        type_constr = TYPE_OF_ALIASES.get(type_name)
         obj = {k: annotated_of_json(v) for k, v in js.items()}
-        if type_constr:
-            del obj["_type"]
-            return type_constr(**obj)
+        type_name = obj.pop("_type", None) # Avoid mutating `js`
+        if type_name:
+            return TYPE_OF_ALIASES[type_name](**obj)
         return obj
     return js
 
