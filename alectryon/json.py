@@ -171,6 +171,21 @@ class FullyDeduplicatingSerializer:
             return js
         return decode(js)
 
+from functools import wraps
+
+def deprecated(fn, old_name):
+    @wraps(fn)
+    def _fn(*args, **kwargs):
+        import warnings
+        MSG = "Function {} deprecated; use {} instead."
+        warnings.warn(MSG.format(old_name, fn.__name__),
+                      category=DeprecationWarning, stacklevel=2)
+        return fn(*args, **kwargs)
+    return _fn
+
+json_of_annotated = deprecated(PlainSerializer.encode, "json_of_annotated")
+annotated_of_json = deprecated(PlainSerializer.decode, "annotated_of_json")
+
 def validate_inputs(annotated, reference):
     if isinstance(annotated, list):
         if not isinstance(reference, list):
