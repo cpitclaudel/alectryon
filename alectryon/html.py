@@ -83,18 +83,16 @@ class HtmlGenerator:
     def gen_hyps(self, hyps):
         with tags.div(cls="goal-hyps"):
             for hyp in hyps:
-                with tags.div(cls="goal-hyp"):
-                    tags.span(", ".join(hyp.names), cls="hyp-names")
-                    with tags.span():
+                with tags.div():
+                    tags.var(", ".join(hyp.names))
+                    with tags.span(): # For alignment
                         if hyp.body:
-                            with tags.span(cls="hyp-body-block"):
-                                tags.span(":=", cls="hyp-punct")
-                                with tags.span(cls="hyp-body"):
-                                    self.highlight(hyp.body)
-                        with tags.span(cls="hyp-type-block"):
-                            tags.span(":", cls="hyp-punct")
-                            with tags.span(cls="hyp-type"):
-                                self.highlight(hyp.type)
+                            with tags.span(cls="hyp-body"):
+                                tags.b(":=")
+                                self.highlight(hyp.body)
+                        with tags.span(cls="hyp-type"):
+                            tags.b(":")
+                            self.highlight(hyp.type)
 
     def gen_goal(self, goal, toggle=None):
         """Serialize a goal to HTML."""

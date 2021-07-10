@@ -61,12 +61,11 @@ Then we set up MathJax to render the proofs properly (look at the page source to
    <script type="text/javascript">
      function addMathDelimiters() {
         // 1. Find all relevant Alectryon tags
-        var spans = document.querySelectorAll(".goal-conclusion .highlight, .goal-hyp .highlight");
+        var spans = document.querySelectorAll(".goal-conclusion .highlight, .goal-hyps > div .highlight");
 
         // 2. Wrap the contents of each in \(\) math delimiters
         spans.forEach(function (e) {
-            var math = document.createTextNode('\\[' + e.innerText + '\\]');
-            e.parentNode.replaceChild(math, e);
+            e.innerText = '\\[' + e.innerText + '\\]';
         });
      }
 
@@ -86,7 +85,7 @@ Then we set up MathJax to render the proofs properly (look at the page source to
    </script>
 
    <style type="text/css"> /* Override MathJax margins */
-       .hyp-type > *, .goal-conclusion > * {
+       .goal-conclusion .highlight > *, .goal-hyps > div .highlight > * {
            margin: 0 !important;
        }
    </style>

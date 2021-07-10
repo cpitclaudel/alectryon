@@ -312,7 +312,7 @@ In any case, make an exception for comments:
 .alectryon-io .alectryon-message,
 .alectryon-io .alectryon-goals,
 .alectryon-io .alectryon-goal,
-.alectryon-io .goal-hyp,
+.alectryon-io .goal-hyps > div,
 .alectryon-io .goal-conclusion {
     border-radius: 0.15em;
 }
@@ -343,33 +343,34 @@ In any case, make an exception for comments:
     padding-bottom: 0.5em;
 }
 
-.alectryon-io .goal-hyp,
+.alectryon-io .goal-hyps > div,
 .alectryon-io .goal-conclusion {
     background: #eeeeec;
     display: inline-block;
     padding: 0.15em 0.35em;
 }
 
-.alectryon-io .goal-hyp {
+.alectryon-io .goal-hyps > div {
     align-items: baseline;
     display: inline-flex;
     margin: 0.15em 0.25em;
 }
 
-.alectryon-io .hyp-names {
+.alectryon-io .goal-hyps > div > var {
     font-weight: 600;
+    font-style: unset;
     /* Shrink the list of names, but let it grow as long as space is available. */
     flex-basis: min-content;
     flex-grow: 1;
 }
 
-.alectryon-io .hyp-punct {
+.alectryon-io .goal-hyps > div b {
     font-weight: 600;
     margin: 0 0.5em;
 }
 
-.alectryon-io .hyp-body-block,
-.alectryon-io .hyp-type-block {
+.alectryon-io .hyp-body,
+.alectryon-io .hyp-type {
     display: flex;
     align-items: baseline;
 }
