@@ -1,4 +1,4 @@
-PYTHON ?= python3
+PYTHON ?= python3 -Wd # -X tracemalloc
 
 alectryon := $(PYTHON) ../alectryon.py --output-directory output --no-version-numbers --traceback
 minimal := $(PYTHON) -m alectryon.minimal

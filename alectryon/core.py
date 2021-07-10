@@ -107,6 +107,11 @@ class SerAPI():
     def kill(self):
         if self.sertop:
             self.sertop.kill()
+            try:
+                self.sertop.stdin.close()
+                self.sertop.stdout.close()
+            finally:
+                self.sertop.wait()
 
     @staticmethod
     def resolve_sertop(sertop_bin):
