@@ -85,16 +85,14 @@ class DeduplicatingSerializer:
             if isinstance(obj, list):
                 return [encode(x) for x in obj]
             if isinstance(obj, dict):
-                assert "_type" not in obj
+                assert "*" not in obj and "&" not in obj
                 return {k: encode(v) for k, v in sorted(obj.items())}
             type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
             if type_name:
                 key = pickle.dumps(obj)
-                ref = obj_table.get(key)
-                if ref is not None:
-                    return {"&": ref}
-                d = {k: encode(v) for k, v in sorted(obj._asdict().items())}
-                d["_type"] = type_name
+                if key in obj_table:
+                    return {"*": obj_table[key]}
+                d = {"&": type_name, "_": [encode(v) for v in obj]}
                 obj_table[key] = len(obj_table)
                 return d
             assert obj is None or isinstance(obj, (int, str))
@@ -108,16 +106,14 @@ class DeduplicatingSerializer:
             if isinstance(js, list):
                 return [decode(x) for x in js]
             if isinstance(js, dict):
-                ref = js.get("&")
-                if ref is not None:
-                    obj = obj_table[ref]
+                if "*" in js: # Pointer
+                    obj = obj_table[js["*"]]
                     return deepcopy(obj) if copy else obj
-                type_name = js.pop("_type", None)
-                obj = {k: decode(v) for k, v in sorted(js.items())}
-                if type_name:
-                    obj = TYPE_OF_ALIASES[type_name](**obj)
+                if "&" in js: # Reference
+                    obj = TYPE_OF_ALIASES[js["&"]](*(decode(v) for v in js["_"]))
                     obj_table.append(obj)
-                return obj
+                    return obj
+                return {k: decode(v) for k, v in sorted(js.items())}
             return js
         return decode(js)
 
@@ -130,7 +126,7 @@ class FullyDeduplicatingSerializer:
             key = pickle.dumps(obj)
             ref = obj_table.get(key)
             if ref is not None:
-                return {"&": ref}
+                return {"*": ref}
             val = _encode(obj)
             obj_table[key] = len(obj_table)
             return val
@@ -138,12 +134,11 @@ class FullyDeduplicatingSerializer:
             if isinstance(obj, list):
                 return [encode(x) for x in obj]
             if isinstance(obj, dict):
+                assert "*" not in obj and "&" not in obj
                 return {k: encode(v) for k, v in sorted(obj.items())}
             type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
             if type_name:
-                d = {k: encode(v) for k, v in sorted(obj._asdict().items())}
-                d["_type"] = type_name
-                return d
+                return {"&": type_name, "_": [encode(v) for v in obj]}
             assert obj is None or isinstance(obj, (int, str))
             return obj
         return encode(obj)
@@ -152,9 +147,8 @@ class FullyDeduplicatingSerializer:
     def decode(js, copy=False):
         obj_table = []
         def decode(js):
-            ref = js.get("&") if isinstance(js, dict) else None
-            if ref is not None:
-                obj = obj_table[ref]
+            if isinstance(js, dict) and "*" in js:
+                obj = obj_table[js["*"]]
                 return deepcopy(obj) if copy else obj
             obj = _decode(js)
             obj_table.append(obj)
@@ -163,11 +157,9 @@ class FullyDeduplicatingSerializer:
             if isinstance(js, list):
                 return [decode(x) for x in js]
             if isinstance(js, dict):
-                type_name = js.pop("_type", None)
-                obj = {k: decode(v) for k, v in sorted(js.items())}
-                if type_name:
-                    obj = TYPE_OF_ALIASES[type_name](**obj)
-                return obj
+                if "&" in js:
+                    return TYPE_OF_ALIASES[js["&"]](*(decode(v) for v in js["_"]))
+                return {k: decode(v) for k, v in sorted(js.items())}
             return js
         return decode(js)
 
