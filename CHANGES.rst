@@ -2,6 +2,15 @@
  Major changes
 ===============
 
+Unreleased
+==========
+
+Breaking changes
+----------------
+
+- Alectryon now generates simpler HTML markup for hypothesis blocks (may affect third-party
+  stylesheets).
+
 Version 1.2.1
 =============
 
