@@ -72,7 +72,6 @@ def register_docutils(v, sertop_args):
     return v
 
 def _gen_docutils(source, fpath,
-                  include_banner, include_vernums,
                   traceback, Parser, Reader, Writer,
                   settings_overrides):
     from docutils.core import publish_string
@@ -85,8 +84,6 @@ def _gen_docutils(source, fpath,
         'traceback': traceback,
         'embed_stylesheet': False,
         'stylesheet_path': None,
-        'alectryon_banner': include_banner,
-        'alectryon_vernums': include_vernums,
         'input_encoding': 'utf-8',
         'output_encoding': 'utf-8',
         **settings_overrides
@@ -104,7 +101,7 @@ def _gen_docutils(source, fpath,
         enable_exit_status=True).decode("utf-8")
 
 def gen_docutils(src, frontend, backend, fpath,
-                 webpage_style, include_banner, include_vernums,
+                 webpage_style, html_minification, include_banner, include_vernums,
                  assets, traceback):
     if frontend == "coq+rst":
         from .docutils import RSTCoqParser as Parser
@@ -115,23 +112,27 @@ def gen_docutils(src, frontend, backend, fpath,
     else:
         raise ValueError("Unsupported docutils frontend: {}".format(frontend))
 
+    settings_overrides = {
+        'alectryon_banner': include_banner,
+        'alectryon_vernums': include_vernums
+    }
+
     if backend == "webpage":
         from .docutils import HtmlTranslator, HtmlWriter as Writer
+        settings_overrides['alectryon_minification'] = html_minification
+        settings_overrides['webpage_style'] = webpage_style
         assets.extend(HtmlTranslator.JS + HtmlTranslator.CSS)
-        settings_overrides = {"webpage_style": webpage_style}
     elif backend in ("xelatex", "latex"):
         if backend == "xelatex":
             from .docutils import XeLatexTranslator as Translator, XeLatexWriter as Writer
         else:
             from .docutils import LatexTranslator as Translator, LatexWriter as Writer
         assets.extend(Translator.STY)
-        settings_overrides = {}
     else:
         raise ValueError("Unsupported docutils backend: {}".format(backend))
 
-    return _gen_docutils(src, fpath, include_banner, include_vernums,
-                         traceback, Parser, Reader, Writer,
-                         settings_overrides)
+    return _gen_docutils(src, fpath, traceback,
+                         Parser, Reader, Writer, settings_overrides)
 
 def _docutils_cmdline_html(description, Reader, Parser):
     import locale
@@ -188,10 +189,11 @@ def apply_transforms(annotated):
     for chunk in annotated:
         yield default_transform(chunk)
 
-def gen_html_snippets(annotated, fname):
+def gen_html_snippets(annotated, fname, html_minification):
     from .html import HtmlGenerator
     from .pygments import highlight_html
-    return HtmlGenerator(highlight_html, _scrub_fname(fname)).gen(annotated)
+    fname = _scrub_fname(fname)
+    return HtmlGenerator(highlight_html, fname, html_minification).gen(annotated)
 
 def gen_latex_snippets(annotated):
     from .latex import LatexGenerator
@@ -232,13 +234,14 @@ def _gen_coqdoc_html(coqdoc_fragments):
         raise AssertionError()
     return docs
 
-def _gen_html_snippets_with_coqdoc(annotated, fname):
+def _gen_html_snippets_with_coqdoc(annotated, fname, html_minification):
     from dominate.util import raw
     from .html import HtmlGenerator
     from .pygments import highlight_html
     from .transforms import isolate_coqdoc, default_transform, CoqdocFragment
 
-    writer = HtmlGenerator(highlight_html, _scrub_fname(fname))
+    fname = _scrub_fname(fname)
+    writer = HtmlGenerator(highlight_html, fname, html_minification)
 
     parts = [part for fragments in annotated
              for part in isolate_coqdoc(fragments)]
@@ -254,10 +257,10 @@ def _gen_html_snippets_with_coqdoc(annotated, fname):
             fragments = default_transform(part.fragments)
             yield writer.gen_fragments(fragments)
 
-def gen_html_snippets_with_coqdoc(annotated, html_classes, fname):
+def gen_html_snippets_with_coqdoc(annotated, html_classes, fname, html_minification):
     html_classes.append("coqdoc")
     # ‘return’ instead of ‘yield from’ to update html_classes eagerly
-    return _gen_html_snippets_with_coqdoc(annotated, fname)
+    return _gen_html_snippets_with_coqdoc(annotated, fname, html_minification)
 
 def copy_assets(state, assets, copy_fn, output_directory):
     from .html import ASSETS
@@ -278,14 +281,14 @@ def copy_assets(state, assets, copy_fn, output_directory):
     return state
 
 def dump_html_standalone(snippets, fname, webpage_style,
-                         include_banner, include_vernums,
+                         html_minification, include_banner, include_vernums,
                          assets, html_classes):
     from dominate import tags, document
     from dominate.util import raw
     from . import GENERATOR
     from .core import SerAPI
     from .pygments import HTML_FORMATTER
-    from .html import ASSETS, ADDITIONAL_HEADS, gen_banner, wrap_classes
+    from .html import ASSETS, ADDITIONAL_HEADS, JS_UNMINIFY, gen_banner, wrap_classes
 
     doc = document(title=fname)
     doc.set_attribute("class", "alectryon-standalone")
@@ -295,6 +298,8 @@ def dump_html_standalone(snippets, fname, webpage_style,
 
     for hd in ADDITIONAL_HEADS:
         doc.head.add(raw(hd))
+    if html_minification:
+        doc.head.add(raw(JS_UNMINIFY))
     for css in ASSETS.ALECTRYON_CSS:
         doc.head.add(tags.link(rel="stylesheet", href=css))
     for link in (ASSETS.IBM_PLEX_CDN, ASSETS.FIRA_CODE_CDN):
@@ -307,6 +312,9 @@ def dump_html_standalone(snippets, fname, webpage_style,
 
     pygments_css = HTML_FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))
+
+    if html_minification:
+        html_classes.append("minified")
 
     cls = wrap_classes(webpage_style, *html_classes)
     root = doc.body.add(tags.article(cls=cls))
@@ -602,6 +610,15 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""")
     html_out.add_argument("--webpage-style", default="centered",
                           choices=WEBPAGE_STYLE_CHOICES,
                           help=WEBPAGE_STYLE_HELP)
+
+    HTML_MINIFICATION_HELP = (
+        "Minify HTML files using backreferences for repeated content. "
+        "(Backreferences are automatically expanded on page load,"
+        " using a very small amount of JavaScript code.)"
+    )
+    html_out.add_argument("--html-minification", action='store_true',
+                          default=False,
+                          help=HTML_MINIFICATION_HELP)
 
     subp = parser.add_argument_group("SerAPI process configuration")
 

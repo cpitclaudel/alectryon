@@ -76,10 +76,8 @@ from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
 from docutils.writers import html4css1, latex2e, xetex
 
-from . import transforms
+from . import transforms, html, latex
 from .core import annotate, SerAPI
-from .html import ADDITIONAL_HEADS, HtmlGenerator, gen_banner, wrap_classes, ASSETS as ASSETS_HTML
-from .latex import LatexGenerator, ASSETS as ASSETS_LATEX
 from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
@@ -281,9 +279,9 @@ class AlectryonPostTransform(OneTimeTransform):
         formats = set(self.document.transformer.components['writer'].supported)
         if 'html' in formats:
             gensym_stem = self.document_id(self.document)
-            return "html", HtmlGenerator(highlight_html, gensym_stem)
+            return "html", html.HtmlGenerator(highlight_html, gensym_stem)
         if {'latex', 'xelatex', 'lualatex'} & formats:
-            return "latex", LatexGenerator(highlight_latex)
+            return "latex", latex.LatexGenerator(highlight_latex)
         raise NotImplementedError("Unknown output format")
 
     def _apply(self, **_kwargs):
@@ -569,18 +567,18 @@ def register_stylesheets(translator, stylesheets):
     for name in stylesheets:
         if translator.settings.embed_stylesheet:
             # Expand only if we're going to inline; otherwise keep relative
-            name = os.path.join(ASSETS_HTML.PATH, name)
+            name = os.path.join(html.ASSETS.PATH, name)
         translator.stylesheet.append(translator.stylesheet_call(name))
 
 class HtmlTranslator(html4css1.HTMLTranslator): \
       # pylint: disable=abstract-method
-    JS = ASSETS_HTML.ALECTRYON_JS
-    CSS = (*ASSETS_HTML.ALECTRYON_CSS,
-           *ASSETS_HTML.DOCUTILS_CSS,
-           *ASSETS_HTML.PYGMENTS_CSS)
-    ADDITIONAL_HEADS = [ASSETS_HTML.IBM_PLEX_CDN,
-                        ASSETS_HTML.FIRA_CODE_CDN,
-                        *ADDITIONAL_HEADS]
+    JS = html.ASSETS.ALECTRYON_JS
+    CSS = (*html.ASSETS.ALECTRYON_CSS,
+           *html.ASSETS.DOCUTILS_CSS,
+           *html.ASSETS.PYGMENTS_CSS)
+    ADDITIONAL_HEADS = [html.ASSETS.IBM_PLEX_CDN,
+                        html.ASSETS.FIRA_CODE_CDN,
+                        *html.ADDITIONAL_HEADS]
 
     JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>\n'
     MATHJAX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js'
@@ -597,12 +595,14 @@ class HtmlTranslator(html4css1.HTMLTranslator): \
         register_stylesheets(self, self.CSS)
         self.stylesheet.extend(self.JS_TEMPLATE.format(js) for js in self.JS)
         self.stylesheet.extend(hd + "\n" for hd in self.ADDITIONAL_HEADS)
-        cls = wrap_classes(self.settings.webpage_style)
+        cls = html.wrap_classes(self.settings.webpage_style)
         self.body_prefix.append('<div class="{}">'.format(cls))
         if self.settings.alectryon_banner:
             generator = _alectryon_state(document).generator
             include_vernums = document.settings.alectryon_vernums
-            self.body_prefix.append(gen_banner(generator, include_vernums))
+            self.body_prefix.append(html.gen_banner(generator, include_vernums))
+        if self.settings.alectryon_minification:
+            self.stylesheet.extend(html.JS_UNMINIFY + "\n")
         self.body_suffix.insert(0, '</div>')
 
 ALECTRYON_SETTINGS = (
@@ -611,6 +611,11 @@ ALECTRYON_SETTINGS = (
      {"choices": ("centered", "floating", "windowed"),
       "dest": "webpage_style",
       "default": "centered", "metavar": "STYLE"}),
+    ("Minify HTML files",
+     ["--html-minification"],
+     {'default': False, 'action': 'store_true',
+      'dest': "alectryon_minification",
+      'validator': frontend.validate_boolean}),
     ("Omit Alectryon's explanatory header",
      ["--no-header"],
      {'default': True, 'action': 'store_false',
@@ -635,7 +640,7 @@ class HtmlWriter(html4css1.Writer):
 def make_LatexTranslator(base):
     class Translator(base): \
           # pylint: disable=abstract-method
-        STY = ASSETS_LATEX.ALECTRYON_STY + ASSETS_LATEX.PYGMENTS_STY
+        STY = latex.ASSETS.ALECTRYON_STY + latex.ASSETS.PYGMENTS_STY
 
         def __init__(self, document, *args, **kwargs):
             super().__init__(document, *args, **kwargs)
