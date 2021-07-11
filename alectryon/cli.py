@@ -531,10 +531,9 @@ def build_parser():
     parser = argparse.ArgumentParser(description="""\
 Annotate segments of Coq code with responses and goals.
 Take input in Coq, reStructuredText, or JSON format \
-and produce reStructuredText, HTML, or JSON output.""")
+and produce reStructuredText, HTML, LaTeX, or JSON output.""")
 
-    INPUT_HELP = "Configure the input."
-    out = parser.add_argument_group("Input arguments", INPUT_HELP)
+    out = parser.add_argument_group("Input configuration")
 
     INPUT_FILES_HELP = "Input files"
     parser.add_argument("input", nargs="+", help=INPUT_FILES_HELP)
@@ -551,8 +550,7 @@ and produce reStructuredText, HTML, or JSON output.""")
                      help=FRONTEND_HELP)
 
 
-    OUTPUT_HELP = "Configure the output."
-    out = parser.add_argument_group("Output arguments", OUTPUT_HELP)
+    out = parser.add_argument_group("Output configuration")
 
     BACKEND_HELP = "Choose a backend. Supported: "
     BACKEND_HELP += "; ".join(
@@ -563,47 +561,49 @@ and produce reStructuredText, HTML, or JSON output.""")
                      help=BACKEND_HELP)
 
     OUT_FILE_HELP = "Set the output file (default: computed based on INPUT)."
-    parser.add_argument("-o", "--output", default=None,
-                        help=OUT_FILE_HELP)
+    out.add_argument("-o", "--output", default=None,
+                     help=OUT_FILE_HELP)
 
     OUT_DIR_HELP = "Set the output directory (default: same as each INPUT)."
-    parser.add_argument("--output-directory", default=None,
-                        help=OUT_DIR_HELP)
+    out.add_argument("--output-directory", default=None,
+                     help=OUT_DIR_HELP)
 
     COPY_ASSETS_HELP = ("Chose the method to use to copy assets " +
                         "along the generated file(s) when creating webpages.")
-    parser.add_argument("--copy-assets", choices=list(COPY_FUNCTIONS.keys()),
-                        default="copy", dest="copy_fn",
-                        help=COPY_ASSETS_HELP)
+    out.add_argument("--copy-assets", choices=list(COPY_FUNCTIONS.keys()),
+                     default="copy", dest="copy_fn",
+                     help=COPY_ASSETS_HELP)
 
-    CACHE_DIRECTORY_HELP = ("Cache Coq's output in DIRECTORY.")
-    parser.add_argument("--cache-directory", default=None, metavar="DIRECTORY",
-                        help=CACHE_DIRECTORY_HELP)
+    MARK_POINT_HELP = "Mark a point in the output with a given marker."
+    out.add_argument("--mark-point", nargs=2, default=(None, None),
+                     metavar=("POINT", "MARKER"),
+                     help=MARK_POINT_HELP)
 
     NO_HEADER_HELP = "Do not insert a header with usage instructions in webpages."
-    parser.add_argument("--no-header", action='store_false',
-                        dest="include_banner", default="True",
-                        help=NO_HEADER_HELP)
+    out.add_argument("--no-header", action='store_false',
+                     dest="include_banner", default="True",
+                     help=NO_HEADER_HELP)
 
     NO_VERSION_NUMBERS = "Omit version numbers in meta tags and headers."
-    parser.add_argument("--no-version-numbers", action='store_false',
-                        dest="include_vernums", default=True,
-                        help=NO_VERSION_NUMBERS)
+    out.add_argument("--no-version-numbers", action='store_false',
+                     dest="include_vernums", default=True,
+                     help=NO_VERSION_NUMBERS)
+
+    cache_out = parser.add_argument_group("Cache configuration")
+
+    CACHE_DIRECTORY_HELP = ("Cache prover output in DIRECTORY.")
+    cache_out.add_argument("--cache-directory", default=None, metavar="DIRECTORY",
+                           help=CACHE_DIRECTORY_HELP)
+
+    html_out = parser.add_argument_group("HTML output configuration")
 
     WEBPAGE_STYLE_HELP = "Choose a style for standalone webpages."
     WEBPAGE_STYLE_CHOICES = ("centered", "floating", "windowed")
-    parser.add_argument("--webpage-style", default="centered",
-                        choices=WEBPAGE_STYLE_CHOICES,
-                        help=WEBPAGE_STYLE_HELP)
+    html_out.add_argument("--webpage-style", default="centered",
+                          choices=WEBPAGE_STYLE_CHOICES,
+                          help=WEBPAGE_STYLE_HELP)
 
-    MARK_POINT_HELP = "Mark a point in the output with a given marker."
-    parser.add_argument("--mark-point", nargs=2, default=(None, None),
-                        metavar=("POINT", "MARKER"),
-                        help=MARK_POINT_HELP)
-
-
-    SUBP_HELP = "Pass arguments to the SerAPI process"
-    subp = parser.add_argument_group("Subprocess arguments", SUBP_HELP)
+    subp = parser.add_argument_group("SerAPI process configuration")
 
     SERTOP_ARGS_HELP = "Pass a single argument to SerAPI (e.g. -Q dir,lib)."
     subp.add_argument("--sertop-arg", dest="sertop_args",
@@ -626,17 +626,19 @@ and produce reStructuredText, HTML, or JSON output.""")
                       metavar=("DIR", "COQDIR"), nargs=2, action="append",
                       default=[], help=R_HELP)
 
+    debug = parser.add_argument_group("Debugging options")
+
     EXPECT_UNEXPECTED_HELP = "Ignore unexpected output from SerAPI"
-    parser.add_argument("--expect-unexpected", action="store_true",
-                        default=False, help=EXPECT_UNEXPECTED_HELP)
+    debug.add_argument("--expect-unexpected", action="store_true",
+                       default=False, help=EXPECT_UNEXPECTED_HELP)
 
     DEBUG_HELP = "Print communications with prover process."
-    parser.add_argument("--debug", action="store_true",
-                        default=False, help=DEBUG_HELP)
+    debug.add_argument("--debug", action="store_true",
+                       default=False, help=DEBUG_HELP)
 
     TRACEBACK_HELP = "Print error traces."
-    parser.add_argument("--traceback", action="store_true",
-                        default=False, help=TRACEBACK_HELP)
+    debug.add_argument("--traceback", action="store_true",
+                       default=False, help=TRACEBACK_HELP)
 
     return parser
 
