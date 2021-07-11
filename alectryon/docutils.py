@@ -66,15 +66,17 @@ side, and a doctree-resolved event on the Sphinx side.
 
 import re
 import os.path
+from collections import namedtuple
 
 import docutils
-from docutils import nodes, frontend
+import docutils.frontend
+from docutils import nodes
 
 from docutils.parsers.rst import directives, roles, Directive
 from docutils.parsers.rst.directives.body import Sidebar
 from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
-from docutils.writers import html4css1, latex2e, xetex
+from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import transforms, html, latex
 from .core import annotate, SerAPI
@@ -563,92 +565,107 @@ class RSTCoqStandaloneReader(Reader):
 # Writer
 # ------
 
-def register_stylesheets(translator, stylesheets):
+def register_stylesheets(translator, stylesheets, assets_path):
     for name in stylesheets:
         if translator.settings.embed_stylesheet:
             # Expand only if we're going to inline; otherwise keep relative
-            name = os.path.join(html.ASSETS.PATH, name)
+            name = os.path.join(assets_path, name)
         translator.stylesheet.append(translator.stylesheet_call(name))
 
-class HtmlTranslator(html4css1.HTMLTranslator): \
-      # pylint: disable=abstract-method
-    JS = html.ASSETS.ALECTRYON_JS
-    CSS = (*html.ASSETS.ALECTRYON_CSS,
-           *html.ASSETS.DOCUTILS_CSS,
-           *html.ASSETS.PYGMENTS_CSS)
-    ADDITIONAL_HEADS = [html.ASSETS.IBM_PLEX_CDN,
-                        html.ASSETS.FIRA_CODE_CDN,
-                        *html.ADDITIONAL_HEADS]
+def make_HtmlTranslator(base):
+    class Translator(base):
+        JS = html.ASSETS.ALECTRYON_JS
+        CSS = (*html.ASSETS.ALECTRYON_CSS,
+               *html.ASSETS.DOCUTILS_CSS,
+               *html.ASSETS.PYGMENTS_CSS)
+        ADDITIONAL_HEADS = [html.ASSETS.IBM_PLEX_CDN,
+                            html.ASSETS.FIRA_CODE_CDN,
+                            *html.ADDITIONAL_HEADS]
 
-    JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>\n'
-    MATHJAX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js'
-    mathjax_script = '<script type="text/javascript" defer src="%s"></script>\n'
+        ASSETS = JS + CSS
+        ASSETS_PATH = html.ASSETS.PATH
 
-    head_prefix_template = \
-        '<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone"' \
-        ' xml:lang="%(lang)s" lang="%(lang)s">\n<head>\n'
+        JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>\n'
+        MATHJAX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js'
+        mathjax_script = '<script type="text/javascript" defer src="%s"></script>\n'
 
-    def __init__(self, document):
-        document.settings.syntax_highlight = "short"
-        document.settings.math_output = "MathJax " + self.MATHJAX_URL
-        super().__init__(document)
-        register_stylesheets(self, self.CSS)
-        self.stylesheet.extend(self.JS_TEMPLATE.format(js) for js in self.JS)
-        self.stylesheet.extend(hd + "\n" for hd in self.ADDITIONAL_HEADS)
-        cls = html.wrap_classes(self.settings.webpage_style)
-        self.body_prefix.append('<div class="{}">'.format(cls))
-        if self.settings.alectryon_banner:
-            generator = _alectryon_state(document).generator
-            include_vernums = document.settings.alectryon_vernums
-            self.body_prefix.append(html.gen_banner(generator, include_vernums))
-        if self.settings.alectryon_minification:
-            self.stylesheet.extend(html.JS_UNMINIFY + "\n")
-        self.body_suffix.insert(0, '</div>')
+        head_prefix_template = \
+            '<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone"' \
+            ' xml:lang="%(lang)s" lang="%(lang)s">\n<head>\n'
+
+        def __init__(self, document):
+            document.settings.syntax_highlight = "short"
+            document.settings.math_output = "MathJax " + self.MATHJAX_URL
+            super().__init__(document)
+            register_stylesheets(self, self.CSS, self.ASSETS_PATH)
+            self.stylesheet.extend(self.JS_TEMPLATE.format(js) for js in self.JS)
+            self.stylesheet.extend(hd + "\n" for hd in self.ADDITIONAL_HEADS)
+            cls = html.wrap_classes(self.settings.alectryon_webpage_style)
+            self.body_prefix.append('<div class="{}">'.format(cls))
+            if self.settings.alectryon_banner:
+                generator = _alectryon_state(document).generator
+                include_vernums = document.settings.alectryon_vernums
+                self.body_prefix.append(html.gen_banner(generator, include_vernums))
+            if self.settings.alectryon_minification:
+                self.stylesheet.extend(html.JS_UNMINIFY + "\n")
+            self.body_suffix.insert(0, '</div>')
+    return Translator
+
+HtmlTranslator = make_HtmlTranslator(html4css1.HTMLTranslator)
+Html5Translator = make_HtmlTranslator(html5_polyglot.HTMLTranslator)
 
 ALECTRYON_SETTINGS = (
     ("Choose an Alectryon webpage style",
      ["--webpage-style"],
      {"choices": ("centered", "floating", "windowed"),
-      "dest": "webpage_style",
+      "dest": "alectryon_webpage_style",
       "default": "centered", "metavar": "STYLE"}),
     ("Minify HTML files",
      ["--html-minification"],
      {'default': False, 'action': 'store_true',
       'dest': "alectryon_minification",
-      'validator': frontend.validate_boolean}),
+      'validator': docutils.frontend.validate_boolean}),
     ("Omit Alectryon's explanatory header",
      ["--no-header"],
      {'default': True, 'action': 'store_false',
       'dest': "alectryon_banner",
-      'validator': frontend.validate_boolean}),
+      'validator': docutils.frontend.validate_boolean}),
     ("Omit Alectryon's version info",
      ["--no-version-numbers"],
      {'default': True, 'action': 'store_false',
       'dest': "alectryon_vernums",
-      'validator': frontend.validate_boolean})
+      'validator': docutils.frontend.validate_boolean})
 )
 
-class HtmlWriter(html4css1.Writer):
-    settings_spec = (html4css1.Writer.settings_spec +
-                     ('Alectryon HTML writer options',
-                      None, ALECTRYON_SETTINGS))
+def make_HtmlWriter(base, translator):
+    class Writer(base):
+        settings_spec = (base.settings_spec +
+                         ('Alectryon HTML writer options',
+                          None, ALECTRYON_SETTINGS))
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.translator_class = HtmlTranslator
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.translator_class = translator
+    return Writer
+
+HtmlWriter = make_HtmlWriter(html4css1.Writer, HtmlTranslator)
+Html5Writer = make_HtmlWriter(html5_polyglot.Writer, Html5Translator)
 
 def make_LatexTranslator(base):
-    class Translator(base): \
-          # pylint: disable=abstract-method
+    class Translator(base):
         STY = latex.ASSETS.ALECTRYON_STY + latex.ASSETS.PYGMENTS_STY
+
+        ASSETS = STY
+        ASSETS_PATH = latex.ASSETS.PATH
 
         def __init__(self, document, *args, **kwargs):
             super().__init__(document, *args, **kwargs)
-            register_stylesheets(self, self.STY)
+            register_stylesheets(self, self.STY, self.ASSETS_PATH)
     return Translator
 
 LatexTranslator = make_LatexTranslator(latex2e.LaTeXTranslator)
 XeLatexTranslator = make_LatexTranslator(xetex.XeLaTeXTranslator)
+LuaLatexTranslator = make_LatexTranslator(xetex.XeLaTeXTranslator) # Same translator
 
 def make_LatexWriter(base, translator_class):
     class Writer(base):
@@ -659,6 +676,41 @@ def make_LatexWriter(base, translator_class):
 
 LatexWriter = make_LatexWriter(latex2e.Writer, LatexTranslator)
 XeLatexWriter = make_LatexWriter(xetex.Writer, XeLatexTranslator)
+LuaLatexWriter = make_LatexWriter(xetex.Writer, LuaLatexTranslator) # Same writer
+
+Pipeline = namedtuple("Pipeline", "parser reader translator writer")
+
+FRONTENDS = {
+    "coq+rst": (RSTCoqParser, RSTCoqStandaloneReader),
+    "rst": (docutils.parsers.rst.Parser, docutils.readers.standalone.Reader)
+}
+
+BACKENDS = {
+    'webpage': {
+        'html4': (HtmlTranslator, HtmlWriter),
+        'html5': (Html5Translator, Html5Writer),
+    },
+    'latex': {
+        'pdflatex': (LatexTranslator, LatexWriter),
+        'xelatex': (XeLatexTranslator, XeLatexWriter),
+        'lualatex': (LuaLatexTranslator, LuaLatexWriter),
+    }
+}
+
+def get_pipeline(frontend, backend, html_dialect, latex_dialect):
+    if frontend not in FRONTENDS:
+        raise ValueError("Unsupported docutils frontend: {}".format(frontend))
+
+    if backend not in BACKENDS:
+        raise ValueError("Unsupported docutils backend: {}".format(backend))
+
+    dialect = {"webpage": html_dialect, "latex": latex_dialect}[backend]
+    if dialect not in BACKENDS[backend]:
+        raise ValueError("Unsupported {} dialect: {}".format(backend, latex_dialect))
+
+    parser, reader = FRONTENDS[frontend]
+    translator, writer = BACKENDS[backend][dialect]
+    return Pipeline(parser, reader, translator, writer)
 
 # Entry points
 # ============

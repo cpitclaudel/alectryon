@@ -68,7 +68,7 @@ output/mathjax.html: mathjax.rst | output
 output/document.tex: document.v.rst | output
 	$(alectryon) --backend latex $<
 output/hyps.tex: hyps.rst | output
-	$(alectryon) --backend xelatex $<
+	$(alectryon) --backend latex --latex-dialect xelatex $<
 
 # TODO
 # output/mathjax.html: mathjax.rst | output

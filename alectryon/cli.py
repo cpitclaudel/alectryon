@@ -101,38 +101,24 @@ def _gen_docutils(source, fpath,
         enable_exit_status=True).decode("utf-8")
 
 def gen_docutils(src, frontend, backend, fpath,
+                 html_dialect, latex_dialect,
                  webpage_style, html_minification, include_banner, include_vernums,
                  assets, traceback):
-    if frontend == "coq+rst":
-        from .docutils import RSTCoqParser as Parser
-        from .docutils import RSTCoqStandaloneReader as Reader
-    elif frontend == "rst":
-        from docutils.parsers.rst import Parser
-        from docutils.readers.standalone import Reader
-    else:
-        raise ValueError("Unsupported docutils frontend: {}".format(frontend))
+    from .docutils import get_pipeline
+
+    pipeline = get_pipeline(frontend, backend, html_dialect, latex_dialect)
+    assets.extend(pipeline.translator.ASSETS)
 
     settings_overrides = {
         'alectryon_banner': include_banner,
-        'alectryon_vernums': include_vernums
+        'alectryon_vernums': include_vernums,
+        'alectryon_minification': html_minification,
+        'alectryon_webpage_style': webpage_style,
     }
 
-    if backend == "webpage":
-        from .docutils import HtmlTranslator, HtmlWriter as Writer
-        settings_overrides['alectryon_minification'] = html_minification
-        settings_overrides['webpage_style'] = webpage_style
-        assets.extend(HtmlTranslator.JS + HtmlTranslator.CSS)
-    elif backend in ("xelatex", "latex"):
-        if backend == "xelatex":
-            from .docutils import XeLatexTranslator as Translator, XeLatexWriter as Writer
-        else:
-            from .docutils import LatexTranslator as Translator, LatexWriter as Writer
-        assets.extend(Translator.STY)
-    else:
-        raise ValueError("Unsupported docutils backend: {}".format(backend))
-
     return _gen_docutils(src, fpath, traceback,
-                         Parser, Reader, Writer, settings_overrides)
+                         pipeline.parser, pipeline.reader, pipeline.writer,
+                         settings_overrides)
 
 def _docutils_cmdline_html(description, Reader, Parser):
     import locale
@@ -619,6 +605,20 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""")
     html_out.add_argument("--html-minification", action='store_true',
                           default=False,
                           help=HTML_MINIFICATION_HELP)
+
+    HTML_DIALECT_HELP = "Choose which HTML dialect to use."
+    HTML_DIALECT_CHOICES = ("html4", "html5")
+    html_out.add_argument("--html-dialect", default="html4",
+                          choices=HTML_DIALECT_CHOICES,
+                          help=HTML_DIALECT_HELP)
+
+    latex_out = parser.add_argument_group("LaTeX output configuration")
+
+    LATEX_DIALECT_HELP = "Choose which LaTeX dialect to use."
+    LATEX_DIALECT_CHOICES = ("pdflatex", "xelatex", "lualatex")
+    latex_out.add_argument("--latex-dialect", default="pdflatex",
+                           choices=LATEX_DIALECT_CHOICES,
+                           help=LATEX_DIALECT_HELP)
 
     subp = parser.add_argument_group("SerAPI process configuration")
 
