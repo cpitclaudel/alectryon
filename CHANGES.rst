@@ -16,7 +16,7 @@ Unreleased
 Breaking changes
 ----------------
 
-- Alectryon now generates simpler HTML markup for hypothesis blocks (may affect third-party stylesheets).  [59563f1]
+- The HTML markup for ``alectryon-io`` blocks has been simplified to save space in generated files (may affect third-party stylesheets). [59563f1]
 
 - ``json.Cache`` in module ``alectryon.json`` now takes arbitrary ``metadata`` instead of ``sertop_args``. [56ca103]
 

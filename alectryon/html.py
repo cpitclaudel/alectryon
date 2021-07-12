@@ -174,8 +174,8 @@ class HtmlGenerator:
 
     def gen_output(self, fr):
         # Using <small> improves rendering in RSS feeds
-        wrapper = tags.div(cls="alectryon-output-sticky-wrapper")
-        with tags.small(cls="alectryon-output").add(wrapper):
+        sticky_wrapper = tags.div()
+        with tags.small(cls="alectryon-output").add(sticky_wrapper):
             for output in fr.outputs:
                 if isinstance(output, Messages):
                     assert output.messages, "transforms.commit_io_annotations"
