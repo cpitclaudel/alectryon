@@ -71,6 +71,7 @@ def register_docutils(v, args):
     docutils.AlectryonTransform.SERTOP_ARGS = args.sertop_args
     docutils.CACHE_DIRECTORY = args.cache_directory
     docutils.CACHE_COMPRESSION = args.cache_compression
+    docutils.HTML_MINIFICATION = args.html_minification
     docutils.setup()
     return v
 
@@ -105,7 +106,7 @@ def _gen_docutils(source, fpath,
 
 def gen_docutils(src, frontend, backend, fpath,
                  html_dialect, latex_dialect,
-                 webpage_style, html_minification, include_banner, include_vernums,
+                 webpage_style, include_banner, include_vernums,
                  assets, traceback):
     from .docutils import get_pipeline
 
@@ -115,7 +116,6 @@ def gen_docutils(src, frontend, backend, fpath,
     settings_overrides = {
         'alectryon_banner': include_banner,
         'alectryon_vernums': include_vernums,
-        'alectryon_minification': html_minification,
         'alectryon_webpage_style': webpage_style,
     }
 

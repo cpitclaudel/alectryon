@@ -119,6 +119,9 @@ CACHE_COMPRESSION = None
 """Which compression to use for cache files.
 See the documentation of --cache-compression."""
 
+HTML_MINIFICATION = False
+"""Whether to minify generated HTML files."""
+
 # LATER: dataclass
 class AlectryonState:
     def __init__(self):
@@ -286,7 +289,8 @@ class AlectryonPostTransform(OneTimeTransform):
         formats = set(self.document.transformer.components['writer'].supported)
         if 'html' in formats:
             gensym_stem = self.document_id(self.document)
-            return "html", html.HtmlGenerator(highlight_html, gensym_stem)
+            return "html", html.HtmlGenerator(
+                highlight_html, gensym_stem, HTML_MINIFICATION)
         if {'latex', 'xelatex', 'lualatex'} & formats:
             return "latex", latex.LatexGenerator(highlight_latex)
         raise NotImplementedError("Unknown output format")
@@ -602,34 +606,37 @@ def make_HtmlTranslator(base):
             document.settings.syntax_highlight = "short"
             document.settings.math_output = "MathJax " + self.MATHJAX_URL
             super().__init__(document)
+
+            classes = [self.settings.alectryon_webpage_style]
             register_stylesheets(self, self.CSS, self.ASSETS_PATH)
             self.stylesheet.extend(self.JS_TEMPLATE.format(js) for js in self.JS)
             self.stylesheet.extend(hd + "\n" for hd in self.ADDITIONAL_HEADS)
-            cls = html.wrap_classes(self.settings.alectryon_webpage_style)
+            if HTML_MINIFICATION:
+                classes.append("minified")
+                self.stylesheet.extend(html.JS_UNMINIFY + "\n")
+
+            cls = html.wrap_classes(*classes)
             self.body_prefix.append('<div class="{}">'.format(cls))
+
             if self.settings.alectryon_banner:
                 generator = _alectryon_state(document).generator
                 include_vernums = document.settings.alectryon_vernums
                 self.body_prefix.append(html.gen_banner(generator, include_vernums))
-            if self.settings.alectryon_minification:
-                self.stylesheet.extend(html.JS_UNMINIFY + "\n")
+
             self.body_suffix.insert(0, '</div>')
     return Translator
 
 HtmlTranslator = make_HtmlTranslator(html4css1.HTMLTranslator)
 Html5Translator = make_HtmlTranslator(html5_polyglot.HTMLTranslator)
 
+# WISH: Either remove these settings and expose global constants (like
+# HTML_MINIFICATION), or add missing settings here.
 ALECTRYON_SETTINGS = (
     ("Choose an Alectryon webpage style",
      ["--webpage-style"],
      {"choices": ("centered", "floating", "windowed"),
       "dest": "alectryon_webpage_style",
       "default": "centered", "metavar": "STYLE"}),
-    ("Minify HTML files",
-     ["--html-minification"],
-     {'default': False, 'action': 'store_true',
-      'dest': "alectryon_minification",
-      'validator': docutils.frontend.validate_boolean}),
     ("Omit Alectryon's explanatory header",
      ["--no-header"],
      {'default': True, 'action': 'store_false',
