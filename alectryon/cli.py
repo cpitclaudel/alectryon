@@ -72,6 +72,7 @@ def register_docutils(v, args):
     docutils.CACHE_DIRECTORY = args.cache_directory
     docutils.CACHE_COMPRESSION = args.cache_compression
     docutils.HTML_MINIFICATION = args.html_minification
+    docutils.LONG_LINE_THRESHOLD = args.long_line_threshold
     docutils.setup()
     return v
 
@@ -652,6 +653,12 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""")
     subp.add_argument("-R", "--rec-load-path", dest="coq_args_R",
                       metavar=("DIR", "COQDIR"), nargs=2, action="append",
                       default=[], help=R_HELP)
+
+    warn_out = parser.add_argument_group("Warnings configuration")
+
+    LL_THRESHOLD_HELP = "Warn on lines longer than this threshold (docutils)."
+    warn_out.add_argument("--long-line-threshold", type=int,
+                          default=72, help=LL_THRESHOLD_HELP)
 
     debug = parser.add_argument_group("Debugging options")
 

@@ -287,6 +287,7 @@ def dedent(fragments):
         yield fr
 
 def _check_line_lengths(lines, first_linum, threshold, upto):
+    # WISH: Only complain about long code lines, not long literate comments
     for ln, line in enumerate(lines):
         if ln < upto and len(line) > threshold:
             yield first_linum + ln, line
