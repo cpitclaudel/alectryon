@@ -90,20 +90,17 @@ In any case, make an exception for comments:
 */
 
 .alectryon-toggle,
-.alectryon-io .alectryon-toggle,
+.alectryon-io .alectryon-sentence > .alectryon-toggle,
 .alectryon-io .alectryon-extra-goal-toggle {
     display: none;
 }
 
 .alectryon-bubble,
-.alectryon-toggle-label,
-.alectryon-io label.alectryon-input,
-.alectryon-io .alectryon-extra-goal-label {
+.alectryon-io label {
     cursor: pointer;
 }
 
-.alectryon-toggle-label,
-.alectryon-extra-goal-label {
+.alectryon-toggle-label {
     display: block;
     font-size: 0.8em;
 }
@@ -184,7 +181,7 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle:checked + .alectryon-toggle-label:before,
-.alectryon-io .alectryon-toggle:checked + label.alectryon-input:after,
+.alectryon-io .alectryon-sentence > .alectryon-toggle:checked + label.alectryon-input:after,
 .alectryon-io .alectryon-extra-goal-toggle:checked + .alectryon-goal .alectryon-extra-goal-label:before {
     background-color: #babdb6;
     border-color: #babdb6;
@@ -274,7 +271,7 @@ In any case, make an exception for comments:
 
 /* Show goals when a toggle is set */
 .alectryon-toggle:checked + label + .alectryon-container label.alectryon-input + .alectryon-output,
-.alectryon-io .alectryon-sentence .alectryon-toggle:checked ~ .alectryon-output {
+.alectryon-io .alectryon-sentence > .alectryon-toggle:checked ~ .alectryon-output {
     display: block;
     position: static;
     width: unset;
@@ -283,7 +280,7 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle:checked + label + .alectryon-container label.alectryon-input + .alectryon-output .goal-hyps,
-.alectryon-io .alectryon-toggle:checked ~ .alectryon-output .goal-hyps {
+.alectryon-io .alectryon-sentence > .alectryon-toggle:checked ~ .alectryon-output .goal-hyps {
     /* Overridden back in windowed style */
     flex-flow: row wrap;
     justify-content: flex-start;
@@ -303,8 +300,8 @@ In any case, make an exception for comments:
     overflow-y: unset;
 }
 
-.alectryon-toggle:checked + label + .alectryon-container .alectryon-toggle ~ .alectryon-wsp,
-.alectryon-io .alectryon-toggle:checked ~ .alectryon-wsp {
+.alectryon-toggle:checked + label + .alectryon-container .alectryon-sentence > .alectryon-toggle ~ .alectryon-wsp,
+.alectryon-io .alectryon-sentence > .alectryon-toggle:checked ~ .alectryon-wsp {
     display: none;
 }
 
@@ -447,7 +444,7 @@ In any case, make an exception for comments:
        when they are both :checked and -targeted, since it gets confusing as
        things jump around; hence the commented-output part of the selector,
        which would otherwise increase specificity */
-    .alectryon-floating .alectryon-sentence.alectryon-target /* .alectryon-toggle ~ */ .alectryon-output,
+    .alectryon-floating .alectryon-sentence.alectryon-target /* > .alectryon-toggle ~ */ .alectryon-output,
     .alectryon-floating .alectryon-sentence:hover .alectryon-output {
         top: 0;
         left: 100%;
@@ -511,7 +508,7 @@ In any case, make an exception for comments:
 
 /* See note about specificity below */
 .alectryon-windowed .alectryon-sentence:hover .alectryon-output,
-.alectryon-windowed .alectryon-sentence.alectryon-target .alectryon-toggle ~ .alectryon-output {
+.alectryon-windowed .alectryon-sentence.alectryon-target > .alectryon-toggle ~ .alectryon-output {
     padding: 0.5em;
     overflow-y: auto; /* Windowed contents may need to scroll */
 }
@@ -625,7 +622,7 @@ In any case, make an exception for comments:
    goals to appear in consistent locations).  The selectors below ensure
    that :hover < :checked < -targeted in terms of specificity. */
 /* LATER: Reimplement this stuff with CSS variables */
-.alectryon-windowed .alectryon-sentence.alectryon-target .alectryon-toggle ~ .alectryon-output {
+.alectryon-windowed .alectryon-sentence.alectryon-target > .alectryon-toggle ~ .alectryon-output {
     position: fixed;
 }
 
