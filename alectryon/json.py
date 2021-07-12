@@ -276,7 +276,6 @@ class DummyCache(BaseCache):
     def put(self, _chunks, _annotated, generator):
         self.generator = generator
 
-def Cache(cache_root, doc_path, sertop_args):
-    metadata = {"sertop_args": sertop_args}
+def Cache(cache_root, doc_path, metadata):
     cls = FileCache if cache_root is not None else DummyCache
     return cls(cache_root, doc_path, metadata)

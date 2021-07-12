@@ -62,7 +62,8 @@ def rst_to_coq(coq, fpath, point, marker):
 def annotate_chunks(chunks, fpath, cache_directory, sertop_args):
     from .core import SerAPI, annotate
     from .json import Cache
-    cache = Cache(cache_directory, fpath, sertop_args)
+    metadata = {"sertop_args": sertop_args}
+    cache = Cache(cache_directory, fpath, metadata)
     return cache.update(chunks, lambda c: annotate(c, sertop_args), SerAPI.version_info())
 
 def register_docutils(v, sertop_args):
