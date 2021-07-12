@@ -289,8 +289,8 @@ In any case, make an exception for comments:
     justify-content: flex-start;
 }
 
-.alectryon-toggle:checked + label + .alectryon-container .alectryon-sentence .alectryon-output > .alectryon-output-sticky-wrapper,
-.alectryon-io .alectryon-sentence .alectryon-toggle:checked ~ .alectryon-output > .alectryon-output-sticky-wrapper {
+.alectryon-toggle:checked + label + .alectryon-container .alectryon-sentence .alectryon-output > div,
+.alectryon-io .alectryon-sentence > .alectryon-toggle:checked ~ .alectryon-output > div {
     display: block;
 }
 
@@ -472,15 +472,15 @@ In any case, make an exception for comments:
        .alectryon-output to a reasonable size (100%, through top = bottom = 0).
        See also https://stackoverflow.com/questions/43909940/. */
     /* See note on specificity above */
-    .alectryon-floating .alectryon-sentence.alectryon-target /* .alectryon-toggle ~ */ .alectryon-output .alectryon-output-sticky-wrapper,
-    .alectryon-floating .alectryon-sentence:hover .alectryon-output-sticky-wrapper {
+    .alectryon-floating .alectryon-sentence.alectryon-target /* > .alectryon-toggle ~ */ .alectryon-output > div,
+    .alectryon-floating .alectryon-sentence:hover .alectryon-output > div {
         margin-bottom: -200%;
         position: sticky;
         top: 0;
     }
 
-    .alectryon-floating .alectryon-toggle:checked + label + .alectryon-container .alectryon-sentence .alectryon-output > .alectryon-output-sticky-wrapper,
-    .alectryon-floating .alectryon-io .alectryon-sentence .alectryon-toggle:checked ~ .alectryon-output > .alectryon-output-sticky-wrapper {
+    .alectryon-floating .alectryon-toggle:checked + label + .alectryon-container .alectryon-sentence .alectryon-output > div,
+    .alectryon-floating .alectryon-io .alectryon-sentence > .alectryon-toggle:checked ~ .alectryon-output > div {
         margin-bottom: unset; /* Undo the margin */
     }
 
@@ -536,7 +536,7 @@ In any case, make an exception for comments:
     overflow-y: unset;
 }
 
-.alectryon-windowed .alectryon-output-sticky-wrapper {
+.alectryon-windowed .alectryon-output > div {
     display: flex; /* Put messages after goals */
     flex-direction: column-reverse;
 }
