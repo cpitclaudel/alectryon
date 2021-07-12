@@ -16,7 +16,7 @@ For background information, check out the  `quickstart guide <https://plv.csail.
 
 Alectryon is free software under a very permissive license.  If you use it, please remember to `cite it <https://pit-claudel.fr/clement/papers/alectryon-SLE20.bib>`__, and please let me know!
 
-Some examples of use in the wild are linked `at the bottom of this page <#gallery>`__.  Please add your own work by submitting a PR!
+Some examples of use in the wild are linked `at the bottom of this page <gallery_>`_.  Please add your own work by submitting a PR!
 
 Setup
 =====
@@ -226,10 +226,21 @@ For Sphinx, add the following to your ``conf.py`` file:
 
    extensions = ["alectryon.sphinx"]
 
-If left unset in your config file, the default role (the one you get with single backticks) will be set to ``:coq:``.  To get syntax highlighting for inline snippets, create a docutils.conf file with the `following contents <https://stackoverflow.com/questions/21591107/sphinx-inline-code-highlight>`_ along your ``conf.py`` file::
+If left unset in your config file, the default role (the one you get with single backticks) will be set to ``:coq:``.  To get syntax highlighting for inline snippets, create a ``docutils.conf`` file with the `following contents <https://stackoverflow.com/questions/21591107/sphinx-inline-code-highlight>`_ along your ``conf.py`` file (see `below <docutils.conf_>`_ for details)::
 
    [restructuredtext parser]
    syntax_highlight = short
+
+Setting options
+~~~~~~~~~~~~~~~
+
+Various settings are exposed as global constants in the docutils module:
+
+- ``alectryon.docutils.LONG_LINE_THRESHOLD`` (same as ``--long-line-threshold``)
+- ``alectryon.docutils.CACHE_DIRECTORY`` (same as ``--cache-directory``)
+- ``alectryon.docutils.CACHE_COMPRESSION`` (same as ``--cache-compression``)
+- ``alectryon.docutils.HTML_MINIFICATION`` (same as ``--html-minification``)
+- ``alectryon.docutils.AlectryonTransform.SERTOP_ARGS`` (same as ``--sertop-arg``)
 
 Controlling output
 ~~~~~~~~~~~~~~~~~~
@@ -285,13 +296,18 @@ For convenience, alectryon includes a few extra roles and directives:
 Caching
 ~~~~~~~
 
-The ``alectryon.json`` module has facilities to cache annotations.  Caching has multiple benefits:
+The ``alectryon.json`` module has facilities to cache the prover's output.  Caching has multiple benefits:
 
 1. Recompiling documents with unchanged code is much faster, since Coq snippets do not have to be re-evaluated.
 2. Deploying a website or recompiling a book does not require setting up a complete Coq development environment.
 3. Changes in output can be inspected by comparing cache files.  Caches contain just as much information as needed to recreate input/output listings, so they can be checked-in into source control, making it easy to assess whether a Coq update meaningfully affects a document (it's easy to miss breakage or subtle changes in output otherwise, as when using the copy-paste approach or even Alectryon without caching).
 
-To enable caching, chose a directory to hold cache files and assign its path to  ``alectryon.docutils.CACHE_DIRECTORY`` (it can be the same directory as the one containing your source files, if you'd like to store caches alongside inputs).  Alectryon will record inputs and outputs in individual JSON files (one ``.cache`` file per source file) in subdirectories of the ``CACHE_DIRECTORY`` folder.
+To enable caching on the command line, chose a directory and pass it to ``--cache-directory``.  Alectryon will record inputs and outputs in individual JSON files (one ``.cache`` file per source file) in subdirectories of that folder.  You may pass the directory containing your source files if you'd like to store caches alongside inputs.
+
+From Python, set ``alectryon.docutils.CACHE_DIRECTORY`` to enable caching.  For example, to store cache files alongside sources in Pelican, use the following code::
+
+   import alectryon.docutils
+   alectryon.docutils.CACHE_DIRECTORY = "content"
 
 Tips
 ====
@@ -341,12 +357,16 @@ When compiling reStructuredText documents, you can add per-document highlighting
 Interactivity
 -------------
 
-Alectryon's HTML output doesn't require JavaScript for basic interactivity, but ``assets/alectryon.js`` implements keyboard navigation.
+Most features in Alectryon's HTML output do not require JavaScript, but extra functionality (including keyboard navigation) can be added by loading ``assets/alectryon.js`` (this is done by default).
+
+Scripts needed to unminify documents produced with ``--html-minification`` (see `below <minification_>`_) are bundled into the generated HTML and do not need to be loaded separately.
 
 Authoring support
 -----------------
 
 The ``etc/elisp`` folder of this directory includes an Emacs mode, ``alectryon.el``, which makes it easy to switch between the Coq and reStructuredText views of a document.
+
+.. _docutils.conf:
 
 Docutils configuration
 ----------------------
@@ -359,10 +379,26 @@ You can set Docutils settings for your single-page Coq+reST documents using a ``
      \setsansfont{Linux Biolinum O}
      \setmonofont[Scale=MatchLowercase]{Fira Code}
 
-Caching
--------
+.. _minification:
 
-To use Alectryon's caching facilities independently of its ``docutils`` module, instantiate the ``FileCache`` class of ``alectryon.json``.
+Reducing page and cache sizes
+-----------------------------
+
+Proofs with many repeated subgoals can generate very large HTML files and large caches.  In general, these files compress very well — especially with XZ and Brotli (often over 99%), less so with GZip (often over 95%).  But if you want to save space at rest, the following options may help:
+
+- ``--html-minification``:  Replace repeated goals and hypotheses in the generated HTML with back-references (minimal Javascript is included in the generated page to resolve these references).  Typical results::
+
+     4.4M List.html          24.8M Ranalysis3.html
+     1.8M List.min.html       1.5M Ranalysis3.min.html
+
+- ``--cache-compression``: Compress caches (the default is to use XZ compression).  Typical results::
+
+     3.2M List.v.cache       21M Ranalysis3.v.cache
+      66K List.v.cache.xz    25K Ranalysis3.v.cache.xz
+
+From Python, use ``alectryon.docutils.HTML_MINIFICATION = True`` and ``alectryon.docutils.CACHE_COMPRESSION = "xz"`` to enable minification and cache compression.
+
+A minification algorithm for JSON is implemented in ``json.py`` but not exposed on the command line.
 
 Building without Alectryon
 --------------------------
