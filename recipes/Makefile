@@ -3,7 +3,8 @@ PYTHON ?= python3 -Wd # -X tracemalloc
 alectryon := $(PYTHON) ../alectryon.py --output-directory output --no-version-numbers --traceback
 minimal := $(PYTHON) -m alectryon.minimal
 
-assets := alectryon.css alectryon.js alectryon.sty
+asset_names := alectryon.css alectryon.js alectryon.sty tango_subtle.sty
+assets := $(patsubst %,output/%,$(asset_names))
 
 all := .version-info \
 	plain.v.html literate.v.html coqdoc.v.html \
@@ -17,7 +18,7 @@ all := .version-info \
 	fragments.snippets.html fragments.snippets.tex \
 	api.out
 
-all: $(patsubst %,output/%,$(all) $(assets)) sphinx/_build/html/index.html;
+all: $(patsubst %,output/%,$(all)) $(assets) sphinx/_build/html/index.html;
 
 output:
 	mkdir $@
@@ -113,15 +114,14 @@ output/latex.aux:
 output/%.pdf: output/latex.aux/%.pdf
 	mv $< $@
 
-output/latex.aux/%.pdflatex.pdf: output/%.tex | output/latex.aux
+output/latex.aux/%.pdflatex.pdf: output/%.tex $(assets) | output/latex.aux
 	cd output/; pdflatex -output-directory=latex.aux -jobname=$*.pdflatex $*.tex
 
-output/latex.aux/%.xelatex.pdf: output/%.tex | output/latex.aux
+output/latex.aux/%.xelatex.pdf: output/%.tex $(assets) | output/latex.aux
 	cd output/; xelatex -output-directory=latex.aux -jobname=$*.xelatex $*.tex
 
-output/alectryon%css output/alectryon%js output/alectryon%sty: FORCE
-	cp --link --force $(patsubst %,../alectryon/assets/%,$(assets)) output/
-FORCE:
+output/%.css output/%.js output/%.sty: | output
+	cp --link --force $(patsubst %,../alectryon/assets/%,$(asset_names)) output/
 
 clean:
 	rm -rf output/ sphinx/_build sphinx/*.cache
