@@ -216,21 +216,22 @@ class FileCache(BaseCache):
     }
 
     def __init__(self, cache_root, doc_path, metadata, cache_compression):
-        cache_compression = cache_compression or "none"
-        if cache_compression not in self.KNOWN_COMPRESSIONS:
-            raise ValueError("Unsupported cache compression: {}".format(cache_compression))
-
         self.serializer = PlainSerializer
         self.cache_root = path.realpath(cache_root)
-        self.cache_compression = cache_compression
+        self.wanted_compression = cache_compression or "none"
+        if self.wanted_compression not in self.KNOWN_COMPRESSIONS:
+            raise ValueError("Unsupported cache compression: {}".format(cache_compression))
+
         doc_root = path.commonpath((self.cache_root, path.realpath(doc_path)))
         self.cache_rel_file = path.relpath(doc_path, doc_root) + ".cache"
         self.cache_file = path.join(cache_root, self.cache_rel_file)
         self.cache_dir = path.dirname(self.cache_file)
         makedirs(self.cache_dir, exist_ok=True)
+
         self.metadata = self.normalize(metadata)
         self.metadata["cache_version"] = self.CACHE_VERSION
-        self.data = self._read()
+
+        self.ondisk_compression, self.data = self._read()
 
     @staticmethod
     def normalize(obj):
@@ -244,14 +245,16 @@ class FileCache(BaseCache):
         mod, ext = self.KNOWN_COMPRESSIONS[compression]
         return __import__(mod).open(self.cache_file + ext, mode=mode)
 
-    def _validate(self, data, reference):
-        metadata = data.get("metadata")
+    def _validate(self, reference):
+        if self.data is None:
+            return False
+        metadata = self.data.get("metadata")
         if self.metadata != metadata:
             MSG = "Outdated metadata in {} ({} != {}): recomputing annotations"
             print(MSG.format(self.cache_rel_file, self.metadata, metadata))
             return False
         reference = self.normalize(reference)
-        if reference != data.get("chunks"):
+        if reference is not None and reference != self.data.get("chunks"):
             MSG = "Outdated contents in {}: recomputing"
             print(MSG.format(self.cache_rel_file))
             return False
@@ -261,13 +264,13 @@ class FileCache(BaseCache):
         for compression in self.KNOWN_COMPRESSIONS:
             try:
                 with self._open(compression, mode="rt") as cache:
-                    return self.normalize(json.load(cache))
+                    return compression, self.normalize(json.load(cache))
             except FileNotFoundError:
                 pass
-        return None
+        return None, None
 
     def get(self, chunks):
-        if self.data is None or not self._validate(self.data, chunks):
+        if not self._validate(chunks):
             return None
         return self.serializer.decode(self.data.get("annotated"))
 
@@ -282,14 +285,26 @@ class FileCache(BaseCache):
             except FileNotFoundError:
                 pass
 
-    def put(self, chunks, annotated, generator):
+    def _write(self):
         self._delete_old_caches()
-        with self._open(self.cache_compression, mode="wt") as cache:
-            self.data = {"generator": generator,
-                         "metadata": self.metadata,
-                         "chunks": list(chunks),
-                         "annotated": self.serializer.encode(annotated)}
+        with self._open(self.wanted_compression, mode="wt") as cache:
             json.dump(self.data, cache, indent=2)
+        self.ondisk_compression = self.wanted_compression
+
+    def put(self, chunks, annotated, generator):
+        self.data = {"generator": generator,
+                     "metadata": self.metadata,
+                     "chunks": list(chunks),
+                     "annotated": self.serializer.encode(annotated)}
+        self._write()
+
+    def update(self, *args, **kwargs):
+        annotated = super().update(*args, **kwargs)
+        if self.ondisk_compression != self.wanted_compression:
+            MSG = "Recompression requested for {} (was {}, now {}): rewriting cache file"
+            print(MSG.format(self.cache_rel_file, self.ondisk_compression, self.wanted_compression))
+            self._write()
+        return annotated
 
 class DummyCache(BaseCache):
     def __init__(self, *_args):
