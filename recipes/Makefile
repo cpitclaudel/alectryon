@@ -12,6 +12,7 @@ all := .version-info \
 	literate.html literate.pdflatex.pdf \
 	document.html hyps.html mathjax.html \
 	document.pdflatex.pdf hyps.xelatex.pdf \
+	minification.html \
 	document.minimal.html \
 	document.v literate.v.rst \
 	fragments.io.json \
@@ -70,6 +71,10 @@ output/document.tex: document.v.rst | output
 	$(alectryon) --backend latex $<
 output/hyps.tex: hyps.rst | output
 	$(alectryon) --backend latex --latex-dialect xelatex $<
+
+# reST+Coq → Minified HTML
+output/minification.html: minification.rst | output
+	$(alectryon) --html-minification --html-dialect html5 --cache-compression=xz --cache-directory output/ $<
 
 # TODO
 # output/mathjax.html: mathjax.rst | output
