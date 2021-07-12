@@ -21,7 +21,7 @@
 import json
 import pickle
 from copy import deepcopy
-from os import path, makedirs
+from os import path, makedirs, unlink
 from itertools import zip_longest
 
 from . import core
@@ -209,9 +209,20 @@ class BaseCache:
 class FileCache(BaseCache):
     CACHE_VERSION = "1"
 
-    def __init__(self, cache_root, doc_path, metadata):
+    KNOWN_COMPRESSIONS = {
+        "none": ("builtins", ""),
+        "gzip": ("gzip", ".gz"),
+        "xz": ("lzma", ".xz"),
+    }
+
+    def __init__(self, cache_root, doc_path, metadata, cache_compression):
+        cache_compression = cache_compression or "none"
+        if cache_compression not in self.KNOWN_COMPRESSIONS:
+            raise ValueError("Unsupported cache compression: {}".format(cache_compression))
+
         self.serializer = PlainSerializer
         self.cache_root = path.realpath(cache_root)
+        self.cache_compression = cache_compression
         doc_root = path.commonpath((self.cache_root, path.realpath(doc_path)))
         self.cache_rel_file = path.relpath(doc_path, doc_root) + ".cache"
         self.cache_file = path.join(cache_root, self.cache_rel_file)
@@ -229,6 +240,10 @@ class FileCache(BaseCache):
             return {k: FileCache.normalize(v) for (k, v) in obj.items()}
         return obj
 
+    def _open(self, compression, mode):
+        mod, ext = self.KNOWN_COMPRESSIONS[compression]
+        return __import__(mod).open(self.cache_file + ext, mode=mode)
+
     def _validate(self, data, reference):
         metadata = data.get("metadata")
         if self.metadata != metadata:
@@ -243,11 +258,13 @@ class FileCache(BaseCache):
         return True
 
     def _read(self):
-        try:
-            with open(self.cache_file) as cache:
-                return self.normalize(json.load(cache))
-        except FileNotFoundError:
-            return None
+        for compression in self.KNOWN_COMPRESSIONS:
+            try:
+                with self._open(compression, mode="rt") as cache:
+                    return self.normalize(json.load(cache))
+            except FileNotFoundError:
+                pass
+        return None
 
     def get(self, chunks):
         if self.data is None or not self._validate(self.data, chunks):
@@ -258,8 +275,16 @@ class FileCache(BaseCache):
     def generator(self):
         return core.GeneratorInfo(*self.data.get("generator", ("Coq+SerAPI", "??")))
 
+    def _delete_old_caches(self):
+        for _mod, ext in self.KNOWN_COMPRESSIONS.values():
+            try:
+                unlink(self.cache_file + ext)
+            except FileNotFoundError:
+                pass
+
     def put(self, chunks, annotated, generator):
-        with open(self.cache_file, mode="w") as cache:
+        self._delete_old_caches()
+        with self._open(self.cache_compression, mode="wt") as cache:
             self.data = {"generator": generator,
                          "metadata": self.metadata,
                          "chunks": list(chunks),
@@ -276,6 +301,6 @@ class DummyCache(BaseCache):
     def put(self, _chunks, _annotated, generator):
         self.generator = generator
 
-def Cache(cache_root, doc_path, metadata):
+def Cache(cache_root, doc_path, metadata, cache_compression):
     cls = FileCache if cache_root is not None else DummyCache
-    return cls(cache_root, doc_path, metadata)
+    return cls(cache_root, doc_path, metadata, cache_compression)

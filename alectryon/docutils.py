@@ -115,6 +115,10 @@ LONG_LINE_THRESHOLD = 72
 CACHE_DIRECTORY = None
 """Directory in which to store cached annotations."""
 
+CACHE_COMPRESSION = None
+"""Which compression to use for cache files.
+See the documentation of --cache-compression."""
+
 # LATER: dataclass
 class AlectryonState:
     def __init__(self):
@@ -204,7 +208,7 @@ class AlectryonTransform(OneTimeTransform):
     def annotate_cached(self, chunks, sertop_args):
         from .json import Cache
         metadata = {"sertop_args": sertop_args}
-        cache = Cache(CACHE_DIRECTORY, self.document['source'], metadata)
+        cache = Cache(CACHE_DIRECTORY, self.document['source'], metadata, CACHE_COMPRESSION)
         annotated = cache.update(chunks, lambda c: annotate(c, sertop_args), SerAPI.version_info())
         return cache.generator, annotated
 

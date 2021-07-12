@@ -59,17 +59,19 @@ def rst_to_coq(coq, fpath, point, marker):
     from .literate import rst2coq_marked
     return _catch_parsing_errors(fpath, rst2coq_marked, coq, point, marker)
 
-def annotate_chunks(chunks, fpath, cache_directory, sertop_args):
+def annotate_chunks(chunks, fpath, cache_directory, cache_compression, sertop_args):
     from .core import SerAPI, annotate
     from .json import Cache
     metadata = {"sertop_args": sertop_args}
-    cache = Cache(cache_directory, fpath, metadata)
+    cache = Cache(cache_directory, fpath, metadata, cache_compression)
     return cache.update(chunks, lambda c: annotate(c, sertop_args), SerAPI.version_info())
 
-def register_docutils(v, sertop_args):
-    from .docutils import setup, AlectryonTransform
-    AlectryonTransform.SERTOP_ARGS = sertop_args
-    setup()
+def register_docutils(v, args):
+    from . import docutils
+    docutils.AlectryonTransform.SERTOP_ARGS = args.sertop_args
+    docutils.CACHE_DIRECTORY = args.cache_directory
+    docutils.CACHE_COMPRESSION = args.cache_compression
+    docutils.setup()
     return v
 
 def _gen_docutils(source, fpath,
@@ -590,6 +592,13 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""")
     cache_out.add_argument("--cache-directory", default=None, metavar="DIRECTORY",
                            help=CACHE_DIRECTORY_HELP)
 
+    CACHE_COMPRESSION_HELP = ("Compress caches.")
+    CACHE_COMPRESSION_CHOICES = ("none", "gzip", "xz")
+    cache_out.add_argument("--cache-compression", nargs='?',
+                           default=None, const="xz",
+                           choices=CACHE_COMPRESSION_CHOICES,
+                           help=CACHE_COMPRESSION_HELP)
+
     html_out = parser.add_argument_group("HTML output configuration")
 
     WEBPAGE_STYLE_HELP = "Choose a style for standalone webpages."
@@ -678,7 +687,7 @@ def build_context(fpath, args):
     else:
         fname = os.path.basename(fpath)
 
-    ctx = {"fpath": fpath, "fname": fname, **vars(args)}
+    ctx = {"fpath": fpath, "fname": fname, "args": args, **vars(args)}
 
     if args.output_directory is None:
         if fname == "-":
@@ -703,10 +712,6 @@ def process_pipelines(args):
         core.TRACEBACK = True
         sys.excepthook = except_hook
 
-    if args.cache_directory:
-        from . import docutils
-        docutils.CACHE_DIRECTORY = args.cache_directory
-
     if args.expect_unexpected:
         from . import core
         core.SerAPI.EXPECT_UNEXPECTED = True
@@ -720,7 +725,7 @@ def main():
     try:
         args = parse_arguments()
         process_pipelines(args)
-    except (ValueError, FileNotFoundError, argparse.ArgumentTypeError) as e:
+    except (ValueError, FileNotFoundError, ImportError, argparse.ArgumentTypeError) as e:
         from . import core
         if core.TRACEBACK:
             raise e
