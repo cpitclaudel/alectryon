@@ -59,6 +59,10 @@ def latex_of_movie():
 
 def main():
     api_annotate()
+    print("=" * 80)
+    annotated_to_json()
+    print("=" * 80)
+    latex_of_movie()
 
 if __name__ == '__main__':
     main()

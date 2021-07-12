@@ -1,1 +1,66 @@
 [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
+================================================================================
+[[{"_type": "sentence", "contents": "Goal True /\\ True.", "messages": [], "goals": [{"_type": "goal", "name": null, "conclusion": "True /\\ True", "hypotheses": []}]}, {"_type": "text", "contents": " "}, {"_type": "sentence", "contents": "split.", "messages": [], "goals": [{"_type": "goal", "name": null, "conclusion": "True", "hypotheses": []}, {"_type": "goal", "name": null, "conclusion": "True", "hypotheses": []}]}, {"_type": "text", "contents": " "}], [{"_type": "sentence", "contents": "all: eauto.", "messages": [], "goals": []}]]
+================================================================================
+<latex>
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Goal}~\PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb}{split}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+        \sep
+        \begin{extragoals}
+          \begin{goal}
+            \begin{hyps}\end{hyps}
+            \sep
+            \begin{conclusion}
+              \PY{k+kt}{True}
+            \end{conclusion}
+          \end{goal}
+        \end{extragoals}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+\end{alectryon}
+</latex>
+<latex>
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kp}{all}\PY{o}{:}~\PY{n+nb}{eauto}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+\end{alectryon}
+</latex>
