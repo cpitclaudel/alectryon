@@ -47,7 +47,7 @@ output/coqdoc.v.html: coqdoc.v | output
 
 # Coqdoc → HTML
 output/coqdoc.html: coqdoc.v | output
-	$(alectryon) $< --frontend coqdoc --cache-directory output/
+	$(alectryon) $< --frontend coqdoc --cache-directory output/ --cache-compression=xz
 
 # Coq+reST → HTML
 output/literate.html: literate.v | output
