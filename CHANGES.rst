@@ -5,13 +5,22 @@
 Unreleased
 ==========
 
+- A new ``--long-line-threshold`` flag controls the line length over which Alectryon will issue “long line” warnings. [0286051]
+
+- A new ``--cache-compression`` flag enables compression of generated cache files.  This typically yields space savings of over 95%. [GH-35]
+
+- A new ``--html-minification`` flag enables the generation of more compact HTML files.  Minified HTML files use backreferences to refer to repeated goals and hypotheses (these backreferences are resolved at display time using Javascript).  This typically saves 70-90% of the generated file size. [GH-35]
+
+- HTML5, XeLaTeX and LuaLaTeX outputs are now supported (``--latex-dialect``, ``--html-dialect``). [c576ae8, 08410c0]
+
 Breaking changes
 ----------------
 
-- Alectryon now generates simpler HTML markup for hypothesis blocks (may affect third-party
-  stylesheets).
+- Alectryon now generates simpler HTML markup for hypothesis blocks (may affect third-party stylesheets).  [59563f1]
 
-- ``json.Cache`` now takes arbitrary ``metadata`` instead of ``sertop_args``.
+- ``json.Cache`` in module ``alectryon.json`` now takes arbitrary ``metadata`` instead of ``sertop_args``. [56ca103]
+
+- ``json_of_annotated`` and ``annotated_of_json`` in module ``alectryon.json`` are now ``PlainSerializer.encode`` and ``PlainSerializer.decode``. [c1076cc]
 
 Version 1.2.1
 =============
