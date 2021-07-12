@@ -115,10 +115,10 @@ output/%.pdf: output/latex.aux/%.pdf
 	mv $< $@
 
 output/latex.aux/%.pdflatex.pdf: output/%.tex $(assets) | output/latex.aux
-	cd output/; pdflatex -output-directory=latex.aux -jobname=$*.pdflatex $*.tex
+	cd output/; texfot --quiet pdflatex -output-directory=latex.aux -jobname=$*.pdflatex $*.tex
 
 output/latex.aux/%.xelatex.pdf: output/%.tex $(assets) | output/latex.aux
-	cd output/; xelatex -output-directory=latex.aux -jobname=$*.xelatex $*.tex
+	cd output/; texfot --quiet xelatex -output-directory=latex.aux -jobname=$*.xelatex $*.tex
 
 output/%.css output/%.js output/%.sty: | output
 	cp --link --force $(patsubst %,../alectryon/assets/%,$(asset_names)) output/
