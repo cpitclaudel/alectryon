@@ -77,7 +77,7 @@ def register_docutils(v, args):
     return v
 
 def _gen_docutils(source, fpath,
-                  traceback, Parser, Reader, Writer,
+                  Parser, Reader, Writer,
                   settings_overrides):
     from docutils.core import publish_string
 
@@ -85,8 +85,12 @@ def _gen_docutils(source, fpath,
     # to "unicode" causes reST to generate a bad <meta> tag, and setting
     # input_encoding to "unicode" breaks the ‘.. include’ directive.
 
+    # Setting ``traceback`` unconditionally allows us to catch and report errors
+    # from our own docutils components and avoid asking users to make a report
+    # to the docutils mailing list.
+
     settings_overrides = {
-        'traceback': traceback,
+        'traceback': True,
         'embed_stylesheet': False,
         'stylesheet_path': None,
         'input_encoding': 'utf-8',
@@ -108,7 +112,7 @@ def _gen_docutils(source, fpath,
 def gen_docutils(src, frontend, backend, fpath,
                  html_dialect, latex_dialect,
                  webpage_style, include_banner, include_vernums,
-                 assets, traceback):
+                 assets):
     from .docutils import get_pipeline
 
     pipeline = get_pipeline(frontend, backend, html_dialect, latex_dialect)
@@ -120,7 +124,7 @@ def gen_docutils(src, frontend, backend, fpath,
         'alectryon_webpage_style': webpage_style,
     }
 
-    return _gen_docutils(src, fpath, traceback,
+    return _gen_docutils(src, fpath,
                          pipeline.parser, pipeline.reader, pipeline.writer,
                          settings_overrides)
 
@@ -141,7 +145,7 @@ def _docutils_cmdline_html(description, Reader, Parser):
         description=(description + default_description)
     )
 
-def _lint_docutils(source, fpath, Parser, traceback):
+def _lint_docutils(source, fpath, Parser):
     from io import StringIO
     from docutils.utils import new_document
     from docutils.frontend import OptionParser
@@ -150,7 +154,7 @@ def _lint_docutils(source, fpath, Parser, traceback):
 
     parser = Parser()
     settings = OptionParser(components=(Parser,)).get_default_values()
-    settings.traceback = traceback
+    settings.traceback = True
     observer = JsErrorPrinter(StringIO(), settings)
     document = new_document(fpath, settings)
 
@@ -162,13 +166,13 @@ def _lint_docutils(source, fpath, Parser, traceback):
 
     return observer.stream.getvalue()
 
-def lint_rstcoq(coq, fpath, traceback):
+def lint_rstcoq(coq, fpath):
     from .docutils import RSTCoqParser
-    return _lint_docutils(coq, fpath, RSTCoqParser, traceback)
+    return _lint_docutils(coq, fpath, RSTCoqParser)
 
-def lint_rst(rst, fpath, traceback):
+def lint_rst(rst, fpath):
     from docutils.parsers.rst import Parser
-    return _lint_docutils(rst, fpath, Parser, traceback)
+    return _lint_docutils(rst, fpath, Parser)
 
 def _scrub_fname(fname):
     import re
@@ -736,7 +740,8 @@ def main():
         from . import core
         if core.TRACEBACK:
             raise e
-        print("Exiting early due to an error:", file=sys.stderr)
+        MSG = "Exiting early due to an error; use --traceback to diagnose."
+        print(MSG, file=sys.stderr)
         print(str(e), file=sys.stderr)
         sys.exit(1)
 
