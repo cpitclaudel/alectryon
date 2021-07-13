@@ -68,7 +68,7 @@ def parse(tokens):
             stack.append(top)
             top = new
         elif tok is CLOSE:
-            top = stack.pop()
+            if stack: top = stack.pop()
         else:
             top.append(tok)
     return top[0]
