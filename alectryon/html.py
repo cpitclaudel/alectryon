@@ -154,14 +154,21 @@ class HtmlGenerator:
         return tags.input_(type="checkbox", id=self.gensym("chk"), cls=cls,
                            style="display: none", **attrs)
 
+    @deduplicate(".alectryon-extra-goals")
+    def gen_extra_goals(self, goals):
+        with tags.div(cls='alectryon-extra-goals'):
+            for goal in goals:
+                toggle = goal.hypotheses and \
+                    self.gen_checkbox(False, "alectryon-extra-goal-toggle")
+                self.gen_goal(goal, toggle=toggle)
+
     @deduplicate(".alectryon-goals")
-    def gen_goals(self, first, more):
-        self.gen_goal(first)
-        if more:
-            with tags.div(cls='alectryon-extra-goals'):
-                for goal in more:
-                    toggle = goal.hypotheses and self.gen_checkbox(False, "alectryon-extra-goal-toggle")
-                    self.gen_goal(goal, toggle=toggle)
+    def gen_goals(self, goals):
+        with tags.div(cls="alectryon-goals"):
+            first, *more = goals
+            self.gen_goal(first)
+            if more:
+                self.gen_extra_goals(more)
 
     def gen_input(self, fr, toggle):
         cls = "alectryon-input" + (" alectryon-failed" if fr.annots.fails else "")
@@ -182,8 +189,7 @@ class HtmlGenerator:
                                             cls="alectryon-message")
                 if isinstance(output, Goals):
                     assert output.goals, "transforms.commit_io_annotations"
-                    with tags.div(cls="alectryon-goals"):
-                        self.gen_goals(output.goals[0], output.goals[1:])
+                    self.gen_goals(output.goals)
 
     @staticmethod
     def gen_whitespace(wsps):
