@@ -90,7 +90,6 @@ In any case, make an exception for comments:
 */
 
 .alectryon-toggle,
-.alectryon-io .alectryon-sentence > .alectryon-toggle,
 .alectryon-io .alectryon-extra-goal-toggle {
     display: none;
 }
@@ -316,15 +315,11 @@ In any case, make an exception for comments:
 
 .alectryon-io .alectryon-goal,
 .alectryon-io .alectryon-message {
-    margin: 0.25em;
-}
-
-.alectryon-io .alectryon-goal,
-.alectryon-io .alectryon-message {
     align-items: center;
     background: #d3d7cf;
     display: block;
     flex-direction: column;
+    margin: 0.25em;
     padding: 0.5em;
     position: relative;
 }
