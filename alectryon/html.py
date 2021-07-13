@@ -94,16 +94,16 @@ def deduplicate(selector):
     return _deduplicate
 
 class HtmlGenerator:
-    def __init__(self, highlighter, gensym_stem="", allow_backreferences=False):
+    def __init__(self, highlighter, gensym_stem="", minify=False):
         self.highlight = highlighter
-        self.gensym = Gensym(gensym_stem + "-" if gensym_stem else "")
-
-        self.backrefs = {} if allow_backreferences else None
+        self.gensym = None if minify else Gensym(gensym_stem + "-" if gensym_stem else "")
+        self.minify, self.backrefs = minify, ({} if minify else None)
 
     @staticmethod
     def gen_label(toggle, cls, *contents):
         if toggle:
-            return tags.label(*contents, cls=cls, **{"for": toggle})
+            attrs = {"for": toggle["id"]} if toggle["id"] else {}
+            return tags.label(*contents, cls=cls, **attrs)
         return tags.span(*contents, cls=cls)
 
     @deduplicate(".goal-hyps > div")
@@ -129,6 +129,7 @@ class HtmlGenerator:
     def gen_ccl(self, conclusion):
         tags.div(self.highlight(conclusion), cls="goal-conclusion")
 
+    @deduplicate(".alectryon-goal")
     def gen_goal(self, goal, toggle=None):
         """Serialize a goal to HTML."""
         with tags.blockquote(cls="alectryon-goal"):
@@ -139,7 +140,6 @@ class HtmlGenerator:
                 # when the container is empty, so just omit the hypotheses if
                 # there are none.
                 self.gen_hyps(goal.hypotheses)
-            toggle = goal.hypotheses and toggle
             with self.gen_label(toggle, "goal-separator"):
                 tags.hr()
                 if goal.name:
@@ -147,34 +147,32 @@ class HtmlGenerator:
             return self.gen_ccl(goal.conclusion)
 
     def gen_checkbox(self, checked, cls):
-        nm = self.gensym("chk")
-        attrs = {"style": "display: none"} # Most RSS readers ignore stylesheets
-        if checked:
-            attrs["checked"] = "checked"
-        tags.input_(type="checkbox", id=nm, cls=cls, **attrs)
-        return nm
+        if self.minify:
+            return {"id": None}
+        # Most RSS readers ignore stylesheets, so add `display: none`
+        attrs = {"checked": "checked"} if checked else {}
+        return tags.input_(type="checkbox", id=self.gensym("chk"), cls=cls,
+                           style="display: none", **attrs)
 
+    @deduplicate(".alectryon-goals")
     def gen_goals(self, first, more):
         self.gen_goal(first)
         if more:
             with tags.div(cls='alectryon-extra-goals'):
                 for goal in more:
-                    nm = self.gen_checkbox(False, "alectryon-extra-goal-toggle")
-                    self.gen_goal(goal, toggle=nm)
-
-    def gen_input_toggle(self, fr):
-        if not fr.outputs:
-            return None
-        return self.gen_checkbox(fr.annots.unfold, "alectryon-toggle")
+                    toggle = goal.hypotheses and self.gen_checkbox(False, "alectryon-extra-goal-toggle")
+                    self.gen_goal(goal, toggle=toggle)
 
     def gen_input(self, fr, toggle):
         cls = "alectryon-input" + (" alectryon-failed" if fr.annots.fails else "")
         self.gen_label(toggle, cls, self.highlight(fr.contents))
 
+    @deduplicate(".alectryon-output")
     def gen_output(self, fr):
         # Using <small> improves rendering in RSS feeds
-        sticky_wrapper = tags.div()
-        with tags.small(cls="alectryon-output").add(sticky_wrapper):
+        # The a:show tag is used to initialize the checkbox in minified mode
+        cls = "alectryon-output" + (" a:show" if self.minify and fr.annots.unfold else "")
+        with tags.small(cls=cls).add(tags.div()): # div has ``position: sticky``
             for output in fr.outputs:
                 if isinstance(output, Messages):
                     assert output.messages, "transforms.commit_io_annotations"
@@ -196,7 +194,7 @@ class HtmlGenerator:
         if fr.contents is not None:
             self.gen_whitespace(fr.prefixes)
         with tags.span(cls="alectryon-sentence"):
-            toggle = self.gen_input_toggle(fr)
+            toggle = fr.outputs and self.gen_checkbox(fr.annots.unfold, "alectryon-toggle")
             if fr.contents is not None:
                 self.gen_input(fr, toggle)
             if fr.outputs:
@@ -231,6 +229,30 @@ JS_UNMINIFY = """<script>
         var references = document.querySelectorAll([$selectors].join(", "));
         document.querySelectorAll('.alectryon-io q').forEach(function (q) {
             q.replaceWith(references[parseInt(q.innerText, 16)].cloneNode(true)) });
+    });
+
+    // Add checkboxes
+    document.addEventListener("DOMContentLoaded", function() {
+        var input = document.createElement("input");
+        input.type = "checkbox";
+        input.style = "display: none";
+
+        input.className = "alectryon-extra-goal-toggle";
+        document.querySelectorAll('.alectryon-io label.goal-separator').forEach(function(lbl, idx) {
+            var goal = lbl.parentNode, box = input.cloneNode(true);
+            lbl.htmlFor = box.id = "alectryon-hyps-chk" + idx;
+            goal.parentNode.insertBefore(box, goal);
+        });
+
+        input.className = "alectryon-toggle";
+        document.querySelectorAll('.alectryon-io .alectryon-output').forEach(function(div, idx) {
+            var box = input.cloneNode(true), lbl = div.previousSibling;
+            box.checked = div.classList.contains("a:show");
+            if (lbl && lbl.tagName == "LABEL") {
+                lbl.htmlFor = box.id = "alectryon-output-chk" + idx;
+            }
+            div.parentNode.insertBefore(box, lbl || div);
+        });
     });
 </script>""".replace("$selectors", ','.join(
     '\n           "{}"'.format(sel) for sel in sorted(JS_UNMINIFY_SELECTORS)))
