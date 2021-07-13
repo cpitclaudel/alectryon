@@ -9,7 +9,7 @@ Unreleased
 
 - A new ``--cache-compression`` flag enables compression of generated cache files.  This typically yields space savings of over 95%. [GH-35]
 
-- A new ``--html-minification`` flag enables the generation of more compact HTML files.  Minified HTML files use backreferences to refer to repeated goals and hypotheses (these backreferences are resolved at display time using Javascript).  This typically saves 70-90% of the generated file size. [GH-35]
+- A new ``--html-minification`` flag enables the generation of more compact HTML files.  Minified HTML files use backreferences to refer to repeated goals and hypotheses (these backreferences are resolved at display time using Javascript) and more succinct markup (full markup is rebuilt dynamically at page load).  This typically saves 70-90% of the generated file size, and nearly as much on HTML generation time on page load times. [GH-35]
 
 - HTML5, XeLaTeX and LuaLaTeX outputs are now supported (``--latex-dialect``, ``--html-dialect``). [c576ae8]
 
