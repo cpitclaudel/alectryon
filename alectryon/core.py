@@ -126,10 +126,12 @@ class SerAPI():
             # https://github.com/ejgallego/coq-serapi/issues/212
             MSG = "SerTop printed an empty line.  Last response: {!r}."
             raise ValueError(MSG.format(self.last_response))
-        self.last_response = response
-        sexp = sx.load(response)
         debug(response, '<< ')
-        return sexp
+        self.last_response = response
+        try:
+            return sx.load(response)
+        except sx.ParseError:
+            return response
 
     def _send(self, sexp):
         s = sx.dump([b'query%d' % self.next_qid, sexp])

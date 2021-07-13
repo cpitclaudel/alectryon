@@ -73,8 +73,14 @@ def parse(tokens):
             top.append(tok)
     return top[0]
 
+class ParseError(Exception):
+    pass
+
 def load(bs):
-    return parse(tokenize(bs))
+    try:
+        return parse(tokenize(bs))
+    except IndexError:
+        raise ParseError()
 
 def unparse(sexp, buf):
     stack = [sexp]
