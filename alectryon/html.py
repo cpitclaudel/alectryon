@@ -140,8 +140,7 @@ class HtmlGenerator:
                 # there are none.
                 self.gen_hyps(goal.hypotheses)
             toggle = goal.hypotheses and toggle
-            cls = "goal-separator" + (" alectryon-extra-goal-label" if toggle else "")
-            with self.gen_label(toggle, cls):
+            with self.gen_label(toggle, "goal-separator"):
                 tags.hr()
                 if goal.name:
                     tags.span(goal.name, cls="goal-name")

@@ -117,7 +117,7 @@ In any case, make an exception for comments:
 .alectryon-bubble:before,
 .alectryon-toggle-label:before,
 .alectryon-io label.alectryon-input:after,
-.alectryon-io .alectryon-extra-goal-label:before {
+.alectryon-io .alectryon-goal > label:before {
     border: 1px solid #babdb6;
     border-radius: 1em;
     box-sizing: border-box;
@@ -131,11 +131,11 @@ In any case, make an exception for comments:
 }
 
 .alectryon-toggle-label:before,
-.alectryon-io .alectryon-extra-goal-label:before {
+.alectryon-io .alectryon-goal > label:before {
     margin-right: 0.25em;
 }
 
-.alectryon-io .alectryon-extra-goal-label::before {
+.alectryon-io .alectryon-goal > label:before {
     margin-top: -0.35em;
 }
 
@@ -182,7 +182,7 @@ In any case, make an exception for comments:
 
 .alectryon-toggle:checked + .alectryon-toggle-label:before,
 .alectryon-io .alectryon-sentence > .alectryon-toggle:checked + label.alectryon-input:after,
-.alectryon-io .alectryon-extra-goal-toggle:checked + .alectryon-goal .alectryon-extra-goal-label:before {
+.alectryon-io .alectryon-extra-goal-toggle:checked + .alectryon-goal > label:before {
     background-color: #babdb6;
     border-color: #babdb6;
 }
