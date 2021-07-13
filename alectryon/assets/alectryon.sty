@@ -49,6 +49,7 @@
 \newcommand{\alectryon@hypn}[1]{\textbf{#1}}
 \newcommand{\alectryon@par}{\leavevmode\par\ignorespaces}
 \newcommand{\alectryon@cr}{\-\cr\ignorespaces}
+\newcommand{\alectryon@vsep}{\vspace{0.15em}}
 \newcommand{\alectryon@sep}{\relax}
 \newcommand{\alectryon@nl}{\alectryon@par}
 
@@ -89,13 +90,13 @@
 \alectryon@newenvironment{wsp}{}{}
   {}
 \alectryon@newenvironment{sentence}{}{}
-  {\par\vspace{0.15em}}
+  {\par\alectryon@vsep}
 \alectryon@newenvironment{input}{}{}
   {}
 \alectryon@newenvironment{output}{\alectryon@output@setsize}{\par}
-  {\par\vspace{0.15em}}
+  {\par\alectryon@vsep}
 \alectryon@newenvironment{goals}{\begin{alectryon@outer}}{\end{alectryon@outer}}
-  {\par\vspace{0.15em}}
+  {\par\alectryon@vsep}
 \alectryon@newenvironment{goal}{\begin{alectryon@inner}}{\end{alectryon@inner}}
   {\alectryon@goal@rule}
 \alectryon@newenvironment{hyps}
@@ -109,9 +110,9 @@
   {\end{tabular}}
   {}
 \alectryon@newenvironment{extragoals}{}{}
-  {}
+  {\par\alectryon@vsep}
 \alectryon@newenvironment{messages}{\begin{alectryon@outer}}{\end{alectryon@outer}}
-  {\par\vspace{0.15em}}
+  {\par\alectryon@vsep}
 \alectryon@newenvironment{message}{\begin{alectryon@inner}}{\end{alectryon@inner}}
   {}
 \alectryon@newenvironment{conclusion}{\alectryon@strut}{}
