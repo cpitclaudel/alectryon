@@ -400,6 +400,19 @@ From Python, use ``alectryon.docutils.HTML_MINIFICATION = True`` and ``alectryon
 
 A minification algorithm for JSON is implemented in ``json.py`` but not exposed on the command line.
 
+Diffing compressed caches
+-------------------------
+
+Compressed caches kept in a Git repository can be inspected by `automatically decompressing them <https://www.git-scm.com/docs/gitattributes#_performing_text_diffs_of_binary_files>`__ before computing diffs::
+
+   # In $GIT_DIR/config or $HOME/.gitconfig:
+   [diff "xz"]
+     binary = true
+     textconv = xzcat
+
+   # In .gitattributes:
+   *.cache.xz diff=xz
+
 Building without Alectryon
 --------------------------
 
