@@ -381,15 +381,15 @@ You can set Docutils settings for your single-page Coq+reST documents using a ``
 
 .. _minification:
 
-Reducing page and cache sizes
------------------------------
+Reducing page and cache sizes (experimental)
+--------------------------------------------
 
 Proofs with many repeated subgoals can generate very large HTML files and large caches.  In general, these files compress very well — especially with XZ and Brotli (often over 99%), less so with GZip (often over 95%).  But if you want to save space at rest, the following options may help:
 
-- ``--html-minification``:  Replace repeated goals and hypotheses in the generated HTML with back-references (minimal Javascript is included in the generated page to resolve these references).  Typical results::
+- ``--html-minification``:  Replace repeated goals and hypotheses in the generated HTML with back-references and use more succinct markup.  Minimal Javascript is included in the generated page to resolve references and restore full interactivity.  Typical results::
 
      4.4M List.html          24.8M Ranalysis3.html
-     1.8M List.min.html       1.5M Ranalysis3.min.html
+     1.4M List.min.html       452K Ranalysis3.min.html
 
 - ``--cache-compression``: Compress caches (the default is to use XZ compression).  Typical results::
 
