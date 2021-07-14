@@ -557,11 +557,16 @@ def register_stylesheets(translator, stylesheets):
 class HtmlTranslator(html4css1.HTMLTranslator): \
       # pylint: disable=abstract-method
     JS = ASSETS_HTML.ALECTRYON_JS
-    CSS = (*ASSETS_HTML.ALECTRYON_CSS, *ASSETS_HTML.DOCUTILS_CSS, *ASSETS_HTML.PYGMENTS_CSS)
-    ADDITIONAL_HEADS = [ASSETS_HTML.IBM_PLEX_CDN, ASSETS_HTML.FIRA_CODE_CDN, *ADDITIONAL_HEADS]
+    CSS = (*ASSETS_HTML.ALECTRYON_CSS,
+           *ASSETS_HTML.DOCUTILS_CSS,
+           *ASSETS_HTML.PYGMENTS_CSS)
+    ADDITIONAL_HEADS = [ASSETS_HTML.IBM_PLEX_CDN,
+                        ASSETS_HTML.FIRA_CODE_CDN,
+                        *ADDITIONAL_HEADS]
 
     JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>\n'
-    MATHJAX_URL = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.1.2/es5/tex-mml-chtml.min.js"
+    MATHJAX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js'
+    mathjax_script = '<script type="text/javascript" defer src="%s"></script>\n'
 
     head_prefix_template = \
         '<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone"' \

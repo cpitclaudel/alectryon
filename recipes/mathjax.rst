@@ -38,11 +38,11 @@ Then, we add notations to print LaTeX code (this is only one way to do it; anoth
      (at level 200, x binder, y binder, right associativity,
       format "'\ccForall{' x .. y '}{' P '}'").
 
-Then, we add setup to load MathJax and render notations:
+Then, we add MathJax definitions for each of these custom macros (look at the page source to see them):
 
 .. raw:: html
 
-   <div>
+   <div style="display: none">
        \(\newcommand{\ccQ}{\mathbb{Q}}\)
        \(\newcommand{\ccNat}{\mathbb{N}}\)
        \(\newcommand{\ccSucc}[1]{\mathrm{S}\:#1}\)
@@ -54,31 +54,32 @@ Then, we add setup to load MathJax and render notations:
        \(\newcommand{\ccNsum}[3]{\sum_{#1 = 0}^{#2} #3}\)
    </div>
 
-Then, we wrap each conclusion and each hypothesis in math markers, and we load MathJax:
+Then we set up MathJax to render the proofs properly (look at the page source to see the relevant script):
 
 .. raw:: html
 
    <script type="text/javascript">
-     function setup() {
+     function addMathDelimiters() {
+        // 1. Find all relevant Alectryon tags
         var spans = document.querySelectorAll(".goal-conclusion .highlight, .goal-hyp .highlight");
+
+        // 2. Wrap the contents of each in \(\) math delimiters
         spans.forEach(function (e) {
-            var text = e.innerText;
-            var node = document.createTextNode('\\[' + text + '\\]');
-            e.parentNode.replaceChild(node, e);
+            var math = document.createTextNode('\\[' + e.innerText + '\\]');
+            e.parentNode.replaceChild(math, e);
         });
      }
 
      MathJax = {
          options: {
-             skipHtmlTags: [
-                 'script', 'noscript', 'style', 'textarea',
-                 'annotation', 'annotation-xml'
-             ]
+             // Alectryon code is wrapped in <pre> blocks, so MathJax would skip
+             // them if we didn't add an exception for 'alectryon-io'
+             processHtmlClass: 'alectryon-io'
          },
          startup: {
              pageReady: function () {
-                 setup();
-                 return MathJax.startup.defaultPageReady();
+                 addMathDelimiters(); // First add \(\) math delimiters
+                 return MathJax.startup.defaultPageReady(); // Then run MathJax
              }
          }
      };
@@ -90,11 +91,7 @@ Then, we wrap each conclusion and each hypothesis in math markers, and we load M
        }
    </style>
 
-   <script type="text/javascript" id="MathJax-script" async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-   </script>
-
-Finally, here's the actual proof:
+And finally we write the actual proofs:
 
 .. coq::
 
@@ -108,3 +105,5 @@ Finally, here's the actual proof:
        rewrite IHn.
        ring.
    Qed.
+
+Note that Alectryon loads MathJax with the ``defer`` attribute, so if you need to call ``MathJax.typeset()`` or ``MathJax.typesetPromise()``, you'll want to do that from a deferred script or from a ``DOMContentLoaded`` event listener.
