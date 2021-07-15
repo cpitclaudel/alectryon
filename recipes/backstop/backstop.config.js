@@ -26,6 +26,8 @@ function scenarios(dir) {
             }))));
 }
 
+dir = process.env.BACKSTOP_DIR || "../output/";
+
 module.exports = {
     "id": "backstop_default",
     "viewports": [
@@ -36,7 +38,7 @@ module.exports = {
         }
     ],
     "onReadyScript": "puppet/onReady.js",
-    "scenarios": scenarios("../output/"),
+    "scenarios": scenarios(dir),
     "paths": {
         "bitmaps_reference": "backstop_data/bitmaps_reference",
         "bitmaps_test": "backstop_data/bitmaps_test",
