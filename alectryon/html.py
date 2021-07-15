@@ -19,6 +19,7 @@
 # SOFTWARE.
 
 from collections import defaultdict
+from contextlib import contextmanager
 from functools import wraps
 from os import path
 import pickle
@@ -93,6 +94,10 @@ def deduplicate(selector):
         return _fn
     return _deduplicate
 
+@contextmanager
+def nullctx():
+    yield
+
 class HtmlGenerator:
     def __init__(self, highlighter, gensym_stem="", minify=False):
         self.highlight = highlighter
@@ -110,7 +115,7 @@ class HtmlGenerator:
     def gen_hyp(self, hyp):
         with tags.div():
             tags.var(", ".join(hyp.names))
-            with tags.span(): # For alignment
+            with tags.span() if hyp.body else nullctx(): # For alignment
                 if hyp.body:
                     with tags.span(cls="hyp-body"):
                         tags.b(":=")
