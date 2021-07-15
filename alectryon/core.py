@@ -44,12 +44,12 @@ class GeneratorInfo(namedtuple("GeneratorInfo", "name version")):
 Hypothesis = namedtuple("Hypothesis", "names body type")
 Goal = namedtuple("Goal", "name conclusion hypotheses")
 Message = namedtuple("Message", "contents")
-Sentence = namedtuple("Sentence", "contents messages goals")
-Text = namedtuple("Text", "contents")
+Sentence = namedtuple("Sentence", "contents loc messages goals")
+Text = namedtuple("Text", "contents loc")
 
 Goals = namedtuple("Goals", "goals")
 Messages = namedtuple("Messages", "messages")
-RichSentence = namedtuple("RichSentence", "contents outputs annots prefixes suffixes")
+RichSentence = namedtuple("RichSentence", "contents loc outputs annots prefixes suffixes")
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
@@ -290,13 +290,13 @@ class SerAPI():
             if isinstance(response, ApiAdded):
                 start, end = response.loc
                 if start != prev_end:
-                    spans.append((None, chunk[prev_end:start]))
-                spans.append((response.sid, chunk[start:end]))
+                    spans.append((None, (prev_end, start), chunk[prev_end:start]))
+                spans.append((response.sid, (start, end), chunk[start:end]))
                 prev_end = end
             elif isinstance(response, ApiMessage):
                 messages.append(response)
         if prev_end != len(chunk):
-            spans.append((None, chunk[prev_end:]))
+            spans.append((None, (prev_end, len(chunk)), chunk[prev_end:]))
         return spans, [self._pprint_message(msg) for msg in messages]
 
     def _pprint_hyp(self, hyp, sid):
@@ -331,14 +331,14 @@ class SerAPI():
         chunk = memoryview(chunk)
         spans, messages = self._add(chunk)
         fragments, fragments_by_id = [], {}
-        for span_id, contents in spans:
+        for span_id, loc, contents in spans:
             contents = str(contents, encoding='utf-8')
             if span_id is None:
-                fragments.append(Text(contents))
+                fragments.append(Text(contents, loc=loc))
             else:
                 messages.extend(self._exec(span_id, chunk))
                 goals = list(self._goals(span_id, chunk))
-                fragment = Sentence(contents, messages=[], goals=goals)
+                fragment = Sentence(contents, loc=loc, messages=[], goals=goals)
                 fragments.append(fragment)
                 fragments_by_id[span_id] = fragment
         # Messages for span n + δ can arrive during processing of span n or
@@ -362,7 +362,7 @@ def annotate(chunks, sertop_args=()):
     instances (whitespace and comments) and ``Sentence`` instances (code).
 
     >>> annotate(["Check 1."], ("-Q", "..,logical_name"))
-    [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
+    [[Sentence(contents='Check 1.', loc=(0,0), messages=[Message(contents='1\n     : nat')], goals=[])]]
     """
     with SerAPI(args=sertop_args) as api:
         return [api.run(chunk) for chunk in chunks]

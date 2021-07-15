@@ -91,7 +91,7 @@ def enrich_sentences(fragments):
         if isinstance(fr, Sentence):
             # Always add goals & messages; empty lists are filtered out later
             outputs = [Messages(fr.messages), Goals(fr.goals)]
-            yield RichSentence(contents=fr.contents, outputs=outputs,
+            yield RichSentence(contents=fr.contents, loc=fr.loc, outputs=outputs,
                                prefixes=[], suffixes=[], annots=IOAnnots())
         else:
             yield fr
@@ -195,7 +195,7 @@ def group_whitespace_with_code(fragments):
                 else:
                     rest = rest + after
 
-            grouped[idx] = Text(rest) if rest else None
+            grouped[idx] = Text(rest, loc=fr.loc) if rest else None
     return [g for g in grouped if g is not None]
 
 BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")

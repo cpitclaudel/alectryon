@@ -204,7 +204,7 @@ class HtmlGenerator:
     def gen_sentence(self, fr):
         if fr.contents is not None:
             self.gen_whitespace(fr.prefixes)
-        with tags.span(cls="alectryon-sentence"):
+        with tags.span(cls="alectryon-sentence", location=("%d_%d"% (fr.loc[0], fr.loc[1]))):
             toggle = fr.outputs and self.gen_checkbox(fr.annots.unfold, "alectryon-toggle")
             if fr.contents is not None:
                 self.gen_input(fr, toggle)
