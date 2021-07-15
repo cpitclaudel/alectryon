@@ -42,14 +42,6 @@ def add_html_assets(app):
         for js in ASSETS.ALECTRYON_JS:
             app.add_js_file(js)
 
-def replace_alectryon_io_nodes(app, doctree, _fromdocname):
-    # It's too late for add_post_transform, so run manually.
-    if isinstance(app.builder, sphinx.builders.latex.LaTeXBuilder):
-        transform = docutils.AlectryonLatexPostTransform
-    else: # default to HTML
-        transform = docutils.AlectryonHTMLPostTransform
-    transform(doctree).apply()
-
 def setup(app):
     """Register Alectryon's directives, transforms, etc."""
     register_coq_parser(app)
@@ -69,10 +61,9 @@ def setup(app):
     for (_doc, _flags, opts) in docutils.ALECTRYON_SETTINGS:
         app.add_config_value(opts["dest"], opts["default"], "env")
 
-    for transform in docutils.TRANSFORMS:
-        app.add_transform(transform)
+    # All custom transforms are run through pending nodes,
+    # so no need for ``app.add_transform(...)``
 
     app.connect('builder-inited', add_html_assets)
-    app.connect('doctree-resolved', replace_alectryon_io_nodes)
 
     return {'version': '0.1', "parallel_read_safe": True}

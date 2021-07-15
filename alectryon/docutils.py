@@ -97,7 +97,7 @@ class alectryon_pending(nodes.pending):
 class alectryon_pending_toggle(nodes.pending):
     pass
 
-class alectryon_io(docutils.nodes.Element):
+class alectryon_pending_io(nodes.pending):
     pass
 
 # Transforms
@@ -119,7 +119,7 @@ CACHE_DIRECTORY = None
 class AlectryonState:
     def __init__(self):
         self.generator = None
-        self.transform_executed = False
+        self.transforms_executed = set()
 
 def _alectryon_state(document):
     st = getattr(document, "alectryon_state", None)
@@ -164,7 +164,21 @@ class Config:
                 yield "-" + arg
                 yield ",".join(vals)
 
-class AlectryonTransform(Transform):
+class OneTimeTransform(Transform):
+    def _apply(self):
+        raise NotImplementedError()
+
+    def apply(self, **_kwargs):
+        # Transforms added by pending() nodes are added multiple times: once per
+        # directive, and potentially once by add_transform in Sphinx, so we need
+        # to make sure that running them twice is safe (in particular, we must
+        # not overwrite the cache).
+        state = _alectryon_state(self.document)
+        if type(self).__name__ not in state.transforms_executed:
+            state.transforms_executed.add(type(self).__name__)
+            self._apply()
+
+class AlectryonTransform(OneTimeTransform):
     default_priority = 990
     auto_toggle = True
 
@@ -208,7 +222,9 @@ class AlectryonTransform(Transform):
         fragments = transforms.default_transform(fragments)
         self.check_for_long_lines(pending, fragments)
         contents = pending.details["contents"]
-        io = alectryon_io(fragments=fragments, contents=contents)
+        io = alectryon_pending_io(AlectryonPostTransform,
+                                  fragments=fragments, contents=contents)
+        self.document.note_pending(io)
         pending.replace_self(io)
 
     def apply_coq(self):
@@ -244,44 +260,39 @@ class AlectryonTransform(Transform):
             if di:
                 self.insert_toggle_after(di, toggle(0), True)
 
-    def apply(self, **_kwargs):
-        # The transform is added multiple times: once per directive, and once by
-        # add_transform in Sphinx, so we need to make sure that running it twice
-        # is safe (in particular, we must not overwrite the cache).
-        state = _alectryon_state(self.document)
-        if not state.transform_executed:
-            state.transform_executed = True
-            self.apply_coq()
-            self.apply_toggle()
+    def _apply(self):
+        self.apply_coq()
+        self.apply_toggle()
 
-class AlectryonPostTransform(Transform):
-    default_priority = 995
+class AlectryonPostTransform(OneTimeTransform):
+    """Convert Alectryon input/output pairs into HTML or LaTeX.
+
+    This transform is triggered by a ``pending`` node added by
+    ``AlectryonTransform``.  See ``docutils.components.transforms.Filter``.
+    """
+    default_priority = 996
 
     @staticmethod
     def document_id(document):
         source = document.get('source', "")
         return nodes.make_id(os.path.basename(source))
 
-    def init_writer(self):
+    def init_generator(self):
+        formats = set(self.document.transformer.components['writer'].supported)
+        if 'html' in formats:
+            gensym_stem = self.document_id(self.document)
+            return "html", HtmlGenerator(highlight_html, gensym_stem)
+        if {'latex', 'xelatex', 'lualatex'} & formats:
+            return "latex", LatexGenerator(highlight_latex)
         raise NotImplementedError("Unknown output format")
 
-    def apply(self, **_kwargs):
-        config = Config(self.document)
-        fmt, writer = self.init_writer()
-        with added_tokens(config.tokens):
-            for node in self.document.traverse(alectryon_io):
+    def _apply(self, **_kwargs):
+        fmt, generator = self.init_generator()
+        with added_tokens(Config(self.document).tokens):
+            for node in self.document.traverse(alectryon_pending_io):
                 fragments, contents = node["fragments"], node["contents"]
-                raw = writer.gen_fragments(fragments).render(pretty=False)
+                raw = generator.gen_fragments(fragments).render(pretty=False)
                 node.replace_self(nodes.raw(contents, raw, format=fmt))
-
-class AlectryonHTMLPostTransform(AlectryonPostTransform):
-    def init_writer(self):
-        gensym_stem = self.document_id(self.document)
-        return "html", HtmlGenerator(highlight_html, gensym_stem=gensym_stem)
-
-class AlectryonLatexPostTransform(AlectryonPostTransform):
-    def init_writer(self):
-        return "latex", LatexGenerator(highlight_latex)
 
 # Directives
 # ----------
@@ -617,9 +628,6 @@ class HtmlWriter(html4css1.Writer):
                      ('Alectryon HTML writer options',
                       None, ALECTRYON_SETTINGS))
 
-    def get_transforms(self):
-        return super().get_transforms() + [AlectryonHTMLPostTransform]
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.translator_class = HtmlTranslator
@@ -639,9 +647,6 @@ XeLatexTranslator = make_LatexTranslator(xetex.XeLaTeXTranslator)
 
 def make_LatexWriter(base, translator_class):
     class Writer(base):
-        def get_transforms(self):
-            return super().get_transforms() + [AlectryonLatexPostTransform]
-
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.translator_class = translator_class
@@ -654,8 +659,10 @@ XeLatexWriter = make_LatexWriter(xetex.Writer, XeLatexTranslator)
 # ============
 
 NODES = [alectryon_pending,
-         alectryon_pending_toggle]
-TRANSFORMS = [AlectryonTransform]
+         alectryon_pending_toggle,
+         alectryon_pending_io]
+TRANSFORMS = [AlectryonTransform,
+              AlectryonPostTransform]
 DIRECTIVES = [CoqDirective,
               AlectryonToggleDirective,
               ExperimentalExerciseDirective]
