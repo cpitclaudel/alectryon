@@ -1,0 +1,4 @@
+# Include into repo config after checkout using `git config --local include.path ../.gitconfig`
+[diff "xz"]
+  binary = true
+  textconv = xzcat
