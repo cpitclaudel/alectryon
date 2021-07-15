@@ -10,6 +10,7 @@ reference: recipes
 	$(backstop) reference
 
 recipes:
+	+$(MAKE) -C .. clean
 	+$(MAKE) -C ..
 
 clean:

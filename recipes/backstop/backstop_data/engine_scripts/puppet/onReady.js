@@ -4,6 +4,10 @@ module.exports = async (page, scenario, vp) => {
 
     // Wait for fonts
     await page.evaluateHandle('document.fonts.ready');
+    await page.evaluate(async () => {
+        if (document.MathJax)
+            await MathJax.startup.promise;
+    });
 
     // Toggle checkboxes
     switch (scenario.alectryon_style) {
@@ -16,5 +20,4 @@ module.exports = async (page, scenario, vp) => {
         });
         break;
     }
-
 };

@@ -12,7 +12,7 @@ function scenarios(dir) {
                 // "referenceUrl": "",
                 "readyEvent": "",
                 // "readySelector": "",
-                "delay": 20,
+                "delay": 0,
                 // "hideSelectors": [],
                 // "removeSelectors": [],
                 // "hoverSelector": "",
