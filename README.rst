@@ -396,6 +396,42 @@ For documents with more pages, you can either move the ``.. raw`` part to a sepa
 
 But for large collections of related documents, it's likely better to use Sphinx (or some other similar engine).  In that case, you can use Sphinx' built-in support for additional JS and CSS: ``app.add_js_file(js)`` and ``app.add_css_file(css)``.
 
+Special case: MathJax
+~~~~~~~~~~~~~~~~~~~~~
+
+MathJax is a JavaScript library for rendering LaTeX math within webpages.  Properly configuring it can be a bit tricky.
+
+- If you just want to include math in reStructuredText documents, docutils will generally do the right thing: it will generate code to load MathJaX from a CDN if you use the ``:math:`` role, and it leave that code out if you don't.
+
+- If you want to render parts of your Coq code using MathJaX, things are trickier: you need to use Javascript to:
+
+  1. Configure MathJax to stop ignoring ``<pre>`` blocks by adding a ``MathJax = …`` `config block <http://docs.mathjax.org/en/latest/web/configuration.html>`__::
+
+        MathJax = {}
+        MathJax.options = { processHtmlClass: 'alectryon-io' };
+
+  2. Add ``\( … \)`` math markers to tell MathJax where to look (see `<./recipes/mathjax.rst>`__ for an example)::
+
+        MathJax.startup = {
+            pageReady: function () {
+                // … Custom code to add \( … \) delimiters
+                return MathJax.startup.defaultPageReady(); // Then run MathJax
+            }
+        }
+
+  3. Ensure that these definitions are processed *before* MathJax itself is loaded, since it's not easy to `reconfigure MathJax after loading it <http://docs.mathjax.org/en/latest/web/configuration.html#configuring-mathjax-after-it-is-loaded>`__.  Concretely, this means either adding ``defer`` to the MathJax ``<script>`` tag, moving the configuration to a separate script loaded before MathJax, or moving the MathJax ``<script>`` to the end of the file (past the configuration above).
+
+     The problem is that docutils automatically inserts the MathJax ``<script>`` tag for you if you use some math in the document, so you don't have much control over it (if you don't have any ``:math:`` roles then there's no problem: you can include the MathJax script yourself as explained in the previous section).
+
+  Alectryon already configures docutils to load MathJax with the ``defer`` option, so the steps above should work reliably when using Alectryon in standalone mode (point [3.] is already taken care of).
+
+  Sphinx loads MathJax in ``async`` mode by default, so the above won't work reliably, and the ``mathjax3_config`` option is not always enough (it only supports simple types, not functions; see `Sphinx issue 9450 <https://github.com/sphinx-doc/sphinx/issues/9450>`__).  Instead, put the configuration above in a separate script and include it in ``html_js_files`` with sufficiently low priority (must be < 500).  See `<recipes/sphinx/conf.py>`__ and `<recipes/sphinx/_static/mathjax_config.js>`__ for an example (you can inline the body of the script directly in ``conf.py``).
+
+  For other processors, such as Pelican, then you need to either move your configuration to a separate file and make sure that it is loaded first, as in Sphinx, or find a way to defer ``MathJax``.  The following usually works::
+
+     from docutils.writers._html_base import HTMLTranslator
+     HTMLTranslator.mathjax_script = '<script type="text/javascript" defer src="%s"></script>\n'
+
 .. _gallery:
 
 Gallery
