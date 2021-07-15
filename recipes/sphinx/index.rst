@@ -11,6 +11,7 @@ Welcome to alectryon-demo's documentation!
    :caption: Contents:
 
    coqchapter
+   math
 
 The default role produces Coq code: `let a := 1 in a + a`.
 

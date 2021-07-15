@@ -1,0 +1,42 @@
+{
+  "generator": [
+    "Coq+SerAPI",
+    "8.12.0+0.12.0"
+  ],
+  "metadata": {
+    "sertop_args": [],
+    "cache_version": "1"
+  },
+  "chunks": [
+    "Notation \"\\mathbb{N}\" := nat.\nPrint nat. (* .unfold *)"
+  ],
+  "annotated": [
+    [
+      {
+        "_type": "sentence",
+        "contents": "Notation \"\\mathbb{N}\" := nat.",
+        "messages": [],
+        "goals": []
+      },
+      {
+        "_type": "text",
+        "contents": "\n"
+      },
+      {
+        "_type": "sentence",
+        "contents": "Print nat.",
+        "messages": [
+          {
+            "_type": "message",
+            "contents": "Inductive nat : Set :=\n    O : \\mathbb{N} | S : \\mathbb{N} -> \\mathbb{N}\n\nArguments S _%nat_scope"
+          }
+        ],
+        "goals": []
+      },
+      {
+        "_type": "text",
+        "contents": " (* .unfold *)"
+      }
+    ]
+  ]
+}
