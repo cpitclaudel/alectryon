@@ -324,19 +324,26 @@ class CoqDirective(Directive):
     required_arguments = 0
     optional_arguments = 1
     final_argument_whitespace = True
-    option_spec = {}
+    option_spec = {'class': directives.class_option,
+                   'name': directives.unchanged}
     has_content = True
 
     EXPECTED_INDENTATION = 3
 
     def run(self):
+        roles.set_classes(self.options)
         self.assert_has_content()
+
         arguments = self.arguments[0].split() if self.arguments else []
         contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
         details = {"options": set(arguments), "contents": contents}
-        pending = alectryon_pending(AlectryonTransform, details=details)
+        pending = alectryon_pending(AlectryonTransform, details=details,
+                                    **self.options)
+
         set_line(pending, self.lineno, self.state_machine)
+        self.add_name(pending)
         self.state_machine.document.note_pending(pending)
+
         return [pending]
 
 class AlectryonToggleDirective(Directive):
