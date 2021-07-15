@@ -2,6 +2,11 @@
  Major changes
 ===============
 
+Version 1.2.1
+=============
+
+- Fix an API breakage introduced by the implementation LaTeX export (``AlectryonPostTransform`` was only registered for Docutils and Sphinx, but not for other document processors like Pelican; the updated implementation registers it unconditionally).
+
 Version 1.2
 ===========
 
