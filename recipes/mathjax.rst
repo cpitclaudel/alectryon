@@ -61,7 +61,11 @@ Then we set up MathJax to render the proofs properly (look at the page source to
    <script type="text/javascript">
      function addMathDelimiters() {
         // 1. Find all relevant Alectryon tags
-        var spans = document.querySelectorAll(".goal-conclusion .highlight, .goal-hyps > div .highlight");
+        var spans = document.querySelectorAll(
+            ".coq-math .goal-conclusion, " +
+            ".coq-math .hyp-body span, " +
+            ".coq-math .hyp-type span"
+        );
 
         // 2. Wrap the contents of each in \(\) math delimiters
         spans.forEach(function (e) {
@@ -85,7 +89,9 @@ Then we set up MathJax to render the proofs properly (look at the page source to
    </script>
 
    <style type="text/css"> /* Override MathJax margins */
-       .goal-conclusion .highlight > *, .goal-hyps > div .highlight > * {
+       .coq-math .goal-conclusion > *,
+       .coq-math .hyp-body span > *,
+       .coq-math .hyp-type span > * {
            margin: 0 !important;
        }
    </style>
@@ -93,6 +99,7 @@ Then we set up MathJax to render the proofs properly (look at the page source to
 And finally we write the actual proofs:
 
 .. coq::
+   :class: coq-math
 
    Lemma Gauss: ∀ n,
        2 * (nsum n (fun i => i)) = n * (n + 1).

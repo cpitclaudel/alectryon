@@ -25,10 +25,6 @@ SOFTWARE.
 /* CSS reset for .alectryon-io */
 /*******************************/
 
-.alectryon-io .highlight {
-    background: none; /* Some Sphinx themes set a background on .highlight */
-}
-
 .alectryon.io blockquote {
     line-height: inherit;
 }

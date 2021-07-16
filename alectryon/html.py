@@ -119,10 +119,10 @@ class HtmlGenerator:
                 if hyp.body:
                     with tags.span(cls="hyp-body"):
                         tags.b(":=")
-                        self.highlight(hyp.body)
+                        tags.span(self.highlight(hyp.body))
                 with tags.span(cls="hyp-type"):
                     tags.b(":")
-                    self.highlight(hyp.type)
+                    tags.span(self.highlight(hyp.type))
 
     @deduplicate(".goal-hyps")
     def gen_hyps(self, hyps):
@@ -222,7 +222,7 @@ class HtmlGenerator:
 
     def gen_fragments(self, fragments, classes=()):
         """Serialize a list of `fragments` to HTML."""
-        with tags.pre(cls=" ".join(("alectryon-io", *classes))) as pre:
+        with tags.pre(cls=" ".join(("alectryon-io", "highlight", *classes))) as pre:
             tags.comment(" Generator: {} ".format(GENERATOR))
             fragments = transforms.group_whitespace_with_code(fragments)
             fragments = transforms.commit_io_annotations(fragments)
