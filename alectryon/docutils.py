@@ -229,9 +229,8 @@ class AlectryonTransform(OneTimeTransform):
         fragments = self.set_fragment_annots(fragments, annots)
         fragments = transforms.default_transform(fragments)
         self.check_for_long_lines(pending, fragments)
-        contents = pending.details["contents"]
-        io = alectryon_pending_io(AlectryonPostTransform,
-                                  fragments=fragments, contents=contents)
+        details = {**pending.details, "fragments": fragments}
+        io = alectryon_pending_io(AlectryonPostTransform, details)
         self.document.note_pending(io)
         pending.replace_self(io)
 
@@ -299,7 +298,7 @@ class AlectryonPostTransform(OneTimeTransform):
         fmt, generator = self.init_generator()
         with added_tokens(Config(self.document).tokens):
             for node in self.document.traverse(alectryon_pending_io):
-                fragments, contents = node["fragments"], node["contents"]
+                fragments, contents = node.details["fragments"], node.details["contents"]
                 raw = generator.gen_fragments(fragments).render(pretty=False)
                 node.replace_self(nodes.raw(contents, raw, format=fmt))
 
