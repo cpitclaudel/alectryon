@@ -8,9 +8,7 @@
         "Coq+SerAPI",
         "8.12.0+0.12.0"
       ],
-      "metadata": {
-        "args": []
-      },
+      "config": {},
       "chunks": [
         "Compute ((fun (n: nat) (opt: option nat) (eq: opt = Some n) => n)\n           _ (Some 3) eq_refl)."
       ],

@@ -8,9 +8,7 @@
         "Coq+SerAPI",
         "8.12.0+0.12.0"
       ],
-      "metadata": {
-        "args": []
-      },
+      "config": {},
       "chunks": [
         "Definition example_from_sphinx: nat. (* .unfold *)\nProof. (* .no-goals *)\n  simple apply Nat.add.\n  exact 1.\n  assert (n: nat).\n  2: clear n.\n  exact 3.\n  exact 2.\nDefined.\n\nPrint example_from_sphinx. (* .unfold *)"
       ],

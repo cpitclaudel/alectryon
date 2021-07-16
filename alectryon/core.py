@@ -50,6 +50,8 @@ class GeneratorInfo(namedtuple("GeneratorInfo", "name version")):
     def fmt(self, include_version_info=True):
         return "{} v{}".format(self.name, self.version) if include_version_info else self.name
 
+ProverArgs = namedtuple("ProverArgs", "")
+
 class Prover():
     @classmethod
     def version_info(cls, binpath=None):

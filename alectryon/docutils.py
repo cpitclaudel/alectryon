@@ -138,7 +138,7 @@ def _alectryon_state(document):
 class Config:
     def __init__(self, document):
         self.tokens_by_lang = defaultdict(dict)
-        self.prover_args = defaultdict(list)
+        self.prover_config = defaultdict(dict)
         # Sphinx doesn't translate ``field_list`` to ``docinfo``
         selector = lambda n: isinstance(n, (nodes.field_list, nodes.docinfo))
         for di in document.traverse(selector):
@@ -158,7 +158,7 @@ class Config:
             self.tokens_by_lang[lang].setdefault(token, []).extend(body.split())
         elif name == "alectryon/serapi/args":
             import shlex
-            self.prover_args["coq"].extend(self.parse_args(shlex.split(body)))
+            self.prover_config["coq"].setdefault("args", []).extend(self.parse_args(shlex.split(body)))
         else:
             return
         node.parent.remove(node)
@@ -203,10 +203,10 @@ class AlectryonTransform(OneTimeTransform):
     auto_toggle = True
 
     SERTOP_ARGS = () # FIXME change into a proxy and remove compat code below
-    """DEPRECATED; use PROVER_ARGS["coq"] instead."""
+    """DEPRECATED; use PROVER_CONFIG["coq"]["args"] instead."""
 
-    PROVER_ARGS = defaultdict(list)
-    """Arguments to pass to each prover (in SerAPI format for Coq)."""
+    PROVER_CONFIG = defaultdict(dict)
+    """Configuration for each prover (in SerAPI format for Coq)."""
 
     @staticmethod
     def set_fragment_annots(fragments, annots):
@@ -225,10 +225,10 @@ class AlectryonTransform(OneTimeTransform):
             self.document.reporter.warning(msg, base_node=node, **opts)
 
     @staticmethod
-    def annotate(pending_nodes, lang, args, cache):
+    def annotate(pending_nodes, lang, config, cache):
         prover = get_prover(lang)
-        chunks = [pending.details["contents"] for pending in pending_nodes] # FIXME ↓
-        annotated = cache.update(chunks, prover, args)
+        chunks = [pending.details["contents"] for pending in pending_nodes]
+        annotated = cache.update(chunks, prover, config)
         return cache.generator, annotated
 
     def replace_node(self, pending, fragments, lang):
@@ -246,23 +246,24 @@ class AlectryonTransform(OneTimeTransform):
         self.document.note_pending(io)
         pending.replace_self(io)
 
-    def _prover_args(self, config):
-        args = defaultdict(list)
-        for lang in set(self.PROVER_ARGS) | set(config.prover_args):
-            args[lang].extend(config.prover_args[lang])
-            args[lang].extend(self.PROVER_ARGS[lang])
+    def _prover_config(self, config):
+        configs = defaultdict(dict)
+        for lang in set(self.PROVER_CONFIG) | set(config.prover_config):
+            configs[lang].update(config.prover_config[lang])
+            configs[lang].update(self.PROVER_CONFIG[lang])
         if self.SERTOP_ARGS: # Compatibility
-            args["coq"].extend(self.SERTOP_ARGS)
-        return args
+            configs["coq"]["args"].extend(self.SERTOP_ARGS)
+        return configs
 
     def apply_provers(self):
         from .json import CacheSet
         config = Config(self.document)
-        args = self._prover_args(config)
+        prover_config = self._prover_config(config)
         all_pending = self.document.traverse(alectryon_pending)
         with CacheSet(CACHE_DIRECTORY, self.document['source'], CACHE_COMPRESSION) as caches:
             for lang, pending_nodes in by_lang(all_pending).items():
-                generator, annotated = self.annotate(pending_nodes, lang, args[lang], caches[lang])
+                generator, annotated = self.annotate(
+                    pending_nodes, lang, prover_config[lang], caches[lang])
                 _alectryon_state(self.document).generators.append(generator)
                 for node, fragments in zip(pending_nodes, annotated):
                     self.replace_node(node, fragments, lang)

@@ -191,20 +191,19 @@ def validate_inputs(annotated, reference):
         return annotated.contents == reference
     return False
 
-def validate_metadata(metadata, reference, cache_file):
-    if metadata != reference:
-        MSG = "Outdated metadata in {} ({} != {})"
-        print(MSG.format(cache_file, metadata, reference))
+def validate_detailed(data, reference, cache_file, kind):
+    if data != reference:
+        MSG = "Outdated {} in {} ({} != {})"
+        print(MSG.format(kind, cache_file, data, reference))
         return False
     return True
 
-def validate_data(data, reference, cache_file):
+def validate_contents(data, reference, cache_file):
     if data != reference:
         MSG = "Outdated contents in {}: recomputing"
         print(MSG.format(cache_file))
         return False
     return True
-
 
 class Cache:
     def __init__(self, data, cache_file):
@@ -220,10 +219,10 @@ class Cache:
             return {k: Cache.normalize(v) for (k, v) in obj.items()}
         return obj
 
-    def _validate(self, chunks, metadata):
+    def _validate(self, chunks, config):
         return (self.data is not None
-           and validate_metadata(self.data["metadata"], metadata, self.cache_file)
-           and validate_data(self.data.get("chunks"), chunks, self.cache_file))
+           and validate_detailed(self.data["config"], config, self.cache_file, "configuration")
+           and validate_contents(self.data.get("chunks"), chunks, self.cache_file))
 
     def get(self, chunks, metadata):
         if not self._validate(self.normalize(chunks), self.normalize(metadata)):
@@ -234,18 +233,17 @@ class Cache:
     def generator(self):
         return core.GeneratorInfo(*self.data.get("generator", ("Coq+SerAPI", "??")))
 
-    def put(self, chunks, metadata, annotated, generator):
+    def put(self, chunks, config, annotated, generator):
         self.data = {"generator": self.normalize(generator),
-                     "metadata": self.normalize(metadata),
+                     "config": self.normalize(config),
                      "chunks": list(chunks),
                      "annotated": self.serializer.encode(annotated)}
 
-    def update(self, chunks, prover, args):
-        metadata = {"args": args}
-        annotated = self.get(chunks, metadata)
+    def update(self, chunks, prover, config):
+        annotated = self.get(chunks, config)
         if annotated is None:
-            annotated = prover.annotate(chunks, *args)
-            self.put(chunks, metadata, annotated, prover.version_info())
+            annotated = prover.annotate(chunks, **config)
+            self.put(chunks, config, annotated, prover.version_info())
         return annotated
 
 class FileCacheSet:
@@ -297,8 +295,8 @@ class FileCacheSet:
         return None, None
 
     def _validate(self):
-        return self.js and validate_metadata(self.js["metadata"], self.METADATA,
-                                           self.cache_rel_file)
+        return self.js and validate_detailed(self.js["metadata"], self.METADATA,
+                                           self.cache_rel_file, "metadata")
 
     def __getitem__(self, lang):
         if lang not in self.caches:

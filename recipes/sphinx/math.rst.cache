@@ -8,9 +8,7 @@
         "Coq+SerAPI",
         "8.12.0+0.12.0"
       ],
-      "metadata": {
-        "args": []
-      },
+      "config": {},
       "chunks": [
         "Notation \"\\mathbb{N}\" := nat.\nPrint nat. (* .unfold *)"
       ],

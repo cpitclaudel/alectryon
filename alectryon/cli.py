@@ -65,17 +65,17 @@ def rst_to_code(rst, fpath, point, marker, backend):
         assert False
     return _catch_parsing_errors(fpath, converter, rst, point, marker)
 
-def annotate_chunks(chunks, fpath, input_language, prover_args,
+def annotate_chunks(chunks, fpath, input_language, prover_config,
                     cache_directory, cache_compression):
     from .core import get_prover
     from .json import CacheSet
-    prover, args = get_prover(input_language), prover_args[input_language]
+    prover, config = get_prover(input_language), prover_config[input_language]
     with CacheSet(cache_directory, fpath, cache_compression) as caches:
-        return caches[input_language].update(chunks, prover, args)
+        return caches[input_language].update(chunks, prover, config)
 
 def register_docutils(v, args):
     from . import docutils
-    docutils.AlectryonTransform.PROVER_ARGS = args.prover_args
+    docutils.AlectryonTransform.PROVER_CONFIG = args.prover_config
     docutils.CACHE_DIRECTORY = args.cache_directory
     docutils.CACHE_COMPRESSION = args.cache_compression
     docutils.HTML_MINIFICATION = args.html_minification
@@ -577,9 +577,9 @@ def post_process_arguments(parser, args):
             MSG = "argument --mark-point: Expecting a number, not {!r}"
             parser.error(MSG.format(args.point))
 
-    args.prover_args = {
-        "coq": args.sertop_args,
-        "lean3": (),
+    args.prover_config = {
+        "coq": {"args": args.sertop_args},
+        "lean3": {"args": ()},
     }
     delattr(args, "sertop_args")
 
