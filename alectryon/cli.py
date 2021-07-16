@@ -91,7 +91,6 @@ def _gen_docutils(source, fpath,
 
     settings_overrides = {
         'traceback': True,
-        'embed_stylesheet': False,
         'stylesheet_path': None,
         'input_encoding': 'utf-8',
         'output_encoding': 'utf-8',

@@ -603,7 +603,6 @@ def make_HtmlTranslator(base):
             ' xml:lang="%(lang)s" lang="%(lang)s">\n<head>\n'
 
         def __init__(self, document):
-            document.settings.syntax_highlight = "short"
             document.settings.math_output = "MathJax " + self.MATHJAX_URL
             super().__init__(document)
 
@@ -654,6 +653,13 @@ def make_HtmlWriter(base, translator):
         settings_spec = (base.settings_spec +
                          ('Alectryon HTML writer options',
                           None, ALECTRYON_SETTINGS))
+
+        settings_default_overrides = { # By default:
+            # We embed the short-classes Pygments stylesheet, not the long-classes one…
+            "syntax_highlight": "short",
+            # … and we want to link to Alectryon's stylesheet, not embed it
+            "embed_stylesheet": False,
+        }
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
