@@ -228,7 +228,7 @@ class AlectryonTransform(OneTimeTransform):
     def annotate(pending_nodes, lang, args, cache):
         prover = get_prover(lang)
         chunks = [pending.details["contents"] for pending in pending_nodes] # FIXME ↓
-        annotated = cache.update(chunks, {"args": args}, lambda c: prover.annotate(chunks, args), prover.version_info())
+        annotated = cache.update(chunks, prover, args)
         return cache.generator, annotated
 
     def replace_node(self, pending, fragments, lang):

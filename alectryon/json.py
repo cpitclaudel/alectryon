@@ -240,12 +240,12 @@ class Cache:
                      "chunks": list(chunks),
                      "annotated": self.serializer.encode(annotated)}
 
-    # FIXME: pass a prover instance instead of update_fn and generator
-    def update(self, chunks, metadata, update_fn, generator):
+    def update(self, chunks, prover, args):
+        metadata = {"args": args}
         annotated = self.get(chunks, metadata)
         if annotated is None:
-            annotated = update_fn(chunks)
-            self.put(chunks, metadata, annotated, generator)
+            annotated = prover.annotate(chunks, *args)
+            self.put(chunks, metadata, annotated, prover.version_info())
         return annotated
 
 class FileCacheSet:

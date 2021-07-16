@@ -70,10 +70,8 @@ def annotate_chunks(chunks, fpath, input_language, prover_args,
     from .core import get_prover
     from .json import CacheSet
     prover, args = get_prover(input_language), prover_args[input_language]
-    metadata = { "args": args }
     with CacheSet(cache_directory, fpath, cache_compression) as caches:
-        upd = lambda c: prover.annotate(c, args)
-        return caches[input_language].update(chunks, metadata, upd, prover.version_info())
+        return caches[input_language].update(chunks, prover, args)
 
 def register_docutils(v, args):
     from . import docutils
