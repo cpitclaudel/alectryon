@@ -16,6 +16,8 @@ Unreleased
 Breaking changes
 ----------------
 
+- Docutils option ``"syntax_highlight"`` now defaults to ``"short"`` when using Alectryon's CLI or its custom HTML writer.  That is, inline `:coq:` roles now produce short-form CSS Pygments class names when processed using ``alectryon.docutils`` or the CLI. [72749bd]
+
 - The HTML markup for ``alectryon-io`` blocks has been simplified to save space in generated files (may affect third-party stylesheets). [59563f1]
 
 - ``json.Cache`` in module ``alectryon.json`` now takes arbitrary ``metadata`` instead of ``sertop_args``. [56ca103]
