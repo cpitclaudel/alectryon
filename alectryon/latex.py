@@ -236,7 +236,7 @@ class LatexGenerator:
             assert isinstance(fr, RichSentence)
             self.gen_sentence(fr)
 
-    def gen_fragments(self, fragments, _classes=()):
+    def gen_fragments(self, fragments, ids=(), classes=()): # pylint: disable=unused-argument
         """Serialize a list of `fragments` to LaTeX."""
         # FIXME: classes. optargs=[",".join(classes)] if classes else [] ?
         with environments.alectryon() as env:

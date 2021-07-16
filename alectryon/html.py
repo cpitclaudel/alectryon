@@ -220,10 +220,18 @@ class HtmlGenerator:
             assert isinstance(fr, RichSentence)
             self.gen_sentence(fr)
 
-    def gen_fragments(self, fragments, classes=()):
+    @staticmethod
+    def gen_ids(ids):
+        if ids:
+            tags.attr(id=ids[0])
+        for id in ids[1:]:
+            tags.span(id=id)
+
+    def gen_fragments(self, fragments, ids=(), classes=()):
         """Serialize a list of `fragments` to HTML."""
         with tags.pre(cls=" ".join(("alectryon-io", "highlight", *classes))) as pre:
             tags.comment(" Generator: {} ".format(GENERATOR))
+            self.gen_ids(ids)
             fragments = transforms.group_whitespace_with_code(fragments)
             fragments = transforms.commit_io_annotations(fragments)
             for fr in fragments:

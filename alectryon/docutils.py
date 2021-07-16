@@ -294,13 +294,19 @@ class AlectryonPostTransform(OneTimeTransform):
             return "latex", latex.LatexGenerator(highlight_latex)
         raise NotImplementedError("Unknown output format")
 
+    @staticmethod
+    def replace_one(node, fmt, generator):
+        fragments, contents = node.details["fragments"], node.details["contents"]
+        ids = node.attributes.get("ids", ())
+        classes = node.attributes.pop("classes", ()) # visit_raw adds a <div> if it finds classes
+        dom = generator.gen_fragments(fragments, ids=ids, classes=classes)
+        node.replace_self(nodes.raw(contents, dom.render(pretty=False), format=fmt))
+
     def _apply(self, **_kwargs):
         fmt, generator = self.init_generator()
         with added_tokens(Config(self.document).tokens):
             for node in self.document.traverse(alectryon_pending_io):
-                fragments, contents = node.details["fragments"], node.details["contents"]
-                raw = generator.gen_fragments(fragments).render(pretty=False)
-                node.replace_self(nodes.raw(contents, raw, format=fmt))
+                self.replace_one(node, fmt, generator)
 
 # Directives
 # ----------
