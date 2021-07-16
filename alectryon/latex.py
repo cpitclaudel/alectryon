@@ -176,7 +176,7 @@ class LatexGenerator:
         with environments.goal():
             with environments.hyps():
                 for hyp in goal.hypotheses:
-                    names = macros.hypn(", ".join(hyp.names)) # FIXME
+                    names = macros.hypn(", ".join(hyp.names))
                     htype = self.highlight(hyp.type)
                     hbody = self.highlight(hyp.body) if hyp.body else []
                     environments.hyp(*htype, args=[names], optargs=hbody, verbatim=True)
