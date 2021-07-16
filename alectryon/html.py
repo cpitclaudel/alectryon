@@ -41,7 +41,7 @@ class ASSETS:
     ALECTRYON_CSS = ("alectryon.css",)
     ALECTRYON_JS = ("alectryon.js",)
 
-    PYGMENTS_CSS = ("tango_subtle.css", "tango_subtle.min.css")
+    PYGMENTS_CSS = ("tango_subtle.min.css",)
     DOCUTILS_CSS = ("docutils_basic.css",)
 
     IBM_PLEX_CDN = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />' # pylint: disable=line-too-long
