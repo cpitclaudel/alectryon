@@ -311,10 +311,14 @@ class AlectryonPostTransform(OneTimeTransform):
 # Directives
 # ----------
 
-INDENTATION_RE = re.compile(" *")
+INDENTATION_RE = re.compile(r" *(?=[^\s])")
 def measure_indentation(line):
     m = INDENTATION_RE.match(line)
-    return m.end() - m.start()
+    return m.end() - m.start() if m else None
+
+def measure_min_indentation(lines):
+    indents = (measure_indentation(l) for l in lines)
+    return min((i for i in indents if i is not None), default=0)
 
 def recompute_contents(directive, real_indentation):
     """Compute the contents of `directive` relative to `real_indentation`.
@@ -335,12 +339,18 @@ def recompute_contents(directive, real_indentation):
     .. code::
 
        }
+
+    But beware: with alternative input languages like reCommonMark or MyST,
+    there's no guarantee that the contents are indented by at least three
+    spaces, so we must also measure the minimum indentation and respect that.
     """
     block_lines = directive.block_text.splitlines()
     block_header_len = directive.content_offset - directive.lineno + 1
-    block_indentation = measure_indentation(directive.block_text)
-    code_indentation = block_indentation + real_indentation
-    return "\n".join(ln[code_indentation:] for ln in block_lines[block_header_len:])
+    header_indentation = measure_indentation(directive.block_text)
+    body_lines = block_lines[block_header_len:]
+    min_indentation = measure_min_indentation(body_lines)
+    body_indentation = min(header_indentation + real_indentation, min_indentation)
+    return "\n".join(ln[body_indentation:] for ln in body_lines)
 
 class CoqDirective(Directive):
     """Highlight and annotate a Coq snippet."""
