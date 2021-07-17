@@ -726,6 +726,9 @@ def process_pipelines(args):
         from . import core
         core.SerAPI.EXPECT_UNEXPECTED = True
 
+    if args.output_directory:
+        os.makedirs(os.path.realpath(args.output_directory), exist_ok=True)
+
     for fpath, pipeline in args.pipelines:
         state, ctx = None, build_context(fpath, args)
         for step in pipeline:
