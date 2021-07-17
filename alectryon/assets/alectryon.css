@@ -25,8 +25,12 @@ SOFTWARE.
 /* CSS reset for .alectryon-io */
 /*******************************/
 
-.alectryon.io blockquote {
+.alectryon-io blockquote {
     line-height: inherit;
+}
+
+.alectryon-io blockquote:after {
+    display: none;
 }
 
 .alectryon-io label {
