@@ -1,0 +1,105 @@
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~Alectyron~can~process~individual~chunks~of~Coq~Code~fed~to~in~in~a~JSON~file.~*)}
+  \end{txt}
+\end{alectryon}
+%% alectryon-block-end
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~The~output~is~a~new~JSON~file~in~which~each~sentence~has~been~annotated~with~Coq\PYZsq{}s~output.~*)}
+  \end{txt}
+\end{alectryon}
+%% alectryon-block-end
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~To~compile:~*)}
+  \end{txt}
+\end{alectryon}
+%% alectryon-block-end
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~\PYZdl{}~alectryon~fragments.json~\PYZsh{}~JSON~→~JSON;~produces~‘fragments.io.json’~*)}
+  \end{txt}
+\end{alectryon}
+%% alectryon-block-end
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~\PYZdl{}~alectryon~fragments.json~\PYZhy{}\PYZhy{}backend~snippets\PYZhy{}html~\PYZsh{}~JSON~→~HTML;~produces~‘fragments.snippets.html’~*)}
+  \end{txt}
+\end{alectryon}
+%% alectryon-block-end
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~\PYZdl{}~alectryon~fragments.json~\PYZhy{}\PYZhy{}backend~snippets\PYZhy{}latex~\PYZsh{}~JSON~→~LaTeX;~produces~‘fragments.snippets.tex’~*)}
+  \end{txt}
+\end{alectryon}
+%% alectryon-block-end
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Example}~\PY{n+nf}{xyz}~\PY{o}{(}\PY{n+nv}{H}\PY{o}{:}~\PY{k+kt}{False}\PY{o}{):}~\PY{k+kt}{True}\PY{o}{.}~\PY{c}{(*~...~*)}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}
+            \begin{hyp}{\hypn{H}}
+              \PY{k+kt}{False}
+            \end{hyp}
+          \end{hyps}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{exact}~\PY{n}{I}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Qed}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+\end{alectryon}
+%% alectryon-block-end
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Print}~\PY{n}{xyz}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{messages}
+        \begin{message}
+          \PY{n}{xyz}~\PY{o}{=}~\PY{k+kr}{fun}~\PY{n+nv}{\PYZus{}}~\PY{o}{:}~\PY{k+kt}{False}~\PY{o}{=\PYZgt{}}~\PY{n}{I}\nl
+          ~~~~~\PY{o}{:}~\PY{k+kt}{False}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}
+        \end{message}
+      \end{messages}
+    \end{output}
+  \end{sentence}
+\end{alectryon}
+%% alectryon-block-end

@@ -2,7 +2,9 @@
  Using MathJax with Alectryon
 ==============================
 
-This example shows how to combine Alectryon with MathJax.  We'll do a pretty-printed version of the proof that :math:`\sum_{i = 0}^n i = \frac{n \cdot (n + 1)}{2}`.
+This example shows how to combine Alectryon with MathJax.  We'll do a pretty-printed version of the proof that :math:`\sum_{i = 0}^n i = \frac{n \cdot (n + 1)}{2}`.  Use the following command to compile it::
+
+   alectryon mathjax.rst # reST → HTML; produces ‘mathjax.html’
 
 First, we start with a definition of ``sum``:
 
@@ -112,4 +114,4 @@ And finally we write the actual proofs:
        ring.
    Qed.
 
-Note that Alectryon loads MathJax with the ``defer`` attribute, so if you need to call ``MathJax.typeset()`` or ``MathJax.typesetPromise()``, you'll want to do that from a deferred script or from a ``DOMContentLoaded`` event listener.
+Note that Alectryon loads MathJax with the ``defer`` attribute, so if you need to call ``MathJax.typeset()`` or ``MathJax.typesetPromise()``, you'll want to do that from a deferred script or from a ``DOMContentLoaded`` event listener.  There is more documentation about MathJax in Alectryon's README.

@@ -26,7 +26,7 @@ function scenarios(dir) {
             }))));
 }
 
-dir = process.env.BACKSTOP_DIR || "../output/";
+dir = process.env.BACKSTOP_DIR || "../_output/";
 
 module.exports = {
     "id": "backstop_default",

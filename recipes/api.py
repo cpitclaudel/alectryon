@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+"""
+This file demonstrates a few uses of Alectryon's Python APIs.
+
+To compile: python api.py > api.out # Direct API usage; produces ‘api.out’
+"""
+
 import json
 import sys
 from pathlib import Path
@@ -12,11 +18,13 @@ libdir = recipes / "src"
 # import alectryon.core; alectryon.core.DEBUG = True
 
 def api_annotate():
+    """Annotate a fragment of Coq code."""
     from alectryon.core import annotate
-    annotated = annotate(["Check 1."], ("-Q", "{},lib".format(libdir)))
+    annotated = annotate(["Check 1."], sertop_args=("-Q", "{},lib".format(libdir)))
     pprint(annotated)
 
 def annotated_to_json():
+    """Save results of annotation to JSON."""
     from alectryon.core import annotate
     from alectryon.json import PlainSerializer
     annotated = annotate([r"Goal True /\ True. split. ", "all: eauto."],
@@ -48,6 +56,7 @@ JS = """
 """
 
 def latex_of_movie():
+    """Load the result of a JSON → JSON conversion and write LaTeX snippets."""
     from alectryon.json import PlainSerializer
     from alectryon.latex import LatexGenerator
     from alectryon.pygments import highlight_latex

@@ -1,5 +1,10 @@
-/output/*.css
-/output/*.js
-/output/*.pdf
-/output/*.sty
-/output/latex.aux/
+/_output/**/*.css
+/_output/**/*.js
+/_output/**/*.pdf
+/_output/**/*.sty
+/_output/latex.aux/
+**/sphinx/_build/doctrees
+**/sphinx/_build/html/[._]*
+**/sphinx/_build/html/*index*
+**/sphinx/_build/html/*search*
+**/sphinx/_build/html/*.inv

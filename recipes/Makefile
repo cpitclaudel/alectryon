@@ -1,134 +1,79 @@
+default: all
+
 PYTHON ?= python3 -Wd # -X tracemalloc
+alectryon = $(PYTHON) ../alectryon.py --copy-assets hardlink --output-directory $(out_dir) --no-version-numbers --traceback
 
-alectryon := $(PYTHON) ../alectryon.py --output-directory output --no-version-numbers --traceback
-minimal := $(PYTHON) -m alectryon.minimal
+targets :=
 
-asset_names := alectryon.css alectryon.js alectryon.sty tango_subtle.sty
-assets := $(patsubst %,output/%,$(asset_names))
+%/:
+	mkdir -p $@
+.PRECIOUS: %/
 
-all := .version-info \
-	plain.v.html literate.v.html coqdoc.v.html \
-	coqdoc.html \
-	literate.html literate.pdflatex.pdf \
-	document.html hyps.html mathjax.html \
-	document.pdflatex.pdf hyps.xelatex.pdf \
-	minification.html \
-	document.minimal.html \
-	document.v literate.v.rst \
-	fragments.io.json \
-	fragments.snippets.html fragments.snippets.tex \
-	api.out
+_output/.version-info: | _output/
+	@echo "Coq: $(shell coqc -v | tr '\n' ' ' | sed 's/.*version \([0-9.]\+\).*/\1/')" > $@
+	@echo "Pygments: $(shell $(PYTHON) -c 'import pygments; print(pygments.__version__)')" >> $@
+	@echo "Docutils: $(shell $(PYTHON) -c 'import docutils; print(docutils.__version__)')" >> $@
+	@echo "Sphinx: $(shell $(PYTHON) -c 'import sphinx; print(sphinx.__version__)')" >> $@
 
-all: $(patsubst %,output/%,$(all)) $(assets) sphinx/_build/html/index.html;
+targets += _output/.version-info
 
-output:
-	mkdir $@
+########################
+# Auto-generated rules #
+########################
 
-output/.version-info: | output
-	@echo "Coq: $$(coqc -v)" > $@
-	@echo "Pygments: $$($(PYTHON) -c 'import pygments; print(pygments.__version__)')" >> $@
-	@echo "Docutils: $$($(PYTHON) -c 'import docutils; print(docutils.__version__)')" >> $@
-	@echo "Sphinx: $$($(PYTHON) -c 'import sphinx; print(sphinx.__version__)')" >> $@
+recipes.mk: ../etc/regen_makefile.py $(filter-out %.mk,$(wildcard *.*))
+	./$< _output $(filter-out $<,$^) > $@
 
-# Coq → HTML
-output/plain.v.html: plain.v | output
-	$(alectryon) --frontend coq $<
-output/literate.v.html: literate.v | output
-	$(alectryon) --frontend coq $<
-output/coqdoc.v.html: coqdoc.v | output
-	$(alectryon) --frontend coq $<
+tests.mk: ../etc/regen_makefile.py $(filter-out %.mk,$(wildcard tests/*.*))
+	./$< _output/tests/ $(filter-out $<,$^) > $@
 
-# No plain Coq → LaTeX for now
-# output/plain.v.tex: plain.v | output
-# 	$(alectryon) --frontend coq --backend latex $<
-# output/literate.v.tex: literate.v | output
-# 	$(alectryon) --frontend coq --backend latex $<
-# output/coqdoc.v.tex: coqdoc.v | output
-# 	$(alectryon) --frontend coq --backend latex $<
-
-# Coqdoc → HTML
-output/coqdoc.html: coqdoc.v | output
-	$(alectryon) $< --frontend coqdoc --cache-directory output/ --cache-compression=xz
-
-# Coq+reST → HTML
-output/literate.html: literate.v | output
-	$(alectryon) $<
-
-# Coq+reST → LaTeX
-output/literate.tex: literate.v | output
-	$(alectryon) --backend latex $<
-
-# reST+Coq → HTML
-output/document.html: document.v.rst | output
-	$(alectryon) $<
-output/hyps.html: hyps.rst | output
-	$(alectryon) $<
-output/mathjax.html: mathjax.rst | output
-	$(alectryon) $<
-
-# reST+Coq → LaTeX
-output/document.tex: document.v.rst | output
-	$(alectryon) --backend latex $<
-output/hyps.tex: hyps.rst | output
-	$(alectryon) --backend latex --latex-dialect xelatex $<
-
-# reST+Coq → Minified HTML
-output/minification.html: minification.rst | output
-	$(alectryon) --html-minification --html-dialect html5 --cache-compression=xz --cache-directory output/ $<
+include *.mk
 
 # TODO
-# output/mathjax.html: mathjax.rst | output
+# _output/mathjax.tex: mathjax.rst | _output
 # 	$(alectryon) --backend latex $<
 
-# Minimal reST+Coq → HTML
-output/document.minimal.html: document.v.rst | output
-	cd ..; $(minimal) recipes/$< recipes/$@
+##########
+# Sphinx #
+##########
 
-# reST+Coq → Coq+reST
-output/document.v: document.v.rst | output
-	$(alectryon) $< -o $@
-
-# Coq+reST → reST+Coq
-output/literate.v.rst: literate.v | output
-	$(alectryon) $< -o $@
-
-# JSON → JSON
-output/fragments.io.json: fragments.json | output
-	$(alectryon) $<
-
-# JSON → HTML snippets
-output/fragments.snippets.html: fragments.json | output
-	$(alectryon) $< -o $@
-
-# JSON → Latex snippets
-output/fragments.snippets.tex: fragments.json | output
-	$(alectryon) $< -o $@
-
-# Sphinx
 sphinx/_build/html/index.html: sphinx/index.rst
 	+$(MAKE) -C sphinx html
 
-# API
-output/api.out: api.py
-	$(PYTHON) $< > $@
+targets += sphinx/_build/html/index.html
 
-# LaTeX → PDF
-output/latex.aux:
-	mkdir $@
+################
+# LaTeX → PDF #
+################
 
-output/%.pdf: output/latex.aux/%.pdf
+_output/%.pdf: _output/latex.aux/%.pdf
 	mv $< $@
 
-output/latex.aux/%.pdflatex.pdf: output/%.tex $(assets) | output/latex.aux
-	cd output/; texfot --quiet pdflatex -output-directory=latex.aux -jobname=$*.pdflatex $*.tex
+.SECONDEXPANSION:
 
-output/latex.aux/%.xelatex.pdf: output/%.tex $(assets) | output/latex.aux
-	cd output/; texfot --quiet xelatex -output-directory=latex.aux -jobname=$*.xelatex $*.tex
+_output/latex.aux/%.xe.pdf: _output/%.xe.tex | $$(dir $$@)
+	TEXINPUTS=$(dir $<): texfot --quiet xelatex -output-directory=$(dir $@) $(notdir $<)
 
-output/%.css output/%.js output/%.sty: | output
-	cp --link --force $(patsubst %,../alectryon/assets/%,$(asset_names)) output/
+_output/latex.aux/%.lua.pdf: _output/%.lua.tex | $$(dir $$@)
+	TEXINPUTS=$(dir $<): texfot --quiet xelatex -output-directory=$(dir $@) $(notdir $<)
+
+_output/latex.aux/%.pdf: _output/%.tex | $$(dir $$@)
+	TEXINPUTS=$(dir $<): texfot --quiet pdflatex -output-directory=$(dir $@) $(notdir $<)
+
+targets += $(patsubst %.tex,%.pdf,$(filter-out %.snippets.tex,$(filter %.tex,$(targets))))
+
+###############
+# Entry point #
+###############
+
+all: $(targets)
+
+###########
+# Cleanup #
+###########
 
 clean:
-	rm -rf output/ sphinx/_build sphinx/*.cache
+	rm -rf _output/ sphinx/_build/
 
-.PHONY: clean assets
+.PHONY: clean
+FORCE:

@@ -6,12 +6,18 @@
     Coq_. Cons:
 
     - There's a dependency on [coqdoc]
-    - It doesn't use a standard markup language like reST, markdown, etc.
+    - It doesn't use a standard markup language like reST, Markdown, etc.
     - You can't switch back and forth between a code view and a prose view: all
       prose editing happens in comments.
     - Annotations can't be applied to whole blocks, so if you want to unfold all
       sentences in a block you have to say (* .unfold *) on every sentence, for
-      example. **)
+      example.
+
+    Use the following command to compile this file:
+
+    <<
+    alectryon coqdoc.v --frontend coqdoc # Coqdoc → HTML; produces ‘coqdoc.html’
+    >> **)
 
 (** ** Some code **)
 

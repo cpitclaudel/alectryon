@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>LaTeX and HTML dialects</title>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="tango_subtle.min.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="latex-and-html-dialects">
+<h1 class="title">LaTeX and HTML dialects</h1>
+
+<p>This simple file demos LaTeX and HTML dialect configuration:</p>
+<pre class="literal-block">alectryon --html-dialect=html4 -o dialects.4.html dialects.rst
+  # HTML4; produces ‘dialects.4.html’
+alectryon --html-dialect=html5 -o dialects.5.html dialects.rst
+  # HTML5; produces ‘dialects.5.html’
+
+alectryon --latex-dialect=pdflatex -o dialects.tex dialects.rst
+  # LaTeX; produces ‘dialects.tex’
+alectryon --latex-dialect=xelatex -o dialects.xe.tex dialects.rst
+  # XeLaTeX; produces ‘dialects.xe.tex’
+alectryon --latex-dialect=lualatex -o dialects.lua.tex dialects.rst
+  # LuaLaTeX; produces ‘dialects.lua.tex’</pre>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="dialects-rst-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="dialects-rst-chk0"><span class="kn">Goal</span> <span class="kt">True</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> I.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="dialects-rst-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="dialects-rst-chk1"><span class="kn">Show Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">I</blockquote></div></div></small></span></pre>
+</div>
+</div></body>
+</html>

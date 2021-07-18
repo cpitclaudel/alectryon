@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>Using MathJax with Alectryon</title>
+<script type="text/javascript" defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js?config=TeX-AMS_CHTML"></script>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="tango_subtle.min.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="using-mathjax-with-alectryon">
+<h1 class="title">Using MathJax with Alectryon</h1>
+
+<p>This example shows how to combine Alectryon with MathJax.  We'll do a pretty-printed version of the proof that <span class="math">\(\sum_{i = 0}^n i = \frac{n \cdot (n + 1)}{2}\)</span>.  Use the following command to compile it:</p>
+<pre class="literal-block">
+alectryon mathjax.rst # reST → HTML; produces ‘mathjax.html’
+</pre>
+<p>First, we start with a definition of <tt class="docutils literal">sum</tt>:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> NArith ArithRing.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Fixpoint</span> <span class="nf">nsum</span> <span class="nv">max</span> <span class="nv">f</span> :=
+  <span class="kr">match</span> max <span class="kr">with</span>
+  | O =&gt; f <span class="mi">0</span>
+  | S max&#39; =&gt; f max + nsum max&#39; f
+  <span class="kr">end</span>.</span></span></pre><p>Then, we add notations to print LaTeX code (this is only one way to do it; another way would be to parse Coq's output to reconstruct LaTeX):</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;&#39;\ccNat{}&#39;&quot;</span> := nat.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;&#39;\ccSucc{&#39; n &#39;}&#39;&quot;</span> := (S n).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Infix</span> <span class="s2">&quot;\times&quot;</span> := mult
+  (<span class="kn">at level</span> <span class="mi">30</span>).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;&#39;\ccNsum{&#39; x &#39;}{&#39; max &#39;}{&#39; f &#39;}&#39;&quot;</span> :=
+  (nsum max (<span class="kr">fun</span> <span class="nv">x</span> =&gt; f))
+    (<span class="kn">format</span> <span class="s2">&quot;&#39;\ccNsum{&#39; x &#39;}{&#39; max &#39;}{&#39; f &#39;}&#39;&quot;</span>).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;\ccNot{ x }&quot;</span> := (not x)
+  (<span class="kn">at level</span> <span class="mi">100</span>).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Infix</span> <span class="s2">&quot;\wedge&quot;</span> := <span class="kn">and</span>
+  (<span class="kn">at level</span> <span class="mi">190</span>, <span class="kn">right associativity</span>).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;A \Rightarrow{} B&quot;</span> := (<span class="kr">∀</span> (<span class="nv">_</span> : A), B)
+  (<span class="kn">at level</span> <span class="mi">200</span>, <span class="kn">right associativity</span>).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;&#39;\ccForall{&#39; x .. y &#39;}{&#39; P &#39;}&#39;&quot;</span> := (<span class="kr">∀</span> <span class="nv">x</span>, .. (<span class="kr">∀</span> <span class="nv">y</span>, P) ..)
+  (<span class="kn">at level</span> <span class="mi">200</span>, x <span class="kn">binder</span>, y <span class="kn">binder</span>, <span class="kn">right associativity</span>,
+   <span class="kn">format</span> <span class="s2">&quot;&#39;\ccForall{&#39; x .. y &#39;}{&#39; P &#39;}&#39;&quot;</span>).</span></span></pre><p>Then, we add MathJax definitions for each of these custom macros (look at the page source to see them):</p>
+<div style="display: none">
+    \(\newcommand{\ccQ}{\mathbb{Q}}\)
+    \(\newcommand{\ccNat}{\mathbb{N}}\)
+    \(\newcommand{\ccSucc}[1]{\mathrm{S}\:#1}\)
+    \(\newcommand{\ccFrac}[2]{\frac{#1}{#2}}\)
+    \(\newcommand{\ccPow}[2]{{#1}^{#2}}\)
+    \(\newcommand{\ccNot}[1]{{\lnot #1}}\)
+    \(\newcommand{\ccEvar}[1]{\textit{\texttt{#1}}}\)
+    \(\newcommand{\ccForall}[2]{\forall \: #1. \; #2}\)
+    \(\newcommand{\ccNsum}[3]{\sum_{#1 = 0}^{#2} #3}\)
+</div><p>Then we set up MathJax to render the proofs properly (look at the page source to see the relevant script):</p>
+<script type="text/javascript">
+  function addMathDelimiters() {
+     // 1. Find all relevant Alectryon tags
+     var spans = document.querySelectorAll(
+         ".coq-math .goal-conclusion, " +
+         ".coq-math .hyp-body span, " +
+         ".coq-math .hyp-type span"
+     );
+
+     // 2. Wrap the contents of each in \(\) math delimiters
+     spans.forEach(function (e) {
+         e.innerText = '\\[' + e.innerText + '\\]';
+     });
+  }
+
+  MathJax = {
+      options: {
+          // Alectryon code is wrapped in <pre> blocks, so MathJax would skip
+          // them if we didn't add an exception for 'alectryon-io'
+          processHtmlClass: 'alectryon-io'
+      },
+      startup: {
+          pageReady: function () {
+              addMathDelimiters(); // First add \(\) math delimiters
+              return MathJax.startup.defaultPageReady(); // Then run MathJax
+          }
+      }
+  };
+</script>
+
+<style type="text/css"> /* Override MathJax margins */
+    .coq-math .goal-conclusion > *,
+    .coq-math .hyp-body span > *,
+    .coq-math .hyp-type span > * {
+        margin: 0 !important;
+    }
+</style><p>And finally we write the actual proofs:</p>
+<pre class="alectryon-io highlight coq-math"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk0"><span class="kn">Lemma</span> <span class="nf">Gauss</span>: <span class="kr">∀</span> <span class="nv">n</span>,
+    <span class="mi">2</span> * (nsum n (<span class="kr">fun</span> <span class="nv">i</span> =&gt; i)) = n * (n + <span class="mi">1</span>).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion">\ccForall{n : \ccNat{}}{<span class="mi">2</span> \times \ccNsum{i}{n}{i} =
+                        n \times (n + <span class="mi">1</span>)}</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk1"><span class="nb">induction</span> n; <span class="nb">cbn</span> [nsum].</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="mi">2</span> \times <span class="mi">0</span> = <span class="mi">0</span> \times (<span class="mi">0</span> + <span class="mi">1</span>)</div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="mathjax-rst-chk2" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><div><var>n</var><span class="hyp-type"><b>:</b><span>\ccNat{}</span></span></div><div><var>IHn</var><span class="hyp-type"><b>:</b><span><span class="mi">2</span> \times \ccNsum{i}{n}{i} = n \times (n + <span class="mi">1</span>)</span></span></div></div><label class="goal-separator" for="mathjax-rst-chk2"><hr></label><div class="goal-conclusion"><span class="mi">2</span> \times (\ccSucc{ n} + \ccNsum{i}{n}{i}) =
+\ccSucc{ n} \times (\ccSucc{ n} + <span class="mi">1</span>)</div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk3">- <span class="c">(* n ← 0 *)</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="mi">2</span> \times <span class="mi">0</span> = <span class="mi">0</span> \times (<span class="mi">0</span> + <span class="mi">1</span>)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk4">- <span class="c">(* n ← S _ *)</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><div><var>n</var><span class="hyp-type"><b>:</b><span>\ccNat{}</span></span></div><div><var>IHn</var><span class="hyp-type"><b>:</b><span><span class="mi">2</span> \times \ccNsum{i}{n}{i} = n \times (n + <span class="mi">1</span>)</span></span></div></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="mi">2</span> \times (\ccSucc{ n} + \ccNsum{i}{n}{i}) =
+\ccSucc{ n} \times (\ccSucc{ n} + <span class="mi">1</span>)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk5" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk5"><span class="nb">rewrite</span> Mult.mult_plus_distr_l.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><div><var>n</var><span class="hyp-type"><b>:</b><span>\ccNat{}</span></span></div><div><var>IHn</var><span class="hyp-type"><b>:</b><span><span class="mi">2</span> \times \ccNsum{i}{n}{i} = n \times (n + <span class="mi">1</span>)</span></span></div></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="mi">2</span> \times \ccSucc{ n} + <span class="mi">2</span> \times \ccNsum{i}{n}{i} =
+\ccSucc{ n} \times (\ccSucc{ n} + <span class="mi">1</span>)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk6" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk6"><span class="nb">rewrite</span> IHn.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><div><var>n</var><span class="hyp-type"><b>:</b><span>\ccNat{}</span></span></div><div><var>IHn</var><span class="hyp-type"><b>:</b><span><span class="mi">2</span> \times \ccNsum{i}{n}{i} = n \times (n + <span class="mi">1</span>)</span></span></div></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="mi">2</span> \times \ccSucc{ n} + n \times (n + <span class="mi">1</span>) =
+\ccSucc{ n} \times (\ccSucc{ n} + <span class="mi">1</span>)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">ring</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><p>Note that Alectryon loads MathJax with the <tt class="docutils literal">defer</tt> attribute, so if you need to call <tt class="docutils literal">MathJax.typeset()</tt> or <tt class="docutils literal">MathJax.typesetPromise()</tt>, you'll want to do that from a deferred script or from a <tt class="docutils literal">DOMContentLoaded</tt> event listener.  There is more documentation about MathJax in Alectryon's README.</p>
+</div>
+</div></body>
+</html>

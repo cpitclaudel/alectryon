@@ -1,3 +1,15 @@
+(* Converting unannotated Coq files *)
+
+(* Alectryon's default is to treat Coq files as mixed Coq + reStructuredText
+   files ‘--frontend coq+rst’, but you can use ‘--frontend coq’ all comment
+   processing:
+
+      alectryon --frontend coq plain.v # Coq → HTML; produces ‘plain.v.html’
+
+   Conversion from plain Coq to LaTeX isn't supported yet (use coq+rst):
+
+      # alectryon --frontend coq --backend latex plain.v # Coq → HTML; produces ‘plain.v.tex’ *)
+
 Require Import List.
 
 Lemma skipn_app {A}:

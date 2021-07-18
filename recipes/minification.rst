@@ -2,7 +2,13 @@
  Generating minified HTML
 ==========================
 
-Alectryon normally produces plain HTML files.  For very large proofs, these files can get quite large (sometimes hundreds of megabytes), but they also tend to be highly redundant; hence, Alectryon also has the ability to generate “minified” HTML files, which contain special pointers (“backreferences”) to previous parts of the document.  These backreferences are resolved dynamically when the page is displayed in a web browser.
+Alectryon normally produces plain HTML files.  For very large proofs, these files can get quite large (sometimes hundreds of megabytes), but they also tend to be highly redundant; hence, Alectryon also has the ability to generate “minified” HTML files that contain special pointers (“backreferences”) to previous parts of the document.  These backreferences are resolved dynamically when the page is displayed in a web browser.
+
+Use the following command to compile this file with minification (in Sphinx' ``conf.py``, you can use ``alectryon.docutils.HTML_MINIFICATION = True`` instead)::
+
+   alectryon --html-minification minification.rst # reST → HTML; produces ‘minification.html’
+
+---
 
 Here is an example proof, written in a way that generates lots of redundant objects (for example, section variables appear in the proof context at every step of the proof):
 

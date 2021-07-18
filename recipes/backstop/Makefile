@@ -1,5 +1,7 @@
 backstop := ./node_modules/.bin/backstop --config=backstop.config.js
 
+export BACKSTOP_DIR ?= ../_output/
+
 test: recipes
 	$(backstop) test
 
@@ -14,4 +16,4 @@ recipes:
 	+$(MAKE) -C ..
 
 clean:
-	rm -fr /backstop_data/html_report/ /backstop_data/bitmaps_test/
+	rm -fr backstop_data/html_report/ backstop_data/bitmaps_test/

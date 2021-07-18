@@ -1,0 +1,95 @@
+[
+    [
+        {
+            "_type": "text",
+            "contents": "(* Alectyron can process individual chunks of Coq Code fed to in in a JSON file. *)"
+        }
+    ],
+    [
+        {
+            "_type": "text",
+            "contents": "(* The output is a new JSON file in which each sentence has been annotated with Coq's output. *)"
+        }
+    ],
+    [
+        {
+            "_type": "text",
+            "contents": "(* To compile: *)"
+        }
+    ],
+    [
+        {
+            "_type": "text",
+            "contents": "(* $ alectryon fragments.json # JSON \u2192 JSON; produces \u2018fragments.io.json\u2019 *)"
+        }
+    ],
+    [
+        {
+            "_type": "text",
+            "contents": "(* $ alectryon fragments.json --backend snippets-html # JSON \u2192 HTML; produces \u2018fragments.snippets.html\u2019 *)"
+        }
+    ],
+    [
+        {
+            "_type": "text",
+            "contents": "(* $ alectryon fragments.json --backend snippets-latex # JSON \u2192 LaTeX; produces \u2018fragments.snippets.tex\u2019 *)"
+        }
+    ],
+    [
+        {
+            "_type": "sentence",
+            "contents": "Example xyz (H: False): True.",
+            "messages": [],
+            "goals": [
+                {
+                    "_type": "goal",
+                    "name": null,
+                    "conclusion": "True",
+                    "hypotheses": [
+                        {
+                            "_type": "hypothesis",
+                            "names": [
+                                "H"
+                            ],
+                            "body": null,
+                            "type": "False"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "_type": "text",
+            "contents": " (* ... *) "
+        },
+        {
+            "_type": "sentence",
+            "contents": "exact I.",
+            "messages": [],
+            "goals": []
+        },
+        {
+            "_type": "text",
+            "contents": " "
+        },
+        {
+            "_type": "sentence",
+            "contents": "Qed.",
+            "messages": [],
+            "goals": []
+        }
+    ],
+    [
+        {
+            "_type": "sentence",
+            "contents": "Print xyz.",
+            "messages": [
+                {
+                    "_type": "message",
+                    "contents": "xyz = fun _ : False => I\n     : False -> True"
+                }
+            ],
+            "goals": []
+        }
+    ]
+]
