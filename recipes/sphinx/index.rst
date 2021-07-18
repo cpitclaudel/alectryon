@@ -12,6 +12,7 @@ Welcome to alectryon-demo's documentation!
 
    coqchapter
    math
+   MyST
 
 The default role produces Coq code: `let a := 1 in a + a`.
 

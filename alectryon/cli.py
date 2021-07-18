@@ -144,15 +144,15 @@ def _docutils_cmdline_html(description, Reader, Parser):
         description=(description + default_description)
     )
 
-def _lint_docutils(source, fpath, Parser):
+def lint_docutils(source, fpath, frontend):
     from io import StringIO
     from docutils.utils import new_document
     from docutils.frontend import OptionParser
     from docutils.utils import Reporter
-    from .docutils import JsErrorPrinter
+    from .docutils import JsErrorPrinter, get_parser
 
-    parser = Parser()
-    settings = OptionParser(components=(Parser,)).get_default_values()
+    parser_class = get_parser(frontend)
+    settings = OptionParser(components=(parser_class,)).get_default_values()
     settings.traceback = True
     observer = JsErrorPrinter(StringIO(), settings)
     document = new_document(fpath, settings)
@@ -161,17 +161,9 @@ def _lint_docutils(source, fpath, Parser):
     document.reporter.halt_level = Reporter.SEVERE_LEVEL + 1 # Do not exit early
     document.reporter.stream = False # Disable textual reporting
     document.reporter.attach_observer(observer)
-    parser.parse(source, document)
+    parser_class().parse(source, document)
 
     return observer.stream.getvalue()
-
-def lint_rstcoq(coq, fpath):
-    from .docutils import RSTCoqParser
-    return _lint_docutils(coq, fpath, RSTCoqParser)
-
-def lint_rst(rst, fpath):
-    from docutils.parsers.rst import Parser
-    return _lint_docutils(rst, fpath, Parser)
 
 def _scrub_fname(fname):
     import re
@@ -387,7 +379,7 @@ PIPELINES = {
         (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
          gen_latex_snippets, dump_latex_snippets, write_file(".snippets.tex")),
         'lint':
-        (read_plain, register_docutils, lint_rstcoq,
+        (read_plain, register_docutils, lint_docutils,
          write_file(".lint.json")),
         'rst':
         (read_plain, coq_to_rst, write_file(".v.rst")),
@@ -403,7 +395,7 @@ PIPELINES = {
         (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".tex")),
         'lint':
-        (read_plain, register_docutils, lint_rstcoq,
+        (read_plain, register_docutils, lint_docutils,
          write_file(".lint.json")),
         'rst':
         (read_plain, coq_to_rst, write_file(".v.rst"))
@@ -422,21 +414,32 @@ PIPELINES = {
         (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".tex")),
         'lint':
-        (read_plain, register_docutils, lint_rst,
+        (read_plain, register_docutils, lint_docutils,
          write_file(".lint.json")),
         'coq':
         (read_plain, rst_to_coq, write_file(".v")),
         'coq+rst':
         (read_plain, rst_to_coq, write_file(".v"))
+    },
+    'md': {
+        'webpage':
+        (read_plain, register_docutils, gen_docutils, copy_assets,
+         write_file(".html")),
+        'latex':
+        (read_plain, register_docutils, gen_docutils, copy_assets,
+         write_file(".tex")),
+        'lint':
+        (read_plain, register_docutils, lint_docutils,
+         write_file(".lint.json"))
     }
 }
 
 # CLI
 # ===
 
-EXTENSIONS = ['.v', '.json', '.v.rst', '.rst']
+EXTENSIONS = ['.v', '.json', '.v.rst', '.rst', '.md']
 FRONTENDS_BY_EXTENSION = [
-    ('.v', 'coq+rst'), ('.json', 'json'), ('.rst', 'rst')
+    ('.v', 'coq+rst'), ('.json', 'json'), ('.rst', 'rst'), ('.md', 'md')
 ]
 BACKENDS_BY_EXTENSION = [
     ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst'),
@@ -452,7 +455,8 @@ DEFAULT_BACKENDS = {
     'coq': 'webpage',
     'coqdoc': 'webpage',
     'coq+rst': 'webpage',
-    'rst': 'webpage'
+    'rst': 'webpage',
+    'md': 'webpage',
 }
 
 def infer_mode(fpath, kind, arg, table):

@@ -14,8 +14,13 @@ author = 'Clément Pit-Claudel'
 
 # -- General configuration ---------------------------------------------------
 
-extensions = ["alectryon.sphinx"]
+extensions = ["alectryon.sphinx", "sphinx.ext.mathjax"]
 
+try:
+    import myst_parser
+    extensions.append("myst_parser")
+except ImportError:
+    print("/!\\ `myst_parser` not found, skipping MyST tests /!\\", file=sys.stderr)
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -48,4 +53,5 @@ html_js_files = [
 ]
 
 # or this:
+
 html_js_files = [('mathjax_config.js', { "priority": 0 })]

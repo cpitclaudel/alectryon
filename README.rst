@@ -8,7 +8,7 @@ Alectryon is typically used in one of three ways:
 
 - As a library, through its Python API
 
-- As a reStructuredText extension, allowing you to include annotated snippets into your reStructuredText documents.  During compilation, Alectryon collects all ``.. coq::`` blocks, feeds their contents to Coq, and incorporates the resulting goals and responses into the final document.
+- As a Docutils/Sphinx extension, allowing you to include annotated snippets into your reStructuredText and Markdown documents.  During compilation, Alectryon collects all ``.. coq::`` code blocks, feeds their contents to Coq, and incorporates the resulting goals and responses into the final document.
 
 - As a standalone compiler, allowing you to include prose delimited by special ``(*| … |*)`` comments directly into your Coq source files (in the style of coqdoc).  When invoked, Alectryon translates your Coq file into a reStructuredText document and compiles it using the standard reStructuredText toolchain.
 
@@ -25,7 +25,7 @@ To install from OPAM and PyPI:
     | ``opam install "coq-serapi>=8.10.0+0.7.0"`` (from the `Coq OPAM archive <https://coq.inria.fr/opam-using.html>`__)
     | ``python3 -m pip install alectryon``
 
-**A note on dependencies**: the core library only depends on ``coq-serapi`` from OPAM.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires ``docutils`` (and optionally ``sphinx``); Coqdoc support requires ``beautifulsoup4``.  Support for Coq versions follows SerAPI; Coq ≥ 8.10 works well and ≥ 8.12 works best.
+**A note on dependencies**: the core library only depends on ``coq-serapi`` from OPAM.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires ``docutils`` (and optionally ``sphinx``); Markdown support requires ``myst_parser`` (`docs <https://myst-parser.readthedocs.io/en/latest/index.html>`__); Coqdoc support requires ``beautifulsoup4``.  Support for Coq versions follows SerAPI; Coq ≥ 8.10 works well and ≥ 8.12 works best.
 
 Usage
 =====
@@ -38,11 +38,10 @@ Recipes
 
 Try these recipes in the ``recipes`` directory of this repository (for each task I listed two commands: a short one and a longer one making everything explicit):
 
-Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style):
-   .. code::
+Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style)::
 
       alectryon literate_coq.v
-      alectryon --frontend coq+rst --backend webpage literate_coq.v -o literate.html
+      alectryon --frontend coq+rst --backend webpage literate_coq.v -o literate_coq.html
 
 Generate an interactive webpage from a plain Coq file (Proof General style):
    .. code::
@@ -54,13 +53,19 @@ Generate an interactive webpage from a Coqdoc file (compatibility mode):
    .. code::
 
       alectryon --frontend coqdoc coqdoc.v
-      alectryon --frontend coqdoc --backend webpage literate.v -o literate.html
+      alectryon --frontend coqdoc --backend webpage coqdoc.v -o coqdoc.html
 
 Generate an interactive webpage from a reStructuredText document containing ``.. coq::`` directives (coqrst style):
    .. code::
 
       alectryon literate_reST.rst
-      alectryon --frontend rst --backend webpage literate_reST.rst -o literate.html
+      alectryon --frontend rst --backend webpage literate_reST.rst -o literate_reST.html
+
+Generate an interactive webpage from a Markdown document written in the `MyST <https://myst-parser.readthedocs.io/en/latest/index.html>`__ dialect, containing ``.. coq::`` directives:
+   .. code::
+
+      alectryon literate_MyST.md
+      alectryon --frontend md --backend webpage literate_MyST.md -o literate_MyST.html
 
 Translate a reStructuredText document into a literate Coq file:
    .. code::
@@ -92,19 +97,19 @@ Command-line interface
 .. code::
 
    alectryon [-h] […]
-             [--frontend {coq,coq+rst,coqdoc,json,rst}]
+             [--frontend {coq,coq+rst,coqdoc,json,md,rst}]
              [--backend {coq,coq+rst,json,latex,rst,snippets-html,snippets-latex,webpage,…}]
              input [input ...]
 
 Use ``alectryon --help`` for full command line details.
 
-- Each ``input`` file can be ``.v`` (a Coq source file, optionally including reStructuredText in comments delimited by ``(*| … |*)``), ``.json`` (a list of Coq fragments), or ``.rst`` (a reStructuredText document including ``.. coq::`` blocks).  Each input fragment is split into individual sentences, which are executed one by one (all code is run in a single Coq session).
+- Each ``input`` file can be ``.v`` (a Coq source file, optionally including reStructuredText in comments delimited by ``(*| … |*)``), ``.json`` (a list of Coq fragments), ``.rst`` (a reStructuredText document including ``.. coq::`` code blocks), or ``.md`` (a Markdown/MyST document including ``{coq}`` code blocks).  Each input fragment is split into individual sentences, which are executed one by one (all code is run in a single Coq session).
 
 - One output file is written per input file.  Each frontend supports a subset of all backends.
 
-  * With ``--backend webpage``, output is written as a standalone webpage named ``<input>.html`` (for ``coq+rst`` inputs) or ``<input>.v.html`` (for plain ``coq`` inputs).  This is useful for debugging and to get a quick sense of how Alectryon works.
+  * With ``--backend webpage`` (the default for most inputs), output is written as a standalone webpage named ``<input>.html`` (for ``coq+rst`` inputs) or ``<input>.v.html`` (for plain ``coq`` inputs).
   * With ``--backend snippets-html``, output is written to ``<input>.snippets.html`` as a sequence of ``<pre class="alectryon-io">`` blocks, separated by ``<!-- alectryon-block-end -->`` markers (there will be as many blocks as entries in the input list if ``input`` is a ``.json`` file).
-  * With ``--writer json``, output is written to ``<input>.io.json`` as a JSON-encoded list of Coq fragments (as many as in ``input`` if ``input`` is a ``.json`` file).  Each fragment is a list of records, each with a ``_type`` and some type-specific fields.  Here is an example:
+  * With ``--backend json``, output is written to ``<input>.io.json`` as a JSON-encoded list of Coq fragments (as many as in ``input`` if ``input`` is a ``.json`` file).  Each fragment is a list of records, each with a ``_type`` and some type-specific fields.  Here is an example:
 
     Input (``minimal.json``):
         .. code-block:: json
@@ -115,42 +120,28 @@ Use ``alectryon --help`` for full command line details.
     Output (``minimal.json.io.json``) after running ``alectryon --writer json minimal.json``:
         .. code-block:: js
 
-            [ // A list of fragments
-              [ // Each fragment is a list of records
-                { // Each record has a type, and type-specific fields
-                  "_type": "sentence",
-                  "sentence": "Example xyz (H: False): True.",
-                  "responses": [],
-                  "goals": [
-                    {
-                      "_type": "goal",
-                      "name": "2",
-                      "conclusion": "True",
-                      "hypotheses": [
-                        {
-                          "_type": "hypothesis",
-                          "name": "H",
-                          "body": null,
-                          "type": "False"
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {"_type": "text", "string": " (* ... *) "},
-                {"_type": "sentence", "sentence": "exact I.", "responses": [], "goals": []},
-                {"_type": "text", "string": " "},
-                {"_type": "sentence", "sentence": "Qed.", "responses": [], "goals": []}
-              ],
-              [
-                {
-                  "_type": "sentence",
-                  "sentence": "Print xyz.",
-                  "responses": ["xyz = fun _ : False => I\n     : False -> True"],
-                  "goals": []
-                }
-              ]
-            ]
+           [ // A list of processed fragments
+             [ // Each fragment is a list of records
+               { // Each record has a type, and type-specific fields
+                 "_type": "sentence",
+                 "sentence": "Example xyz (H: False): True.",
+                 "responses": [],
+                 "goals": [ { "_type": "goal",
+                              "name": "2",
+                              "conclusion": "True",
+                              "hypotheses": [ { "_type": "hypothesis",
+                                                "name": "H",
+                                                "body": null,
+                                                "type": "False" } ] } ] },
+               {"_type": "text", "string": " (* ... *) "},
+               {"_type": "sentence", "sentence": "exact I.", "responses": [], "goals": []},
+               {"_type": "text", "string": " "},
+               {"_type": "sentence", "sentence": "Qed.", "responses": [], "goals": []} ],
+             [ // This is the second fragment
+               { "_type": "sentence",
+                 "sentence": "Print xyz.",
+                 "responses": ["xyz = fun _ : False => I\n     : False -> True"],
+                 "goals": [] } ] ]
 
 As a library
 ------------
@@ -161,28 +152,24 @@ Use ``alectryon.core.annotate(chunks: List[str])``, which returns an object with
 
     >>> from alectryon.core import annotate
     >>> annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Print xyz."])
-    [
-        [CoqSentence(sentence='Example xyz (H: False): True.',
-                     responses=[],
-                     goals=[
-                         CoqGoal(
-                             name='2',
-                             conclusion='True',
-                             hypotheses=[
-                                 CoqHypothesis(name='H',
-                                               body=None,
-                                               type='False')
-                             ])
-                     ]),
-         CoqText(string=' (* ... *) '),
-         CoqSentence(sentence='exact I.', responses=[], goals=[]),
-         CoqText(string=' '),
-         CoqSentence(sentence='Qed.', responses=[], goals=[])],
-
-        [CoqSentence(sentence='Print xyz.',
-                     responses=['xyz = fun _ : False => I\n     : False -> True'],
-                 goals=[])]
-    ]
+    [# A list of processed fragments
+     [# Each fragment is a list of records (each an instance of a namedtuple)
+      CoqSentence(sentence='Example xyz (H: False): True.',
+                  responses=[],
+                  goals=[CoqGoal(name='2',
+                                 conclusion='True',
+                                 hypotheses=[
+                                     CoqHypothesis(name='H',
+                                                   body=None,
+                                                   type='False')])]),
+      CoqText(string=' (* ... *) '),
+      CoqSentence(sentence='exact I.', responses=[], goals=[]),
+      CoqText(string=' '),
+      CoqSentence(sentence='Qed.', responses=[], goals=[])],
+     [# This is the second fragment
+      CoqSentence(sentence='Print xyz.',
+                  responses=['xyz = fun _ : False => I\n     : False -> True'],
+                  goals=[])]]
 
 The results of ``annotate`` can be fed to ``alectryon.html.HtmlGenerator(highlighter).gen()`` to generate HTML (with CSS classes defined in ``alectryon.css``).  Pass ``highlighter=alectryon.pygments.highlight_html`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
 
@@ -371,7 +358,7 @@ The ``etc/elisp`` folder of this directory includes an Emacs mode, ``alectryon.e
 Docutils configuration
 ----------------------
 
-You can set Docutils settings for your single-page Coq+reST documents using a ``docutils.conf`` file.  See the `documentation <https://docutils.sourceforge.io/docs/user/config.html>`__ or the `example <recipes/docutils.conf>`__ in ``recipes/``.  For example, the following changes ``latex-preamble`` for the XeTeX backend to select a custom monospace font::
+You can set Docutils settings for your single-page reST or Coq+reST documents using a ``docutils.conf`` file.  See the `documentation <https://docutils.sourceforge.io/docs/user/config.html>`__ or the `example <recipes/docutils.conf>`__ in ``recipes/``.  For example, the following changes ``latex-preamble`` for the XeTeX backend to select a custom monospace font::
 
    [xetex writer]
    latex-preamble:
@@ -450,7 +437,7 @@ Special case: MathJax
 
 MathJax is a JavaScript library for rendering LaTeX math within webpages.  Properly configuring it can be a bit tricky.
 
-- If you just want to include math in reStructuredText documents, docutils will generally do the right thing: it will generate code to load MathJaX from a CDN if you use the ``:math:`` role, and it leave that code out if you don't.
+- If you just want to include math in reStructuredText or Markdown documents, docutils will generally do the right thing: it will generate code to load MathJaX from a CDN if you use the ``:math:`` role, and it leave that code out if you don't.
 
 - If you want to render parts of your Coq code using MathJaX, things are trickier: you need to use Javascript to:
 
@@ -474,7 +461,7 @@ MathJax is a JavaScript library for rendering LaTeX math within webpages.  Prope
 
   Alectryon already configures docutils to load MathJax with the ``defer`` option, so the steps above should work reliably when using Alectryon in standalone mode (point [3.] is already taken care of).
 
-  Sphinx loads MathJax in ``async`` mode by default, so the above won't work reliably, and the ``mathjax3_config`` option is not always enough (it only supports simple types, not functions; see `Sphinx issue 9450 <https://github.com/sphinx-doc/sphinx/issues/9450>`__).  Instead, put the configuration above in a separate script and include it in ``html_js_files`` with sufficiently low priority (must be < 500).  See `<recipes/sphinx/conf.py>`__ and `<recipes/sphinx/_static/mathjax_config.js>`__ for an example (you can inline the body of the script directly in ``conf.py``).
+  Sphinx loads MathJax in ``async`` mode by default, so the above won't work reliably, and the ``mathjax3_config`` option is not always enough (it does not let you customize the ``pageReady`` function; see `Sphinx issue 9450 <https://github.com/sphinx-doc/sphinx/issues/9450>`__).  Instead, put the configuration above in a separate script and include it in ``html_js_files`` with sufficiently low priority (must be < 500).  See `<recipes/sphinx/conf.py>`__ and `<recipes/sphinx/_static/mathjax_config.js>`__ for an example (you can also inline the body of the script directly in ``conf.py``).
 
   For other processors, such as Pelican, then you need to either move your configuration to a separate file and make sure that it is loaded first, as in Sphinx, or find a way to defer ``MathJax``.  The following usually works::
 

@@ -1,0 +1,28 @@
+{
+  "generator": [
+    "Coq+SerAPI",
+    "8.12.0+0.12.0"
+  ],
+  "metadata": {
+    "sertop_args": [],
+    "cache_version": "1"
+  },
+  "chunks": [
+    "Print nat."
+  ],
+  "annotated": [
+    [
+      {
+        "_type": "sentence",
+        "contents": "Print nat.",
+        "messages": [
+          {
+            "_type": "message",
+            "contents": "Inductive nat : Set :=  O : nat | S : nat -> nat\n\nArguments S _%nat_scope"
+          }
+        ],
+        "goals": []
+      }
+    ]
+  ]
+}

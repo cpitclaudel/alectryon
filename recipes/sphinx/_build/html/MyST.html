@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>A chapter stored as a Coq file &#8212; alectryon-demo  documentation</title>
+    <title>Integration with MyST &#8212; alectryon-demo  documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" type="text/css" href="_static/alectryon.css" />
@@ -16,10 +16,11 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/alectryon.js"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="MathJax in Sphinx" href="math.html" />
-    <link rel="prev" title="Welcome to alectryon-demo’s documentation!" href="index.html" />
+    <link rel="prev" title="MathJax in Sphinx" href="math.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -36,11 +37,17 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="a-chapter-stored-as-a-coq-file">
-<h1>A chapter stored as a Coq file<a class="headerlink" href="#a-chapter-stored-as-a-coq-file" title="Permalink to this headline">¶</a></h1>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="coqchapter-v-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="coqchapter-v-chk0"><span class="kn">Compute</span> ((<span class="kr">fun</span> (<span class="nv">n</span>: nat) (<span class="nv">opt</span>: option nat) (<span class="nv">eq</span>: opt = Some n) =&gt; n)
-           _ (Some <span class="mi">3</span>) eq_refl).</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">= <span class="mi">3</span>
-: nat</blockquote></div></div></small></span></pre></div>
+  <div class="tex2jax_ignore mathjax_ignore section" id="integration-with-myst">
+<h1>Integration with MyST<a class="headerlink" href="#integration-with-myst" title="Permalink to this headline">¶</a></h1>
+<p>To combine Alectryon and MyST (a Markdown parser with support for docutils/Sphinx directives), just load both plugins in your Sphinx configuration:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>extensions = [&quot;alectryon.sphinx&quot;, &quot;myst_parser&quot;]
+</pre></div>
+</div>
+<p>That’s enough to run Coq fragments and link to identifiers:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="myst-md-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="myst-md-chk0"><span class="kn">Print</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kn">Inductive</span> <span class="nf">nat</span> : <span class="kt">Set</span> :=  O : nat | S : nat -&gt; nat
+
+<span class="kn">Arguments</span> S _%nat_scope</blockquote></div></div></small></span></pre><p>For roles use <code class="docutils literal notranslate"><span class="pre">{role}`argument`</span></code> syntax: <em><a class="reference external" href="https://coq.inria.fr/library/Coq.Init.Nat.html#even">like this</a></em>.  For math use either the <code class="docutils literal notranslate"><span class="pre">{math}</span></code> role (<span class="mathjax_process math notranslate nohighlight">\(e^{i\pi} = -1\)</span>) or <code class="docutils literal notranslate"><span class="pre">$</span></code> signs: (<span class="mathjax_process math notranslate nohighlight">\(\cos(\pi) = -1\)</span>).</p>
+</div>
 
 
           </div>
@@ -61,17 +68,16 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">A chapter stored as a Coq file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="coqchapter.html">A chapter stored as a Coq file</a></li>
 <li class="toctree-l1"><a class="reference internal" href="math.html">MathJax in Sphinx</a></li>
-<li class="toctree-l1"><a class="reference internal" href="MyST.html">Integration with MyST</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Integration with MyST</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">Welcome to alectryon-demo’s documentation!</a></li>
-      <li>Next: <a href="math.html" title="next chapter">MathJax in Sphinx</a></li>
+      <li>Previous: <a href="math.html" title="previous chapter">MathJax in Sphinx</a></li>
   </ul></li>
 </ul>
 </div>
@@ -105,7 +111,7 @@
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
-      <a href="_sources/coqchapter.v.txt"
+      <a href="_sources/MyST.md.txt"
           rel="nofollow">Page source</a>
     </div>
 

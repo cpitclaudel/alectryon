@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>Writing Alectryon documents in Markdown with MyST</title>
+<script type="text/javascript" defer src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js?config=TeX-AMS_CHTML"></script>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="tango_subtle.min.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="tex2jax_ignore mathjax_ignore document" id="writing-alectryon-documents-in-markdown-with-myst">
+<h1 class="title">Writing Alectryon documents in Markdown with MyST</h1>
+
+<p>To compile this file, use the following command:</p>
+<pre class="literal-block">
+$ alectryon literate_MyST.md # MyST → HTML, produces ‘literate_MyST.html’
+
+</pre>
+<p>Alectryon supports input files written in MyST (a Markdown variant) in addition to Coq and reStructuredText.</p>
+<style type="text/css"> .border { border: solid } </style><p>In MyST Coq fragments are spelled as <tt class="docutils literal"><span class="pre">```{coq}</span></tt>, with arguments on the same line and options below:</p>
+<pre class="alectryon-io highlight border"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-myst-md-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-myst-md-chk0"><span class="kn">Goal</span> <span class="kr">exists</span> <span class="nv">x</span>, x * x = <span class="mi">49</span> /\ x &lt; <span class="mi">10</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">exists</span> <span class="nv">x</span> : nat, x * x = <span class="mi">49</span> /\ x &lt; <span class="mi">10</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-myst-md-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-myst-md-chk1"><span class="kr">let rec</span> <span class="nv">t</span> <span class="nv">n</span> := (<span class="kr">exists</span> <span class="nv">n</span>; <span class="nb">split</span>; [<span class="bp">reflexivity</span> |]) || t (S n) <span class="kr">in</span> t <span class="mi">0</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="mi">7</span> &lt; <span class="mi">10</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-myst-md-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-myst-md-chk2"><span class="nb">unfold</span> lt.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="mi">8</span> &lt;= <span class="mi">10</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">repeat</span> <span class="nb">constructor</span>.</span></span></pre><p>Math is written either in Docutils math roles (<span class="mathjax_process math">\(e^{i\pi} = -1\)</span>) or in <tt class="docutils literal">$</tt> signs (<span class="mathjax_process math">\(\cos(\pi) = -1\)</span>).  And unlike in reST, <em>built-in inline markup <strong>nests</strong>, including <tt class="docutils literal">code</tt> and other roles like <tt class="docutils literal">coqid</tt> <a class="reference external" href="https://coq.inria.fr/library/Coq.Init.Nat.html#even">references</a> or <a class="reference external" href="https://myst-parser.readthedocs.io/en/latest/syntax/reference.html#extended-block-tokens">links</a></em>.</p>
+</div>
+</div></body>
+</html>

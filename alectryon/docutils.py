@@ -67,6 +67,7 @@ side, and a doctree-resolved event on the Sphinx side.
 import re
 import os.path
 from collections import namedtuple
+from importlib import import_module
 
 import docutils
 import docutils.frontend
@@ -184,6 +185,22 @@ class OneTimeTransform(Transform):
         if type(self).__name__ not in state.transforms_executed:
             state.transforms_executed.add(type(self).__name__)
             self._apply()
+
+class ActivateMathJaxTransform(Transform):
+    """Add the ``mathjax_process`` class on math nodes.
+
+    This is needed when another part of the pipeline adds mathjax_ignore on the
+    root of the document to turn off MathJax's math-detection heuristics.
+    """
+    default_priority = 800
+
+    @staticmethod
+    def is_math(node):
+        return isinstance(node, (nodes.math, nodes.math_block))
+
+    def apply(self, **kwargs):
+        for node in self.document.traverse(self.is_math):
+            node.attributes.setdefault("classes", []).append("mathjax_process")
 
 class AlectryonTransform(OneTimeTransform):
     default_priority = 990
@@ -713,9 +730,10 @@ LuaLatexWriter = make_LatexWriter(xetex.Writer, LuaLatexTranslator) # Same write
 
 Pipeline = namedtuple("Pipeline", "parser reader translator writer")
 
-FRONTENDS = {
-    "coq+rst": (RSTCoqParser, RSTCoqStandaloneReader),
-    "rst": (docutils.parsers.rst.Parser, docutils.readers.standalone.Reader)
+PARSERS = {
+    "coq+rst": (__name__, "RSTCoqParser"),
+    "rst": ("docutils.parsers.rst", "Parser"),
+    "md": ("alectryon.myst", "Parser"),
 }
 
 BACKENDS = {
@@ -730,10 +748,13 @@ BACKENDS = {
     }
 }
 
-def get_pipeline(frontend, backend, html_dialect, latex_dialect):
-    if frontend not in FRONTENDS:
+def get_parser(frontend):
+    if frontend not in PARSERS:
         raise ValueError("Unsupported docutils frontend: {}".format(frontend))
+    parser_mod, parser_name = PARSERS[frontend]
+    return getattr(import_module(parser_mod), parser_name)
 
+def get_pipeline(frontend, backend, html_dialect, latex_dialect):
     if backend not in BACKENDS:
         raise ValueError("Unsupported docutils backend: {}".format(backend))
 
@@ -741,9 +762,9 @@ def get_pipeline(frontend, backend, html_dialect, latex_dialect):
     if dialect not in BACKENDS[backend]:
         raise ValueError("Unsupported {} dialect: {}".format(backend, latex_dialect))
 
-    parser, reader = FRONTENDS[frontend]
+    parser = get_parser(frontend)
     translator, writer = BACKENDS[backend][dialect]
-    return Pipeline(parser, reader, translator, writer)
+    return Pipeline(parser, Reader, translator, writer)
 
 # Entry points
 # ============

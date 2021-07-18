@@ -62,7 +62,13 @@ def setup(app):
         app.add_config_value(opts["dest"], opts["default"], "env")
 
     # All custom transforms are run through pending nodes,
-    # so no need for ``app.add_transform(...)``
+    # so no need for ``app.add_transform(...)`` except for MyST.
+
+    # (This specific transformation is not strictly necessary in all cases, as
+    # only MyST disables math processing at the level of the whole document; but
+    # since there's an open Sphinx PR to do that in all cases, better do it
+    # right away.)
+    app.add_transform(docutils.ActivateMathJaxTransform)
 
     app.connect('builder-inited', add_html_assets)
 
