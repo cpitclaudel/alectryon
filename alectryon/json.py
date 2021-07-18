@@ -22,6 +22,7 @@ import json
 import pickle
 from copy import deepcopy
 from os import path, makedirs, unlink
+from importlib import import_module
 from itertools import zip_longest
 
 from . import core
@@ -243,7 +244,7 @@ class FileCache(BaseCache):
 
     def _open(self, compression, mode):
         mod, ext = self.KNOWN_COMPRESSIONS[compression]
-        return __import__(mod).open(self.cache_file + ext, mode=mode)
+        return import_module(mod).open(self.cache_file + ext, mode=mode)
 
     def _validate(self, reference):
         if self.data is None:
