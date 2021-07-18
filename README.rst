@@ -41,8 +41,8 @@ Try these recipes in the ``recipes`` directory of this repository (for each task
 Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style):
    .. code::
 
-      alectryon literate.v
-      alectryon --frontend coq+rst --backend webpage literate.v -o literate.html
+      alectryon literate_coq.v
+      alectryon --frontend coq+rst --backend webpage literate_coq.v -o literate.html
 
 Generate an interactive webpage from a plain Coq file (Proof General style):
    .. code::
@@ -53,26 +53,26 @@ Generate an interactive webpage from a plain Coq file (Proof General style):
 Generate an interactive webpage from a Coqdoc file (compatibility mode):
    .. code::
 
-      alectryon --frontend coqdoc literate.v
+      alectryon --frontend coqdoc coqdoc.v
       alectryon --frontend coqdoc --backend webpage literate.v -o literate.html
 
-Compile a reStructuredText document containing ``.. coq::`` blocks (coqrst style):
+Generate an interactive webpage from a reStructuredText document containing ``.. coq::`` directives (coqrst style):
    .. code::
 
-      alectryon literate.v.rst
-      alectryon --frontend rst --backend webpage literate.v.rst -o literate.html
+      alectryon literate_reST.rst
+      alectryon --frontend rst --backend webpage literate_reST.rst -o literate.html
 
 Translate a reStructuredText document into a literate Coq file:
    .. code::
 
-      alectryon literate.v.rst -o literate.v
-      alectryon --frontend rst --backend coq+rst literate.v.rst -o literate.v
+      alectryon literate_reST.rst -o literate_reST.v
+      alectryon --frontend rst --backend coq+rst literate_reST.rst -o literate_reST.v
 
 Translate a literate Coq file into a reStructuredText document:
    .. code::
 
-      alectryon literate.v -o literate.v.rst
-      alectryon --frontend coq+rst --backend rst literate.v -o literate.v.rst
+      alectryon literate_coq.v -o literate_coq.v.rst
+      alectryon --frontend coq+rst --backend rst literate_coq.v -o literate_coq.v.rst
 
 Record goals and responses for fragments contained in a JSON source file:
    .. code::
@@ -92,9 +92,11 @@ Command-line interface
 .. code::
 
    alectryon [-h] […]
-              [--frontend {coq,coq+rst,json,rst}]
-              [--backend {coq,coq+rst,json,snippets-html,webpage}]
-              input [input ...]
+             [--frontend {coq,coq+rst,coqdoc,json,rst}]
+             [--backend {coq,coq+rst,json,latex,rst,snippets-html,snippets-latex,webpage,…}]
+             input [input ...]
+
+Use ``alectryon --help`` for full command line details.
 
 - Each ``input`` file can be ``.v`` (a Coq source file, optionally including reStructuredText in comments delimited by ``(*| … |*)``), ``.json`` (a list of Coq fragments), or ``.rst`` (a reStructuredText document including ``.. coq::`` blocks).  Each input fragment is split into individual sentences, which are executed one by one (all code is run in a single Coq session).
 
@@ -149,8 +151,6 @@ Command-line interface
                 }
               ]
             ]
-
-Use ``alectryon --help`` for full command line details.
 
 As a library
 ------------
