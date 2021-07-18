@@ -431,9 +431,6 @@ PIPELINES = {
     }
 }
 
-PIPELINES['rst']['xelatex'] = PIPELINES['rst']['latex']
-PIPELINES['coq+rst']['xelatex'] = PIPELINES['coq+rst']['latex']
-
 # CLI
 # ===
 
