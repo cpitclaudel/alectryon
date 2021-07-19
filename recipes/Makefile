@@ -27,7 +27,7 @@ recipes.mk: ../etc/regen_makefile.py $(filter-out %.mk,$(wildcard *.*))
 tests.mk: ../etc/regen_makefile.py $(filter-out %.mk,$(wildcard tests/*.*))
 	./$< _output/tests/ $(filter-out $<,$^) > $@
 
-include *.mk
+include recipes.mk tests.mk
 
 # TODO
 # _output/mathjax.tex: mathjax.rst | _output
@@ -73,7 +73,7 @@ all: $(targets)
 ###########
 
 clean:
-	rm -rf _output/ sphinx/_build/
+	rm -rf *.mk _output/ sphinx/_build/
 
 .PHONY: clean
 FORCE:
