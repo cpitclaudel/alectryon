@@ -2,13 +2,6 @@ module.exports = async (page, scenario, vp) => {
     console.log('SCENARIO > ' + scenario.label);
     await require('./clickAndHoverHelper')(page, scenario);
 
-    // Wait for fonts
-    await page.evaluateHandle('document.fonts.ready');
-    await page.evaluate(async () => {
-        if (document.MathJax)
-            await MathJax.startup.promise;
-    });
-
     // Toggle checkboxes
     switch (scenario.alectryon_style) {
     case 'plain': break;
@@ -20,4 +13,13 @@ module.exports = async (page, scenario, vp) => {
         });
         break;
     }
+
+    // Wait for fonts
+    await page.evaluateHandle('document.fonts.ready');
+
+    // Wait for MathJax
+    await page.evaluate(async () => {
+        if (document.MathJax)
+            await MathJax.startup.promise;
+    });
 };
