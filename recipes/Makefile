@@ -52,13 +52,13 @@ _output/%.pdf: _output/latex.aux/%.pdf
 .SECONDEXPANSION:
 
 _output/latex.aux/%.xe.pdf: _output/%.xe.tex | $$(dir $$@)
-	TEXINPUTS=$(dir $<): texfot --quiet xelatex -output-directory=$(dir $@) $(notdir $<)
+	texfot --tee=/dev/null --no-stderr latexmk -cd -pdfxe -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
 
 _output/latex.aux/%.lua.pdf: _output/%.lua.tex | $$(dir $$@)
-	TEXINPUTS=$(dir $<): texfot --quiet xelatex -output-directory=$(dir $@) $(notdir $<)
+	texfot --tee=/dev/null --no-stderr latexmk -cd -pdflua -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
 
 _output/latex.aux/%.pdf: _output/%.tex | $$(dir $$@)
-	TEXINPUTS=$(dir $<): texfot --quiet pdflatex -output-directory=$(dir $@) $(notdir $<)
+	texfot --tee=/dev/null --no-stderr latexmk -cd -pdf -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
 
 targets += $(patsubst %.tex,%.pdf,$(filter-out %.snippets.tex,$(filter %.tex,$(targets))))
 
