@@ -5,6 +5,8 @@
 Unreleased
 ==========
 
+- ``.. coq::`` directives now accept ``:class:`` and ``:name:`` arguments.
+
 - A new ``--long-line-threshold`` flag controls the line length over which Alectryon will issue “long line” warnings. [0286051]
 
 - A new ``--cache-compression`` flag enables compression of generated cache files.  This typically yields space savings of over 95%. [GH-35]
@@ -18,7 +20,7 @@ Breaking changes
 
 - Docutils option ``"syntax_highlight"`` now defaults to ``"short"`` when using Alectryon's CLI or its custom HTML writer.  That is, inline `:coq:` roles now produce short-form CSS Pygments class names when processed using ``alectryon.docutils`` or the CLI. [72749bd]
 
-- The HTML markup for ``alectryon-io`` blocks has been simplified to save space in generated files (may affect third-party stylesheets). [59563f1]
+- The HTML markup for ``alectryon-io`` blocks has been simplified to save space in generated files (may affect third-party stylesheets).  Specifically, the ``.highlight`` class is now applied to whole ``.alectryon-io`` blocks; ``.hyp-body-block`` and ``.hyp-type-block`` are now ``.hyp-body`` and ``.hyp-type``; and the following classes have been removed: ``.goal-hyp`` (use ``.goal-hyps > div``), ``.hyp-name`` (use ``.goal-hyps var``), ``.hyp-body`` (use ``.hyp-body > span``), ``.hyp-type`` (use ``.hyp-type > span``), ``.hyp-punct`` (use ``.goal-hyps b`` or ``.hyp-type > b`` and ``.hyp-body > b``), ``.alectryon-output-stycky-wrapper`` (use ``.alectryon-output > div``), ``.alectryon-extra-goal-label`` (use ``.alectryon-extra-goals > .goal-separator``). [59563f1, dc4b128, 28a004e]
 
 - ``json.Cache`` in module ``alectryon.json`` now takes arbitrary ``metadata`` instead of ``sertop_args``. [56ca103]
 
