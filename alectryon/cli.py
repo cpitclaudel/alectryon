@@ -127,7 +127,7 @@ def gen_docutils(src, frontend, backend, fpath,
                          pipeline.parser, pipeline.reader, pipeline.writer,
                          settings_overrides)
 
-def _docutils_cmdline_html(description, Reader, Parser):
+def _docutils_cmdline_html(description, Parser):
     import locale
     locale.setlocale(locale.LC_ALL, '')
 
@@ -138,7 +138,7 @@ def _docutils_cmdline_html(description, Reader, Parser):
 
     parser = Parser()
     publish_cmdline(
-        reader=Reader(parser), parser=parser,
+        parser=parser,
         writer=HtmlWriter(),
         settings_overrides={'stylesheet_path': None},
         description=(description + default_description)
@@ -752,12 +752,11 @@ def main():
 # ================
 
 def rstcoq2html():
-    from .docutils import RSTCoqStandaloneReader, RSTCoqParser
+    from .docutils import RSTCoqParser
     DESCRIPTION = 'Build an HTML document from an Alectryon Coq file.'
-    _docutils_cmdline_html(DESCRIPTION, RSTCoqStandaloneReader, RSTCoqParser)
+    _docutils_cmdline_html(DESCRIPTION, RSTCoqParser)
 
 def coqrst2html():
     from docutils.parsers.rst import Parser
-    from docutils.readers.standalone import Reader
     DESCRIPTION = 'Build an HTML document from an Alectryon reStructuredText file.'
-    _docutils_cmdline_html(DESCRIPTION, Reader, Parser)
+    _docutils_cmdline_html(DESCRIPTION, Parser)

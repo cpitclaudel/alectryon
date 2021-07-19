@@ -594,15 +594,6 @@ class RSTCoqParser(docutils.parsers.rst.Parser):
             del roles._roles['']
         self.finish_parse()
 
-class RSTCoqStandaloneReader(Reader):
-    def __init__(self, parser=None, parser_name=None, extra_transforms=None):
-        Reader.__init__(self, parser, parser_name)
-        self.extra_transforms = extra_transforms or []
-
-    def get_transforms(self):
-        # AlectryonTransform not added here because the CoqDirective does it
-        return Reader.get_transforms(self) + self.extra_transforms
-
 # Writer
 # ------
 
