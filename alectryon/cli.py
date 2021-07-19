@@ -530,10 +530,12 @@ def post_process_arguments(parser, args):
     return args
 
 def build_parser():
-    parser = argparse.ArgumentParser(description="""\
+    parser = argparse.ArgumentParser(
+        description="""\
 Annotate segments of Coq code with responses and goals.
 Take input in Coq, reStructuredText, or JSON format \
-and produce reStructuredText, HTML, LaTeX, or JSON output.""")
+and produce reStructuredText, HTML, LaTeX, or JSON output.""",
+        fromfile_prefix_chars='@')
 
     out = parser.add_argument_group("Input configuration")
 
