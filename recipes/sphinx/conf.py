@@ -37,7 +37,7 @@ alectryon.docutils.CACHE_DIRECTORY = "_build/alectryon/"
 from sphinx.ext import mathjax
 mathjax.MATHJAX_URL = alectryon.docutils.HtmlTranslator.MATHJAX_URL # MathJax 3
 
-# This configuration is explained in README.rst
+# This configuration is explained in recipes/mathjax.rst
 # Use either this (Sphinx ≥ 4.0 only):
 
 html_js_files = ['mathjax_config.js']

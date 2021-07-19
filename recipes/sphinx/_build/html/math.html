@@ -41,12 +41,34 @@
   <div class="section" id="mathjax-in-sphinx">
 <h1>MathJax in Sphinx<a class="headerlink" href="#mathjax-in-sphinx" title="Permalink to this headline">¶</a></h1>
 <p>Using any math on a page causes Sphinx to automatically load MathJax: <span class="mathjax_process math notranslate nohighlight">\(e^{i\pi} = -1\)</span>.</p>
-<p>If you want to highlight pieces of code with MathJax, too, then see <code class="docutils literal notranslate"><span class="pre">README.rst</span></code> and the implementation of <code class="docutils literal notranslate"><span class="pre">_static/mathjax_config.js</span></code>:</p>
+<p>If you want to highlight pieces of code with MathJax, too, then you can either:</p>
+<ul>
+<li><p>Use a custom mathjax config script (see the discussion in <code class="docutils literal notranslate"><span class="pre">recipes/mathjax.rst</span></code>, the configuration in <code class="docutils literal notranslate"><span class="pre">conf.py</span></code>, and the implementation in <code class="docutils literal notranslate"><span class="pre">recipes/sphinx/_static/mathjax_config.js</span></code>).  Math in the following snippet is highlighted using this technique; look for the link to <code class="docutils literal notranslate"><span class="pre">mathjax_config.js</span></code> in the <code class="docutils literal notranslate"><span class="pre">&lt;head&gt;</span></code> of this webpage:</p>
 <pre class="alectryon-io highlight coq-math"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;\mathbb{N}&quot;</span> := nat.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="math-rst-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="math-rst-chk0"><span class="kn">Print</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kn">Inductive</span> <span class="nf">nat</span> : <span class="kt">Set</span> :=
     O : \mathbb{N} | S : \mathbb{N} -&gt; \mathbb{N}
 
-<span class="kn">Arguments</span> S _%nat_scope</blockquote></div></div></small></span></pre></div>
+<span class="kn">Arguments</span> S _%nat_scope</blockquote></div></div></small></span></pre></li>
+<li><p>Use a custom script on a single page; this works best if you need MathJax on just one page and you do not need to customize MathJax further.  Math in the following Coq snippet is highlighted that way (view the source of this page to see the custom script):</p>
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", () => {
+     // Find math blocks
+     blocks = document.querySelectorAll(".alectryon-io");
+
+     // Add math delimiters
+     blocks.forEach(function (e) {
+         e.innerHTML = e.innerHTML.replace(/([\\]mathbb{B})/g, '\\($1\\)');
+         e.classList.add("mathjax_process");
+     });
+
+     // Force reprocessing if MathJax already ran
+     window.MathJax?.typesetPromise?.(blocks);
+  });
+</script><pre class="alectryon-io highlight coq-math-2"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;\mathbb{B}&quot;</span> := bool.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="math-rst-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="math-rst-chk1"><span class="kn">Print</span> bool.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kn">Inductive</span> <span class="nf">bool</span> : <span class="kt">Set</span> :=
+    true : \mathbb{B} | false : \mathbb{B}</blockquote></div></div></small></span></pre></li>
+</ul>
+</div>
 
 
           </div>

@@ -8,7 +8,8 @@
     "cache_version": "1"
   },
   "chunks": [
-    "Notation \"\\mathbb{N}\" := nat.\nPrint nat. (* .unfold *)"
+    "Notation \"\\mathbb{N}\" := nat.\nPrint nat. (* .unfold *)",
+    "Notation \"\\mathbb{B}\" := bool.\nPrint bool. (* .unfold *)"
   ],
   "annotated": [
     [
@@ -29,6 +30,33 @@
           {
             "_type": "message",
             "contents": "Inductive nat : Set :=\n    O : \\mathbb{N} | S : \\mathbb{N} -> \\mathbb{N}\n\nArguments S _%nat_scope"
+          }
+        ],
+        "goals": []
+      },
+      {
+        "_type": "text",
+        "contents": " (* .unfold *)"
+      }
+    ],
+    [
+      {
+        "_type": "sentence",
+        "contents": "Notation \"\\mathbb{B}\" := bool.",
+        "messages": [],
+        "goals": []
+      },
+      {
+        "_type": "text",
+        "contents": "\n"
+      },
+      {
+        "_type": "sentence",
+        "contents": "Print bool.",
+        "messages": [
+          {
+            "_type": "message",
+            "contents": "Inductive bool : Set :=\n    true : \\mathbb{B} | false : \\mathbb{B}"
           }
         ],
         "goals": []

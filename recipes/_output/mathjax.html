@@ -58,33 +58,24 @@ alectryon mathjax.rst # reST → HTML; produces ‘mathjax.html’
     \(\newcommand{\ccNsum}[3]{\sum_{#1 = 0}^{#2} #3}\)
 </div><p>Then we set up MathJax to render the proofs properly (look at the page source to see the relevant script):</p>
 <script type="text/javascript">
-  function addMathDelimiters() {
+  document.addEventListener("DOMContentLoaded", () => {
      // 1. Find all relevant Alectryon tags
      var spans = document.querySelectorAll(
+         ".coq-math .message, " +
          ".coq-math .goal-conclusion, " +
-         ".coq-math .hyp-body span, " +
-         ".coq-math .hyp-type span"
+         ".coq-math .hyp-body > span, " +
+         ".coq-math .hyp-type > span"
      );
 
-     // 2. Wrap the contents of each in \(\) math delimiters
+     // 2. Wrap the contents of each in \(\) math delimiters, add mathjax class
      spans.forEach(function (e) {
          e.innerText = '\\[' + e.innerText + '\\]';
+         e.classList.add("mathjax_process");
      });
-  }
 
-  MathJax = {
-      options: {
-          // Alectryon code is wrapped in <pre> blocks, so MathJax would skip
-          // them if we didn't add an exception for 'alectryon-io'
-          processHtmlClass: 'alectryon-io'
-      },
-      startup: {
-          pageReady: function () {
-              addMathDelimiters(); // First add \(\) math delimiters
-              return MathJax.startup.defaultPageReady(); // Then run MathJax
-          }
-      }
-  };
+     // 3. If MathJax has already loaded, force reprocessing
+     window.MathJax && MathJax.typesetPromise(spans);
+  });
 </script>
 
 <style type="text/css"> /* Override MathJax margins */
@@ -108,7 +99,56 @@ alectryon mathjax.rst # reST → HTML; produces ‘mathjax.html’
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk6" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk6"><span class="nb">rewrite</span> IHn.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><div><var>n</var><span class="hyp-type"><b>:</b><span>\ccNat{}</span></span></div><div><var>IHn</var><span class="hyp-type"><b>:</b><span><span class="mi">2</span> \times \ccNsum{i}{n}{i} = n \times (n + <span class="mi">1</span>)</span></span></div></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="mi">2</span> \times \ccSucc{ n} + n \times (n + <span class="mi">1</span>) =
 \ccSucc{ n} \times (\ccSucc{ n} + <span class="mi">1</span>)</div></blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">ring</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><p>Note that Alectryon loads MathJax with the <tt class="docutils literal">defer</tt> attribute, so if you need to call <tt class="docutils literal">MathJax.typeset()</tt> or <tt class="docutils literal">MathJax.typesetPromise()</tt>, you'll want to do that from a deferred script or from a <tt class="docutils literal">DOMContentLoaded</tt> event listener.  There is more documentation about MathJax in Alectryon's README.</p>
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><div class="section" id="configuring-mathjax">
+<h1>Configuring MathJax</h1>
+<p>MathJax needs to be configured before it is loaded.  This makes configuring it particularly tricky when you don't have full control on the generated webpage.</p>
+<ul>
+<li><p class="first">If you're using Docutils directly through Alectryon's command line, MathJax is loaded with the <tt class="docutils literal">defer</tt> flag, so you can include a <tt class="docutils literal">&lt;script&gt;</tt> block with your <a class="reference external" href="https://docs.mathjax.org/en/latest/web/configuration.html">MathJax config</a> anywhere in the document: use a <tt class="docutils literal">.. raw:: html</tt> directive, like this:</p>
+<pre class="literal-block">
+.. raw:: html
+
+   &lt;script type=&quot;text/javascript&quot;&gt;
+     MathJax = { options: { … } };
+   &lt;/script&gt;
+</pre>
+</li>
+<li><p class="first">If you're using Sphinx, MathJax is loaded with the <code class="highlight coq"><span class="n">async</span></code> flag (see <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/9450">this issue</a>), so there's a race condition and you can't depend on your configuration being processed early: you need to move the config to a separate file, or use the <tt class="docutils literal">mathjax3_config</tt> option of Sphinx if does enough for your needs.  See the tricks in <tt class="docutils literal">recipes/sphinx/conf.py</tt>.</p>
+</li>
+<li><p class="first">For other processors like Pelican, you need to either move your configuration to a separate file and make sure that it is loaded first, as in Sphinx, or find a way to defer <tt class="docutils literal">MathJax</tt>.  The following usually works:</p>
+<pre class="literal-block">
+from docutils.writers._html_base import HTMLTranslator
+HTMLTranslator.mathjax_script = '&lt;script type=&quot;text/javascript&quot; defer src=&quot;%s&quot;&gt;&lt;/script&gt;\n'
+</pre>
+</li>
+</ul>
+</div>
+<div class="section" id="additional-notes-and-background">
+<h1>Additional notes and background</h1>
+<p>Instead of adding explicit <tt class="docutils literal">mathjax_process</tt> classes on each math element, you might want to use the <tt class="docutils literal">processHtmlClass</tt> option of MathJax.  This is more complicated, but here's the process in a nutshell.</p>
+<ol class="arabic">
+<li><p class="first">Configure MathJax to stop ignoring <tt class="docutils literal">&lt;pre&gt;</tt> blocks by adding a <tt class="docutils literal">MathJax = …</tt> <a class="reference external" href="http://docs.mathjax.org/en/latest/web/configuration.html">config block</a>:</p>
+<pre class="literal-block">
+MathJax = {}
+MathJax.options = { processHtmlClass: 'mathjax_process|alectryon-io' };
+</pre>
+</li>
+<li><p class="first">Add <tt class="docutils literal">\( … \)</tt> math markers to tell MathJax where to look:</p>
+<pre class="literal-block">
+MathJax.startup = {
+    pageReady: function () {
+        // … Custom code to add \( … \) delimiters
+        return MathJax.startup.defaultPageReady(); // Then run MathJax
+    }
+}
+</pre>
+</li>
+<li><p class="first">Ensure that these definitions are processed <em>before</em> MathJax itself is loaded, since it's not easy to <a class="reference external" href="http://docs.mathjax.org/en/latest/web/configuration.html#configuring-mathjax-after-it-is-loaded">reconfigure MathJax after loading it</a>.  Concretely, this means either adding <tt class="docutils literal">defer</tt> to the MathJax <tt class="docutils literal">&lt;script&gt;</tt> tag, moving the configuration to a separate script loaded before MathJax, or moving the MathJax <tt class="docutils literal">&lt;script&gt;</tt> to the end of the file (past the configuration above).</p>
+<p>The problem is that docutils automatically inserts the MathJax <tt class="docutils literal">&lt;script&gt;</tt> tag for you if you use some math in the document, so you don't have much control over it (if you don't have any <tt class="docutils literal">:math:</tt> roles then there's no problem: you can include the MathJax script yourself as explained in the previous section).</p>
+</li>
+</ol>
+<p>Alectryon already configures docutils to load MathJax with the <tt class="docutils literal">defer</tt> option, so the steps above should work reliably when using Alectryon in standalone mode (point [3.] is already taken care of).</p>
+<p>Sphinx loads MathJax in <tt class="docutils literal">async</tt> mode by default, so the above won't work reliably, and the <tt class="docutils literal">mathjax3_config</tt> option is not always enough (it does not let you customize the <tt class="docutils literal">pageReady</tt> function; see <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/9450">Sphinx issue 9450</a>).  Instead, put the configuration above in a separate script and include it in <tt class="docutils literal">html_js_files</tt> with sufficiently low priority (must be &lt; 500).  See <a class="reference external" href="sphinx/conf.py">sphinx/conf.py</a> and <a class="reference external" href="sphinx/_static/mathjax_config.js">sphinx/_static/mathjax_config.js</a> for an example (you can also inline the body of the script directly in <tt class="docutils literal">conf.py</tt>).</p>
+</div>
 </div>
 </div></body>
 </html>

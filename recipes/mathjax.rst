@@ -61,33 +61,24 @@ Then we set up MathJax to render the proofs properly (look at the page source to
 .. raw:: html
 
    <script type="text/javascript">
-     function addMathDelimiters() {
+     document.addEventListener("DOMContentLoaded", () => {
         // 1. Find all relevant Alectryon tags
         var spans = document.querySelectorAll(
+            ".coq-math .message, " +
             ".coq-math .goal-conclusion, " +
-            ".coq-math .hyp-body span, " +
-            ".coq-math .hyp-type span"
+            ".coq-math .hyp-body > span, " +
+            ".coq-math .hyp-type > span"
         );
 
-        // 2. Wrap the contents of each in \(\) math delimiters
+        // 2. Wrap the contents of each in \(\) math delimiters, add mathjax class
         spans.forEach(function (e) {
             e.innerText = '\\[' + e.innerText + '\\]';
+            e.classList.add("mathjax_process");
         });
-     }
 
-     MathJax = {
-         options: {
-             // Alectryon code is wrapped in <pre> blocks, so MathJax would skip
-             // them if we didn't add an exception for 'alectryon-io'
-             processHtmlClass: 'alectryon-io'
-         },
-         startup: {
-             pageReady: function () {
-                 addMathDelimiters(); // First add \(\) math delimiters
-                 return MathJax.startup.defaultPageReady(); // Then run MathJax
-             }
-         }
-     };
+        // 3. If MathJax has already loaded, force reprocessing
+        window.MathJax && MathJax.typesetPromise(spans);
+     });
    </script>
 
    <style type="text/css"> /* Override MathJax margins */
@@ -114,4 +105,50 @@ And finally we write the actual proofs:
        ring.
    Qed.
 
-Note that Alectryon loads MathJax with the ``defer`` attribute, so if you need to call ``MathJax.typeset()`` or ``MathJax.typesetPromise()``, you'll want to do that from a deferred script or from a ``DOMContentLoaded`` event listener.  There is more documentation about MathJax in Alectryon's README.
+Configuring MathJax
+===================
+
+MathJax needs to be configured before it is loaded.  This makes configuring it particularly tricky when you don't have full control on the generated webpage.
+
+- If you're using Docutils directly through Alectryon's command line, MathJax is loaded with the ``defer`` flag, so you can include a ``<script>`` block with your `MathJax config <https://docs.mathjax.org/en/latest/web/configuration.html>`__ anywhere in the document: use a ``.. raw:: html`` directive, like this::
+
+     .. raw:: html
+
+        <script type="text/javascript">
+          MathJax = { options: { … } };
+        </script>
+
+- If you're using Sphinx, MathJax is loaded with the `async` flag (see `this issue <https://github.com/sphinx-doc/sphinx/issues/9450>`__), so there's a race condition and you can't depend on your configuration being processed early: you need to move the config to a separate file, or use the ``mathjax3_config`` option of Sphinx if does enough for your needs.  See the tricks in ``recipes/sphinx/conf.py``.
+
+- For other processors like Pelican, you need to either move your configuration to a separate file and make sure that it is loaded first, as in Sphinx, or find a way to defer ``MathJax``.  The following usually works::
+
+   from docutils.writers._html_base import HTMLTranslator
+   HTMLTranslator.mathjax_script = '<script type="text/javascript" defer src="%s"></script>\n'
+
+
+Additional notes and background
+===============================
+
+Instead of adding explicit ``mathjax_process`` classes on each math element, you might want to use the ``processHtmlClass`` option of MathJax.  This is more complicated, but here's the process in a nutshell.
+
+1. Configure MathJax to stop ignoring ``<pre>`` blocks by adding a ``MathJax = …`` `config block <http://docs.mathjax.org/en/latest/web/configuration.html>`__::
+
+      MathJax = {}
+      MathJax.options = { processHtmlClass: 'mathjax_process|alectryon-io' };
+
+2. Add ``\( … \)`` math markers to tell MathJax where to look::
+
+      MathJax.startup = {
+          pageReady: function () {
+              // … Custom code to add \( … \) delimiters
+              return MathJax.startup.defaultPageReady(); // Then run MathJax
+          }
+      }
+
+3. Ensure that these definitions are processed *before* MathJax itself is loaded, since it's not easy to `reconfigure MathJax after loading it <http://docs.mathjax.org/en/latest/web/configuration.html#configuring-mathjax-after-it-is-loaded>`__.  Concretely, this means either adding ``defer`` to the MathJax ``<script>`` tag, moving the configuration to a separate script loaded before MathJax, or moving the MathJax ``<script>`` to the end of the file (past the configuration above).
+
+   The problem is that docutils automatically inserts the MathJax ``<script>`` tag for you if you use some math in the document, so you don't have much control over it (if you don't have any ``:math:`` roles then there's no problem: you can include the MathJax script yourself as explained in the previous section).
+
+Alectryon already configures docutils to load MathJax with the ``defer`` option, so the steps above should work reliably when using Alectryon in standalone mode (point [3.] is already taken care of).
+
+Sphinx loads MathJax in ``async`` mode by default, so the above won't work reliably, and the ``mathjax3_config`` option is not always enough (it does not let you customize the ``pageReady`` function; see `Sphinx issue 9450 <https://github.com/sphinx-doc/sphinx/issues/9450>`__).  Instead, put the configuration above in a separate script and include it in ``html_js_files`` with sufficiently low priority (must be < 500).  See `<sphinx/conf.py>`__ and `<sphinx/_static/mathjax_config.js>`__ for an example (you can also inline the body of the script directly in ``conf.py``).
