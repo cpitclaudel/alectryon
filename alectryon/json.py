@@ -21,9 +21,10 @@
 import json
 import pickle
 from copy import deepcopy
-from os import path, makedirs, unlink
+from functools import wraps
 from importlib import import_module
 from itertools import zip_longest
+from os import path, makedirs, unlink
 
 from . import core
 
@@ -163,8 +164,6 @@ class FullyDeduplicatingSerializer:
                 return {k: decode(v) for k, v in sorted(js.items())}
             return js
         return decode(js)
-
-from functools import wraps
 
 def deprecated(fn, old_name):
     @wraps(fn)

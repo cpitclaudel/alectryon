@@ -618,7 +618,8 @@ def make_HtmlTranslator(base):
         ASSETS_PATH = html.ASSETS.PATH
 
         JS_TEMPLATE = '<script type="text/javascript" src="{}"></script>\n'
-        MATHJAX_URL = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js'
+        MATHJAX_URL = \
+            'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js'
         mathjax_script = '<script type="text/javascript" defer src="%s"></script>\n'
 
         head_prefix_template = \

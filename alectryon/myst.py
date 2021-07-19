@@ -28,8 +28,6 @@ Sphinx, use the ``myst_parser`` and the ``alectryon.sphinx`` plugins.
 """
 
 import docutils.parsers
-from docutils.nodes import math, math_block
-from docutils.transforms import Transform
 
 try:
     from myst_parser.sphinx_parser import MystParser
@@ -40,8 +38,8 @@ try:
             return super().get_transforms() + [ActivateMathJaxTransform]
 
         # https://github.com/executablebooks/MyST-Parser/issues/347
-        def parse(self, inputstring, document) -> None:
-            return super().parse(inputstring, document, r"docutils")
+        def parse(self, inputstring, document, renderer="docutils") -> None:
+            return super().parse(inputstring, document, renderer)
 
 except ImportError as err:
     class Parser(docutils.parsers.Parser):

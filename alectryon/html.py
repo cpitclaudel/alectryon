@@ -224,8 +224,8 @@ class HtmlGenerator:
     def gen_ids(ids):
         if ids:
             tags.attr(id=ids[0])
-        for id in ids[1:]:
-            tags.span(id=id)
+        for name in ids[1:]:
+            tags.span(id=name)
 
     def gen_fragments(self, fragments, ids=(), classes=()):
         """Serialize a list of `fragments` to HTML."""
