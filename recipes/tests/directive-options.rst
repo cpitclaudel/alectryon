@@ -4,8 +4,10 @@
 
 This file checks that ``:class:`` and ``:name:`` attributes work on ``.. coq::`` directives::
 
-   alectryon directive-options.rst # reST → Coq; produces ‘directive-options.html’
-   alectryon directive-options.rst -o directive-options.xe.tex # reST → LaTeX; produces ‘directive-options.xe.tex’
+   alectryon directive-options.rst
+     # reST → Coq; produces ‘directive-options.html’
+   alectryon directive-options.rst --latex-dialect xelatex -o directive-options.xe.tex
+     # reST → LaTeX; produces ‘directive-options.xe.tex’
 
 .. coq:: none
 

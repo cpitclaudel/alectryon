@@ -26,7 +26,7 @@ _output/tests/directive-options.html: tests/directive-options.rst
 	$(alectryon) $<
 # reST → LaTeX
 _output/tests/directive-options.xe.tex: tests/directive-options.rst
-	$(alectryon) $< -o $@
+	$(alectryon) $< --latex-dialect xelatex -o $@
 
 # Coq+reST → LaTeX
 _output/tests/latex_formatting.tex: tests/latex_formatting.v

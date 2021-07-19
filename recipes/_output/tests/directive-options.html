@@ -19,8 +19,10 @@
 
 <p>This file checks that <tt class="docutils literal">:class:</tt> and <tt class="docutils literal">:name:</tt> attributes work on <tt class="docutils literal">.. coq::</tt> directives:</p>
 <pre class="literal-block">
-alectryon directive-options.rst # reST → Coq; produces ‘directive-options.html’
-alectryon directive-options.rst -o directive-options.xe.tex # reST → LaTeX; produces ‘directive-options.xe.tex’
+alectryon directive-options.rst
+  # reST → Coq; produces ‘directive-options.html’
+alectryon directive-options.rst --latex-dialect xelatex -o directive-options.xe.tex
+  # reST → LaTeX; produces ‘directive-options.xe.tex’
 </pre>
 <style type="text/css">.upside-down { transform: rotate(180deg) } #test { border: solid; } </style><pre class="alectryon-io highlight upside-down" id="test"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">test</span> := <span class="s2">&quot; =: ʇsǝʇ uoıʇıuıɟǝᗡ&quot;</span>.</span></span></pre><p>Link to <a class="reference internal" href="#test">first Coq fragment</a>.</p>
 </div>
