@@ -1,0 +1,207 @@
+Trying:
+    import sys; from pathlib import Path; from pprint import pprint
+Expecting nothing
+ok
+Trying:
+    recipes = Path(".").absolute()
+Expecting nothing
+ok
+Trying:
+    libdir = recipes / "src"
+Expecting nothing
+ok
+Trying:
+    from alectryon.core import annotate
+Expecting nothing
+ok
+Trying:
+    annotate(["Check surjective_pairing."])
+Expecting:
+    [[Sentence(contents='Check surjective_pairing.',
+               messages=[Message(contents='surjective_pairing\n
+                 : forall (A B : Type) (p : A * B),\n
+                    p = (fst p, snd p)')],
+                                 goals=[])]]
+ok
+Trying:
+    fragments = ["Check 1.", "Goal False -> True. intros H."]
+Expecting nothing
+ok
+Trying:
+    sertop_args = ("-Q", "{},lib".format(libdir))
+Expecting nothing
+ok
+Trying:
+    annotated = annotate(fragments, sertop_args=sertop_args)
+Expecting nothing
+ok
+Trying:
+    pprint(annotated, width=65)
+Expecting:
+    [[Sentence(contents='Check 1.',
+               messages=[Message(contents='1\n     : nat')],
+               goals=[])],
+     [Sentence(contents='Goal False -> True.',
+               messages=[],
+               goals=[Goal(name=None,
+                           conclusion='False -> True',
+                           hypotheses=[])]),
+      Text(contents=' '),
+      Sentence(contents='intros H.',
+               messages=[],
+               goals=[Goal(name=None, conclusion='True',
+                           hypotheses=[Hypothesis(names=['H'],
+                                                  body=None,
+                                                  type='False')])])]]
+ok
+Trying:
+    from alectryon.json import PlainSerializer
+Expecting nothing
+ok
+Trying:
+    encoded = PlainSerializer.encode(annotated)
+Expecting nothing
+ok
+Trying:
+    pprint(encoded, width=65)
+Expecting:
+    [[{'_type': 'sentence',
+       'contents': 'Check 1.',
+       'goals': [],
+       'messages': [{'_type': 'message',
+                     'contents': '1\n     : nat'}]}],
+     [{'_type': 'sentence',
+       'contents': 'Goal False -> True.',
+       'goals': [{'_type': 'goal',
+                  'conclusion': 'False -> True',
+                  'hypotheses': [],
+                  'name': None}],
+       'messages': []},
+      {'_type': 'text', 'contents': ' '},
+      {'_type': 'sentence',
+       'contents': 'intros H.',
+       'goals': [{'_type': 'goal',
+                  'conclusion': 'True',
+                  'hypotheses': [{'_type': 'hypothesis',
+                                  'body': None,
+                                  'names': ['H'],
+                                  'type': 'False'}],
+                  'name': None}],
+        'messages': []}]]
+ok
+Trying:
+    import json
+Expecting nothing
+ok
+Trying:
+    js = json.dumps(encoded)
+Expecting nothing
+ok
+Trying:
+    js[:72]
+Expecting:
+    '[[{"_type": "sentence", "contents": "Check 1.", "messages": [{"_type": "'
+ok
+Trying:
+    encoded = json.loads(js)
+Expecting nothing
+ok
+Trying:
+    annotated = PlainSerializer.decode(encoded)
+Expecting nothing
+ok
+Trying:
+    from alectryon.html import HtmlGenerator
+Expecting nothing
+ok
+Trying:
+    from alectryon.pygments import highlight_html
+Expecting nothing
+ok
+Trying:
+    for dom in HtmlGenerator(highlight_html).gen(annotated):
+        print(dom)
+Expecting:
+    <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="chk0"><span class="kn">Check</span> <span class="mi">1</span>.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="mi">1</span>
+         : nat</blockquote></div></div></small></span></pre>
+    <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="chk1"><span class="kn">Goal</span> <span class="kt">False</span> -&gt; <span class="kt">True</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">False</span> -&gt; <span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="chk2"><span class="nb">intros</span> H.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><div><var>H</var><span class="hyp-type"><b>:</b><span><span class="kt">False</span></span></span></div></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small></span></pre>
+ok
+Trying:
+    from alectryon.latex import LatexGenerator
+Expecting nothing
+ok
+Trying:
+    from alectryon.pygments import highlight_latex
+Expecting nothing
+ok
+Trying:
+    for ltx in LatexGenerator(highlight_latex).gen(annotated):
+        print(ltx)
+Expecting:
+    \begin{alectryon}
+      % Generator: Alectryon
+      \sep
+      \begin{sentence}
+        \begin{input}
+          \PY{k+kn}{Check}~\PY{l+m+mi}{1}\PY{o}{.}
+        \end{input}
+        \sep
+        \begin{output}
+          \begin{messages}
+            \begin{message}
+              \PY{l+m+mi}{1}\nl
+              ~~~~~\PY{o}{:}~\PY{n}{nat}
+            \end{message}
+          \end{messages}
+        \end{output}
+      \end{sentence}
+    \end{alectryon}
+    \begin{alectryon}
+      % Generator: Alectryon
+      \sep
+      \begin{sentence}
+        \begin{input}
+          \PY{k+kn}{Goal}~\PY{k+kt}{False}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}\PY{o}{.}
+        \end{input}
+        \sep
+        \begin{output}
+          \begin{goals}
+            \begin{goal}
+              \begin{hyps}\end{hyps}
+              \sep
+              \begin{conclusion}
+                \PY{k+kt}{False}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}
+              \end{conclusion}
+            \end{goal}
+          \end{goals}
+        \end{output}
+      \end{sentence}
+      \sep
+      \begin{sentence}
+        \begin{input}
+          \PY{n+nb}{intros}~\PY{n}{H}\PY{o}{.}
+        \end{input}
+        \sep
+        \begin{output}
+          \begin{goals}
+            \begin{goal}
+              \begin{hyps}
+                \begin{hyp}{\hypn{H}}
+                  \PY{k+kt}{False}
+                \end{hyp}
+              \end{hyps}
+              \sep
+              \begin{conclusion}
+                \PY{k+kt}{True}
+              \end{conclusion}
+            \end{goal}
+          \end{goals}
+        \end{output}
+      \end{sentence}
+    \end{alectryon}
+ok
+1 items passed all tests:
+  23 tests in api.rst
+23 tests in 1 items.
+23 passed and 0 failed.
+Test passed.

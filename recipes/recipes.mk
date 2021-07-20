@@ -9,6 +9,10 @@ _output:
 _output/api.out: api.py | _output
 	$(PYTHON) $< > $@
 
+# run Doctests
+_output/api.rst.out: api.rst | _output
+	$(PYTHON) -m doctest -v -o NORMALIZE_WHITESPACE $< > $@
+
 # Coq+reST → HTML, cached to _output/caching.v.cache
 _output/caching.html: caching.v
 	$(alectryon) --cache-directory _output/ --cache-compression=xz $<
@@ -70,6 +74,6 @@ _output/minimal.no-alectryon.html: minimal.rst | _output
 _output/plain.v.html: plain.v
 	$(alectryon) --frontend coq $<
 
-_output/api.out _output/caching.html _output/coqdoc.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html: out_dir := _output
+_output/api.out _output/api.rst.out _output/caching.html _output/coqdoc.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html: out_dir := _output
 
-targets += _output/api.out _output/caching.html _output/coqdoc.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html
+targets += _output/api.out _output/api.rst.out _output/caching.html _output/coqdoc.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html
