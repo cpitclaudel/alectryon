@@ -397,9 +397,9 @@ class CoqLexer(RegexLexer):
     tables = regex_opt(kwds['table'])
     tables_re = r"\b(?:{} ){}\b".format(add_remove_test, tables)
 
-    decls = regex_opt(kwds['decls'])
+    decls = regex_opt_inner(kwds['decls'], '(?:')
     decls_re = r"\b(?:{} )?(?:Program )?{}\b".format(local_global, decls)
-    expects_name = regex_opt(kwds['expects_name'])
+    expects_name = regex_opt_inner(kwds['expects_name'], '(?:')
     expects_name_re = r"\b(?:{} )?{}\b".format(local_global, expects_name)
     expects_binders = regex_opt(kwds['expects_binders'])
     expects_binders_re = r"\b(?:{} )?{}\b".format(local_global, expects_binders)
@@ -468,13 +468,13 @@ class CoqLexer(RegexLexer):
         ],
 
         '_vernac': [
-            (r"{}(\s+)({})".format(decls_re, name_re),
+            (r"({})(\s+)({})".format(decls_re, name_re),
              bygroups(Keyword.Namespace, Text, Name.Function),
              'binders'),
             (expects_binders_re,
              Keyword.Namespace,
              'binders'),
-            (r"{}(\s+)({})".format(expects_name_re, name_re),
+            (r"({})(\s+)({})".format(expects_name_re, name_re),
              bygroups(Keyword.Namespace, Text, Name.Function)),
             (opts_re, Keyword.Namespace),
             (tables_re, Keyword.Namespace),
