@@ -28,6 +28,10 @@ _output/tests/directive-options.html: tests/directive-options.rst
 _output/tests/directive-options.xe.tex: tests/directive-options.rst
 	$(alectryon) $< --latex-dialect xelatex -o $@
 
+# Run doctests
+_output/tests/doctests.out: tests/doctests.py | _output/tests
+	$(PYTHON) $< | sed 's/\(tests\) in [0-9.]\+s$$/\1/g' > $@
+
 # Coq+reST → LaTeX
 _output/tests/latex_formatting.tex: tests/latex_formatting.v
 	$(alectryon) $< --backend latex
@@ -36,6 +40,6 @@ _output/tests/latex_formatting.tex: tests/latex_formatting.v
 _output/tests/linter.lint.json: tests/linter.v
 	$(alectryon) $< --backend lint
 
-_output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/latex_formatting.tex _output/tests/linter.lint.json: out_dir := _output/tests
+_output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/doctests.out _output/tests/latex_formatting.tex _output/tests/linter.lint.json: out_dir := _output/tests
 
-targets += _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/latex_formatting.tex _output/tests/linter.lint.json
+targets += _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/doctests.out _output/tests/latex_formatting.tex _output/tests/linter.lint.json

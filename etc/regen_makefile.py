@@ -18,27 +18,32 @@ def parse_rules(path: str):
     for m in CMD_RE.finditer(contents):
         yield m.groupdict()
 
-TEMPLATE = """\
+RULE_TEMPLATE = """\
 # {comment}
 {out}: {fpath}{dir_deps}
 	{cmd}\
 """
 
+def escape(s):
+    return s.replace("$", "$$").replace("#", "##")
+
 def gen_rule(fpath, outdir, params):
+    params = { k: escape(v) for (k, v) in params.items() }
+
     params["cmd"] = params["cmd"] \
         .replace("alectryon", "$(alectryon)")
 
     params["cmd"] = (params["cmd"] + " " + params["args"]) \
-        .replace(fpath.name, "$<") \
+        .replace("python", "$(PYTHON)") \
         .replace(params["out"], "$@") \
-        .replace("python", "$(PYTHON)")
+        .replace(fpath.name, "$<")
 
     params["out"] = str(outdir / params["out"])
 
     needs_outdir = "$(alectryon)" not in params["cmd"]
     params["dir_deps"] = " | {}".format(outdir) if needs_outdir else ""
 
-    return params["out"], TEMPLATE.format(fpath=fpath, **params)
+    return params["out"], RULE_TEMPLATE.format(fpath=fpath, **params)
 
 HEADER = """\
 # -*- makefile -*-

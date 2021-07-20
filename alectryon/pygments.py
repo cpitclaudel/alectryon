@@ -46,12 +46,14 @@ def add_tokens(tokens):
     `tokens` should be a dictionary, whose keys indicate a type of token and
     whose values are lists of strings to highlight with that token type.
 
+    The return value is a list of Pygments filters.
+
     This is particularly useful to highlight custom tactics or symbols.  For
     example, if your code defines a tactic ``map_eq`` to decide map equalities,
     and two tactics ``map_simplify`` and ``map_subst`` to simplify map
     expressions, you might write the following:
 
-    >>> add_tokens({
+    >>> filters = add_tokens({
     ...     'tacn-solve': ['map_eq'],
     ...     'tacn': ['map_simplify', 'map_subst']
     ... })

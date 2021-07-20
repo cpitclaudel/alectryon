@@ -1,0 +1,13 @@
+annotate (alectryon.core)
+Doctest: alectryon.core.annotate ... ok
+coq_partition (alectryon.literate)
+Doctest: alectryon.literate.coq_partition ... ok
+add_tokens (alectryon.pygments)
+Doctest: alectryon.pygments.add_tokens ... ok
+highlight_html (alectryon.pygments)
+Doctest: alectryon.pygments.highlight_html ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests
+
+OK
