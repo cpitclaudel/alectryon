@@ -533,24 +533,24 @@ def build_parser():
     parser = argparse.ArgumentParser(
         description="""\
 Annotate segments of Coq code with responses and goals.
-Take input in Coq, reStructuredText, or JSON format \
+Take input in Coq, reStructuredText, Markdown, or JSON \
 and produce reStructuredText, HTML, LaTeX, or JSON output.""",
         fromfile_prefix_chars='@')
 
-    out = parser.add_argument_group("Input configuration")
+    in_ = parser.add_argument_group("Input configuration")
 
     INPUT_FILES_HELP = "Input files"
-    parser.add_argument("input", nargs="+", help=INPUT_FILES_HELP)
+    in_.add_argument("input", nargs="+", help=INPUT_FILES_HELP)
 
     INPUT_STDIN_NAME_HELP = "Name of file passed on stdin, if any"
-    parser.add_argument("--stdin-filename", default=None,
-                        help=INPUT_STDIN_NAME_HELP)
+    in_.add_argument("--stdin-filename", default=None,
+                     help=INPUT_STDIN_NAME_HELP)
 
     FRONTEND_HELP = "Choose a frontend. Defaults: "
     FRONTEND_HELP += "; ".join("{!r} → {}".format(ext, frontend)
                                for ext, frontend in FRONTENDS_BY_EXTENSION)
     FRONTEND_CHOICES = sorted(PIPELINES.keys())
-    out.add_argument("--frontend", default=None, choices=FRONTEND_CHOICES,
+    in_.add_argument("--frontend", default=None, choices=FRONTEND_CHOICES,
                      help=FRONTEND_HELP)
 
 
