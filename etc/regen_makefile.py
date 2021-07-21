@@ -41,16 +41,16 @@ def gen_rule(fpath, outdir, params):
     params["out"] = str(outdir / params["out"])
 
     needs_outdir = "$(alectryon)" not in params["cmd"]
-    params["dir_deps"] = " | {}".format(outdir) if needs_outdir else ""
+    params["dir_deps"] = " | {}/".format(outdir) if needs_outdir else ""
 
     return params["out"], RULE_TEMPLATE.format(fpath=fpath, **params)
 
 HEADER = """\
 # -*- makefile -*-
-### Auto-generated with etc/regen_recipes_makefile.py ###
+### Auto-generated with etc/regen_makefile.py ###
 ### Do not edit! ###
 
-{outdir}:
+{outdir}/:
 	mkdir -p $@
 """
 

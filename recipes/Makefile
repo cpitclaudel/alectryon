@@ -32,7 +32,7 @@ tests.mk: ../etc/regen_makefile.py $(filter-out %.mk,$(wildcard tests/*.*))
 include recipes.mk tests.mk
 
 # TODO
-# _output/mathjax.tex: mathjax.rst | _output
+# _output/mathjax.tex: mathjax.rst | _output/
 # 	$(alectryon) --backend latex $<
 
 ##########

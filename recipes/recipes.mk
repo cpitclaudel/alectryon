@@ -1,16 +1,16 @@
 # -*- makefile -*-
-### Auto-generated with etc/regen_recipes_makefile.py ###
+### Auto-generated with etc/regen_makefile.py ###
 ### Do not edit! ###
 
-_output:
+_output/:
 	mkdir -p $@
 
 # Direct API usage
-_output/api.out: api.py | _output
+_output/api.out: api.py | _output/
 	$(PYTHON) $< > $@
 
 # run Doctests
-_output/api.rst.out: api.rst | _output
+_output/api.rst.out: api.rst | _output/
 	$(PYTHON) -m doctest -v -o NORMALIZE_WHITESPACE $< > $@
 
 # Coq+reST → HTML, cached to _output/caching.v.cache
@@ -67,7 +67,7 @@ _output/minification.html: minification.rst
 _output/minimal.html: minimal.rst
 	$(alectryon) $<
 # Minimal reST → HTML
-_output/minimal.no-alectryon.html: minimal.rst | _output
+_output/minimal.no-alectryon.html: minimal.rst | _output/
 	cd ..; $(PYTHON) -m alectryon.minimal recipes/$< recipes/$@
 
 # Coq → HTML

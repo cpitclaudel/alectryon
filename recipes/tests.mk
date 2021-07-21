@@ -1,8 +1,8 @@
 # -*- makefile -*-
-### Auto-generated with etc/regen_recipes_makefile.py ###
+### Auto-generated with etc/regen_makefile.py ###
 ### Do not edit! ###
 
-_output/tests:
+_output/tests/:
 	mkdir -p $@
 
 # HTML4
@@ -29,7 +29,7 @@ _output/tests/directive-options.xe.tex: tests/directive-options.rst
 	$(alectryon) $< --latex-dialect xelatex -o $@
 
 # Run doctests
-_output/tests/doctests.out: tests/doctests.py | _output/tests
+_output/tests/doctests.out: tests/doctests.py | _output/tests/
 	$(PYTHON) $< | sed 's/\(tests\) in [0-9.]\+s$$/\1/g' > $@
 
 # Coq+reST → LaTeX
