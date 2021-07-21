@@ -127,21 +127,20 @@ def gen_docutils(src, frontend, backend, fpath,
                          pipeline.parser, pipeline.reader, pipeline.writer,
                          settings_overrides)
 
-def _docutils_cmdline_html(description, Parser):
+def _docutils_cmdline(description, frontend, backend):
     import locale
     locale.setlocale(locale.LC_ALL, '')
 
     from docutils.core import publish_cmdline, default_description
-    from .docutils import setup, HtmlWriter
+    from .docutils import setup, get_pipeline
 
     setup()
 
-    parser = Parser()
+    pipeline = get_pipeline(frontend, backend, "html4", "pdflatex")
     publish_cmdline(
-        parser=parser,
-        writer=HtmlWriter(),
+        parser=pipeline.parser(), writer=pipeline.writer(),
         settings_overrides={'stylesheet_path': None},
-        description=(description + default_description)
+        description="{} {}".format(description, default_description)
     )
 
 def lint_docutils(source, fpath, frontend):
@@ -754,11 +753,17 @@ def main():
 # ================
 
 def rstcoq2html():
-    from .docutils import RSTCoqParser
     DESCRIPTION = 'Build an HTML document from an Alectryon Coq file.'
-    _docutils_cmdline_html(DESCRIPTION, RSTCoqParser)
+    _docutils_cmdline(DESCRIPTION, "coq+rst", "webpage")
 
 def coqrst2html():
-    from docutils.parsers.rst import Parser
     DESCRIPTION = 'Build an HTML document from an Alectryon reStructuredText file.'
-    _docutils_cmdline_html(DESCRIPTION, Parser)
+    _docutils_cmdline(DESCRIPTION, "rst", "webpage")
+
+def rstcoq2latex():
+    DESCRIPTION = 'Build a LaTeX document from an Alectryon Coq file.'
+    _docutils_cmdline(DESCRIPTION, "coq+rst", "latex")
+
+def coqrst2latex():
+    DESCRIPTION = 'Build a LaTeX document from an Alectryon reStructuredText file.'
+    _docutils_cmdline(DESCRIPTION, "rst", "latex")
