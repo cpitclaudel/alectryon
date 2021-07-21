@@ -10,10 +10,14 @@ from pathlib import Path
 
 root = (Path(__file__).parent / "../../").resolve()
 
+EXCLUDED = "__main__.py"
+FLAGS = NORMALIZE_WHITESPACE
+
 def suite():
     s = unittest.TestSuite()
     for f in sorted((root / "alectryon").glob("*.py")):
-        s.addTests(DocTestSuite(f"alectryon.{f.stem}", optionflags=NORMALIZE_WHITESPACE))
+        if f.name not in EXCLUDED:
+            s.addTests(DocTestSuite(f"alectryon.{f.stem}", optionflags=FLAGS))
     return s
 
 def load_tests(loader, tests, ignore):
