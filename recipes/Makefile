@@ -52,7 +52,7 @@ _output/tests/screenshot.pdf: backstop/screenshot.js _output/tests/screenshot.ht
 	./$^ $@
 ../etc/screenshot.svg: _output/tests/screenshot.pdf
 	pdf2svg $< $@
-	svgcleaner --multipass $@ $@
+	svgcleaner --multipass --indent 2 $@ $@
 
 ################
 # LaTeX → PDF #

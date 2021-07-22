@@ -27,14 +27,14 @@ async function screenshot(src, dst, options={}, pdfOptions={}, launchOptions={})
         // link.rel = "stylesheet";
         link.type = "text/css";
         link.innerText = `
-          body { font-size: 27px; } /* background: #eeeeec88; */
+          body { font-size: 26px; /* background: #eeeeec88; */ }
           pre.alectryon-io { font-family: Iosevka; margin-top: 0.5em; }
-          .alectryon-standalone .alectryon-windowed { padding: 0pt 0.5em; }
           .alectryon-banner { display: none; }
-          .goal-hyps div:last-child { border: thin solid black; }
-          .alectryon-extra-goals label { margin-top: 3px; margin-bottom: -4px; }
-          .alectryon-target label {
-             font-size: 125%;
+          .big p { font-size: 87.5% }
+          .big .alectryon-input { font-size: 125%; }
+          p { /* https://stackoverflow.com/questions/13975198/ */
+            -webkit-print-color-adjust: exact;
+            -webkit-filter: blur(0);
           }
         `;
         document.head.appendChild(link);
