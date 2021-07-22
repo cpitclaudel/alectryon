@@ -15,9 +15,10 @@
 
     Use the following command to compile this file:
 
-    <<
+<<
     alectryon coqdoc.v --frontend coqdoc # Coqdoc → HTML; produces ‘coqdoc.html’
-    >> **)
+>>
+**)
 
 (** ** Some code **)
 
