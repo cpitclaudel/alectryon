@@ -40,6 +40,10 @@ _output/tests/latex_formatting.tex: tests/latex_formatting.v
 _output/tests/linter.lint.json: tests/linter.v
 	$(alectryon) $< --backend lint
 
-_output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/doctests.out _output/tests/latex_formatting.tex _output/tests/linter.lint.json: out_dir := _output/tests
+# Coq → HTML
+_output/tests/screenshot.html: tests/screenshot.v
+	$(alectryon) $<
 
-targets += _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/doctests.out _output/tests/latex_formatting.tex _output/tests/linter.lint.json
+_output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/doctests.out _output/tests/latex_formatting.tex _output/tests/linter.lint.json _output/tests/screenshot.html: out_dir := _output/tests
+
+targets += _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/doctests.out _output/tests/latex_formatting.tex _output/tests/linter.lint.json _output/tests/screenshot.html

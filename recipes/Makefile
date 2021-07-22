@@ -44,6 +44,16 @@ sphinx/_build/html/index.html: sphinx/index.rst
 
 targets += sphinx/_build/html/index.html
 
+##############
+# Screenshot #
+##############
+
+_output/tests/screenshot.pdf: backstop/screenshot.js _output/tests/screenshot.html
+	./$^ $@
+../etc/screenshot.svg: _output/tests/screenshot.pdf
+	pdf2svg $< $@
+	svgcleaner --multipass $@ $@
+
 ################
 # LaTeX → PDF #
 ################

@@ -4,6 +4,10 @@
 
 A library to process Coq snippets embedded in documents, showing goals and messages for each Coq sentence.  Also a literate programming toolkit for Coq.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix Coq code and prose.
 
+.. image:: etc/screenshot.svg
+   :width: 100%
+   :align: center
+
 Alectryon is typically used in one of three ways:
 
 - As a library, through its Python API
