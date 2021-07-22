@@ -97,10 +97,13 @@
   (expand-file-name "../../" (file-name-directory alectryon--script-full-path))
   "Full path to directory of this script.")
 
-(defvaralias 'flycheck-alectryon-executable 'alectryon-python-executable)
+(defvaralias 'flycheck-alectryon-executable 'alectryon-executable)
 
-(defcustom alectryon-python-executable "python3"
-  "Where to find Python 3."
+(defcustom alectryon-executable
+  (if (file-executable-p
+       (expand-file-name "alectryon.py" alectryon--directory))
+      "alectryon")
+  "Where to find the Alectryon binary."
   :group 'alectryon
   :type 'file
   :risky t)
@@ -124,10 +127,6 @@
   "Return contents of widened current buffer without properties."
   (alectryon--widened (buffer-substring-no-properties (point-min) (point-max))))
 
-(defun alectryon--locate-executable ()
-  "Find the full path to alectryon.py."
-  (expand-file-name "alectryon.py" alectryon--directory))
-
 (defun alectryon--refontify ()
   "Recompute fontification for visible part of current buffer."
   (if (and (fboundp 'font-lock-flush) (fboundp 'font-lock-ensure))
@@ -141,14 +140,15 @@
   "Run Alectryon with ARGS on contents of buffer INPUT.
 
 The output goes into the current buffer."
-  (let* ((python (executable-find alectryon-python-executable))
-         (converter (alectryon--locate-executable))
+  (let* ((alectryon (executable-find alectryon-executable))
          (buffer (current-buffer))
          (args `(,@args "--traceback" "-")))
+    (unless (and alectryon (file-executable-p alectryon))
+      (user-error "Alectryon binary not found; try `pip install alectryon'"))
     (let* ((ex (with-current-buffer input
                  (alectryon--widened
-                   (apply #'call-process-region nil nil python
-                          nil buffer nil converter args)))))
+                   (apply #'call-process-region nil nil alectryon
+                          nil buffer nil args)))))
       (unless (eq 0 ex)
         (error "Conversion error (%s):\n%s" ex (alectryon--buffer-string))))))
 
@@ -252,21 +252,14 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 
 (flycheck-define-command-checker 'alectryon
   "Flycheck checker for literate Coq."
-  :command '("python3"
-             (eval (alectryon--locate-executable))
+  :command '("alectryon"
              "--stdin-filename" source-original
              "--frontend" (eval (alectryon--mode-case "coq+rst" "rst"))
              "--backend" "lint"
              "-")
   :standard-input t
   :error-parser #'alectryon--parse-errors
-  :enabled (lambda () (or (not (fboundp 'flycheck-python-find-module))
-                     (flycheck-python-find-module 'alectryon "docutils")))
   :predicate (lambda () alectryon-mode)
-  :verify (lambda (_checker)
-            (append (alectryon--flycheck-verify-enabled)
-                    (when (fboundp 'flycheck-python-verify-module)
-                      (flycheck-python-verify-module 'alectryon "docutils"))))
   :modes '(coq-mode rst-mode))
 
 (add-to-list 'flycheck-checkers 'alectryon)
