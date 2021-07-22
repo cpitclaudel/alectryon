@@ -19,7 +19,6 @@ module.exports = async (page, scenario, vp) => {
 
     // Wait for MathJax
     await page.evaluate(async () => {
-        if (document.MathJax)
-            await MathJax.startup.promise;
+        window.MathJax && await MathJax.startup.promise;
     });
 };
