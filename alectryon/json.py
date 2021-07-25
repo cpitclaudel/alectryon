@@ -22,6 +22,7 @@ from typing import Optional, Dict, Any
 
 import json
 import pickle
+import re
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
@@ -30,6 +31,14 @@ from os import path, makedirs, unlink
 
 from . import core
 from .core import GeneratorInfo
+
+COMMENTS_RE = re.compile(r"^\s*//.*$", re.MULTILINE)
+def uncomment(s):
+    return COMMENTS_RE.sub("", s)
+
+def load(fp, **kwargs):
+    """Load a JSON document from `fp`, ignoring // comments."""
+    return json.loads(uncomment(fp.read()), **kwargs)
 
 TYPE_OF_ALIASES = {
     "text": core.Text,

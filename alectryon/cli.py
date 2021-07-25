@@ -39,7 +39,7 @@ def read_plain(_, fpath, input_is_stdin):
         return f.read()
 
 def read_json(_, fpath, input_is_stdin):
-    from json import load
+    from .json import load
     if input_is_stdin:
         return load(sys.stdin)
     with open(fpath, encoding="utf-8") as f:
