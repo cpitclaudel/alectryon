@@ -111,13 +111,17 @@ def _gen_docutils(source, fpath,
 def _resolve_dialect(backend, html_dialect, latex_dialect):
     return {"webpage": html_dialect, "latex": latex_dialect}.get(backend, None)
 
+def _record_assets(assets, path, names):
+    for name in names:
+        assets.append((path, name))
+
 def gen_docutils(src, frontend, backend, fpath, dialect,
                  webpage_style, include_banner, include_vernums,
                  assets):
     from .docutils import get_pipeline
 
     pipeline = get_pipeline(frontend, backend, dialect)
-    assets.extend(pipeline.translator.ASSETS)
+    _record_assets(assets, pipeline.translator.ASSETS_PATH, pipeline.translator.ASSETS)
 
     settings_overrides = {
         'alectryon_banner': include_banner,
@@ -250,10 +254,8 @@ def gen_html_snippets_with_coqdoc(annotated, html_classes, fname, html_minificat
     return _gen_html_snippets_with_coqdoc(annotated, fname, html_minification)
 
 def copy_assets(state, assets, copy_fn, output_directory):
-    from .html import ASSETS
-
-    for name in assets:
-        src = os.path.join(ASSETS.PATH, name)
+    for (path, name) in assets:
+        src = os.path.join(path, name)
         dst = os.path.join(output_directory, name)
         if copy_fn is not shutil.copy:
             try:
@@ -294,8 +296,8 @@ def dump_html_standalone(snippets, fname, webpage_style,
     for js in ASSETS.ALECTRYON_JS:
         doc.head.add(tags.script(src=js))
 
-    assets.extend(ASSETS.ALECTRYON_CSS)
-    assets.extend(ASSETS.ALECTRYON_JS)
+    _record_assets(assets, ASSETS.PATH, ASSETS.ALECTRYON_CSS)
+    _record_assets(assets, ASSETS.PATH, ASSETS.ALECTRYON_JS)
 
     pygments_css = HTML_FORMATTER.get_style_defs('.highlight')
     doc.head.add(tags.style(pygments_css, type="text/css"))

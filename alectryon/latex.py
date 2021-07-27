@@ -27,9 +27,10 @@ from . import transforms, GENERATOR
 _SELF_PATH = path.dirname(path.realpath(__file__))
 
 class ASSETS:
+    PATH = path.join(_SELF_PATH, "assets")
+
     PYGMENTS_STY = ("tango_subtle.sty",)
     ALECTRYON_STY = ("alectryon.sty",)
-    PATH = path.join(_SELF_PATH, "assets")
 
 def format_macro(name, args, optargs):
     args = "".join("{" + str(arg) + "}" for arg in args)
