@@ -13,8 +13,14 @@
 \definecolor{alectryon@tango@dark@gray}{HTML}{2E3436}
 
 \makeatletter
-% \alectryon@nohyphens disables hyphenation
-\newcommand*{\alectryon@nohyphens}{\hyphenpenalty=10000}
+% \alectryon@nohyphens disables hyphenation and \discretionary
+% (though see https://tex.stackexchange.com/questions/606697/)
+\newcount{\alectryon@@hyphenpenalty}
+\newcommand*{\alectryon@nohyphens}
+  {\alectryon@@hyphenpenalty=\hyphenpenalty%
+   \hyphenpenalty=10000}
+% \alectryon@hyphens restores hyphenation and \discretionary
+\newcommand*{\alectryon@hyphens}{\hyphenpenalty=\alectryon@@hyphenpenalty}
 % \alectryon@savespaceskips modifies reset@font to restore spaceskip and xspaceskip
 % (https://tex.stackexchange.com/questions/606291/)
 \newlength{\alectryon@@spaceskip}
@@ -111,7 +117,8 @@
 \alectryon@newenvironment{goal}{\begin{alectryon@inner}}{\end{alectryon@inner}}
   {\alectryon@goal@rule}
 \alectryon@newenvironment{hyps}
-  {\begin{minipage}{\linewidth}%
+  {\alectryon@hyphens%
+   \begin{minipage}{\linewidth}%
      \alectryon@flushright
      \advance\baselineskip by \alectryonRuleSkip\relax}
   {\end{minipage}} % Minipage needed for baselineskip adjustment
