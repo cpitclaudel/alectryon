@@ -720,6 +720,9 @@ LatexWriter = make_LatexWriter(latex2e.Writer, LatexTranslator)
 XeLatexWriter = make_LatexWriter(xetex.Writer, XeLatexTranslator)
 LuaLatexWriter = make_LatexWriter(xetex.Writer, LuaLatexTranslator) # Same writer
 
+class DummyTranslator:
+    ASSETS = []
+
 Pipeline = namedtuple("Pipeline", "parser reader translator writer")
 
 PARSERS = {
@@ -737,25 +740,31 @@ BACKENDS = {
         'pdflatex': (LatexTranslator, LatexWriter),
         'xelatex': (XeLatexTranslator, XeLatexWriter),
         'lualatex': (LuaLatexTranslator, LuaLatexWriter),
+    },
+    'pseudoxml': {
+        None: (DummyTranslator, ("docutils.writers.pseudoxml", "Writer")),
     }
 }
+
+def _maybe_import(tp):
+    return getattr(import_module(tp[0]), tp[1]) if isinstance(tp, tuple) else tp
 
 def get_parser(frontend):
     if frontend not in PARSERS:
         raise ValueError("Unsupported docutils frontend: {}".format(frontend))
-    parser_mod, parser_name = PARSERS[frontend]
-    return getattr(import_module(parser_mod), parser_name)
+    return _maybe_import(PARSERS[frontend])
 
-def get_pipeline(frontend, backend, html_dialect, latex_dialect):
+def get_writer(backend, dialect):
     if backend not in BACKENDS:
         raise ValueError("Unsupported docutils backend: {}".format(backend))
-
-    dialect = {"webpage": html_dialect, "latex": latex_dialect}[backend]
     if dialect not in BACKENDS[backend]:
-        raise ValueError("Unsupported {} dialect: {}".format(backend, latex_dialect))
-
-    parser = get_parser(frontend)
+        raise ValueError("Unsupported {} dialect: {}".format(backend, dialect))
     translator, writer = BACKENDS[backend][dialect]
+    return _maybe_import(translator), _maybe_import(writer)
+
+def get_pipeline(frontend, backend, dialect):
+    parser = get_parser(frontend)
+    translator, writer = get_writer(backend, dialect)
     return Pipeline(parser, Reader, translator, writer)
 
 # Entry points

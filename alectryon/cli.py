@@ -108,13 +108,15 @@ def _gen_docutils(source, fpath,
         settings_overrides=settings_overrides, config_section=None,
         enable_exit_status=True).decode("utf-8")
 
-def gen_docutils(src, frontend, backend, fpath,
-                 html_dialect, latex_dialect,
+def _resolve_dialect(backend, html_dialect, latex_dialect):
+    return {"webpage": html_dialect, "latex": latex_dialect}.get(backend, None)
+
+def gen_docutils(src, frontend, backend, fpath, dialect,
                  webpage_style, include_banner, include_vernums,
                  assets):
     from .docutils import get_pipeline
 
-    pipeline = get_pipeline(frontend, backend, html_dialect, latex_dialect)
+    pipeline = get_pipeline(frontend, backend, dialect)
     assets.extend(pipeline.translator.ASSETS)
 
     settings_overrides = {
@@ -136,7 +138,8 @@ def _docutils_cmdline(description, frontend, backend):
 
     setup()
 
-    pipeline = get_pipeline(frontend, backend, "html4", "pdflatex")
+    dialect = _resolve_dialect(backend, "html4", "pdflatex")
+    pipeline = get_pipeline(frontend, backend, dialect)
     publish_cmdline(
         parser=pipeline.parser(), writer=pipeline.writer(),
         settings_overrides={'stylesheet_path': None},
