@@ -6,6 +6,40 @@
 This files tests various aspects of the conversion to LaTeX, including spacing and formatting::
 
    alectryon latex_formatting.v --backend latex # Coq+reST → LaTeX; produces ‘latex_formatting.tex’
+
+Long hypotheses
+===============
+|*)
+
+From Coq Require List.
+Import List.ListNotations.
+Open Scope list_scope.
+
+Section Long.
+  Context {A B: Type}.
+
+  Fixpoint map (l: list A)
+           (f: forall (n: nat) (a: A)
+                 (_in: List.nth_error l n = Some a), B)
+           {struct l}
+    : list B.
+  Proof.
+    pose proof f; pose map.
+    destruct l.
+    - exact nil.
+    - refine (_ :: _).
+      apply (f 0 a eq_refl).
+      specialize (fun n => f (S n)).
+      simpl in f.
+      apply (map l f).
+  Defined.
+End Long.
+
+Compute (map [11; 22; 33] (fun n a _ => (n, a * a))).
+
+(*|
+Newlines
+========
 |*)
 
 Require Import List.
