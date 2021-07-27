@@ -32,10 +32,11 @@ class ASSETS:
     PYGMENTS_STY = ("tango_subtle.sty",)
     ALECTRYON_STY = ("alectryon.sty",)
 
-def format_macro(name, args, optargs):
+def format_macro(name, args, optargs, before_optargs=None):
+    first = "{" + str(before_optargs) + "}" if before_optargs else ""
     args = "".join("{" + str(arg) + "}" for arg in args)
     optargs = "".join("[" + str(optarg) + "]" for optarg in optargs)
-    return "\\" + name + optargs + args
+    return "\\" + name + first + optargs + args
 
 CONTEXT_STACK = []
 
@@ -93,8 +94,7 @@ class Environment(Context):
         self.indent = Environment.INDENT.get(name, 2)
 
     def format(self, indent, verbatim):
-        args = (self.name, *self.args)
-        begin = format_macro("begin", args, self.optargs)
+        begin = format_macro("begin", self.args, self.optargs, self.name)
         end = format_macro("end", (self.name,), ())
         outside_indent = "" if verbatim else ' ' * indent
         verbatim = verbatim or self.verbatim
@@ -147,6 +147,9 @@ class Raw:
 
     def format(self, indent, verbatim):
         return self.raw_format(self.s, indent, verbatim)
+
+    def __str__(self):
+        return self.format(indent=0, verbatim=False)
 
 class PlainText(Raw):
     ESCAPES = Replacements({c: r"\char`\{}".format(c)
