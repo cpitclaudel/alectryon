@@ -66,13 +66,13 @@ def annotate_chunks(chunks, fpath, cache_directory, cache_compression, sertop_ar
     cache = Cache(cache_directory, fpath, metadata, cache_compression)
     return cache.update(chunks, lambda c: annotate(c, sertop_args), SerAPI.version_info())
 
-def register_docutils(v, args):
+def register_docutils(v, ctx):
     from . import docutils
-    docutils.AlectryonTransform.SERTOP_ARGS = args.sertop_args
-    docutils.CACHE_DIRECTORY = args.cache_directory
-    docutils.CACHE_COMPRESSION = args.cache_compression
-    docutils.HTML_MINIFICATION = args.html_minification
-    docutils.LONG_LINE_THRESHOLD = args.long_line_threshold
+    docutils.AlectryonTransform.SERTOP_ARGS = ctx["sertop_args"]
+    docutils.CACHE_DIRECTORY = ctx["cache_directory"]
+    docutils.CACHE_COMPRESSION = ctx["cache_compression"]
+    docutils.HTML_MINIFICATION = ctx["html_minification"]
+    docutils.LONG_LINE_THRESHOLD = ctx["long_line_threshold"]
     docutils.setup()
     return v
 
@@ -478,19 +478,19 @@ def infer_backend(frontend, out_fpath):
     return DEFAULT_BACKENDS[frontend]
 
 def resolve_pipeline(fpath, args):
-    args.frontend = frontend = args.frontend or infer_frontend(fpath)
+    frontend = args.frontend or infer_frontend(fpath)
 
     assert frontend in PIPELINES
     supported_backends = PIPELINES[frontend]
 
-    args.backend = backend = args.backend or infer_backend(frontend, args.output)
+    backend = args.backend or infer_backend(frontend, args.output)
     if backend not in supported_backends:
         MSG = """argument --backend: Frontend {!r} does not support backend {!r}: \
 expecting one of {}"""
         raise argparse.ArgumentTypeError(MSG.format(
             frontend, backend, ", ".join(map(repr, supported_backends))))
 
-    return supported_backends[backend]
+    return frontend, backend, supported_backends[backend]
 
 COPY_FUNCTIONS = {
     "copy": shutil.copy,
@@ -524,9 +524,7 @@ def post_process_arguments(parser, args):
             MSG = "argument --mark-point: Expecting a number, not {!r}"
             parser.error(MSG.format(args.point))
 
-    args.assets = []
-    args.html_classes = []
-    args.pipelines = [(fpath, resolve_pipeline(fpath, args))
+    args.pipelines = [(fpath, *resolve_pipeline(fpath, args))
                       for fpath in args.input]
 
     return args
@@ -696,13 +694,18 @@ def call_pipeline_step(step, state, ctx):
     params = list(inspect.signature(step).parameters.keys())[1:]
     return step(state, **{p: ctx[p] for p in params})
 
-def build_context(fpath, args):
+def build_context(fpath, args, frontend, backend):
     if fpath == "-":
         fname, fpath = "-", (args.stdin_filename or "-")
     else:
         fname = os.path.basename(fpath)
 
-    ctx = {"fpath": fpath, "fname": fname, "args": args, **vars(args)}
+    dialect = _resolve_dialect(backend, args.html_dialect, args.latex_dialect)
+    ctx = {**vars(args),
+           "fpath": fpath, "fname": fname,
+           "frontend": frontend, "backend": backend, "dialect": dialect,
+           "assets": [], "html_classes": []}
+    ctx["ctx"] = ctx
 
     if args.output_directory is None:
         if fname == "-":
@@ -734,8 +737,8 @@ def process_pipelines(args):
     if args.output_directory:
         os.makedirs(os.path.realpath(args.output_directory), exist_ok=True)
 
-    for fpath, pipeline in args.pipelines:
-        state, ctx = None, build_context(fpath, args)
+    for fpath, frontend, backend, pipeline in args.pipelines:
+        state, ctx = None, build_context(fpath, args, frontend, backend)
         for step in pipeline:
             state = call_pipeline_step(step, state, ctx)
 
