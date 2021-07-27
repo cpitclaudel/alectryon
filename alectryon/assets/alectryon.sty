@@ -49,7 +49,7 @@
 % \alectryon@parsetup removes paragraph skips and indents
 \newcommand*{\alectryon@parsetup}
   {\setlength{\parskip}{0pt}
-   \setlength{\parindent}{0pt}}
+    \setlength{\parindent}{0pt}}
 \newcommand{\alectryon@prelude}
   {\alectryon@fontsetup
    \alectryon@parsetup
@@ -124,7 +124,9 @@
   {\end{minipage}} % Minipage needed for baselineskip adjustment
   {\discretionary{}{}{\hbox{\hspace{2em}}}}
 \alectryon@newenvironment[1]{hyp}
-  {#1:\nobreak\hspace{0.25em}\nobreak\def\alectryon@nl{\alectryon@cr}\begin{tabular}[t]{@{}l@{}}}
+  {\mbox{#1}:\nobreak\hspace{0.25em}\nobreak%
+   \def\alectryon@nl{\alectryon@cr}%
+   \begin{tabular}[t]{@{}l@{}}}
   {\end{tabular}}
   {}
 \alectryon@newenvironment{extragoals}{}{}
