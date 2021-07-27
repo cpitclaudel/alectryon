@@ -44,8 +44,8 @@
 \newcommand{\alectryon@goal@rule}{\vspace{\alectryonRuleSkip}\hrule\vspace{\alectryonRuleSkip}}
 % \alectryon@unskip removes preceding blanks
 \newcommand{\alectryon@unskip}{\ifhmode\unskip\fi}
-% \alectryon@flushright allows all line breaks
-\newcommand{\alectryon@flushright}{\rightskip \z@ plus 1fil\relax}
+% \alectryon@raggedright allows all line breaks
+\newcommand{\alectryon@raggedright}{\rightskip \z@ plus 1fil\relax}
 % \alectryon@parsetup removes paragraph skips and indents
 \newcommand*{\alectryon@parsetup}
   {\setlength{\parskip}{0pt}
@@ -119,7 +119,7 @@
 \alectryon@newenvironment{hyps}
   {\alectryon@hyphens%
    \begin{minipage}{\linewidth}%
-     \alectryon@flushright
+     \alectryon@raggedright
      \advance\baselineskip by \alectryonRuleSkip\relax}
   {\end{minipage}} % Minipage needed for baselineskip adjustment
   {\discretionary{}{}{\hbox{\hspace{2em plus 0.5em minus 0.5em}}}}
