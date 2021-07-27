@@ -15,8 +15,19 @@
 \makeatletter
 % \alectryon@nohyphens disables hyphenation
 \newcommand*{\alectryon@nohyphens}{\hyphenpenalty=10000}
+% \alectryon@savespaceskips modifies reset@font to restore spaceskip and xspaceskip
+% (https://tex.stackexchange.com/questions/606291/)
+\newlength{\alectryon@@spaceskip}
+\newlength{\alectryon@@xspaceskip}
+\newcommand*{\alectryon@savespaceskips}
+  {\setlength{\alectryon@@spaceskip}{\spaceskip}%
+   \setlength{\alectryon@@xspaceskip}{\xspaceskip}%
+   \renewcommand{\reset@font}
+     {\normalfont%
+      \setlength{\spaceskip}{\alectryon@@spaceskip}%
+      \setlength{\xspaceskip}{\alectryon@@xspaceskip}}}
 % \alectryon@nospacestretch ensures that spaces can't stretch
-\newcommand*{\alectryon@nospacestretch}{\spaceskip=\fontdimen2\font\xspaceskip=0pt}
+\newcommand*{\alectryon@nospacestretch}{\alectryon@savespaceskips\spaceskip=\fontdimen2\font\xspaceskip=0pt}
 % \alectryon@arraystretch resets \arraystretch
 \newcommand*{\alectryon@arraystretch}{\renewcommand{\arraystretch}{1.0}}
 % \alectryon@fontsetup sets fonts properties
