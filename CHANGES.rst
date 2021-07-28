@@ -5,7 +5,9 @@
 Unreleased
 ==========
 
-- ``.. coq::`` directives now accept ``:class:`` and ``:name:`` arguments.
+- Alectryon's LaTeX preamble has been rewritten to improve line breaking between and within hypotheses. [3325d55]
+
+- ``.. coq::`` directives now accept ``:class:`` and ``:name:`` arguments. [df6ff35]
 
 - A new ``--long-line-threshold`` flag controls the line length over which Alectryon will issue “long line” warnings. [0286051]
 
@@ -17,6 +19,8 @@ Unreleased
 
 Breaking changes
 ----------------
+
+- The LaTeX markup hypotheses has changed: ``alectryon@hyp`` is now a macro, not an environment.
 
 - Docutils option ``"syntax_highlight"`` now defaults to ``"short"`` when using Alectryon's CLI or its custom HTML writer.  That is, inline `:coq:` roles now produce short-form CSS Pygments class names when processed using ``alectryon.docutils`` or the CLI. [72749bd]
 
