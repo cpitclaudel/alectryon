@@ -37,7 +37,10 @@
       \setlength{\spaceskip}{\alectryon@@spaceskip}%
       \setlength{\xspaceskip}{\alectryon@@xspaceskip}}}
 % \alectryon@nospacestretch ensures that spaces can't stretch
-\newcommand*{\alectryon@nospacestretch}{\alectryon@savespaceskips\spaceskip=\fontdimen2\font\xspaceskip=0pt}
+\newcommand*{\alectryon@nospacestretch}
+  {\alectryon@savespaceskips%
+   \setlength{\spaceskip}{\fontdimen2\font}%
+   \setlength{\xspaceskip}{0pt}}
 % \alectryon@arraystretch resets \arraystretch
 \newcommand*{\alectryon@arraystretch}{\renewcommand{\arraystretch}{1.0}}
 % \alectryon@fontsetup sets fonts properties
@@ -104,12 +107,17 @@
 \newcommand{\alectryon@sep}{\relax}
 \newcommand{\alectryon@nl}{\alectryon@par}
 
-% \alectryon@space inserts a blank space; the \rules ensures that they are not
-% gobbled. The prelude of \alectryon maps ‘~’ to this command.
-\newcommand{\alectryon@space}{\rule{0pt}{0pt}\nobreakspace\rule{0pt}{0pt}}
-% \alectryon@strut is used to match the strut from \tabular in \hyps, but to
+% \alectryon@breakspace inserts a breaking space.
+\newcommand{\alectryon@breakspace}{\mbox{} }
+% \alectryon@nobreakspace inserts a non-breaking space.
+\newcommand{\alectryon@nobreakspace}{\mbox{}\nobreakspace}
+% \alectryon@space inserts a blank space (\alectryon@prelude maps ‘~’ to this).
+% The \mbox{} in the definition of @nobreakspace and @breakspace ensures that
+% spaces at the beginning of a line are not gobbled.
+\newcommand{\alectryon@space}{\alectryon@nobreakspace}
+% \alectryon@strut is used to match the spacing of alectryon@hyps, but to
 % improve the spacing we give it 0 depth.
-\newcommand{\alectryon@strut}{\rule[0pt]{0pt}{\ht\strutbox}} % {\strut}
+\newcommand{\alectryon@strut}{\rule[0pt]{0pt}{\ht\strutbox}}
 % alectryon@outer wraps collections of goals and messages
 \newenvironment{alectryon@outer}
   {\begin{tcolorbox}[colframe=alectryon@tango@medium@gray, colback=alectryon@tango@medium@aluminium]}
@@ -160,7 +168,7 @@
   {{\def\alectryon@nl{\alectryon@newline}%
     \alectryon@maxwidth{\textwidth}
       {{\alectryon@hypn{#2}\hspace{0.25em plus 1fil}\penalty500%
-        \def\alectryon@space{\rule{0pt}{0pt} \rule{0pt}{0pt}}%
+        \def\alectryon@space{\alectryon@breakspace}%
         \lineskiplimit=\alectryonRuleSkip%
         \lineskip=\alectryonRuleSkip%
         \alectryon@maxwidth{\dimexpr\textwidth\relax}{#3}}}}}
