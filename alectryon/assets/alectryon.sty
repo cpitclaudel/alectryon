@@ -152,7 +152,7 @@
   {}
 \alectryon@newenvironment{sentence}{}{}
   {\par\alectryon@vsep}
-\alectryon@newenvironment{input}{}{}
+\alectryon@newenvironment{input}{\alectryon@raggedright}{\par}
   {}
 \alectryon@newenvironment{output}{\alectryon@output@setsize}{\par}
   {\par\alectryon@vsep}
@@ -183,9 +183,9 @@
   {\par\alectryon@vsep}
 \alectryon@newenvironment{messages}{\begin{alectryon@outer}}{\end{alectryon@outer}}
   {\par\alectryon@vsep}
-\alectryon@newenvironment{message}{\begin{alectryon@inner}}{\end{alectryon@inner}}
+\alectryon@newenvironment{message}{\begin{alectryon@inner}\alectryon@raggedright}{\par\end{alectryon@inner}}
   {}
-\alectryon@newenvironment{conclusion}{\alectryon@strut}{}
+\alectryon@newenvironment{conclusion}{\alectryon@strut{}\alectryon@raggedright}{\par}
   {}
 
 \newcommand{\alectryon@copymacro}[1]
