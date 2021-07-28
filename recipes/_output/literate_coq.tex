@@ -65,9 +65,12 @@ Alectryon supports literate programs and documents (combinations of code and pro
 
 \begin{quote}
 \begin{alltt}
-alectryon literate_coq.v                 # Coq+reST → HTML;  produces ‘literate_coq.html’
-alectryon literate_coq.v -{}-backend latex # Coq+reST → LaTeX; produces ‘literate_coq.tex’
-alectryon literate_coq.v -{}-backend rst   # Coq+reST → reST;  produces ‘literate_coq.v.rst’
+alectryon literate_coq.v
+  # Coq+reST → HTML;  produces ‘literate_coq.html’
+alectryon literate_coq.v -{}-backend latex
+  # Coq+reST → LaTeX; produces ‘literate_coq.tex’
+alectryon literate_coq.v -{}-backend rst
+  # Coq+reST → reST;  produces ‘literate_coq.v.rst’
 \end{alltt}
 \end{quote}
 

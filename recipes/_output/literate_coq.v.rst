@@ -4,9 +4,12 @@
 
 Alectryon supports literate programs and documents (combinations of code and prose) written in Coq and reStructuredText.  Here is an example, written in Coq.  It can be converted to reST, HTML, or LaTeX using the following commands::
 
-   alectryon literate_coq.v                 # Coq+reST → HTML;  produces ‘literate_coq.html’
-   alectryon literate_coq.v --backend latex # Coq+reST → LaTeX; produces ‘literate_coq.tex’
-   alectryon literate_coq.v --backend rst   # Coq+reST → reST;  produces ‘literate_coq.v.rst’
+   alectryon literate_coq.v
+     # Coq+reST → HTML;  produces ‘literate_coq.html’
+   alectryon literate_coq.v --backend latex
+     # Coq+reST → LaTeX; produces ‘literate_coq.tex’
+   alectryon literate_coq.v --backend rst
+     # Coq+reST → reST;  produces ‘literate_coq.v.rst’
 
 ---
 

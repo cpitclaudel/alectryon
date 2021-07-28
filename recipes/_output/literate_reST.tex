@@ -45,6 +45,12 @@
   \fi%
 }
 
+% transition (break, fancybreak, anonymous section)
+\providecommand*{\DUtransition}{%
+  \hspace*{\fill}\hrulefill\hspace*{\fill}
+  \vskip 0.5\baselineskip
+}
+
 % hyperlinks:
 \ifthenelse{\isundefined{\hypersetup}}{
   \usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
@@ -63,17 +69,23 @@
 \date{}
 \maketitle
 
+\makeatletter\def\alectryon@nobreakspace{\alectryon@breakspace}\makeatother
+
 Alectryon supports literate programs and documents (combinations of code and prose) written in Coq and reStructuredText.  Here is an example, written in reST.  It can be converted to Coq, HTML, or LaTeX using the following commands:
 
 \begin{quote}
 \begin{alltt}
-alectryon literate_reST.rst                 # reST+Coq → HTML;  produces ‘literate_reST.html’
-alectryon literate_reST.rst -{}-backend latex # reST+Coq → LaTeX; produces ‘literate_reST.tex’
-alectryon literate_reST.rst -{}-backend coq   # reST+Coq → Coq;   produces ‘literate_reST.v’
+alectryon literate_reST.rst
+  # reST+Coq → HTML;  produces ‘literate_reST.html’
+alectryon literate_reST.rst -{}-backend latex
+  # reST+Coq → LaTeX; produces ‘literate_reST.tex’
+alectryon literate_reST.rst -{}-backend coq
+  # reST+Coq → Coq;   produces ‘literate_reST.v’
 \end{alltt}
 \end{quote}
 
--{}-{}-
+%___________________________________________________________________________
+\DUtransition
 
 Coq fragments are introduced with \texttt{.. coq::}:
 
@@ -211,7 +223,7 @@ Coq fragments are introduced with \texttt{.. coq::}:
 
 They can be nested nested into other reST directives, such as tables:
 
-\setlength{\DUtablewidth}{\linewidth}
+\setlength{\DUtablewidth}{0.900\linewidth}
 \begin{longtable}[c]{|p{0.470\DUtablewidth}|p{0.470\DUtablewidth}|}
 \caption{Coq commands}\\
 \hline

@@ -2,6 +2,11 @@
  LaTeX and HTML dialects
 =========================
 
+.. raw:: latex
+
+   \let\oldalltt\alltt
+   \def\alltt{\oldalltt\scriptsize}
+
 This simple file demos LaTeX and HTML dialect configuration::
 
    alectryon --html-dialect=html4 -o dialects.4.html dialects.rst

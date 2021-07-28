@@ -2,6 +2,11 @@
  Coq directive options
 =======================
 
+.. raw:: latex
+
+   \let\oldalltt\alltt
+   \def\alltt{\oldalltt\scriptsize}
+
 This file checks that ``:class:`` and ``:name:`` attributes work on ``.. coq::`` directives::
 
    alectryon directive-options.rst

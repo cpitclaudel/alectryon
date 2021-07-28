@@ -3,13 +3,20 @@
  Literate programming with Alectryon (reST input)
 ==================================================
 
+.. raw:: latex
+
+   \makeatletter\def\alectryon@nobreakspace{\alectryon@breakspace}\makeatother
+
 Alectryon supports literate programs and documents (combinations of code and prose) written in Coq and reStructuredText.  Here is an example, written in reST.  It can be converted to Coq, HTML, or LaTeX using the following commands::
 
-   alectryon literate_reST.rst                 # reST+Coq → HTML;  produces ‘literate_reST.html’
-   alectryon literate_reST.rst --backend latex # reST+Coq → LaTeX; produces ‘literate_reST.tex’
-   alectryon literate_reST.rst --backend coq   # reST+Coq → Coq;   produces ‘literate_reST.v’
+   alectryon literate_reST.rst
+     # reST+Coq → HTML;  produces ‘literate_reST.html’
+   alectryon literate_reST.rst --backend latex
+     # reST+Coq → LaTeX; produces ‘literate_reST.tex’
+   alectryon literate_reST.rst --backend coq
+     # reST+Coq → Coq;   produces ‘literate_reST.v’
 
----
+----
 
 Coq fragments are introduced with ``.. coq::``:
 |*)
@@ -26,6 +33,7 @@ They can be nested nested into other reST directives, such as tables:
 
 .. list-table:: Coq commands
    :header-rows: 1
+   :width: 90%
 
    - * Coq command
      * Description

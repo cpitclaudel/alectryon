@@ -41,6 +41,9 @@
 \begin{document}
 \maketitle
 
+\let\oldalltt\alltt
+\def\alltt{\oldalltt\scriptsize}
+
 This file checks that \texttt{:class:} and \texttt{:name:} attributes work on \texttt{.. coq::} directives:
 
 \begin{quote}
