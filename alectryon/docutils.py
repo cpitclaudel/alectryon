@@ -711,6 +711,12 @@ LuaLatexTranslator = make_LatexTranslator(xetex.XeLaTeXTranslator) # Same transl
 
 def make_LatexWriter(base, translator_class):
     class Writer(base):
+        settings_default_overrides = {
+            # We want short-name Pygments macros; alectryon.sty then maps
+            # \DUrole to \PY.
+            "syntax_highlight": "short",
+        }
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
             self.translator_class = translator_class
