@@ -8,6 +8,8 @@
 \setlength{\alectryonHypH}{2em}
 \newlength{\alectryonHypV}
 \setlength{\alectryonHypV}{0.6em}
+\newlength{\alectryonHypIndent}
+\setlength{\alectryonHypIndent}{0.3em}
 
 \definecolor{alectryon@tango@light@aluminium}{HTML}{EEEEEC}
 \definecolor{alectryon@tango@medium@aluminium}{HTML}{D3D7CF}
@@ -164,14 +166,17 @@
    \alectryon@setlineskip{\alectryonHypV}}
   {\par}
   {\discretionary{}{}{\hbox{\hspace{\alectryonHypH}}}}
+\newlength{\alectryon@hyp@maxwidth}
 \newcommand*{\alectryon@hyp}[3][]
   {{\def\alectryon@nl{\alectryon@newline}%
-    \alectryon@maxwidth{\textwidth}
-      {{\alectryon@hypn{#2}\hspace{0.25em plus 1fil}\penalty500%
+    % Save \linewidth since \parbox overwrites it
+    \setlength{\alectryon@hyp@maxwidth}{\linewidth}%
+    \alectryon@maxwidth{\alectryon@hyp@maxwidth}
+      {{\alectryon@hypn{#2}\hspace{0.25em plus 1fil}%
+        \discretionary{}{\hbox{\hspace{\alectryonHypIndent}}}{}%
         \def\alectryon@space{\alectryon@breakspace}%
-        \lineskiplimit=\alectryonRuleSkip%
-        \lineskip=\alectryonRuleSkip%
-        \alectryon@maxwidth{\dimexpr\textwidth\relax}{#3}}}}}
+        \alectryon@maxwidth{\dimexpr\alectryon@hyp@maxwidth-\alectryonHypIndent\relax}
+          {\alectryon@raggedright#3}}}}}
 \newcommand*{\alectryon@hypn}[1]
   {\mbox{\textbf{#1}:}}
 \alectryon@newenvironment{extragoals}{}{}
