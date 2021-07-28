@@ -264,7 +264,7 @@ def copy_assets(state, assets, copy_fn, output_directory):
                 pass
         try:
             copy_fn(src, dst)
-        except shutil.SameFileError:
+        except (shutil.SameFileError, FileExistsError):
             pass
 
     return state
