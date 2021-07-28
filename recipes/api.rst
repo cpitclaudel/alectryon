@@ -157,9 +157,7 @@ And that movie can be exported to LaTeX or HTML:
          \begin{goals}
            \begin{goal}
              \begin{hyps}
-               \begin{hyp}{\hypn{H}}
-                 \PY{k+kt}{False}
-               \end{hyp}
+               \hyp{H}{\PY{k+kt}{False}}
              \end{hyps}
              \sep
              \begin{conclusion}

@@ -107,17 +107,11 @@ Coq fragments are introduced with \texttt{.. coq::}:
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{y}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{y}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{IHy}}
-              \PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}
-            \end{hyp}
+            \hyp{IHy}{\PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
             \sep
-            \begin{hyp}{\hypn{H}}
-              \PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}
-            \end{hyp}
+            \hyp{H}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -128,25 +122,15 @@ Coq fragments are introduced with \texttt{.. coq::}:
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \begin{hyp}{\hypn{y}}
-                \PY{n}{nat}
-              \end{hyp}
+              \hyp{y}{\PY{n}{nat}}
               \sep
-              \begin{hyp}{\hypn{IHy}}
-                \PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}
-              \end{hyp}
+              \hyp{IHy}{\PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
               \sep
-              \begin{hyp}{\hypn{x}}
-                \PY{n}{nat}
-              \end{hyp}
+              \hyp{x}{\PY{n}{nat}}
               \sep
-              \begin{hyp}{\hypn{H}}
-                \PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}
-              \end{hyp}
+              \hyp{H}{\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
               \sep
-              \begin{hyp}{\hypn{H1}}
-                \PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}
-              \end{hyp}
+              \hyp{H1}{\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
             \end{hyps}
             \sep
             \begin{conclusion}
@@ -267,9 +251,7 @@ Description
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{x, y}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{x, y}{\PY{n}{nat}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -310,13 +292,9 @@ Move the variables \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \begin{hyp}{\hypn{y}}
-                \PY{n}{nat}
-              \end{hyp}
+              \hyp{y}{\PY{n}{nat}}
               \sep
-              \begin{hyp}{\hypn{IHy}}
-                \PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-              \end{hyp}
+              \hyp{IHy}{\PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
             \end{hyps}
             \sep
             \begin{conclusion}
@@ -349,17 +327,11 @@ Perform induction on \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUro
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{x, z}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{x, z}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{Hl}}
-              \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}
-            \end{hyp}
+            \hyp{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}}
             \sep
-            \begin{hyp}{\hypn{Hr}}
-              \PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-            \end{hyp}
+            \hyp{Hr}{\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -370,25 +342,15 @@ Perform induction on \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUro
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \begin{hyp}{\hypn{y}}
-                \PY{n}{nat}
-              \end{hyp}
+              \hyp{y}{\PY{n}{nat}}
               \sep
-              \begin{hyp}{\hypn{IHy}}
-                \PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-              \end{hyp}
+              \hyp{IHy}{\PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
               \sep
-              \begin{hyp}{\hypn{x, z}}
-                \PY{n}{nat}
-              \end{hyp}
+              \hyp{x, z}{\PY{n}{nat}}
               \sep
-              \begin{hyp}{\hypn{Hl}}
-                \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}
-              \end{hyp}
+              \hyp{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
               \sep
-              \begin{hyp}{\hypn{Hr}}
-                \PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-              \end{hyp}
+              \hyp{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
             \end{hyps}
             \sep
             \begin{conclusion}
@@ -421,17 +383,11 @@ Move conjunction into the context, splitting it into \texttt{\DUrole{code}{\DUro
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{x, z}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{x, z}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{Hl}}
-              \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}
-            \end{hyp}
+            \hyp{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}}
             \sep
-            \begin{hyp}{\hypn{Hr}}
-              \PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-            \end{hyp}
+            \hyp{Hr}{\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -469,25 +425,15 @@ Solve base case; \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{y}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{y}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{IHy}}
-              \PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-            \end{hyp}
+            \hyp{IHy}{\PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
             \sep
-            \begin{hyp}{\hypn{x, z}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{x, z}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{Hl}}
-              \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}
-            \end{hyp}
+            \hyp{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
             \sep
-            \begin{hyp}{\hypn{Hr}}
-              \PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-            \end{hyp}
+            \hyp{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -507,29 +453,17 @@ Solve base case; \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{y}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{y}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{IHy}}
-              \PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-            \end{hyp}
+            \hyp{IHy}{\PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
             \sep
-            \begin{hyp}{\hypn{x, z}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{x, z}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{Hl}}
-              \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}
-            \end{hyp}
+            \hyp{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
             \sep
-            \begin{hyp}{\hypn{Hr}}
-              \PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-            \end{hyp}
+            \hyp{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
             \sep
-            \begin{hyp}{\hypn{H0}}
-              \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}
-            \end{hyp}
+            \hyp{H0}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
           \end{hyps}
           \sep
           \begin{conclusion}

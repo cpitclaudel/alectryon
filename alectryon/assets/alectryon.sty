@@ -4,6 +4,10 @@
 \setlength{\alectryonMargin}{0.3em}
 \newlength{\alectryonRuleSkip}
 \setlength{\alectryonRuleSkip}{0.3em}
+\newlength{\alectryonHypH}
+\setlength{\alectryonHypH}{2em}
+\newlength{\alectryonHypV}
+\setlength{\alectryonHypV}{0.6em}
 
 \definecolor{alectryon@tango@light@aluminium}{HTML}{EEEEEC}
 \definecolor{alectryon@tango@medium@aluminium}{HTML}{D3D7CF}
@@ -49,7 +53,38 @@
 % \alectryon@parsetup removes paragraph skips and indents
 \newcommand*{\alectryon@parsetup}
   {\setlength{\parskip}{0pt}
-    \setlength{\parindent}{0pt}}
+   \setlength{\parindent}{0pt}}
+% \alectryon@setlineskip{LENGTH} ensures that lines are LENGTH apart
+\newlength{\alectryon@@lineskip}
+\newlength{\alectryon@@lineskiplimit}
+\newcommand{\alectryon@setlineskip}[1]
+  {\setlength{\alectryon@@lineskip}{\lineskip}%
+   \setlength{\lineskip}{#1}%
+   \setlength{\alectryon@@lineskiplimit}{\lineskiplimit}%
+   \setlength{\lineskiplimit}{#1}}
+% \alectryon@resetlineskip resets line-skip settings
+\newcommand{\alectryon@resetlineskip}
+  {\setlength{\lineskip}{\alectryon@@lineskip}%
+   \setlength{\lineskiplimit}{\alectryon@@lineskiplimit}}
+
+% \alectryon@parbox{WIDTH}{TEXT} wraps TEXT in a box with standard line skip
+\newcommand*{\alectryon@parbox}[2]
+  {{\alectryon@resetlineskip%
+    % \setlength{\fboxsep}{0pt}%
+    % \fbox{%
+      \parbox[t][][t]{\alectryon@@width}{#2}%
+    % }%
+   }}
+% \alectryon@maxwidth{WIDTH}{TEXT} typesets TEXT as a paragraph of maximum width WIDTH
+\newlength{\alectryon@@width@initial}
+\newlength{\alectryon@@width}
+\newcommand*{\alectryon@maxwidth}[2]
+  {\settowidth{\alectryon@@width@initial}
+     {\begin{tabular}[t]{@{}l@{}}#2\end{tabular}}%
+   \setlength{\alectryon@@width}
+     {\ifdim\alectryon@@width@initial>#1 #1\else\alectryon@@width@initial\fi}%
+   \alectryon@parbox{\alectryon@@width}{#2}}
+
 \newcommand{\alectryon@prelude}
   {\alectryon@fontsetup
    \alectryon@parsetup
@@ -63,9 +98,8 @@
    \tcbsetforeverylayer{boxsep=0pt, left=\alectryonMargin, right=\alectryonMargin, top=\alectryonMargin, bottom=\alectryonMargin}
    \tcbsetforeverylayer{boxrule=0pt, sharp corners}}
 
-\newcommand{\alectryon@hypn}[1]{\textbf{#1}}
 \newcommand{\alectryon@par}{\leavevmode\par\ignorespaces}
-\newcommand{\alectryon@cr}{\-\cr\ignorespaces}
+\newcommand{\alectryon@newline}{\-\\\ignorespaces}
 \newcommand{\alectryon@vsep}{\vspace{0.15em}}
 \newcommand{\alectryon@sep}{\relax}
 \newcommand{\alectryon@nl}{\alectryon@par}
@@ -118,17 +152,20 @@
   {\alectryon@goal@rule}
 \alectryon@newenvironment{hyps}
   {\alectryon@hyphens%
-   \begin{minipage}{\linewidth}%
-     \alectryon@raggedright
-     \advance\baselineskip by \alectryonRuleSkip\relax}
-  {\end{minipage}} % Minipage needed for baselineskip adjustment
-  {\discretionary{}{}{\hbox{\hspace{2em}}}}
-\alectryon@newenvironment[1]{hyp}
-  {\mbox{#1}:\nobreak\hspace{0.25em}\nobreak%
-   \def\alectryon@nl{\alectryon@cr}%
-   \begin{tabular}[t]{@{}l@{}}}
-  {\end{tabular}}
-  {}
+   \alectryon@raggedright%
+   \alectryon@setlineskip{\alectryonHypV}}
+  {\par}
+  {\discretionary{}{}{\hbox{\hspace{\alectryonHypH}}}}
+\newcommand*{\alectryon@hyp}[3][]
+  {{\def\alectryon@nl{\alectryon@newline}%
+    \alectryon@maxwidth{\textwidth}
+      {{\alectryon@hypn{#2}\hspace{0.25em plus 1fil}\penalty500%
+        \def\alectryon@space{\rule{0pt}{0pt} \rule{0pt}{0pt}}%
+        \lineskiplimit=\alectryonRuleSkip%
+        \lineskip=\alectryonRuleSkip%
+        \alectryon@maxwidth{\dimexpr\textwidth\relax}{#3}}}}}
+\newcommand*{\alectryon@hypn}[1]
+  {\mbox{\textbf{#1}:}}
 \alectryon@newenvironment{extragoals}{}{}
   {\par\alectryon@vsep}
 \alectryon@newenvironment{messages}{\begin{alectryon@outer}}{\end{alectryon@outer}}

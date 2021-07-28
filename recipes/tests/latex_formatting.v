@@ -5,7 +5,8 @@
 
 This files tests various aspects of the conversion to LaTeX, including spacing and formatting::
 
-   alectryon latex_formatting.v --backend latex # Coq+reST → LaTeX; produces ‘latex_formatting.tex’
+   alectryon latex_formatting.v --backend latex
+     # Coq+reST → LaTeX; produces ‘latex_formatting.tex’
 
 Long hypotheses
 ===============

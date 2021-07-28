@@ -42,7 +42,8 @@ This files tests various aspects of the conversion to LaTeX, including spacing a
 
 \begin{quote}
 \begin{alltt}
-alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€˜latex_formatting.texâ€™
+alectryon latex_formatting.v -{}-backend latex
+  # Coq+reST â†’ LaTeX; produces â€˜latex_formatting.texâ€™
 \end{alltt}
 \end{quote}
 
@@ -105,23 +106,15 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A, B}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A, B}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{map}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{l}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{f}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{f}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -141,23 +134,15 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A, B}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A, B}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{map}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{l}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{f}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{f}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -177,29 +162,19 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A, B}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A, B}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{map}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{l}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{f, X}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{f, X}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
             \sep
-            \begin{hyp}[\PY{n}{map}]{\hypn{l0}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp[\PY{n}{map}]{l0}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -219,25 +194,17 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A, B}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A, B}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{map}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{f, X}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{[]}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{f, X}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{[]}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
             \sep
-            \begin{hyp}[\PY{n}{map}]{\hypn{l0}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp[\PY{n}{map}]{l0}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -248,33 +215,21 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \begin{hyp}{\hypn{A, B}}
-                \PY{k+kt}{Type}
-              \end{hyp}
+              \hyp{A, B}{\PY{k+kt}{Type}}
               \sep
-              \begin{hyp}{\hypn{map}}
-                \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-                \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-              \end{hyp}
+              \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
               \sep
-              \begin{hyp}{\hypn{a}}
-                \PY{n}{A}
-              \end{hyp}
+              \hyp{a}{\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{l}}
-                \PY{n}{list}~\PY{n}{A}
-              \end{hyp}
+              \hyp{l}{\PY{n}{list}~\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{f, X}}
-                \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-                \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-              \end{hyp}
+              \hyp{f, X}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
               \sep
-              \begin{hyp}[\PY{n}{map}]{\hypn{l0}}
-                \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-                \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-                ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-              \end{hyp}
+              \hyp[\PY{n}{map}]{l0}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+              ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \end{hyps}
             \sep
             \begin{conclusion}
@@ -295,25 +250,17 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A, B}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A, B}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{map}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{f, X}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{[]}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{f, X}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{[]}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
             \sep
-            \begin{hyp}[\PY{n}{map}]{\hypn{l0}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp[\PY{n}{map}]{l0}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -339,33 +286,21 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A, B}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A, B}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{map}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{f, X}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{f, X}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
             \sep
-            \begin{hyp}[\PY{n}{map}]{\hypn{l0}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp[\PY{n}{map}]{l0}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -385,33 +320,21 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A, B}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A, B}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{map}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{f, X}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{f, X}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
             \sep
-            \begin{hyp}[\PY{n}{map}]{\hypn{l0}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp[\PY{n}{map}]{l0}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -422,33 +345,21 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \begin{hyp}{\hypn{A, B}}
-                \PY{k+kt}{Type}
-              \end{hyp}
+              \hyp{A, B}{\PY{k+kt}{Type}}
               \sep
-              \begin{hyp}{\hypn{map}}
-                \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-                \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-              \end{hyp}
+              \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
               \sep
-              \begin{hyp}{\hypn{a}}
-                \PY{n}{A}
-              \end{hyp}
+              \hyp{a}{\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{l}}
-                \PY{n}{list}~\PY{n}{A}
-              \end{hyp}
+              \hyp{l}{\PY{n}{list}~\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{f, X}}
-                \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-                \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-              \end{hyp}
+              \hyp{f, X}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
               \sep
-              \begin{hyp}[\PY{n}{map}]{\hypn{l0}}
-                \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-                \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-                ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-              \end{hyp}
+              \hyp[\PY{n}{map}]{l0}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+              ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \end{hyps}
             \sep
             \begin{conclusion}
@@ -469,33 +380,21 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A, B}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A, B}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{map}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{f, X}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{f, X}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
             \sep
-            \begin{hyp}[\PY{n}{map}]{\hypn{l0}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp[\PY{n}{map}]{l0}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -515,38 +414,24 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A, B}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A, B}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{map}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{f}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{f}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{X}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{X}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
             \sep
-            \begin{hyp}[\PY{n}{map}]{\hypn{l0}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp[\PY{n}{map}]{l0}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -566,38 +451,24 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A, B}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A, B}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{map}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp{map}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{f}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{f}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
             \sep
-            \begin{hyp}{\hypn{X}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}
-            \end{hyp}
+            \hyp{X}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a0}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            \PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}}
             \sep
-            \begin{hyp}[\PY{n}{map}]{\hypn{l0}}
-              \PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
-              \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
-              ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}
-            \end{hyp}
+            \hyp[\PY{n}{map}]{l0}{\PY{k+kr}{forall}~\PY{n+nv}{l}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{,}\nl
+            \PY{o}{(}\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{),}\nl
+            ~\PY{n}{List}\PY{o}{.}\PY{n}{nth\PYZus{}error}~\PY{n}{l}~\PY{n}{n}~\PY{o}{=}~\PY{n}{Some}~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{B}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{list}~\PY{n}{B}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -677,9 +548,7 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -701,9 +570,7 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -725,9 +592,7 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -740,23 +605,15 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \begin{hyp}{\hypn{A}}
-                \PY{k+kt}{Type}
-              \end{hyp}
+              \hyp{A}{\PY{k+kt}{Type}}
               \sep
-              \begin{hyp}{\hypn{a}}
-                \PY{n}{A}
-              \end{hyp}
+              \hyp{a}{\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{l1}}
-                \PY{n}{list}~\PY{n}{A}
-              \end{hyp}
+              \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{IHl1}}
-                \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-                \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-                \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-              \end{hyp}
+              \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
             \end{hyps}
             \sep
             \begin{conclusion}
@@ -779,9 +636,7 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -803,13 +658,9 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -821,17 +672,11 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \begin{hyp}{\hypn{A}}
-                \PY{k+kt}{Type}
-              \end{hyp}
+              \hyp{A}{\PY{k+kt}{Type}}
               \sep
-              \begin{hyp}{\hypn{l2}}
-                \PY{n}{list}~\PY{n}{A}
-              \end{hyp}
+              \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{n}}
-                \PY{n}{nat}
-              \end{hyp}
+              \hyp{n}{\PY{n}{nat}}
             \end{hyps}
             \sep
             \begin{conclusion}
@@ -853,13 +698,9 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -870,17 +711,11 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \begin{hyp}{\hypn{A}}
-                \PY{k+kt}{Type}
-              \end{hyp}
+              \hyp{A}{\PY{k+kt}{Type}}
               \sep
-              \begin{hyp}{\hypn{l2}}
-                \PY{n}{list}~\PY{n}{A}
-              \end{hyp}
+              \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{n}}
-                \PY{n}{nat}
-              \end{hyp}
+              \hyp{n}{\PY{n}{nat}}
             \end{hyps}
             \sep
             \begin{conclusion}
@@ -905,13 +740,9 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -982,17 +813,11 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{n}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{n}{\PY{n}{nat}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -1022,23 +847,15 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l1}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{IHl1}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-            \end{hyp}
+            \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+            \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -1060,27 +877,17 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l1}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{IHl1}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-            \end{hyp}
+            \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+            \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -1092,31 +899,19 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \begin{hyp}{\hypn{A}}
-                \PY{k+kt}{Type}
-              \end{hyp}
+              \hyp{A}{\PY{k+kt}{Type}}
               \sep
-              \begin{hyp}{\hypn{a}}
-                \PY{n}{A}
-              \end{hyp}
+              \hyp{a}{\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{l1}}
-                \PY{n}{list}~\PY{n}{A}
-              \end{hyp}
+              \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{IHl1}}
-                \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-                \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-                \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-              \end{hyp}
+              \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
               \sep
-              \begin{hyp}{\hypn{l2}}
-                \PY{n}{list}~\PY{n}{A}
-              \end{hyp}
+              \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{n}}
-                \PY{n}{nat}
-              \end{hyp}
+              \hyp{n}{\PY{n}{nat}}
             \end{hyps}
             \sep
             \begin{conclusion}
@@ -1139,27 +934,17 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l1}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{IHl1}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-            \end{hyp}
+            \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+            \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -1170,31 +955,19 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \begin{hyp}{\hypn{A}}
-                \PY{k+kt}{Type}
-              \end{hyp}
+              \hyp{A}{\PY{k+kt}{Type}}
               \sep
-              \begin{hyp}{\hypn{a}}
-                \PY{n}{A}
-              \end{hyp}
+              \hyp{a}{\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{l1}}
-                \PY{n}{list}~\PY{n}{A}
-              \end{hyp}
+              \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{IHl1}}
-                \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-                \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-                \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-              \end{hyp}
+              \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
               \sep
-              \begin{hyp}{\hypn{l2}}
-                \PY{n}{list}~\PY{n}{A}
-              \end{hyp}
+              \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
               \sep
-              \begin{hyp}{\hypn{n}}
-                \PY{n}{nat}
-              \end{hyp}
+              \hyp{n}{\PY{n}{nat}}
             \end{hyps}
             \sep
             \begin{conclusion}
@@ -1217,27 +990,17 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l1}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{IHl1}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-            \end{hyp}
+            \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+            \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -1263,31 +1026,19 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l1}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{IHl1}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-            \end{hyp}
+            \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+            \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{n}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{n}{\PY{n}{nat}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -1309,35 +1060,21 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l1}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{IHl1}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-            \end{hyp}
+            \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+            \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{n}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{n}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{H}}
-              \PY{n}{S}~\PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l1}\PY{o}{)}
-            \end{hyp}
+            \hyp{H}{\PY{n}{S}~\PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l1}\PY{o}{)}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -1358,35 +1095,21 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l1}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{IHl1}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-            \end{hyp}
+            \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+            \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{n}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{n}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{H}}
-              \PY{n}{S}~\PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l1}\PY{o}{)}
-            \end{hyp}
+            \hyp{H}{\PY{n}{S}~\PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l1}\PY{o}{)}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -1413,35 +1136,21 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l1}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{IHl1}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-            \end{hyp}
+            \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+            \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{n}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{n}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{H}}
-              \PY{n}{S}~\PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l1}\PY{o}{)}
-            \end{hyp}
+            \hyp{H}{\PY{n}{S}~\PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l1}\PY{o}{)}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -1461,35 +1170,21 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l1}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{IHl1}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-            \end{hyp}
+            \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+            \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{n}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{n}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{H}}
-              \PY{n}{S}~\PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l1}\PY{o}{)}
-            \end{hyp}
+            \hyp{H}{\PY{n}{S}~\PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{(}\PY{n}{a}~\PY{o}{::}~\PY{n}{l1}\PY{o}{)}}
           \end{hyps}
           \sep
           \begin{conclusion}
@@ -1511,35 +1206,21 @@ alectryon latex_formatting.v -{}-backend latex # Coq+reST â†’ LaTeX; produces â€
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \begin{hyp}{\hypn{A}}
-              \PY{k+kt}{Type}
-            \end{hyp}
+            \hyp{A}{\PY{k+kt}{Type}}
             \sep
-            \begin{hyp}{\hypn{a}}
-              \PY{n}{A}
-            \end{hyp}
+            \hyp{a}{\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{l1}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l1}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{IHl1}}
-              \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
-              \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
-              \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}
-            \end{hyp}
+            \hyp{IHl1}{\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl
+            \PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{n}{l1}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{skipn}~\PY{n}{n}~\PY{o}{(}\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n}~\PY{n}{l1}~\PY{o}{++}~\PY{n}{l2}}
             \sep
-            \begin{hyp}{\hypn{l2}}
-              \PY{n}{list}~\PY{n}{A}
-            \end{hyp}
+            \hyp{l2}{\PY{n}{list}~\PY{n}{A}}
             \sep
-            \begin{hyp}{\hypn{n}}
-              \PY{n}{nat}
-            \end{hyp}
+            \hyp{n}{\PY{n}{nat}}
             \sep
-            \begin{hyp}{\hypn{H}}
-              \PY{n}{S}~\PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{o}{(}\PY{n}{length}~\PY{n}{l1}\PY{o}{)}
-            \end{hyp}
+            \hyp{H}{\PY{n}{S}~\PY{n}{n}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{o}{(}\PY{n}{length}~\PY{n}{l1}\PY{o}{)}}
           \end{hyps}
           \sep
           \begin{conclusion}

@@ -180,10 +180,10 @@ class LatexGenerator:
         with environments.goal():
             with environments.hyps():
                 for hyp in goal.hypotheses:
-                    names = macros.hypn(", ".join(hyp.names))
+                    names = PlainText(", ".join(hyp.names))
                     htype = self.highlight(hyp.type)
                     hbody = self.highlight(hyp.body) if hyp.body else []
-                    environments.hyp(*htype, args=[names], optargs=hbody, verbatim=True)
+                    macros.hyp(*htype, args=[names], optargs=hbody, verbatim=True)
             environments.conclusion(*self.highlight(goal.conclusion), verbatim=True)
 
     def gen_goals(self, first, more):
