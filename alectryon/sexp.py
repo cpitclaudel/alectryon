@@ -79,8 +79,8 @@ class ParseError(Exception):
 def load(bs):
     try:
         return parse(tokenize(bs))
-    except IndexError:
-        raise ParseError()
+    except IndexError as e:
+        raise ParseError() from e
 
 def unparse(sexp, buf):
     stack = [sexp]

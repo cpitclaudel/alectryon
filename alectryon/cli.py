@@ -49,7 +49,7 @@ def _catch_parsing_errors(fpath, k, *args):
     try:
         return k(*args)
     except ParsingError as e:
-        raise ValueError("{}:{}".format(fpath, e))
+        raise ValueError("{}:{}".format(fpath, e)) from e
 
 def coq_to_rst(coq, fpath, point, marker):
     from .literate import coq2rst_marked

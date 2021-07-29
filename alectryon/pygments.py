@@ -19,7 +19,6 @@
 # SOFTWARE.
 
 import re
-import sys
 import warnings
 from collections import deque
 from textwrap import indent
@@ -107,8 +106,8 @@ def highlight_html(coqstr):
     implementation of ``alectryon.cli.dump_html_standalone`` to see how the CLI
     does it.
 
-    >>> str(highlight_html("Program Fixpoint a := 1."))
-    '<span class="kn">Program Fixpoint</span> <span class="nf">a</span> := <span class="mi">1</span>.'
+    >>> str(highlight_html("Program Fixpoint a."))
+    '<span class="kn">Program Fixpoint</span> <span class="nf">a</span>.'
     """
     return dom_raw("".join(_highlight(coqstr, LEXER, HTML_FORMATTER)))
 

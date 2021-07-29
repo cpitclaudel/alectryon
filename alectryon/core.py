@@ -126,6 +126,7 @@ class SerAPI():
         self.kill()
         cmd = [self.resolve_sertop(self.sertop_bin), *self.args]
         debug(" ".join(quote(s) for s in cmd), '# ')
+        # pylint: disable=consider-using-with
         self.sertop = Popen(cmd, stdin=PIPE, stderr=stderr, stdout=PIPE)
 
     def next_sexp(self):
