@@ -21,6 +21,10 @@ _output/caching.html: caching.v
 _output/coqdoc.html: coqdoc.v
 	$(alectryon) $< --frontend coqdoc
 
+# Coq → HTML
+_output/custom_highlighting.html: custom_highlighting.v
+	$(alectryon) $<
+
 # JSON → JSON
 _output/fragments.io.json: fragments.json
 	$(alectryon) $<
@@ -74,6 +78,6 @@ _output/minimal.no-alectryon.html: minimal.rst | _output/
 _output/plain.v.html: plain.v
 	$(alectryon) --frontend coq $<
 
-_output/api.out _output/api.rst.out _output/caching.html _output/coqdoc.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html: out_dir := _output
+_output/api.out _output/api.rst.out _output/caching.html _output/coqdoc.html _output/custom_highlighting.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html: out_dir := _output
 
-targets += _output/api.out _output/api.rst.out _output/caching.html _output/coqdoc.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html
+targets += _output/api.out _output/api.rst.out _output/caching.html _output/coqdoc.html _output/custom_highlighting.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html

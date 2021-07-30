@@ -125,14 +125,15 @@ HTML_MINIFICATION = False
 
 # LATER: dataclass
 class AlectryonState:
-    def __init__(self):
+    def __init__(self, document):
         self.generator = None
         self.transforms_executed = set()
+        self.config = Config(document)
 
 def _alectryon_state(document):
     st = getattr(document, "alectryon_state", None)
     if st is None:
-        st = document.alectryon_state = AlectryonState()
+        st = document.alectryon_state = AlectryonState(document)
     return st
 
 class Config:
@@ -149,6 +150,10 @@ class Config:
     def parse_docinfo_field(self, node, name, body):
         if name.startswith("alectryon/pygments/"):
             token = name[len("alectryon/pygments/"):]
+            # LATER: It would be nice to support multi-words tokens.  Using
+            # ``shlex.split(body)`` instead of ``body.split()`` would work find
+            # here, but the filter added by ``added_tokens`` processes words
+            # (“names”) one by one, so multi-word tokens would never match.
             self.tokens.setdefault(token, []).extend(body.split())
         elif name == "alectryon/serapi/args":
             import shlex
@@ -233,7 +238,7 @@ class AlectryonTransform(OneTimeTransform):
         return cache.generator, annotated
 
     def annotate(self, pending_nodes):
-        config = Config(self.document)
+        config = _alectryon_state(self.document).config
         sertop_args = (*self.SERTOP_ARGS, *config.sertop_args)
         chunks = [pending.details["contents"] for pending in pending_nodes]
         return self.annotate_cached(chunks, sertop_args)
@@ -321,7 +326,7 @@ class AlectryonPostTransform(OneTimeTransform):
 
     def _apply(self, **_kwargs):
         fmt, generator = self.init_generator()
-        with added_tokens(Config(self.document).tokens):
+        with added_tokens(_alectryon_state(self.document).config.tokens):
             for node in self.document.traverse(alectryon_pending_io):
                 self.replace_one(node, fmt, generator)
 

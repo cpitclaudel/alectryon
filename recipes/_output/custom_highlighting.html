@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>Custom highlighting</title>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="tango_subtle.min.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="custom-highlighting">
+<h1 class="title">Custom highlighting</h1>
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+</tbody>
+</table>
+<input type="checkbox" class="alectryon-toggle" id="alectryon-toggle-0" /><label for="alectryon-toggle-0" class="alectryon-toggle-label">Display all goals and responses</label><div class="alectryon-container docutils container">
+<p>This file shows how to highlight custom keywords, like custom tactic names.  To compile it, use:</p>
+<pre class="literal-block">
+alectryon custom_highlighting.v # Coq → HTML, produces ‘custom_highlighting.html’
+</pre>
+<p>Currently Alectryon recognizes the following token kinds:</p>
+<ul class="simple">
+<li><tt class="docutils literal">cmd</tt>: top-level commands: <code class="highlight coq"><span class="kn">About</span></code>, <code class="highlight coq"><span class="kn">Locate Ltac</span></code>, …</li>
+<li><tt class="docutils literal"><span class="pre">gallina-constants</span></tt>: <code class="highlight coq"><span class="kt">Prop</span></code>, <code class="highlight coq"><span class="kt">Set</span></code>, <code class="highlight coq"><span class="kt">True</span></code>, …</li>
+<li><tt class="docutils literal"><span class="pre">gallina-keywords</span></tt>: <code class="highlight coq"><span class="kr">fix</span></code>, <code class="highlight coq"><span class="kr">forall</span></code>, <code class="highlight coq"><span class="kr">fun</span></code>, <code class="highlight coq"><span class="kr">if</span></code>, <code class="highlight coq"><span class="kr">with</span></code>, <code class="highlight coq"><span class="kr">as</span></code>, …</li>
+<li><tt class="docutils literal"><span class="pre">ltac-builtins</span></tt>: <code class="highlight coq"><span class="kp">abstract</span></code>, <code class="highlight coq"><span class="kp">all</span></code>, <code class="highlight coq"><span class="kp">assert_fails</span></code>, <code class="highlight coq"><span class="kp">constr</span></code>, …</li>
+<li><tt class="docutils literal"><span class="pre">ltac-keywords</span></tt>: <code class="highlight coq"><span class="kr">match goal with</span></code>, <code class="highlight coq"><span class="kr">lazy_match! goal with</span></code>, …</li>
+<li><tt class="docutils literal">tacn</tt>: <code class="highlight coq"><span class="nb">absurd</span></code>, <code class="highlight coq"><span class="nb">admit</span></code>, <code class="highlight coq"><span class="nb">etransitivity</span></code>, …</li>
+<li><tt class="docutils literal"><span class="pre">tacn-solve</span></tt>: <code class="highlight coq"><span class="bp">assumption</span></code>, <code class="highlight coq"><span class="bp">by</span></code>, <code class="highlight coq"><span class="bp">congruence</span></code>, <code class="highlight coq"><span class="bp">tauto</span></code>, …</li>
+</ul>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Tactic Notation</span> <span class="s2">&quot;app&quot;</span> <span class="kp">constr</span>(thm) <span class="s2">&quot;but_first&quot;</span> tactic1(t) :=
+  t; <span class="nb">simple apply</span> thm.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="bp">must_eauto</span> := <span class="nb">eauto</span>; <span class="kp">fail</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="custom-highlighting-v-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk0"><span class="kn">Goal</span> <span class="kr">forall</span> <span class="nv">x</span>, x = <span class="mi">1</span> -&gt; x &gt;= <span class="mi">0</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">forall</span> <span class="nv">x</span> : nat, x = <span class="mi">1</span> -&gt; x &gt;= <span class="mi">0</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="custom-highlighting-v-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk1"><span class="nb">unfold</span> ge.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">forall</span> <span class="nv">x</span> : nat, x = <span class="mi">1</span> -&gt; <span class="mi">0</span> &lt;= x</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="custom-highlighting-v-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk2"><span class="nb">app</span> le_S <span class="nb">but_first</span> <span class="nb">intros</span> ? -&gt;.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="mi">0</span> &lt;= <span class="mi">0</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">must_eauto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre></div>
+</div>
+</div></body>
+</html>
