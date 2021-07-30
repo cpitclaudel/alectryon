@@ -95,7 +95,8 @@ In any case, make an exception for comments:
 }
 
 .alectryon-bubble,
-.alectryon-io label {
+.alectryon-io label,
+.alectryon-toggle-label {
     cursor: pointer;
 }
 
