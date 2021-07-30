@@ -17,6 +17,11 @@ Unreleased
 
 - HTML5, XeLaTeX and LuaLaTeX outputs are now supported (``--latex-dialect``, ``--html-dialect``). [c576ae8]
 
+Bug fixes
+---------
+
+- Fix parsing of reST docinfo fields for custom highlighting (`:alectryon/pygments/…:`). [33df0f2]
+
 Breaking changes
 ----------------
 
@@ -32,6 +37,9 @@ Breaking changes
 
 Version 1.2.1
 =============
+
+Bug fixes
+---------
 
 - Fix an API breakage introduced by the implementation LaTeX export (``AlectryonPostTransform`` was only registered for Docutils and Sphinx, but not for other document processors like Pelican; the updated implementation registers it unconditionally). [4cc19b9]
 
