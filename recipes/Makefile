@@ -1,6 +1,8 @@
 default: all
 
 PYTHON ?= python3 -Wd # -X tracemalloc
+
+PYTHONPATH ?=
 export PYTHONPATH:=$(realpath ../):$(PYTHONPATH)
 
 alectryon = $(PYTHON) ../alectryon.py --copy-assets hardlink --output-directory $(out_dir) --no-version-numbers --traceback
