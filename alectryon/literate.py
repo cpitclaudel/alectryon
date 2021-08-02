@@ -338,21 +338,41 @@ COQDOC_OPEN = re.compile(r"[(][*][*]\s[ \t]*")
 COQDOC_CLOSE = re.compile(r"[ \t]*[*]+[)]\Z")
 
 DEFAULT_HEADER = ".. coq::"
-DIRECTIVE = re.compile(r"([ \t]*)([.][.] coq::.*)?")
+INDENT = re.compile(r"(?P<indent>[ \t]*)")
+COQ_DIRECTIVE = re.compile(r"(?P<indent>[ \t]*)([.][.] coq::.*)")
 
-Lit = namedtuple("Lit", "lines directive indent")
+Lit = namedtuple("Lit", "lines directive_lines indent")
 CodeBlock = namedtuple("CodeBlock", "lines indent")
+
+def _last_coq_directive(lines):
+    directive = deque()
+    expected_coq_indent = float("+inf")
+    while lines:
+        line = lines.pop()
+        directive.appendleft(line)
+        indent = measure_indentation(line)
+        m = line.match(COQ_DIRECTIVE)
+        if m:
+            if indent <= expected_coq_indent:
+                return lines, m, directive
+            break
+        if not line.isspace():
+            expected_coq_indent = min(expected_coq_indent, indent - 3)
+            if expected_coq_indent < 0:
+                break # No need to keep looping
+    return lines + directive, None, None
 
 def lit(lines, indent):
     strip_deque(lines)
-    m = lines and lines[-1].match(DIRECTIVE)
-    indent, directive = m.groups() if m else (indent, None)
-    if directive:
-        directive = lines.pop()
+    lines, m, directive_lines = _last_coq_directive(lines)
+    if directive_lines:
+        indent = m.group("indent")
         strip_deque(lines)
     else:
-        directive = indent + DEFAULT_HEADER
-    return Lit(lines, directive=directive, indent=indent)
+        if lines:
+            indent = lines[-1].match(INDENT).group("indent")
+        directive_lines = [indent + DEFAULT_HEADER]
+    return Lit(lines, directive_lines=directive_lines, indent=indent)
 
 def number_lines(span, start):
     lines = span.split("\n")
@@ -360,12 +380,12 @@ def number_lines(span, start):
     return start + len(lines) - 1, d
 
 def gen_rst(spans):
-    linum, indent, prefix = 0, "", DEFAULT_HEADER
+    linum, indent, prefix = 0, "", [DEFAULT_HEADER]
     for span in spans:
         if isinstance(span, Comment):
             linum, lines = number_lines(span.v.trim(LIT_OPEN, LIT_CLOSE), linum)
             litspan = lit(lines, indent)
-            indent, prefix = litspan.indent, litspan.directive
+            indent, prefix = litspan.indent, litspan.directive_lines
             if litspan.lines:
                 yield from (replace(l, UNQUOTE_PAIRS) for l in litspan.lines)
                 yield ""
@@ -375,7 +395,7 @@ def gen_rst(spans):
             for l in lines:
                 l.parts.insert(0, indent + "   ")
             if lines:
-                yield prefix
+                yield from prefix
                 yield ""
                 yield from lines
                 yield ""
@@ -399,6 +419,40 @@ def coq2rst_lines(coq):
     return gen_rst(coq_partition_literate(coq))
 
 def coq2rst(coq):
+    """Translate a fragment of Coq code to reST.
+
+    >>> print(coq2rst('''
+    ... (*|
+    ... Example:
+    ... |*)
+    ...
+    ... Goal True.
+    ...
+    ... (*|
+    ... Second example:
+    ...
+    ... .. coq::
+    ...    :name:
+    ...       snd
+    ... |*)
+    ...
+    ... exact I. Qed.
+    ... '''))
+    Example:
+    <BLANKLINE>
+    .. coq::
+    <BLANKLINE>
+       Goal True.
+    <BLANKLINE>
+    Second example:
+    <BLANKLINE>
+    .. coq::
+       :name:
+          snd
+    <BLANKLINE>
+       exact I. Qed.
+    <BLANKLINE>
+    """
     return join_lines(coq2rst_lines(coq))
 
 def coq2rst_marked(coq, point, marker):
@@ -417,31 +471,68 @@ def coq2rst_marked(coq, point, marker):
 # note that it detects *all* ‘.. coq::’ blocks, including quoted ones.
 
 COQ_BLOCK = re.compile(r"""
-^(?P<indent>[ \t]*)[.][.][ ]coq::.*
+(?P<directive>
+ ^(?P<indent>[ \t]*)
+  [.][.][ ]coq::.*
+  (?P<options>
+   (?:\n
+     (?P=indent)[ ][ ][ ] [ \t]*[^ \t].*$)*))
 (?P<body>
- (?:\n
-    (?:[ \t]*\n)*
-    (?P=indent)[ ][ ][ ].*$)*)
+   (?:\n
+     (?:[ \t]*\n)*
+     (?P=indent)[ ][ ][ ] .*$)*)
 """, re.VERBOSE | re.MULTILINE)
 
 def rst_partition(s):
+    """Identify ``.. coq::`` blocks in reST sources.
+
+    >>> import black
+    >>> print(black.format_str(repr(list(rst_partition('''\\
+    ... .. coq::
+    ...
+    ...      Goal True.
+    ...        exact I. Qed.\\
+    ... '''))), mode=black.FileMode()))
+    [
+        Lit(
+            lines=deque([Line(num=0, parts=[""])]),
+            directive_lines=deque([Line(num=0, parts=[".. coq::"])]),
+            indent=0,
+        ),
+        CodeBlock(
+            lines=deque(
+                [
+                    Line(num=0, parts=[""]),
+                    Line(num=1, parts=[""]),
+                    Line(num=2, parts=["     Goal True."]),
+                    Line(num=3, parts=["       exact I. Qed."]),
+                ]
+            ),
+            indent=0,
+        ),
+    ]
+    <BLANKLINE>
+    """
     beg, linum = 0, 0
     for m in COQ_BLOCK.finditer(s):
         indent = len(m.group("indent"))
         rst = StringView(s, beg, m.start())
-        block = StringView(s, *m.span())
+        directive = StringView(s, *m.span('directive'))
+        body = StringView(s, *m.span('body'))
 
         linum, rst_lines = number_lines(rst, linum)
-        linum, block_lines = number_lines(block, linum)
-        directive = block_lines.popleft()
+        linum, directive_lines = number_lines(directive, linum)
+        linum, body_lines = number_lines(body, linum)
 
-        yield Lit(rst_lines, directive=directive, indent=indent)
-        yield CodeBlock(block_lines, indent=indent)
+        # body_lines.popleft() # Discard initial blank
+
+        yield Lit(rst_lines, directive_lines=directive_lines, indent=indent)
+        yield CodeBlock(body_lines, indent=indent)
         beg = m.end()
     if beg < len(s):
         rst = StringView(s, beg, len(s))
         linum, lines = number_lines(rst, linum)
-        yield Lit(lines, directive=None, indent=None)
+        yield Lit(lines, directive_lines=None, indent=None)
 
 # Conversion
 # ----------
@@ -451,29 +542,34 @@ def measure_indentation(line):
     m = line.match(INDENTATION_RE)
     return m.end() - m.start()
 
+def redundant_directive(directive_lines, directive_indent, last_indent):
+    return (
+        directive_lines and
+        len(directive_lines) == 1 and
+        str(directive_lines[0]).strip() == DEFAULT_HEADER
+        and directive_indent == last_indent
+    )
+
 def trim_rst_block(block, last_indent, keep_empty):
     strip_deque(block.lines)
-    directive_indent = block.indent # Stored here for convenience
     last_indent = measure_indentation(block.lines[-1]) if block.lines else last_indent
 
-    directive = block.directive
-    keep_empty = keep_empty and directive is not None
-    if (directive
-        and str(directive).strip() == DEFAULT_HEADER
-        and directive_indent == last_indent):
-        directive = None
+    directive_lines = block.directive_lines
+    keep_empty = keep_empty and directive_lines
+    if redundant_directive(directive_lines, block.indent, last_indent):
+        directive_lines = None
 
-    if not block.lines and not directive:
+    if not block.lines and not directive_lines:
         if keep_empty:
             yield "(*||*)"
             yield ""
     else:
         yield "(*|"
         yield from (replace(l, QUOTE_PAIRS) for l in block.lines)
-        if directive:
+        if directive_lines:
             if block.lines:
                 yield ""
-            yield directive
+            yield from directive_lines
         yield "|*)"
         yield ""
 
@@ -497,6 +593,40 @@ def rst2coq_lines(rst):
     return gen_coq(rst_partition(rst))
 
 def rst2coq(rst):
+    """Translate a fragment of reST code to Coq.
+
+    >>> print(rst2coq('''
+    ... Example:
+    ...
+    ... .. coq::
+    ...
+    ...    Goal True.
+    ...
+    ... Second example:
+    ...
+    ... .. coq::
+    ...    :name:
+    ...       snd
+    ...
+    ...    exact I. Qed.
+    ... '''))
+    (*|
+    Example:
+    |*)
+    <BLANKLINE>
+    Goal True.
+    <BLANKLINE>
+    (*|
+    Second example:
+    <BLANKLINE>
+    .. coq::
+       :name:
+          snd
+    |*)
+    <BLANKLINE>
+    exact I. Qed.
+    <BLANKLINE>
+    """
     return join_lines(rst2coq_lines(rst))
 
 def rst2coq_marked(rst, point, marker):
@@ -544,11 +674,6 @@ def main():
         with open(args.input) as fstream:
             contents = fstream.read()
     sys.stdout.write(args.fn(contents))
-
-def run_doctest():
-    import sys
-    import doctest
-    doctest.debug(sys.modules.get('__main__'), "__main__.partition", pm=True)
 
 if __name__ == '__main__':
     main()
