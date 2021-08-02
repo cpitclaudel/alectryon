@@ -338,7 +338,7 @@ COQDOC_OPEN = re.compile(r"[(][*][*]\s[ \t]*")
 COQDOC_CLOSE = re.compile(r"[ \t]*[*]+[)]\Z")
 
 DEFAULT_HEADER = ".. coq::"
-INDENT = re.compile(r"(?P<indent>[ \t]*)")
+INDENT = re.compile(r"(?P<indent>[ ]*)")
 COQ_DIRECTIVE = re.compile(r"(?P<indent>[ \t]*)([.][.] coq::.*)")
 
 Lit = namedtuple("Lit", "lines directive_lines indent")
@@ -472,7 +472,7 @@ def coq2rst_marked(coq, point, marker):
 
 COQ_BLOCK = re.compile(r"""
 (?P<directive>
- ^(?P<indent>[ \t]*)
+ ^(?P<indent>[ ]*)
   [.][.][ ]coq::.*
   (?P<options>
    (?:\n
