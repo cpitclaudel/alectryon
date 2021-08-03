@@ -158,7 +158,7 @@ pre.code .ln {
 }
 pre.code, code {
     border-style: none;
-    padding: 1em 0;
+    /* ! padding: 1em 0; */ /* Removed because that large hitbox bleeds over links on other lines */
 }
 pre.code .comment, code .comment { 
     color: #888;
