@@ -18,7 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections import defaultdict
 from contextlib import contextmanager
 from functools import wraps
 from os import path
@@ -26,7 +25,7 @@ import pickle
 
 from dominate import tags
 
-from .core import Text, RichSentence, Goals, Messages
+from .core import b16, Gensym, Text, RichSentence, Goals, Messages
 from . import transforms, GENERATOR
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
@@ -46,18 +45,6 @@ class ASSETS:
 
     IBM_PLEX_CDN = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />' # pylint: disable=line-too-long
     FIRA_CODE_CDN = '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />' # pylint: disable=line-too-long
-
-def b16(i):
-    return hex(i)[len("0x"):]
-
-class Gensym():
-    def __init__(self, stem):
-        self.stem = stem
-        self.counters = defaultdict(lambda: -1)
-
-    def __call__(self, prefix):
-        self.counters[prefix] += 1
-        return self.stem + prefix + b16(self.counters[prefix])
 
 # pylint: disable=line-too-long
 HEADER = (

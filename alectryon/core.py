@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from collections.abc import Iterable
 from textwrap import indent
 from sys import stderr
@@ -50,6 +50,18 @@ Text = namedtuple("Text", "contents")
 Goals = namedtuple("Goals", "goals")
 Messages = namedtuple("Messages", "messages")
 RichSentence = namedtuple("RichSentence", "contents outputs annots prefixes suffixes")
+
+def b16(i):
+    return hex(i)[len("0x"):]
+
+class Gensym():
+    def __init__(self, stem):
+        self.stem = stem
+        self.counters = defaultdict(lambda: -1)
+
+    def __call__(self, prefix):
+        self.counters[prefix] += 1
+        return self.stem + prefix + b16(self.counters[prefix])
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
