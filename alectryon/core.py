@@ -47,9 +47,26 @@ Message = namedtuple("Message", "contents")
 Sentence = namedtuple("Sentence", "contents messages goals")
 Text = namedtuple("Text", "contents")
 
+class Enriched():
+    __slots__ = ()
+    def __new__(cls, *args, **kwargs):
+        return super().__new__(cls, *args, **{"ids": [], "labels":[], **kwargs})
+
+def _enrich(nt):
+    # LATER: Use dataclass + multiple inheritance; change `ids` and `labels` to
+    # mutable `id` and `label` fields.
+    name, fields = "Rich" + nt.__name__, nt._fields + ("ids", "labels")
+    # Using ``type`` this way ensures compatibility with pickling
+    return type(name, (Enriched, namedtuple(name, fields)), {})
+
 Goals = namedtuple("Goals", "goals")
 Messages = namedtuple("Messages", "messages")
-RichSentence = namedtuple("RichSentence", "contents outputs annots prefixes suffixes")
+
+RichHypothesis = _enrich(Hypothesis)
+RichGoal = _enrich(Goal)
+RichMessage = _enrich(Message)
+RichCode = _enrich(namedtuple("Code", "contents"))
+RichSentence = _enrich(namedtuple("Sentence", "contents outputs annots prefixes suffixes"))
 
 def b16(i):
     return hex(i)[len("0x"):]

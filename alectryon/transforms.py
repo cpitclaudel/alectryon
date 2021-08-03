@@ -24,7 +24,9 @@ import textwrap
 from copy import copy
 from collections import namedtuple
 from itertools import chain
-from .core import Text, Sentence, RichSentence, Goals, Messages
+from .core import Sentence, Text, \
+    RichHypothesis, RichGoal, RichMessage, RichCode, \
+    Goals, Messages, RichSentence
 
 class IOAnnots:
     def __init__(self, *annots):
@@ -85,12 +87,18 @@ class IOAnnots:
         return "IOAnnots(unfold={}, fails={}, filters={})".format(
             self.unfold, self.fails, self.filters)
 
+def _enrich_goal(g):
+    return RichGoal(g.name, RichCode(g.conclusion),
+                    [RichHypothesis(h.names, h.body, h.type)
+                     for h in g.hypotheses])
+
 def enrich_sentences(fragments):
     """Change each ``Sentence`` in `fragments` into an ``RichSentence``."""
     for fr in fragments:
         if isinstance(fr, Sentence):
             # Always add goals & messages; empty lists are filtered out later
-            outputs = [Messages(fr.messages), Goals(fr.goals)]
+            outputs = [Messages([RichMessage(m.contents) for m in fr.messages]),
+                       Goals([_enrich_goal(g) for g in fr.goals])]
             yield RichSentence(contents=fr.contents, outputs=outputs,
                                prefixes=[], suffixes=[], annots=IOAnnots())
         else:

@@ -92,7 +92,7 @@ class HtmlGenerator:
         self.minify, self.backrefs = minify, ({} if minify else None)
 
     @staticmethod
-    def gen_label(toggle, cls, *contents):
+    def gen_clickable(toggle, cls, *contents):
         if toggle:
             attrs = {"for": toggle["id"]} if toggle["id"] else {}
             return tags.label(*contents, cls=cls, **attrs)
@@ -110,6 +110,7 @@ class HtmlGenerator:
                 with tags.span(cls="hyp-type"):
                     tags.b(":")
                     tags.span(self.highlight(hyp.type))
+            self.gen_hrefs(hyp)
 
     @deduplicate(".goal-hyps")
     def gen_hyps(self, hyps):
@@ -119,12 +120,14 @@ class HtmlGenerator:
 
     @deduplicate(".goal-conclusion")
     def gen_ccl(self, conclusion):
-        tags.div(self.highlight(conclusion), cls="goal-conclusion")
+        with tags.div(self.highlight(conclusion.contents), cls="goal-conclusion"):
+            self.gen_hrefs(conclusion)
 
     @deduplicate(".alectryon-goal")
     def gen_goal(self, goal, toggle=None):
         """Serialize a goal to HTML."""
         with tags.blockquote(cls="alectryon-goal"):
+            self.gen_ids(goal.ids)
             if goal.hypotheses:
                 # Chrome doesn't support the ‘gap’ property in flex containers,
                 # so properly spacing hypotheses requires giving them margins
@@ -132,11 +135,12 @@ class HtmlGenerator:
                 # when the container is empty, so just omit the hypotheses if
                 # there are none.
                 self.gen_hyps(goal.hypotheses)
-            with self.gen_label(toggle, "goal-separator"):
+            with self.gen_clickable(toggle, "goal-separator"):
                 tags.hr()
                 if goal.name:
                     tags.span(goal.name, cls="goal-name")
-            return self.gen_ccl(goal.conclusion)
+                self.gen_href_labels(goal.labels)
+            self.gen_ccl(goal.conclusion)
 
     def gen_checkbox(self, checked, cls):
         if self.minify:
@@ -164,7 +168,13 @@ class HtmlGenerator:
 
     def gen_input(self, fr, toggle):
         cls = "alectryon-input" + (" alectryon-failed" if fr.annots.fails else "")
-        self.gen_label(toggle, cls, self.highlight(fr.contents))
+        with self.gen_clickable(toggle, cls, self.highlight(fr.contents)):
+            self.gen_hrefs(fr)
+
+    def gen_message(self, message):
+        with tags.blockquote(self.highlight(message.contents),
+                             cls="alectryon-message"):
+            self.gen_hrefs(message)
 
     @deduplicate(".alectryon-output")
     def gen_output(self, fr):
@@ -177,8 +187,7 @@ class HtmlGenerator:
                     assert output.messages, "transforms.commit_io_annotations"
                     with tags.div(cls="alectryon-messages"):
                         for message in output.messages:
-                            tags.blockquote(self.highlight(message.contents),
-                                            cls="alectryon-message")
+                            self.gen_message(message)
                 if isinstance(output, Goals):
                     assert output.goals, "transforms.commit_io_annotations"
                     self.gen_goals(output.goals)
@@ -212,7 +221,17 @@ class HtmlGenerator:
         if ids:
             tags.attr(id=ids[0])
         for name in ids[1:]:
-            tags.span(id=name)
+            tags.span(id=name) # FIXME insert at beg of parent
+
+    @classmethod
+    def gen_hrefs(cls, nt):
+        cls.gen_ids(nt.ids)
+        cls.gen_href_labels(nt.labels)
+
+    @staticmethod
+    def gen_href_labels(labels):
+        for lbl in labels:
+            tags.span(lbl, cls="alectryon-href-target")
 
     def gen_fragments(self, fragments, ids=(), classes=()):
         """Serialize a list of `fragments` to HTML."""

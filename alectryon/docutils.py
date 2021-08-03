@@ -66,7 +66,7 @@ side, and a doctree-resolved event on the Sphinx side.
 
 import re
 import os.path
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 from importlib import import_module
 
 import docutils
@@ -80,7 +80,7 @@ from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import transforms, html, latex
-from .core import annotate, SerAPI
+from .core import RichSentence, Gensym, annotate, SerAPI
 from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
@@ -96,6 +96,9 @@ class alectryon_pending(nodes.pending):
     pass
 
 class alectryon_pending_toggle(nodes.pending):
+    pass
+
+class alectryon_pending_href(nodes.pending):
     pass
 
 class alectryon_pending_io(nodes.pending):
@@ -135,6 +138,10 @@ def _alectryon_state(document):
     if st is None:
         st = document.alectryon_state = AlectryonState(document)
     return st
+
+def _gensym_stem(document, suffix=""):
+    source = document.get('source', "")
+    return nodes.make_id(os.path.basename(source)) + (source and suffix)
 
 class Config:
     def __init__(self, document):
@@ -293,6 +300,150 @@ class AlectryonTransform(OneTimeTransform):
         self.apply_coq()
         self.apply_toggle()
 
+class CounterStyle(namedtuple("CounterStyle", "start digits")):
+    def fmt(self, num):
+        raise NotImplementedError
+
+    @staticmethod
+    def of_str(style):
+        digits = tuple(style.split())
+        if len(digits) < 2:
+            raise ValueError("Invalid counter style: {}".format(style))
+        if digits[0] == "_":
+            return Alphabetic(0, digits[1:])
+        return Numeric(1, digits)
+
+class Alphabetic(CounterStyle):
+    def fmt(self, num):
+        s, num = "", num + 1 + self.start
+        while num:
+            num -= 1
+            num, rem = divmod(num, len(self.digits))
+            s = self.digits[rem] + s
+        return s
+
+class Numeric(CounterStyle):
+    def fmt(self, num):
+        s, num = "", num + self.start
+        while num:
+            num, rem = divmod(num, len(self.digits))
+            s = self.digits[rem] + s
+        return s or self.digits[0]
+
+class RefCounter:
+    def __init__(self):
+        self.counters = defaultdict(lambda: -1)
+
+    def next(self, style):
+        num = self.counters[style] = self.counters[style] + 1
+        return style.fmt(num)
+
+class HrefError(ValueError):
+    pass
+
+class AlectryonHrefTransform(OneTimeTransform):
+    """Convert Alectryon input/output pairs into HTML or LaTeX.
+
+    This transform is triggered by a ``pending`` node added by
+    the ``:href:`` role.
+    """
+    default_priority = 995
+
+    def _warn(self, node, msg):
+        warn = self.document.reporter.warning(msg, base_node=node, line=node.line)
+        warnid = self.document.set_id(warn)
+        pb = nodes.problematic(node.rawsource, node.rawsource, refid=warnid)
+        pbid = self.document.set_id(pb)
+        warn.add_backref(pbid)
+        node.replace_self(pb)
+
+    @staticmethod
+    def _find_sentence(fragments, needle):
+        for fr in fragments:
+            if isinstance(fr, RichSentence) and needle in fr.contents:
+                return fr
+        # LATER: Add a way to name sentences to make them easier to select
+        raise HrefError("No sentence matches '{}'".format(needle))
+
+    @staticmethod
+    def _find_named(kind, items, needle):
+        for item in items:
+            if needle in getattr(item, "names", [getattr(item, "name", None)]):
+                return item
+        raise HrefError("No such {}: '{}'".format(kind, needle))
+
+    @classmethod
+    def _find_goal(cls, goals, needle):
+        try:
+            return goals[int(needle) - 1]
+        except IndexError:
+            pass
+        return cls._find_named("goal", goals, needle)
+
+    @classmethod
+    def _find_hyp(cls, hyps, name, needle):
+        assert bool(name) ^ bool(needle)
+        if name:
+            return cls._find_named("hypothesis", hyps, name)
+        for h in hyps:
+            if needle in h.type or (h.body and needle in h.body):
+                return h
+        raise HrefError("No hypothesis matches '{}'".format(needle))
+
+    @classmethod
+    def _find_href_target(cls, node, ios, last_io):
+        query = node.details["query"]
+
+        root = query.get("root")
+        io = ios.get(root) if root else last_io
+        if io is None:
+            raise HrefError("Reference to unknown Alectryon block")
+
+        sentence = cls._find_sentence(io.details["fragments"], query["sentence"])
+        goals = [g for gs in transforms.fragment_goal_sets(sentence) for g in gs]
+
+        ccl, hyp, goal_name = query.get("ccl"), query.get("hyp"), query.get("goal_name")
+        if ccl or hyp or goal_name:
+            goal = cls._find_goal(goals, goal_name or "1")
+            if ccl:
+                return goal.conclusion
+            if hyp:
+                return cls._find_hyp(
+                    goal.hypotheses, query.get("hyp_name"), query.get("hyp_body"))
+            if goal_name:
+                return goal
+        return sentence
+
+    def replace_one_href(self, gensym, refcounter, node, ios, last_io):
+        target = self._find_href_target(node, ios, last_io)
+        if not target.ids:
+            id = nodes.make_id(node.details["target"])
+            target.ids.append(gensym(id))
+        if not target.labels:
+            style = node.details["counter-style"]
+            target.labels.append(node.details["title"] or refcounter.next(style))
+        # print(node.rawsource, "→\n  ", node.details["query"], "→\n  ", target)
+        lbl, refid = target.labels[-1], target.ids[-1]
+        ref = nodes.reference(node.rawsource, lbl, classes=[], refid=refid)
+        node.replace_self(ref)
+        ref["classes"].append("alectryon-href")
+
+    def _apply(self, **_kwargs):
+        ios = {id: node
+               for node in self.document.traverse(alectryon_pending_io)
+               for id in node.get("ids", ())}
+        refcounter, gensym = RefCounter(), Gensym(_gensym_stem(self.document, "-"))
+        io_or_href = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_href))
+        for node in self.document.traverse(io_or_href):
+            if isinstance(node, alectryon_pending_io):
+                last_io = node
+            elif isinstance(node, alectryon_pending_href):
+                try:
+                    self.replace_one_href(gensym, refcounter, node, ios, last_io)
+                except HrefError as e:
+                    msg = "Error in '{}': {}".format(node.rawsource, e)
+                    self._warn(node, msg)
+
 class AlectryonPostTransform(OneTimeTransform):
     """Convert Alectryon input/output pairs into HTML or LaTeX.
 
@@ -301,23 +452,17 @@ class AlectryonPostTransform(OneTimeTransform):
     """
     default_priority = 996
 
-    @staticmethod
-    def document_id(document):
-        source = document.get('source', "")
-        return nodes.make_id(os.path.basename(source))
-
     def init_generator(self):
         formats = set(self.document.transformer.components['writer'].supported)
         if 'html' in formats:
-            gensym_stem = self.document_id(self.document)
             return "html", html.HtmlGenerator(
-                highlight_html, gensym_stem, HTML_MINIFICATION)
+                highlight_html, _gensym_stem(self.document), HTML_MINIFICATION)
         if {'latex', 'xelatex', 'lualatex'} & formats:
             return "latex", latex.LatexGenerator(highlight_latex)
         raise NotImplementedError("Unknown output format")
 
     @staticmethod
-    def replace_one(node, fmt, generator):
+    def replace_one_io(node, fmt, generator):
         fragments, contents = node.details["fragments"], node.details["contents"]
         ids = node.attributes.get("ids", ())
         classes = node.attributes.pop("classes", ()) # visit_raw adds a <div> if it finds classes
@@ -328,7 +473,8 @@ class AlectryonPostTransform(OneTimeTransform):
         fmt, generator = self.init_generator()
         with added_tokens(_alectryon_state(self.document).config.tokens):
             for node in self.document.traverse(alectryon_pending_io):
-                self.replace_one(node, fmt, generator)
+                self.replace_one_io(node, fmt, generator)
+
 
 # Directives
 # ----------
@@ -462,10 +608,15 @@ COQ_IDENT_DB_URLS = [
     ("Coq", "https://coq.inria.fr/library/$modpath.html#$ident")
 ]
 
-def coq_id_role(# pylint: disable=dangerous-default-value,unused-argument
-        role, rawtext, text, lineno, inliner, options={}, content=[]):
+def _parse_ref(text):
     mid = COQ_ID_RE.match(text)
     title, target = mid.group("title"), mid.group("target")
+    return title, target
+
+def coq_id_role(# pylint: disable=dangerous-default-value,unused-argument
+        role, rawtext, text, lineno, inliner, options={}, content=[]):
+    title, target = _parse_ref(text)
+
     implicit = target is None
     if implicit:
         target = title
@@ -514,6 +665,61 @@ def coq_id_role(# pylint: disable=dangerous-default-value,unused-argument
 
 coq_id_role.name = "coqid"
 coq_id_role.options = {'url': directives.unchanged}
+
+HIGHLIGHT_REF_TARGET_RE = re.compile(r"""
+          (?:[#](?P<root>.+?))?
+             [.]s[(](?P<sentence>.+?)[)]
+          (?:[.]g[#](?P<goal_name>[^.]+?))?
+  (?:(?P<ccl>[.]ccl)
+    |(?P<hyp>[.]h
+              (?:[#](?P<hyp_name>[^.]+?)
+                |[(](?P<hyp_body>.+?)[)])))?
+  \Z
+""", re.VERBOSE)
+
+COUNTER_STYLES = {
+    'decimal': '0 1 2 3 4 5 6 7 8 9',
+    'lower-alpha': '_ a b c d e f g h i j k l m n o p q r s t u v w x y z',
+    'upper-alpha': '_ A B C D E F G H I J K L M N O P Q R S T U V W X Y Z',
+    'lower-greek': '_ α β γ δ ε ζ η θ ι κ λ μ ν ξ ο π ρ σ τ υ φ χ ψ ω',
+    'upper-greek': '_ Α Β Γ Δ Ε Ζ Η Θ Ι Κ Λ Μ Ν Ξ Ο Π Ρ Σ Τ Υ Φ Χ Ψ Ω',
+}
+DEFAULT_COUNTER_STYLE = CounterStyle.of_str(COUNTER_STYLES['decimal'])
+
+def highlight_ref_role(# pylint: disable=dangerous-default-value,unused-argument
+        role, rawtext, text, lineno, inliner, options={}, content=[]):
+    title, target = _parse_ref(text)
+    if target is None:
+        title, target = None, title
+
+    m = HIGHLIGHT_REF_TARGET_RE.match(target)
+    if target[0] in "#." and not m:
+        MSG = "Cannot parse ``:href:`` target ``{}``.".format(target)
+        msg = inliner.reporter.error(MSG, line=lineno)
+        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+
+    cs = options.pop("counter-style", None) or DEFAULT_COUNTER_STYLE
+    details = {"title": title,
+               "target": target,
+               "query": m.groupdict() if m else {"sentence": target},
+               "counter-style": cs }
+
+    roles.set_classes(options)
+    node = alectryon_pending_href(
+        AlectryonHrefTransform, details, rawtext, **options)
+    set_line(node, lineno, inliner.reporter)
+    inliner.document.note_pending(node)
+    return [node], []
+
+def _opt_counter_style(arg):
+    if " " not in arg:
+        arg = COUNTER_STYLES[directives.choice(arg, list(COUNTER_STYLES))]
+    return CounterStyle.of_str(arg)
+
+highlight_ref_role.name = "href"
+highlight_ref_role.options = {
+    'counter-style': _opt_counter_style
+}
 
 # Error printer
 # -------------
@@ -784,12 +990,14 @@ def get_pipeline(frontend, backend, dialect):
 NODES = [alectryon_pending,
          alectryon_pending_toggle,
          alectryon_pending_io]
-TRANSFORMS = [AlectryonTransform,
+TRANSFORMS = [ActivateMathJaxTransform,
+              AlectryonTransform,
+              AlectryonHrefTransform,
               AlectryonPostTransform]
 DIRECTIVES = [CoqDirective,
               AlectryonToggleDirective,
               ExperimentalExerciseDirective]
-ROLES = [alectryon_bubble, coq_code_role, coq_id_role]
+ROLES = [alectryon_bubble, coq_code_role, coq_id_role, highlight_ref_role]
 
 def register():
     """Tell Docutils about our roles and directives."""
