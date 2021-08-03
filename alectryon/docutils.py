@@ -39,7 +39,7 @@ A checkbox and an accompanying label (with classes ``alectryon-toggle`` and
 once is automatically added right before the document's first paragraph.  You
 can change its location by inserting an explicit ``.. alectryon-toggle::``
 directive in your document, and you can ommit it entirely by setting
-``AlectryonTransform.insert_toggle`` to ``False`` (to make styling easier, all
+``AlectryonTransform.auto_toggle`` to ``False`` (to make styling easier, all
 contents following the checkbox are wrapped in a container with class
 ``alectryon-container``).
 
