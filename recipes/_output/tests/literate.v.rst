@@ -4,7 +4,7 @@
 
 To compile::
 
-   $ alectryon literate.v --backend rst # Coq → reST; produces ‘literate.rst’
+   $ alectryon literate.v --backend rst # Coq → reST; produces ‘literate.v.rst’
 
 .. coq::
 

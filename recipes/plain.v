@@ -8,7 +8,7 @@
 
    Conversion from plain Coq to LaTeX isn't supported yet (use coq+rst):
 
-      # alectryon --frontend coq --backend latex plain.v # Coq → HTML; produces ‘plain.v.tex’ *)
+      # alectryon --frontend coq --backend latex plain.v # Coq → LaTeX; produces ‘plain.v.tex’ *)
 
 Require Import List.
 
