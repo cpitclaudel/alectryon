@@ -6,8 +6,8 @@ from pathlib import Path
 
 CMD_RE = re.compile(r"""
     (?:^[ ]+(?=alectryon)|To[ ]compile:|[$])[ ]*(?P<cmd>[^\s]+)[ ]+
-    (?P<args>.*?)\s+ # Allows newline
-    [#][ ]+
+    (?P<args>(?:.|\\\n)*?) # Allow escaped newlines in arguments
+    \s+[#][ ]+ # Allows newline before "#"
     (?P<comment>.+?)[;,][ ]+produces[ ]+
     ‘(?P<out>.+?)’
 """, re.VERBOSE | re.MULTILINE)
@@ -30,11 +30,12 @@ def escape(s):
 def gen_rule(fpath, outdir, params):
     params = { k: escape(v) for (k, v) in params.items() }
 
-    params["cmd"] = params["cmd"] \
-        .replace("alectryon", "$(alectryon)")
+    # Remove escaped newlines
+    params["args"] = re.sub(r"\s+\\\n\s+", " ", params["args"])
 
     params["cmd"] = (params["cmd"] + " " + params["args"]) \
-        .replace("python", "$(PYTHON)") \
+        .replace("alectryon ", "$(alectryon) ") \
+        .replace("python ", "$(PYTHON) ") \
         .replace(params["out"], "$@") \
         .replace(fpath.name, "$<")
 
