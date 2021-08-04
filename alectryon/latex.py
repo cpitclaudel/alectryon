@@ -175,19 +175,27 @@ class LatexGenerator:
     def highlight(self, s):
         return [Raw(self.highlighter(s, prefix="", suffix=""))]
 
+    def gen_hyp(self, hyp):
+        names = PlainText(", ".join(hyp.names))
+        hbody = self.highlight(hyp.body) if hyp.body else []
+        with macros.hyp(args=[names], optargs=hbody, verbatim=True):
+            self.highlight(hyp.type)
+            self.gen_hrefs(hyp)
+
     def gen_goal(self, goal):
         """Serialize a goal to LaTeX."""
         with environments.goal():
+            self.gen_ids(goal.ids)
             with environments.hyps():
                 for hyp in goal.hypotheses:
-                    names = PlainText(", ".join(hyp.names))
-                    htype = self.highlight(hyp.type)
-                    hbody = self.highlight(hyp.body) if hyp.body else []
-                    macros.hyp(*htype, args=[names], optargs=hbody, verbatim=True)
+                    self.gen_hyp(hyp)
             with macros.infrule():
                 if goal.name:
                     macros.gid(goal.name)
-            environments.conclusion(*self.highlight(goal.conclusion), verbatim=True)
+                self.gen_href_labels(goal.labels)
+            with environments.conclusion(verbatim=True):
+                self.highlight(goal.conclusion.contents)
+                self.gen_hrefs(goal.conclusion)
 
     def gen_goals(self, first, more):
         self.gen_goal(first)
@@ -200,20 +208,26 @@ class LatexGenerator:
     def gen_whitespace(wsps):
         # Unlike in HTML, we don't need a separate wsp environment
         for wsp in wsps:
-            yield PlainText(wsp)
+            PlainText(wsp)
 
     def gen_input(self, fr):
-        contents = []
-        contents.extend(self.gen_whitespace(fr.prefixes))
-        contents.extend(self.highlight(fr.contents))
-        # In HTML this space is hidden dynamically when the outputs are visible;
-        # in LaTeX we hide it statically.  Hiding these spaces makes our lives
-        # easier because we can unconditionally add a line break before output
-        # blocks; otherwise we'd have to handle sentences that end the line
-        # differently from sentences in the middle of a line.
-        if not fr.outputs:
-            contents.extend(self.gen_whitespace(fr.suffixes))
-        environments.input(*contents, verbatim=True)
+        with environments.input(verbatim=True):
+            self.gen_whitespace(fr.prefixes)
+            self.highlight(fr.contents)
+            # In HTML this space is hidden dynamically when the outputs are
+            # visible; in LaTeX we hide it statically.  Hiding these spaces
+            # makes our lives easier because we can unconditionally add a line
+            # break before output blocks; otherwise we'd have to handle
+            # sentences that end the line differently from sentences in the
+            # middle of a line.
+            if not fr.outputs:
+                self.gen_whitespace(fr.suffixes)
+            self.gen_hrefs(fr)
+
+    def gen_message(self, msg):
+        with environments.message(verbatim=True):
+            self.highlight(msg.contents)
+            self.gen_hrefs(msg)
 
     def gen_output(self, fr):
         with environments.output():
@@ -221,8 +235,8 @@ class LatexGenerator:
                 if isinstance(output, Messages):
                     assert output.messages, "transforms.commit_io_annotations"
                     with environments.messages():
-                        for message in output.messages:
-                            environments.message(*self.highlight(message.contents), verbatim=True)
+                        for msg in output.messages:
+                            self.gen_message(msg)
                 if isinstance(output, Goals):
                     assert output.goals, "transforms.commit_io_annotations"
                     with environments.goals():
@@ -243,13 +257,27 @@ class LatexGenerator:
             assert isinstance(fr, RichSentence)
             self.gen_sentence(fr)
 
+    @staticmethod
+    def gen_ids(ids):
+        for name in ids:
+            macros.label(Raw(name)) # FIXME insert at beginning of parent
+
+    @classmethod
+    def gen_hrefs(cls, nt):
+        cls.gen_ids(nt.ids)
+        cls.gen_href_labels(nt.labels)
+
+    @staticmethod
+    def gen_href_labels(labels):
+        for lbl in labels:
+            macros.hreftarget(Raw(lbl))
+
     def gen_fragments(self, fragments, ids=(), classes=()): # pylint: disable=unused-argument
         """Serialize a list of `fragments` to LaTeX."""
         # FIXME: classes. optargs=[",".join(classes)] if classes else [] ?
         with environments.alectryon() as env:
             Raw("% Generator: {}".format(GENERATOR))
-            for name in ids:
-                macros.label(name)
+            self.gen_ids(ids)
             # fragments = transforms.merge_fragments_by_line(fragments) # FIXME
             fragments = transforms.group_whitespace_with_code(fragments)
             fragments = transforms.commit_io_annotations(fragments)#, discard_folded=True)

@@ -197,6 +197,10 @@
 \alectryon@newenvironment{conclusion}{\alectryon@strut{}\alectryon@raggedright}{\par}
   {}
 
+\newcommand*{\alectryon@hreftarget}[1]
+  {\alectryon@nobreakspace%
+   {\setlength{\fboxsep}{1pt}\fbox{\footnotesize\textbf{#1}}}}
+
 \newcommand{\alectryon@copymacro}[1]
   {\expandafter\def\csname #1\endcsname{\csname alectryon@#1\endcsname}}
 \newcommand{\alectryon@copyenvironment}[1]
@@ -217,6 +221,7 @@
    \alectryon@copyenvironment{messages}
    \alectryon@copyenvironment{message}
    \alectryon@copyenvironment{conclusion}
+   \alectryon@copymacro{hreftarget}
    \alectryon@copymacro{infrule}
    \alectryon@copymacro{gid}
    \alectryon@copymacro{hypn}
