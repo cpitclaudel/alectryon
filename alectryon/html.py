@@ -139,7 +139,7 @@ class HtmlGenerator:
                 tags.hr()
                 if goal.name:
                     tags.span(goal.name, cls="goal-name")
-                self.gen_href_labels(goal.labels)
+                self.gen_href_markers(goal.markers)
             self.gen_ccl(goal.conclusion)
 
     def gen_checkbox(self, checked, cls):
@@ -226,12 +226,12 @@ class HtmlGenerator:
     @classmethod
     def gen_hrefs(cls, nt):
         cls.gen_ids(nt.ids)
-        cls.gen_href_labels(nt.labels)
+        cls.gen_href_markers(nt.markers)
 
     @staticmethod
-    def gen_href_labels(labels):
-        for lbl in labels:
-            tags.span(lbl, cls="alectryon-href-target")
+    def gen_href_markers(markers):
+        for marker in markers:
+            tags.span(marker, cls="alectryon-href-marker")
 
     def gen_fragments(self, fragments, ids=(), classes=()):
         """Serialize a list of `fragments` to HTML."""

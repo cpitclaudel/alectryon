@@ -91,7 +91,7 @@ In any case, make an exception for comments:
 */
 
 .alectryon-href,
-.alectryon-href-target {
+.alectryon-href-marker {
     align-self: center;
     box-sizing: border-box;
     display: inline-block;
@@ -103,7 +103,7 @@ In any case, make an exception for comments:
     text-decoration: none;
 }
 
-.alectryon-io .alectryon-href-target {
+.alectryon-io .alectryon-href-marker {
     user-select: none;
     margin: -0.25em 0 -0.25em 0.5em;
 }
@@ -113,8 +113,8 @@ In any case, make an exception for comments:
     margin: -0.5em 0.25em;
 }
 
-.alectryon-goal:target .goal-separator .alectryon-href-target,
-:target > .alectryon-href-target {
+.alectryon-goal:target .goal-separator .alectryon-href-marker,
+:target > .alectryon-href-marker {
     animation: blink 0.2s step-start 0s 3 normal none;
     background-color: #fcaf3e;
     position: relative;

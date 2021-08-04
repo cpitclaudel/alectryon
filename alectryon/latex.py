@@ -192,7 +192,7 @@ class LatexGenerator:
             with macros.infrule():
                 if goal.name:
                     macros.gid(goal.name)
-                self.gen_href_labels(goal.labels)
+                self.gen_href_markers(goal.markers)
             with environments.conclusion(verbatim=True):
                 self.highlight(goal.conclusion.contents)
                 self.gen_hrefs(goal.conclusion)
@@ -265,12 +265,12 @@ class LatexGenerator:
     @classmethod
     def gen_hrefs(cls, nt):
         cls.gen_ids(nt.ids)
-        cls.gen_href_labels(nt.labels)
+        cls.gen_href_markers(nt.markers)
 
     @staticmethod
-    def gen_href_labels(labels):
-        for lbl in labels:
-            macros.hreftarget(Raw(lbl))
+    def gen_href_markers(markers):
+        for marker in markers:
+            macros.hrefmarker(Raw(marker))
 
     def gen_fragments(self, fragments, ids=(), classes=()): # pylint: disable=unused-argument
         """Serialize a list of `fragments` to LaTeX."""

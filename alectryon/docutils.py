@@ -419,12 +419,12 @@ class AlectryonHrefTransform(OneTimeTransform):
         if not target.ids:
             id = nodes.make_id(node.details["target"])
             target.ids.append(gensym(id))
-        if not target.labels:
+        if not target.markers:
             style = node.details["counter-style"]
-            target.labels.append(node.details["title"] or refcounter.next(style))
+            target.markers.append(node.details["title"] or refcounter.next(style))
         # print(node.rawsource, "→\n  ", node.details["query"], "→\n  ", target)
-        lbl, refid = target.labels[-1], target.ids[-1]
-        ref = nodes.reference(node.rawsource, lbl, classes=[], refid=refid)
+        marker, refid = target.markers[-1], target.ids[-1]
+        ref = nodes.reference(node.rawsource, marker, classes=[], refid=refid)
         node.replace_self(ref)
         ref["classes"].append("alectryon-href")
 
