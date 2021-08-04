@@ -8,7 +8,7 @@ Use the following command to compile this file with minification (in Sphinx' ``c
 
    alectryon --html-minification minification.rst # reST → HTML; produces ‘minification.html’
 
----
+-----
 
 Here is an example proof, written in a way that generates lots of redundant objects (for example, section variables appear in the proof context at every step of the proof):
 

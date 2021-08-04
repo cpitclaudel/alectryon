@@ -43,6 +43,12 @@
   \fi%
 }
 
+% transition (break, fancybreak, anonymous section)
+\providecommand*{\DUtransition}{%
+  \hspace*{\fill}\hrulefill\hspace*{\fill}
+  \vskip 0.5\baselineskip
+}
+
 % hyperlinks:
 \ifthenelse{\isundefined{\hypersetup}}{
   \usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
@@ -74,7 +80,8 @@ alectryon literate_coq.v -{}-backend rst
 \end{alltt}
 \end{quote}
 
--{}-{}-
+%___________________________________________________________________________
+\DUtransition
 
 Here's an \emph{inductive specification} of evenness:
 

@@ -11,7 +11,7 @@ Alectryon supports literate programs and documents (combinations of code and pro
    alectryon literate_coq.v --backend rst
      # Coq+reST → reST;  produces ‘literate_coq.v.rst’
 
----
+-----
 
 Here's an *inductive specification* of evenness:
 
