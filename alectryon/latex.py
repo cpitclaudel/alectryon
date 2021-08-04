@@ -260,7 +260,7 @@ class LatexGenerator:
     @staticmethod
     def gen_ids(ids):
         for name in ids:
-            macros.label(Raw(name)) # FIXME insert at beginning of parent
+            macros.hreflabel(Raw(name)) # FIXME insert at beginning of parent
 
     @classmethod
     def gen_hrefs(cls, nt):
