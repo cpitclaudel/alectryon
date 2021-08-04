@@ -102,6 +102,8 @@ Coq fragments are introduced with \texttt{.. coq::}:
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{k+kr}{forall}~\PY{n+nv}{y}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}
           \end{conclusion}
@@ -126,6 +128,8 @@ Coq fragments are introduced with \texttt{.. coq::}:
             \hyp{H}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}
           \end{conclusion}
@@ -144,6 +148,8 @@ Coq fragments are introduced with \texttt{.. coq::}:
               \sep
               \hyp{H1}{\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}
@@ -212,6 +218,8 @@ Coq fragments are introduced with \texttt{.. coq::}:
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
           \end{conclusion}
@@ -266,6 +274,8 @@ Description
             \hyp{x, y}{\PY{n}{nat}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{k+kr}{forall}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
           \end{conclusion}
@@ -296,6 +306,8 @@ Move the variables \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
           \end{conclusion}
@@ -308,6 +320,8 @@ Move the variables \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole
               \sep
               \hyp{IHy}{\PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{k+kr}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
@@ -346,6 +360,8 @@ Perform induction on \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUro
             \hyp{Hr}{\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
           \end{conclusion}
@@ -364,6 +380,8 @@ Perform induction on \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUro
               \sep
               \hyp{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
@@ -401,6 +419,8 @@ Move conjunction into the context, splitting it into \texttt{\DUrole{code}{\DUro
             \sep
             \hyp{Hr}{\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
@@ -448,6 +468,8 @@ Solve base case; \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n
             \hyp{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
           \end{conclusion}
@@ -477,6 +499,8 @@ Solve base case; \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n
             \sep
             \hyp{H0}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}

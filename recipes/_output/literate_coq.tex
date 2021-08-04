@@ -134,6 +134,8 @@ Can we prove it correct?
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}
           \end{conclusion}
@@ -151,6 +153,8 @@ Can we prove it correct?
       \begin{goals}
         \begin{goal}
           \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}
@@ -170,6 +174,8 @@ Can we prove it correct?
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{l+m+mi}{0}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}
           \end{conclusion}
@@ -182,6 +188,8 @@ Can we prove it correct?
               \sep
               \hyp{IHn}{\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}
@@ -202,6 +210,8 @@ Can we prove it correct?
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{true}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}
           \end{conclusion}
@@ -214,6 +224,8 @@ Can we prove it correct?
               \sep
               \hyp{IHn}{\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}
@@ -234,6 +246,8 @@ Can we prove it correct?
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{true}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}
           \end{conclusion}
@@ -252,6 +266,8 @@ Can we prove it correct?
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{true}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}
           \end{conclusion}
@@ -260,6 +276,8 @@ Can we prove it correct?
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}\end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{Even}~\PY{l+m+mi}{0}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{true}~\PY{o}{=}~\PY{n}{true}
@@ -289,6 +307,8 @@ Can we prove it correct?
             \sep
             \hyp{IHn}{\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}
@@ -339,6 +359,8 @@ The induction hypothesis doesn't apply — maybe we need to destruct \texttt{n}?
             \hyp{IHn}{\PY{n}{even}~\PY{l+m+mi}{0}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{l+m+mi}{1}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{1}
           \end{conclusion}
@@ -351,6 +373,8 @@ The induction hypothesis doesn't apply — maybe we need to destruct \texttt{n}?
               \sep
               \hyp{IHn}{\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}
@@ -372,6 +396,8 @@ The induction hypothesis doesn't apply — maybe we need to destruct \texttt{n}?
           \begin{hyps}
             \hyp{IHn}{\PY{n}{even}~\PY{l+m+mi}{0}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{l+m+mi}{1}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{1}
@@ -400,6 +426,8 @@ The induction hypothesis doesn't apply — maybe we need to destruct \texttt{n}?
             \sep
             \hyp{IHn}{\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}
@@ -444,6 +472,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}\nl
@@ -463,6 +493,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
       \begin{goals}
         \begin{goal}
           \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
@@ -484,6 +516,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{o}{(}\PY{n}{true}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}\PY{o}{)}~\PY{o}{/\PYZbs{}}~\PY{o}{(}\PY{n}{false}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{1}\PY{o}{)}
           \end{conclusion}
@@ -496,6 +530,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
               \sep
               \hyp{IHn}{\PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}~\PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}~\PY{o}{/\PYZbs{}}\nl
@@ -517,6 +553,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{o}{(}\PY{n}{true}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}\PY{o}{)}~\PY{o}{/\PYZbs{}}~\PY{o}{(}\PY{n}{false}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{1}\PY{o}{)}
           \end{conclusion}
@@ -535,6 +573,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{true}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}
           \end{conclusion}
@@ -544,6 +584,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
           \begin{goal}
             \begin{hyps}\end{hyps}
             \sep
+            \infrule{}
+            \sep
             \begin{conclusion}
               \PY{n}{false}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{1}
             \end{conclusion}
@@ -551,6 +593,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
           \sep
           \begin{goal}
             \begin{hyps}\end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{Even}~\PY{l+m+mi}{1}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{false}~\PY{o}{=}~\PY{n}{true}
@@ -571,6 +615,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{false}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{1}
           \end{conclusion}
@@ -579,6 +625,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}\end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{Even}~\PY{l+m+mi}{1}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{false}~\PY{o}{=}~\PY{n}{true}
@@ -609,6 +657,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
             \hyp{IHn}{\PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}~\PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}~\PY{o}{/\PYZbs{}}\nl
             \PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)))}
@@ -637,6 +687,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
             \sep
             \hyp{HSnE}{\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}~\PY{o}{/\PYZbs{}}\nl
@@ -667,6 +719,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
             \hyp{HSnE}{\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}
           \end{conclusion}
@@ -686,6 +740,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
               \hyp{HSnE}{\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}}
             \end{hyps}
             \sep
+            \infrule{}
+            \sep
             \begin{conclusion}
               \PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}
             \end{conclusion}
@@ -704,6 +760,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
               \hyp{HSnE}{\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}}
             \end{hyps}
             \sep
+            \infrule{}
+            \sep
             \begin{conclusion}
               \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}
             \end{conclusion}
@@ -721,6 +779,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
               \sep
               \hyp{HSnE}{\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}
@@ -750,6 +810,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
             \sep
             \hyp{HSnE}{\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}
@@ -798,6 +860,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
             \hyp{n}{\PY{n}{nat}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}
           \end{conclusion}
@@ -821,6 +885,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
             \hyp{n}{\PY{n}{nat}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}
           \end{conclusion}
@@ -842,6 +908,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{true}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}
           \end{conclusion}
@@ -853,6 +921,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
               \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
               \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{false}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{1}
@@ -866,6 +936,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
               \sep
               \hyp{n}{\PY{n}{nat}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}
@@ -888,6 +960,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
             \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{n}{true}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{0}
@@ -915,6 +989,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
             \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{n}{false}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{l+m+mi}{1}
@@ -945,6 +1021,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
             \hyp{n}{\PY{n}{nat}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}
           \end{conclusion}
@@ -968,6 +1046,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
             \hyp{n}{\PY{n}{nat}}
           \end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}
           \end{conclusion}
@@ -981,6 +1061,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
               \sep
               \hyp{n}{\PY{n}{nat}}
             \end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}
@@ -1005,6 +1087,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
             \sep
             \hyp{n}{\PY{n}{nat}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}
@@ -1034,6 +1118,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
             \sep
             \hyp{n}{\PY{n}{nat}}
           \end{hyps}
+          \sep
+          \infrule{}
           \sep
           \begin{conclusion}
             \PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}
