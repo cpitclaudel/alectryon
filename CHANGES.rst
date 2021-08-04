@@ -5,9 +5,11 @@
 Unreleased
 ==========
 
+- A new ``:href:`` role lets authors refer to specific to sentences, hypotheses, and goals within a fragment of Coq code. [8a02bce]
+
 - Alectryon's LaTeX preamble has been rewritten to improve line breaking between and within hypotheses. [3325d55]
 
-- ``.. coq::`` directives now accept ``:class:`` and ``:name:`` arguments. [df6ff35]
+- ``.. coq::`` directives now accept ``:class:`` and ``:name:`` arguments. [df6ff35, 7cf03d6]
 
 - A new ``--long-line-threshold`` flag controls the line length over which Alectryon will issue “long line” warnings. [0286051]
 
@@ -25,7 +27,9 @@ Bug fixes
 Breaking changes
 ----------------
 
-- The LaTeX markup hypotheses has changed: ``alectryon@hyp`` is now a macro, not an environment.
+- Improvements to goals rendering in HTML may cause very slight alignment changes.  Use ``.alectryon-io .goal-separator { height: calc(1em + 1px); }`` to revert to the previous alignment (modulo rounding errors).
+
+- The LaTeX markup of hypotheses has changed: ``alectryon@hyp`` is now a macro, not an environment.
 
 - Docutils option ``"syntax_highlight"`` now defaults to ``"short"`` when using Alectryon's CLI or its custom HTML writer.  That is, inline `:coq:` roles now produce short-form CSS Pygments class names when processed using ``alectryon.docutils`` or the CLI. [72749bd]
 
