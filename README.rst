@@ -362,13 +362,15 @@ The ``etc/elisp`` folder of this directory includes an Emacs mode, ``alectryon.e
 Docutils configuration
 ----------------------
 
-You can set Docutils settings for your single-page reST or Coq+reST documents using a ``docutils.conf`` file.  See the `documentation <https://docutils.sourceforge.io/docs/user/config.html>`__ or the `example <recipes/docutils.conf>`__ in ``recipes/``.  For example, the following changes ``latex-preamble`` for the XeTeX backend to select a custom monospace font::
+You can set Docutils settings for your single-page reST or Coq+reST documents using a ``docutils.conf`` file.  See the `documentation <https://docutils.sourceforge.io/docs/user/config.html>`__ or the `example <recipes/docutils.conf>`__ in ``recipes/``.  For example, the following changes ``latex-preamble`` for the XeTeX backend to custom fonts::
 
    [xetex writer]
    latex-preamble:
      \setmainfont{Linux Libertine O}
      \setsansfont{Linux Biolinum O}
      \setmonofont[Scale=MatchLowercase]{Fira Code}
+
+You can also use the `DOCUTILSCONFIG` `environment variable <https://docutils.sourceforge.io/docs/user/config.html#configuration-files>`__ to force alectryon to use a specific configuration file.
 
 .. _minification:
 
