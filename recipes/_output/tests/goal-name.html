@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>goal-name.v</title>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="tango_subtle.min.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document">
+
+
+<p>To compile:</p>
+<pre class="literal-block">
+alectryon goal-name.v
+  # Coq → HTML; produces ‘goal-name.html’
+alectryon goal-name.v -o goal-name.xe.tex --latex-dialect xelatex
+  # Coq → LaTeX; produces ‘goal-name.xe.tex’
+</pre>
+<!--  -->
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="goal-name-v-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="goal-name-v-chk0"><span class="kn">Goal</span> <span class="kt">True</span> -&gt; <span class="kt">True</span> /\ <span class="kt">True</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span> -&gt; <span class="kt">True</span> /\ <span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="goal-name-v-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="goal-name-v-chk1"><span class="nb">intros</span>; <span class="nb">refine</span> (conj ?[G1] ?[G2]).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><div><var>H</var><span class="hyp-type"><b>:</b><span><span class="kt">True</span></span></span></div></div><span class="goal-separator"><hr><span class="goal-name">G1</span></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="goal-name-v-chk2" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><div><var>H</var><span class="hyp-type"><b>:</b><span><span class="kt">True</span></span></span></div></div><label class="goal-separator" for="goal-name-v-chk2"><hr><span class="goal-name">G2</span></label><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="goal-name-v-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="goal-name-v-chk3">[G1]: <span class="bp">exact</span> I.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><div><var>H</var><span class="hyp-type"><b>:</b><span><span class="kt">True</span></span></span></div></div><span class="goal-separator"><hr><span class="goal-name">G2</span></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">[G2]: <span class="bp">exact</span> I.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre>
+</div>
+</div></body>
+</html>
