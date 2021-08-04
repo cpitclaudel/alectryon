@@ -254,6 +254,9 @@ def gen_html_snippets_with_coqdoc(annotated, html_classes, fname, html_minificat
     return _gen_html_snippets_with_coqdoc(annotated, fname, html_minification)
 
 def copy_assets(state, assets, copy_fn, output_directory):
+    if copy_fn is None:
+        return state
+
     for (path, name) in assets:
         src = os.path.join(path, name)
         dst = os.path.join(output_directory, name)
