@@ -49,8 +49,12 @@
 \newcommand*{\alectryon@fontsetup}{\ttfamily}
 % \alectryon@output@setsize adjusts the font size of output blocks
 \newcommand*{\alectryon@output@setsize}{\small}
-% \alectryon@goal@rule draws the goal-separating rule
-\newcommand{\alectryon@goal@rule}{\vspace{\alectryonRuleSkip}\hrule\vspace{\alectryonRuleSkip}}
+% \alectryon@goal@annots centers its contents on the baseline and gives them a
+% null height and depth.
+\newcommand{\alectryon@goal@annots}[1]{\raisebox{\dimexpr-.5\height+.5\depth\relax}[0pt][0pt]{#1}}
+% \alectryon@goal@rule draws the line that separates hypotheses and goals
+% https://tex.stackexchange.com/questions/609488/
+\newcommand{\alectryon@goal@rule}[1]{\hrule height 0pt\hrulefill\alectryon@goal@annots{#1}\hrule height 0pt}
 % \alectryon@unskip removes preceding blanks
 \newcommand{\alectryon@unskip}{\ifhmode\unskip\fi}
 % \alectryon@raggedright allows all line breaks
@@ -159,7 +163,12 @@
 \alectryon@newenvironment{goals}{\begin{alectryon@outer}}{\end{alectryon@outer}}
   {\par\alectryon@vsep}
 \alectryon@newenvironment{goal}{\begin{alectryon@inner}}{\end{alectryon@inner}}
-  {\alectryon@goal@rule}
+  {}
+\newcommand{\alectryon@infrule}[1]
+  {\vspace{\alectryonRuleSkip}%
+   \alectryon@goal@rule{#1}%
+   \vspace{\alectryonRuleSkip}}
+\newcommand{\alectryon@gid}[1]{\alectryon@nobreakspace#1}
 \alectryon@newenvironment{hyps}
   {\alectryon@hyphens%
    \alectryon@raggedright%
@@ -208,6 +217,8 @@
    \alectryon@copyenvironment{messages}
    \alectryon@copyenvironment{message}
    \alectryon@copyenvironment{conclusion}
+   \alectryon@copymacro{infrule}
+   \alectryon@copymacro{gid}
    \alectryon@copymacro{hypn}
    \alectryon@copymacro{sep}
    \alectryon@copymacro{nl}

@@ -16,6 +16,8 @@
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
           \end{conclusion}
@@ -34,6 +36,8 @@
         \begin{goal}
           \begin{hyps}\end{hyps}
           \sep
+          \infrule{}
+          \sep
           \begin{conclusion}
             \PY{k+kt}{True}
           \end{conclusion}
@@ -42,6 +46,8 @@
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}\end{hyps}
+            \sep
+            \infrule{}
             \sep
             \begin{conclusion}
               \PY{k+kt}{True}

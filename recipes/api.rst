@@ -140,6 +140,8 @@ And that movie can be exported to LaTeX or HTML:
            \begin{goal}
              \begin{hyps}\end{hyps}
              \sep
+             \infrule{}
+             \sep
              \begin{conclusion}
                \PY{k+kt}{False}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}
              \end{conclusion}
@@ -159,6 +161,8 @@ And that movie can be exported to LaTeX or HTML:
              \begin{hyps}
                \hyp{H}{\PY{k+kt}{False}}
              \end{hyps}
+             \sep
+             \infrule{}
              \sep
              \begin{conclusion}
                \PY{k+kt}{True}

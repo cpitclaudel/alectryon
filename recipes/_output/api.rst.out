@@ -169,6 +169,8 @@ Expecting:
             \begin{goal}
               \begin{hyps}\end{hyps}
               \sep
+              \infrule{}
+              \sep
               \begin{conclusion}
                 \PY{k+kt}{False}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}
               \end{conclusion}
@@ -188,6 +190,8 @@ Expecting:
               \begin{hyps}
                 \hyp{H}{\PY{k+kt}{False}}
               \end{hyps}
+              \sep
+              \infrule{}
               \sep
               \begin{conclusion}
                 \PY{k+kt}{True}

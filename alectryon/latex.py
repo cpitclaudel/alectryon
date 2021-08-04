@@ -184,6 +184,9 @@ class LatexGenerator:
                     htype = self.highlight(hyp.type)
                     hbody = self.highlight(hyp.body) if hyp.body else []
                     macros.hyp(*htype, args=[names], optargs=hbody, verbatim=True)
+            with macros.infrule():
+                if goal.name:
+                    macros.gid(goal.name)
             environments.conclusion(*self.highlight(goal.conclusion), verbatim=True)
 
     def gen_goals(self, first, more):
