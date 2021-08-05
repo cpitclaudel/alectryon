@@ -17,4 +17,5 @@ upload: dist
 	python3 -m twine upload dist/*
 
 lint:
+	etc/lint_changes.sh CHANGES.rst
 	pylint --rcfile=setup.cfg alectryon
