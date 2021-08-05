@@ -125,7 +125,7 @@
 % improve the spacing we give it 0 depth.
 \newcommand{\alectryon@strut}{\rule[0pt]{0pt}{\ht\strutbox}}
 % \alectryon@label inserts a label and a phantomsection
-\newcommand{\alectryon@hreflabel}[1]{\phantomsection\label{#1}}
+\newcommand{\alectryon@anchor}[1]{\phantomsection\label{#1}}
 % alectryon@outer wraps collections of goals and messages
 \newenvironment{alectryon@outer}
   {\begin{tcolorbox}[colframe=alectryon@tango@medium@gray, colback=alectryon@tango@medium@aluminium]}
@@ -199,7 +199,7 @@
 \alectryon@newenvironment{conclusion}{\alectryon@strut{}\alectryon@raggedright}{\par}
   {}
 
-\newcommand*{\alectryon@hrefmarker}[1]
+\newcommand*{\alectryon@mrefmarker}[1]
   {\alectryon@nobreakspace%
    {\setlength{\fboxsep}{1pt}\fbox{\footnotesize\textbf{#1}}}}
 
@@ -223,8 +223,8 @@
    \alectryon@copyenvironment{messages}
    \alectryon@copyenvironment{message}
    \alectryon@copyenvironment{conclusion}
-   \alectryon@copymacro{hreflabel}
-   \alectryon@copymacro{hrefmarker}
+   \alectryon@copymacro{anchor}
+   \alectryon@copymacro{mrefmarker}
    \alectryon@copymacro{infrule}
    \alectryon@copymacro{gid}
    \alectryon@copymacro{hypn}

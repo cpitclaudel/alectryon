@@ -110,7 +110,7 @@ class HtmlGenerator:
                 with tags.span(cls="hyp-type"):
                     tags.b(":")
                     tags.span(self.highlight(hyp.type))
-            self.gen_hrefs(hyp)
+            self.gen_mrefs(hyp)
 
     @deduplicate(".goal-hyps")
     def gen_hyps(self, hyps):
@@ -121,7 +121,7 @@ class HtmlGenerator:
     @deduplicate(".goal-conclusion")
     def gen_ccl(self, conclusion):
         with tags.div(self.highlight(conclusion.contents), cls="goal-conclusion"):
-            self.gen_hrefs(conclusion)
+            self.gen_mrefs(conclusion)
 
     @deduplicate(".alectryon-goal")
     def gen_goal(self, goal, toggle=None):
@@ -139,7 +139,7 @@ class HtmlGenerator:
                 tags.hr()
                 if goal.name:
                     tags.span(goal.name, cls="goal-name")
-                self.gen_href_markers(goal.markers)
+                self.gen_mref_markers(goal.markers)
             self.gen_ccl(goal.conclusion)
 
     def gen_checkbox(self, checked, cls):
@@ -169,12 +169,12 @@ class HtmlGenerator:
     def gen_input(self, fr, toggle):
         cls = "alectryon-input" + (" alectryon-failed" if fr.annots.fails else "")
         with self.gen_clickable(toggle, cls, self.highlight(fr.contents)):
-            self.gen_hrefs(fr)
+            self.gen_mrefs(fr)
 
     def gen_message(self, message):
         with tags.blockquote(self.highlight(message.contents),
                              cls="alectryon-message"):
-            self.gen_hrefs(message)
+            self.gen_mrefs(message)
 
     @deduplicate(".alectryon-output")
     def gen_output(self, fr):
@@ -224,14 +224,14 @@ class HtmlGenerator:
             tags.span(id=name) # FIXME insert at beg of parent
 
     @classmethod
-    def gen_hrefs(cls, nt):
+    def gen_mrefs(cls, nt):
         cls.gen_ids(nt.ids)
-        cls.gen_href_markers(nt.markers)
+        cls.gen_mref_markers(nt.markers)
 
     @staticmethod
-    def gen_href_markers(markers):
+    def gen_mref_markers(markers):
         for marker in markers:
-            tags.span(marker, cls="alectryon-href-marker")
+            tags.span(marker, cls="alectryon-mref-marker")
 
     def gen_fragments(self, fragments, ids=(), classes=()):
         """Serialize a list of `fragments` to HTML."""

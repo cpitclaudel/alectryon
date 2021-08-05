@@ -98,7 +98,7 @@ class alectryon_pending(nodes.pending):
 class alectryon_pending_toggle(nodes.pending):
     pass
 
-class alectryon_pending_href(nodes.pending):
+class alectryon_pending_mref(nodes.pending):
     pass
 
 class alectryon_pending_io(nodes.pending):
@@ -338,14 +338,14 @@ class RefCounter:
         num = self.counters[style] = self.counters[style] + 1
         return style.fmt(num)
 
-class HrefError(ValueError):
+class MrefError(ValueError):
     pass
 
-class AlectryonHrefTransform(OneTimeTransform):
+class AlectryonMrefTransform(OneTimeTransform):
     """Convert Alectryon input/output pairs into HTML or LaTeX.
 
     This transform is triggered by a ``pending`` node added by
-    the ``:href:`` role.
+    the ``:mref:`` role.
     """
     default_priority = 995
 
@@ -363,14 +363,14 @@ class AlectryonHrefTransform(OneTimeTransform):
             if isinstance(fr, RichSentence) and needle in fr.contents:
                 return fr
         # LATER: Add a way to name sentences to make them easier to select
-        raise HrefError("No sentence matches '{}'".format(needle))
+        raise MrefError("No sentence matches '{}'".format(needle))
 
     @staticmethod
     def _find_named(kind, items, needle):
         for item in items:
             if needle in getattr(item, "names", [getattr(item, "name", None)]):
                 return item
-        raise HrefError("No such {}: '{}'".format(kind, needle))
+        raise MrefError("No such {}: '{}'".format(kind, needle))
 
     @classmethod
     def _find_goal(cls, goals, needle):
@@ -388,16 +388,16 @@ class AlectryonHrefTransform(OneTimeTransform):
         for h in hyps:
             if needle in h.type or (h.body and needle in h.body):
                 return h
-        raise HrefError("No hypothesis matches '{}'".format(needle))
+        raise MrefError("No hypothesis matches '{}'".format(needle))
 
     @classmethod
-    def _find_href_target(cls, node, ios, last_io):
+    def _find_mref_target(cls, node, ios, last_io):
         query = node.details["query"]
 
         root = query.get("root")
         io = ios.get(root) if root else last_io
         if io is None:
-            raise HrefError("Reference to unknown Alectryon block")
+            raise MrefError("Reference to unknown Alectryon block")
 
         sentence = cls._find_sentence(io.details["fragments"], query["sentence"])
         goals = [g for gs in transforms.fragment_goal_sets(sentence) for g in gs]
@@ -414,8 +414,8 @@ class AlectryonHrefTransform(OneTimeTransform):
                 return goal
         return sentence
 
-    def replace_one_href(self, gensym, refcounter, node, ios, last_io):
-        target = self._find_href_target(node, ios, last_io)
+    def replace_one_mref(self, gensym, refcounter, node, ios, last_io):
+        target = self._find_mref_target(node, ios, last_io)
         if not target.ids:
             target_id = nodes.make_id(node.details["target"])
             target.ids.append(gensym(target_id))
@@ -426,21 +426,21 @@ class AlectryonHrefTransform(OneTimeTransform):
         marker, refid = target.markers[-1], target.ids[-1]
         ref = nodes.reference(node.rawsource, marker, classes=[], refid=refid)
         node.replace_self(ref)
-        ref["classes"].append("alectryon-href")
+        ref["classes"].append("alectryon-mref")
 
     def _apply(self, **_kwargs):
         ios = {id: node
                for node in self.document.traverse(alectryon_pending_io)
                for id in node.get("ids", ())}
         refcounter, gensym = RefCounter(), Gensym(_gensym_stem(self.document, "-"))
-        io_or_href = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_href))
-        for node in self.document.traverse(io_or_href):
+        io_or_mref = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_mref))
+        for node in self.document.traverse(io_or_mref):
             if isinstance(node, alectryon_pending_io):
                 last_io = node
-            elif isinstance(node, alectryon_pending_href):
+            elif isinstance(node, alectryon_pending_mref):
                 try:
-                    self.replace_one_href(gensym, refcounter, node, ios, last_io)
-                except HrefError as e:
+                    self.replace_one_mref(gensym, refcounter, node, ios, last_io)
+                except MrefError as e:
                     msg = "Error in '{}': {}".format(node.rawsource, e)
                     self._warn(node, msg)
 
@@ -686,7 +686,7 @@ COUNTER_STYLES = {
 }
 DEFAULT_COUNTER_STYLE = CounterStyle.of_str(COUNTER_STYLES['decimal'])
 
-def highlight_ref_role(# pylint: disable=dangerous-default-value,unused-argument
+def marker_ref_role(# pylint: disable=dangerous-default-value,unused-argument
         role, rawtext, text, lineno, inliner, options={}, content=[]):
     title, target = _parse_ref(text)
     if target is None:
@@ -694,7 +694,7 @@ def highlight_ref_role(# pylint: disable=dangerous-default-value,unused-argument
 
     m = HIGHLIGHT_REF_TARGET_RE.match(target)
     if target[0] in "#." and not m:
-        MSG = "Cannot parse ``:href:`` target ``{}``.".format(target)
+        MSG = "Cannot parse ``:mref:`` target ``{}``.".format(target)
         msg = inliner.reporter.error(MSG, line=lineno)
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
 
@@ -705,8 +705,8 @@ def highlight_ref_role(# pylint: disable=dangerous-default-value,unused-argument
                "counter-style": cs }
 
     roles.set_classes(options)
-    node = alectryon_pending_href(
-        AlectryonHrefTransform, details, rawtext, **options)
+    node = alectryon_pending_mref(
+        AlectryonMrefTransform, details, rawtext, **options)
     set_line(node, lineno, inliner.reporter)
     inliner.document.note_pending(node)
     return [node], []
@@ -716,8 +716,8 @@ def _opt_counter_style(arg):
         arg = COUNTER_STYLES[directives.choice(arg, list(COUNTER_STYLES))]
     return CounterStyle.of_str(arg)
 
-highlight_ref_role.name = "href"
-highlight_ref_role.options = {
+marker_ref_role.name = "mref"
+marker_ref_role.options = {
     'counter-style': _opt_counter_style
 }
 
@@ -992,12 +992,12 @@ NODES = [alectryon_pending,
          alectryon_pending_io]
 TRANSFORMS = [ActivateMathJaxTransform,
               AlectryonTransform,
-              AlectryonHrefTransform,
+              AlectryonMrefTransform,
               AlectryonPostTransform]
 DIRECTIVES = [CoqDirective,
               AlectryonToggleDirective,
               ExperimentalExerciseDirective]
-ROLES = [alectryon_bubble, coq_code_role, coq_id_role, highlight_ref_role]
+ROLES = [alectryon_bubble, coq_code_role, coq_id_role, marker_ref_role]
 
 def register():
     """Tell Docutils about our roles and directives."""

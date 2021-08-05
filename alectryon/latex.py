@@ -180,7 +180,7 @@ class LatexGenerator:
         hbody = self.highlight(hyp.body) if hyp.body else []
         with macros.hyp(args=[names], optargs=hbody, verbatim=True):
             self.highlight(hyp.type)
-            self.gen_hrefs(hyp)
+            self.gen_mrefs(hyp)
 
     def gen_goal(self, goal):
         """Serialize a goal to LaTeX."""
@@ -192,10 +192,10 @@ class LatexGenerator:
             with macros.infrule():
                 if goal.name:
                     macros.gid(goal.name)
-                self.gen_href_markers(goal.markers)
+                self.gen_mref_markers(goal.markers)
             with environments.conclusion(verbatim=True):
                 self.highlight(goal.conclusion.contents)
-                self.gen_hrefs(goal.conclusion)
+                self.gen_mrefs(goal.conclusion)
 
     def gen_goals(self, first, more):
         self.gen_goal(first)
@@ -222,12 +222,12 @@ class LatexGenerator:
             # middle of a line.
             if not fr.outputs:
                 self.gen_whitespace(fr.suffixes)
-            self.gen_hrefs(fr)
+            self.gen_mrefs(fr)
 
     def gen_message(self, msg):
         with environments.message(verbatim=True):
             self.highlight(msg.contents)
-            self.gen_hrefs(msg)
+            self.gen_mrefs(msg)
 
     def gen_output(self, fr):
         with environments.output():
@@ -260,17 +260,17 @@ class LatexGenerator:
     @staticmethod
     def gen_ids(ids):
         for name in ids:
-            macros.hreflabel(Raw(name)) # FIXME insert at beginning of parent
+            macros.anchor(Raw(name)) # FIXME insert at beginning of parent
 
     @classmethod
-    def gen_hrefs(cls, nt):
+    def gen_mrefs(cls, nt):
         cls.gen_ids(nt.ids)
-        cls.gen_href_markers(nt.markers)
+        cls.gen_mref_markers(nt.markers)
 
     @staticmethod
-    def gen_href_markers(markers):
+    def gen_mref_markers(markers):
         for marker in markers:
-            macros.hrefmarker(Raw(marker))
+            macros.mrefmarker(Raw(marker))
 
     def gen_fragments(self, fragments, ids=(), classes=()): # pylint: disable=unused-argument
         """Serialize a list of `fragments` to LaTeX."""
