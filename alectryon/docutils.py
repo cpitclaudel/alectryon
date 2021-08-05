@@ -67,6 +67,7 @@ side, and a doctree-resolved event on the Sphinx side.
 import re
 import os.path
 from collections import namedtuple, defaultdict
+from fnmatch import fnmatch
 from importlib import import_module
 
 import docutils
@@ -341,6 +342,11 @@ class RefCounter:
 class MrefError(ValueError):
     pass
 
+def _fnmatch(haystack, needle, anywhere=True):
+    if anywhere:
+        needle = "*" + needle + "*"
+    return fnmatch(haystack, needle)
+
 class AlectryonMrefTransform(OneTimeTransform):
     """Convert Alectryon input/output pairs into HTML or LaTeX.
 
@@ -360,7 +366,7 @@ class AlectryonMrefTransform(OneTimeTransform):
     @staticmethod
     def _find_sentence(fragments, needle):
         for fr in fragments:
-            if isinstance(fr, RichSentence) and needle in fr.contents:
+            if isinstance(fr, RichSentence) and _fnmatch(fr.contents, needle):
                 return fr
         # LATER: Add a way to name sentences to make them easier to select
         raise MrefError("No sentence matches '{}'".format(needle))
@@ -368,7 +374,8 @@ class AlectryonMrefTransform(OneTimeTransform):
     @staticmethod
     def _find_named(kind, items, needle):
         for item in items:
-            if needle in getattr(item, "names", [getattr(item, "name", None)]):
+            names = getattr(item, "names", (getattr(item, "name", None),))
+            if any(nm and _fnmatch(nm, needle, anywhere=False) for nm in names):
                 return item
         raise MrefError("No such {}: '{}'".format(kind, needle))
 
@@ -386,7 +393,7 @@ class AlectryonMrefTransform(OneTimeTransform):
         if name:
             return cls._find_named("hypothesis", hyps, name)
         for h in hyps:
-            if needle in h.type or (h.body and needle in h.body):
+            if _fnmatch(h.type, needle) or (h.body and _fnmatch(h.body, needle)):
                 return h
         raise MrefError("No hypothesis matches '{}'".format(needle))
 
