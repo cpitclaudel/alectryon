@@ -29,17 +29,16 @@ Optionally, the label can be picked manually, using :literal:`:mref:\`label <tar
 
 Instead of whole sentences, is possible to refer to individual goals and hypotheses:
 
-    In the first case (:mref:`.s(destruct n).g#1`), we see the variable `n` in the context (:mref:`.s(destruct n).g#1.h#n`), and we see that it is `0` (:mref:`.s(destruct n).g#1.h(n = 0)`); notice how the conclusion of the first goal :mref:`.s(destruct n).ccl` does not mention `n` (it says `0` instead).  In the second case :mref:`.s(destruct n).g#2`, the conclusion mentions `S n0` instead.
+    In the first case (:mref:`.s(destruct n).g#1`), we see the variable `n` in the context (:mref:`.s(destruct n).g#1.h#n`), and we see that it is `0` (:mref:`.s(destruct n).g#1.h(n = 0)`); notice how the conclusion of the first goal :mref:`.s(destruct n).ccl` does not mention `n` (it says `0` instead).  In the second case :mref:`.s(destruct n).g(S n0)`, the conclusion (:mref:`.s(destruct n).g{*S n0*}.ccl`) mentions `S n0` instead.
 
 Note that we can safely refer multiple times to the same object, even using a different reference:
 
     - :mref:`.s(destruct n).g#1.h#plus_comm`
     - :mref:`.s(destruct n).h#plus_comm`
     - :mref:`.s(destruct n).h(forall)`
+    - :mref:`.s(destruct n).h{forall*}`
 
 To allow forward- and back-references, counters are not reset from one block to the next:
-
-    ..
 
     .. coq::
 
