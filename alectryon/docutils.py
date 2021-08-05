@@ -417,8 +417,8 @@ class AlectryonHrefTransform(OneTimeTransform):
     def replace_one_href(self, gensym, refcounter, node, ios, last_io):
         target = self._find_href_target(node, ios, last_io)
         if not target.ids:
-            id = nodes.make_id(node.details["target"])
-            target.ids.append(gensym(id))
+            target_id = nodes.make_id(node.details["target"])
+            target.ids.append(gensym(target_id))
         if not target.markers:
             style = node.details["counter-style"]
             target.markers.append(node.details["title"] or refcounter.next(style))
