@@ -380,22 +380,26 @@ class AlectryonMrefTransform(OneTimeTransform):
         raise MrefError("No such {}: '{}'".format(kind, needle))
 
     @classmethod
-    def _find_goal(cls, goals, needle):
+    def _find_goal(cls, goals, name, needle):
+        if needle:
+            for g in goals:
+                if _fnmatch(g.conclusion.contents, needle):
+                    return g
+            raise MrefError("No goal matches '{}'".format(needle))
         try:
-            return goals[int(needle) - 1]
+            return goals[int(name) - 1]
         except IndexError:
-            pass
-        return cls._find_named("goal", goals, needle)
+            return cls._find_named("goal", goals, name)
 
     @classmethod
     def _find_hyp(cls, hyps, name, needle):
         assert bool(name) ^ bool(needle)
-        if name:
-            return cls._find_named("hypothesis", hyps, name)
-        for h in hyps:
-            if _fnmatch(h.type, needle) or (h.body and _fnmatch(h.body, needle)):
-                return h
-        raise MrefError("No hypothesis matches '{}'".format(needle))
+        if needle:
+            for h in hyps:
+                if _fnmatch(h.type, needle) or (h.body and _fnmatch(h.body, needle)):
+                    return h
+            raise MrefError("No hypothesis matches '{}'".format(needle))
+        return cls._find_named("hypothesis", hyps, name)
 
     @classmethod
     def _find_mref_target(cls, node, ios, last_io):
@@ -406,18 +410,20 @@ class AlectryonMrefTransform(OneTimeTransform):
         if io is None:
             raise MrefError("Reference to unknown Alectryon block")
 
-        sentence = cls._find_sentence(io.details["fragments"], query["sentence"])
+        sentence = cls._find_sentence(io.details["fragments"], query.get("sentence"))
         goals = [g for gs in transforms.fragment_goal_sets(sentence) for g in gs]
 
-        ccl, hyp, goal_name = query.get("ccl"), query.get("hyp"), query.get("goal_name")
-        if ccl or hyp or goal_name:
-            goal = cls._find_goal(goals, goal_name or "1")
+        ccl, hyp = query.get("ccl"), query.get("hyp")
+        goal_name, goal_ccl = query.get("goal_name"), query.get("goal_ccl")
+
+        if ccl or hyp or goal_name or goal_ccl:
+            goal = cls._find_goal(goals, goal_name or "1", goal_ccl)
             if ccl:
                 return goal.conclusion
             if hyp:
                 return cls._find_hyp(
-                    goal.hypotheses, query.get("hyp_name"), query.get("hyp_body"))
-            if goal_name:
+                    goal.hypotheses, query.get("hyp_name"), query.get("hyp_contents"))
+            if goal_name or goal_ccl:
                 return goal
         return sentence
 
@@ -673,16 +679,23 @@ def coq_id_role(# pylint: disable=dangerous-default-value,unused-argument
 coq_id_role.name = "coqid"
 coq_id_role.options = {'url': directives.unchanged}
 
-HIGHLIGHT_REF_TARGET_RE = re.compile(r"""
-          (?:[#](?P<root>.+?))?
-             [.]s[(](?P<sentence>.+?)[)]
-          (?:[.]g[#](?P<goal_name>[^.]+?))?
+MARKER_PATH_ROOT = r"""
+          (?:[#](?P<root>.+?))?"""
+MARKER_PATH_SENTENCE = r"""
+             [.]s[(](?P<sentence>.+?)[)]"""
+MARKER_PATH_CONTENTS = r"""
+          (?:[.]g
+              (?:[#](?P<goal_name>[^.]+?)
+                |[(](?P<goal_ccl>.+?)[)]))?
   (?:(?P<ccl>[.]ccl)
     |(?P<hyp>[.]h
               (?:[#](?P<hyp_name>[^.]+?)
-                |[(](?P<hyp_body>.+?)[)])))?
-  \Z
-""", re.VERBOSE)
+                |[(](?P<hyp_contents>.+?)[)])))?"""
+MARKER_PATH_RE = re.compile(
+    MARKER_PATH_ROOT +
+    MARKER_PATH_SENTENCE +
+    MARKER_PATH_CONTENTS +
+    r"\Z", re.VERBOSE)
 
 COUNTER_STYLES = {
     'decimal': '0 1 2 3 4 5 6 7 8 9',
@@ -699,7 +712,7 @@ def marker_ref_role(# pylint: disable=dangerous-default-value,unused-argument
     if target is None:
         title, target = None, title
 
-    m = HIGHLIGHT_REF_TARGET_RE.match(target)
+    m = MARKER_PATH_RE.match(target)
     if target[0] in "#." and not m:
         MSG = "Cannot parse ``:mref:`` target ``{}``.".format(target)
         msg = inliner.reporter.error(MSG, line=lineno)
