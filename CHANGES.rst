@@ -5,7 +5,7 @@
 Unreleased
 ==========
 
-- A new ``:href:`` role lets authors refer to specific to sentences, hypotheses, and goals within a fragment of Coq code. [8a02bce]
+- A new ``:mref:`` role lets authors refer to specific to sentences, hypotheses, and goals within a fragment of Coq code. [8a02bce]
 
 - Alectryon's LaTeX preamble has been rewritten to improve line breaking between and within hypotheses. [3325d55]
 
