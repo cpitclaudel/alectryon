@@ -1,6 +1,6 @@
-==================
- Using references
-==================
+==========================================
+ Using the marker-placement mini-language
+==========================================
 
 To compile::
 
@@ -49,8 +49,8 @@ To allow forward- and back-references, counters are not reset from one block to 
            reflexivity.
        Qed.
 
-    - Bullets (``-``, ``+``, ``*``) delimit subproofs (:mref:`#setup.s(Base case)`, :mref:`Induction`)
-    - It all started at :mref:`#setup.s(Fixpoint)`
+    - Bullets (``-``, ``+``, ``*``) delimit subproofs (:mref:`.io#setup.s(Base case)`, :mref:`Induction`)
+    - It all started at :mref:`.io#setup.s(Fixpoint)`
 
 Custom counter styles can be defined like using the ``.. role::`` directive and the ``:counter-style:`` option:
 
@@ -62,7 +62,7 @@ Custom counter styles can be defined like using the ``.. role::`` directive and 
 
 Here is how it looks:
 
-    The following commands print information about an identifier :aref:`#cp.s(About)`, print its definition :aref:`#cp.s(Print)`, and compute the type of a term :aref:`#cp.s(Check)` or its reduction :aref:`#cp.s(Compute)`.
+    The following commands print information about an identifier :aref:`.io#cp.s(About)`, print its definition :aref:`.io#cp.s(Print)`, and compute the type of a term :aref:`.io#cp.s(Check)` or its reduction :aref:`.io#cp.s(Compute)`.
 
     .. coq::
        :name: cp
@@ -79,6 +79,6 @@ Here is how it looks:
        Eval vm_compute in Nat.add 2 3.
        Eval pattern 2 in Nat.add 2 3.
 
-    The second batch of commands perform reduction with a custom strategy: :jref:`#cp.s(simpl)` :jref:`#cp.s(cbn)` :jref:`#cp.s(cbv)` :jref:`#cp.s(lazy)` :jref:`#cp.s(vm_compute)` :jref:`#cp.s(pattern)`.
+    The second batch of commands perform reduction with a custom strategy: :jref:`.io#cp.s(simpl)` :jref:`.io#cp.s(cbn)` :jref:`.io#cp.s(cbv)` :jref:`.io#cp.s(lazy)` :jref:`.io#cp.s(vm_compute)` :jref:`.io#cp.s(pattern)`.
 
 Each inline reference is a link to the corresponding code fragment.

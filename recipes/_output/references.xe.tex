@@ -57,11 +57,11 @@
   \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
 }{}
 \hypersetup{
-  pdftitle={Using references},
+  pdftitle={Using the marker-placement mini-language},
 }
 
-\title{Using references%
-  \label{using-references}}
+\title{Using the marker-placement mini-language%
+  \label{using-the-marker-placement-mini-language}}
 \author{}
 \date{}
 
@@ -187,7 +187,7 @@ Alectryon supports references to individual sentences and hypotheses within a co
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{o}{\PYZhy{}}~\PY{c}{(*~Base~case~*)}\anchor{references-rst-setup-s-base-case-0}\mrefmarker{9}
+      ~~\PY{o}{\PYZhy{}}~\PY{c}{(*~Base~case~*)}\anchor{references-rst-io-setup-s-base-case-0}\mrefmarker{9}
     \end{input}
     \sep
     \begin{output}
@@ -375,7 +375,7 @@ To allow forward- and back-references, counters are not reset from one block to 
 \end{alectryon}
 
 \begin{itemize}
-\item Bullets (\texttt{-}, \texttt{+}, \texttt{*}) delimit subproofs (\hyperref[references-rst-setup-s-base-case-0]{9}, \hyperref[references-rst-induction-0]{10})
+\item Bullets (\texttt{-}, \texttt{+}, \texttt{*}) delimit subproofs (\hyperref[references-rst-io-setup-s-base-case-0]{9}, \hyperref[references-rst-induction-0]{10})
 
 \item It all started at \hyperref[references-rst-fixpoint-plus-comm-0]{1}
 \end{itemize}
@@ -386,7 +386,7 @@ Custom counter styles can be defined like using the \texttt{.. role::} directive
 Here is how it looks:
 
 \begin{quote}
-The following commands print information about an identifier \hyperref[references-rst-cp-s-about-0]{α}, print its definition \hyperref[references-rst-cp-s-print-0]{β}, and compute the type of a term \hyperref[references-rst-cp-s-check-0]{γ} or its reduction \hyperref[references-rst-cp-s-compute-0]{δ}.
+The following commands print information about an identifier \hyperref[references-rst-io-cp-s-about-0]{α}, print its definition \hyperref[references-rst-io-cp-s-print-0]{β}, and compute the type of a term \hyperref[references-rst-io-cp-s-check-0]{γ} or its reduction \hyperref[references-rst-io-cp-s-compute-0]{δ}.
 
 \begin{alectryon}
   % Generator: Alectryon
@@ -395,7 +395,7 @@ The following commands print information about an identifier \hyperref[reference
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{About}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}\anchor{references-rst-cp-s-about-0}\mrefmarker{α}
+      \PY{k+kn}{About}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}\anchor{references-rst-io-cp-s-about-0}\mrefmarker{α}
     \end{input}
     \sep
     \begin{output}
@@ -414,7 +414,7 @@ The following commands print information about an identifier \hyperref[reference
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Print}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}\anchor{references-rst-cp-s-print-0}\mrefmarker{β}
+      \PY{k+kn}{Print}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}\anchor{references-rst-io-cp-s-print-0}\mrefmarker{β}
     \end{input}
     \sep
     \begin{output}
@@ -436,7 +436,7 @@ The following commands print information about an identifier \hyperref[reference
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Check}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-cp-s-check-0}\mrefmarker{γ}
+      \PY{k+kn}{Check}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-io-cp-s-check-0}\mrefmarker{γ}
     \end{input}
     \sep
     \begin{output}
@@ -451,7 +451,7 @@ The following commands print information about an identifier \hyperref[reference
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Compute}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-cp-s-compute-0}\mrefmarker{δ}
+      \PY{k+kn}{Compute}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-io-cp-s-compute-0}\mrefmarker{δ}
     \end{input}
     \sep
     \begin{output}
@@ -470,7 +470,7 @@ The following commands print information about an identifier \hyperref[reference
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Eval}~\PY{n+nb}{simpl}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-cp-s-simpl-0}\mrefmarker{い}
+      \PY{k+kn}{Eval}~\PY{n+nb}{simpl}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-io-cp-s-simpl-0}\mrefmarker{い}
     \end{input}
     \sep
     \begin{output}
@@ -485,7 +485,7 @@ The following commands print information about an identifier \hyperref[reference
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Eval}~\PY{n+nb}{cbn}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-cp-s-cbn-0}\mrefmarker{ろ}
+      \PY{k+kn}{Eval}~\PY{n+nb}{cbn}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-io-cp-s-cbn-0}\mrefmarker{ろ}
     \end{input}
     \sep
     \begin{output}
@@ -500,7 +500,7 @@ The following commands print information about an identifier \hyperref[reference
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Eval}~\PY{n+nb}{cbv}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-cp-s-cbv-0}\mrefmarker{は}
+      \PY{k+kn}{Eval}~\PY{n+nb}{cbv}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-io-cp-s-cbv-0}\mrefmarker{は}
     \end{input}
     \sep
     \begin{output}
@@ -515,7 +515,7 @@ The following commands print information about an identifier \hyperref[reference
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Eval}~\PY{n+nb}{lazy}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-cp-s-lazy-0}\mrefmarker{に}
+      \PY{k+kn}{Eval}~\PY{n+nb}{lazy}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-io-cp-s-lazy-0}\mrefmarker{に}
     \end{input}
     \sep
     \begin{output}
@@ -530,7 +530,7 @@ The following commands print information about an identifier \hyperref[reference
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Eval}~\PY{n+nb}{vm\PYZus{}compute}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-cp-s-vm-compute-0}\mrefmarker{ほ}
+      \PY{k+kn}{Eval}~\PY{n+nb}{vm\PYZus{}compute}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-io-cp-s-vm-compute-0}\mrefmarker{ほ}
     \end{input}
     \sep
     \begin{output}
@@ -545,7 +545,7 @@ The following commands print information about an identifier \hyperref[reference
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{k+kn}{Eval}~\PY{n+nb}{pattern}~\PY{l+m+mi}{2}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-cp-s-pattern-0}\mrefmarker{へ}
+      \PY{k+kn}{Eval}~\PY{n+nb}{pattern}~\PY{l+m+mi}{2}~\PY{k+kr}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\anchor{references-rst-io-cp-s-pattern-0}\mrefmarker{へ}
     \end{input}
     \sep
     \begin{output}
@@ -559,7 +559,7 @@ The following commands print information about an identifier \hyperref[reference
   \end{sentence}
 \end{alectryon}
 
-The second batch of commands perform reduction with a custom strategy: \hyperref[references-rst-cp-s-simpl-0]{い} \hyperref[references-rst-cp-s-cbn-0]{ろ} \hyperref[references-rst-cp-s-cbv-0]{は} \hyperref[references-rst-cp-s-lazy-0]{に} \hyperref[references-rst-cp-s-vm-compute-0]{ほ} \hyperref[references-rst-cp-s-pattern-0]{へ}.
+The second batch of commands perform reduction with a custom strategy: \hyperref[references-rst-io-cp-s-simpl-0]{い} \hyperref[references-rst-io-cp-s-cbn-0]{ろ} \hyperref[references-rst-io-cp-s-cbv-0]{は} \hyperref[references-rst-io-cp-s-lazy-0]{に} \hyperref[references-rst-io-cp-s-vm-compute-0]{ほ} \hyperref[references-rst-io-cp-s-pattern-0]{へ}.
 \end{quote}
 
 Each inline reference is a link to the corresponding code fragment.

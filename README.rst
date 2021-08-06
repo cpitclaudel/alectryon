@@ -302,30 +302,34 @@ The full architecture of a path is shown below for reference:
 
 .. parsed-literal::
 
-   .s(*pattern*)                  ex: .s(**Goal True**)
-     Any sentence matching *pattern*
-   .s{*pattern*}                  ex: .s{**forall\*m\*n\*,**}
-     Any sentence that completely matches *pattern*
+   .io#\ *name*                        ex: .io#\ **intro**
+     A block of code whose name matches *name*.
+   (.io is optional and defaults to the most recent code block.)
 
-      .g#\ *id*                   ex: .g#\ **1**
-        Goal number *id*.
-      .g#\ *name*                 ex: .g#\ **base_case**
-        The goal named *name* (`documentation <https://coq.inria.fr/refman/proofs/writing-proofs/proof-mode.html#coq:tacn.}>`__).
-      .g(*str*)              ex: .g(**True**)
-        Any goal whole conclusion includes *str*.
-      .g{*pattern*}          ex: .g{**\* ++ \* ++ \* = \***}
-        Any goal whole complete conclusion matches *pattern*.
-      (.g is optional and default to #1)
+       .s(*pattern*)                  ex: .s(**Goal True**)
+         Any sentence matching *pattern*.
+       .s{*pattern*}                  ex: .s{**forall\*m\*n\*,**}
+         Any sentence that completely matches *pattern*.
 
-          .ccl
-            The conclusion of the goal.
+          .g#\ *id*                     ex: .g#\ **1**
+            Goal number *id*.
+          .g#\ *name*                   ex: .g#\ **base_case**
+            The goal named *name* (`documentation <https://coq.inria.fr/refman/proofs/writing-proofs/proof-mode.html#coq:tacn.}>`__).
+          .g(*str*)                   ex: .g(**True**)
+            Any goal whole conclusion includes *str*.
+          .g{*pattern*}               ex: .g{**\* ++ \* ++ \* = \***}
+            Any goal whole complete conclusion matches *pattern*.
+          (.g is optional and defaults to #1.)
 
-          .h#\ *name*             ex: .h#\ **IHn**
-             The hypothesis named *name*.
-          .h(*str*)               ex: .h(**Permutation**)
-             Any hypothesis whose body or type includes *str*.
-          .h{*pattern*}           ex: .h{**nat**}
-             Any hypothesis whose complete body or type matches *pattern*.
+              .ccl
+                The conclusion of the goal.
+
+              .h#\ *name*               ex: .h#\ **IHn**
+                 The hypothesis named *name*.
+              .h(*str*)               ex: .h(**Permutation**)
+                 Any hypothesis whose body or type includes *str*.
+              .h{*pattern*}           ex: .h{**nat**}
+                 Any hypothesis whose complete body or type matches *pattern*.
 
 Plain search patterns (delimited by ``(…)``) are matched literally, anywhere in the term.  Other patterns (``{…}`` patterns and ``#…`` names) use ``fnmatch``-style `matching <https://docs.python.org/3/library/fnmatch.html>`__ (``?`` matches any character; ``*`` matches any sequence of characters; and ``[]`` matches a range of characters), and must match the whole term.  Hence:
 
@@ -366,6 +370,7 @@ Concretely, the markers in the example above were inserted by the following comm
   :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m)\``
      Search for a ``.s``\ entence, select the first ``.g``\ oal by ``#`` number, mark the ``.h``\ ypothesis ``IHm`` by searching for its contents.
 
+By default markers refer to the most recent ``.. coq::`` block, but other blocks can be targeted by name by prepending ``.io#name`` to the argument of ``:mref:``.
 
 Markers can be customized by setting the ``:counter-style:`` option on a custom role derived from ``:mref:``; for example, to use Devanagari numerals:
 

@@ -342,6 +342,10 @@ class RefCounter:
 class MrefError(ValueError):
     pass
 
+class ExactMatcher(str):
+    def match(self, other):
+        return self == other
+
 class PlainMatcher(str):
     def match(self, other):
         return self in other
@@ -350,10 +354,8 @@ class FnMatcher(str):
     def match(self, other):
         return fnmatchcase(other, self)
 
-QUERY_MATCHERS = {
-    'plain': PlainMatcher,
-    'fnmatch': FnMatcher
-}
+class NameMatcher(FnMatcher):
+    pass
 
 class AlectryonMrefTransform(OneTimeTransform):
     """Convert Alectryon input/output pairs into HTML or LaTeX.
@@ -388,61 +390,53 @@ class AlectryonMrefTransform(OneTimeTransform):
         raise MrefError("No such {}: '{}'".format(kind, needle))
 
     @classmethod
-    def _find_goal(cls, goals, name, needle):
-        if needle:
-            for g in goals:
-                if needle.match(g.conclusion.contents):
-                    return g
-            raise MrefError("No goal matches '{}'".format(needle))
-        try:
-            return goals[int(name) - 1]
-        except IndexError:
-            return cls._find_named("goal", goals, name)
+    def _find_goal(cls, goals, needle):
+        if isinstance(needle, NameMatcher):
+            try:
+                return goals[int(needle) - 1]
+            except IndexError:
+                return cls._find_named("goal", goals, needle)
+        for g in goals:
+            if needle.match(g.conclusion.contents):
+                return g
+        raise MrefError("No goal matches '{}'".format(needle))
 
     @classmethod
-    def _find_hyp(cls, hyps, name, needle):
-        assert bool(name) ^ bool(needle)
-        if needle:
-            for h in hyps:
-                if needle.match(h.type) or (h.body and needle.match(h.body)):
-                    return h
-            raise MrefError("No hypothesis matches '{}'".format(needle))
-        return cls._find_named("hypothesis", hyps, name)
+    def _find_hyp(cls, hyps, needle):
+        if isinstance(needle, NameMatcher):
+            return cls._find_named("hypothesis", hyps, needle)
+        for h in hyps:
+            if needle.match(h.type) or (h.body and needle.match(h.body)):
+                return h
+        raise MrefError("No hypothesis matches '{}'".format(needle))
 
-    @staticmethod
-    def _filter_query(query):
-        q = {}
-        for k, v in query.items():
-            if v:
-                k, *fn = k.split("__", maxsplit=1)
-                if fn:
-                    v = QUERY_MATCHERS[fn[0]](v)
-                q[k] = v
-        return q
+    @classmethod
+    def _validate_query(cls, q):
+        if "sentence" not in q:
+            raise MrefError("Missing .s(…) sentence component in query.")
 
     @classmethod
     def _find_mref_target(cls, node, ios, last_io):
-        query = cls._filter_query(node.details["query"])
+        query = node.details["query"]
+        cls._validate_query(query)
 
-        root = query.get("root")
-        io = ios.get(root) if root else last_io
+        io_name = query.get("io")
+        io = ios.get(io_name) if io_name else last_io
         if io is None:
             raise MrefError("Reference to unknown Alectryon block")
 
         sentence = cls._find_sentence(io.details["fragments"], query.get("sentence"))
         goals = [g for gs in transforms.fragment_goal_sets(sentence) for g in gs]
 
-        ccl, hyp = query.get("ccl"), query.get("hyp")
-        goal_name, goal_ccl = query.get("goal_name"), query.get("goal_ccl")
+        ccl, hyp, goal = query.get("ccl") is not None, query.get("hyp"), query.get("goal")
 
-        if ccl or hyp or goal_name or goal_ccl:
-            goal = cls._find_goal(goals, goal_name or "1", goal_ccl)
+        if ccl or hyp or goal:
+            goal = cls._find_goal(goals, goal or NameMatcher("1"))
             if ccl:
                 return goal.conclusion
             if hyp:
-                return cls._find_hyp(
-                    goal.hypotheses, query.get("hyp_name"), query.get("hyp_contents"))
-            if goal_name or goal_ccl:
+                return cls._find_hyp(goal.hypotheses, query.get("hyp"))
+            if goal:
                 return goal
         return sentence
 
@@ -698,27 +692,47 @@ def coq_id_role(# pylint: disable=dangerous-default-value,unused-argument
 coq_id_role.name = "coqid"
 coq_id_role.options = {'url': directives.unchanged}
 
-MARKER_PATH_ROOT = r"""
-          (?:[#](?P<root>[^.]+?))?"""
-MARKER_PATH_SENTENCE = r"""
-             [.]s
-              (?:[(](?P<sentence__plain>.+?)[)]
-                |[{](?P<sentence__fnmatch>.+?)[}])"""
-MARKER_PATH_CONTENTS = r"""
-          (?:[.]g
-              (?:[#](?P<goal_name__fnmatch>[^.]+?)
-                |[(](?P<goal_ccl__plain>.+?)[)]
-                |[{](?P<goal_ccl__fnmatch>.+?)[}]))?
-  (?:(?P<ccl>[.]ccl)
-    |(?P<hyp>[.]h
-              (?:[#](?P<hyp_name__fnmatch>[^.]+?)
-                |[(](?P<hyp_contents__plain>.+?)[)]
-                |[{](?P<hyp_contents__fnmatch>.+?)[}])))?"""
-MARKER_PATH_RE = re.compile(
-    MARKER_PATH_ROOT +
-    MARKER_PATH_SENTENCE +
-    MARKER_PATH_CONTENTS +
-    r"\Z", re.VERBOSE)
+MARKER_PATH_SEGMENT = re.compile(r"""
+  [.](?P<kind>s|g|h|ccl|io)
+   (?:(?P<nil>(?![#({]))
+     |[#](?P<name>[^. ]+)
+     |[(](?P<plain>.+?)[)]
+     |[{](?P<fnmatch>.+?)[}])""", re.VERBOSE)
+
+QUERY_KINDS = {
+    "io":  ("io", ("name",)),
+    "s":   ("sentence", ("plain", "fnmatch")),
+    "g":   ("goal", ("plain", "fnmatch", "name")),
+    "h":   ("hyp", ("plain", "fnmatch", "name")),
+    "ccl": ("ccl", ("nil",))
+}
+
+QUERY_MATCHERS = {
+    'nil': ExactMatcher,
+    'name': NameMatcher,
+    'plain': PlainMatcher,
+    'fnmatch': FnMatcher
+}
+
+def _parse_query(target):
+    if target[0] not in "#.":
+        return {"sentence": PlainMatcher(target)}
+
+    query, start = {}, 0
+    while start < len(target):
+        m = MARKER_PATH_SEGMENT.match(target, start)
+        if not m:
+            raise MrefError(target[start:])
+        for matcher_name, matcher in QUERY_MATCHERS.items():
+            needle = m.group(matcher_name)
+            if needle is not None:
+                kind, allowed_matchers = QUERY_KINDS[m.group("kind")]
+                if matcher_name not in allowed_matchers:
+                    raise MrefError(target[start:])
+                query[kind] = matcher(needle)
+        start = m.end()
+
+    return query
 
 COUNTER_STYLES = {
     'decimal': '0 1 2 3 4 5 6 7 8 9',
@@ -735,16 +749,17 @@ def marker_ref_role(# pylint: disable=dangerous-default-value,unused-argument
     if target is None:
         title, target = None, title
 
-    m = MARKER_PATH_RE.match(target)
-    if target[0] in "#." and not m:
-        MSG = "Cannot parse ``:mref:`` target ``{}``.".format(target)
+    try:
+        query = _parse_query(target)
+    except MrefError as e:
+        MSG = "Cannot parse ``:mref:`` target ``{}``.".format(str(e))
         msg = inliner.reporter.error(MSG, line=lineno)
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
 
     cs = options.pop("counter-style", None) or DEFAULT_COUNTER_STYLE
     details = {"title": title,
                "target": target,
-               "query": m.groupdict() if m else {"sentence__plain": target},
+               "query": query,
                "counter-style": cs }
 
     roles.set_classes(options)
