@@ -11,6 +11,7 @@
 \usepackage{ifthen}
 \usepackage{alltt}
 \usepackage{color}
+\setcounter{secnumdepth}{0}
 
 %%% Custom LaTeX preamble
 
@@ -80,6 +81,11 @@ $ DOCUTILSCONFIG=references.docutils.conf alectryon \textbackslash{}
     # ReST → HTML; produces ‘references.xe.tex’
 \end{alltt}
 \end{quote}
+
+
+\section{Referring to parts of a goal%
+  \label{referring-to-parts-of-a-goal}%
+}
 
 Alectryon supports references to individual sentences and hypotheses within a code fragment.  The easiest way to reference a sentence is to use \texttt{:mref:`search-term`}.  Alectryon will search for that text and automatically add a label to the first matching sentence of the proof.  For example:
 
@@ -563,5 +569,123 @@ The second batch of commands perform reduction with a custom strategy: \hyperref
 \end{quote}
 
 Each inline reference is a link to the corresponding code fragment.
+
+
+\section{Using references to customize display (\textbf{experimental})%
+  \label{using-references-to-customize-display-experimental}%
+}
+
+References can also be used to customize the display of goals and hypotheses.  In the following, hypotheses whose name start with \texttt{l} are omitted, and so are hypotheses named \texttt{a} and \texttt{A}.  After the call to \texttt{induction} (\hyperref[references-rst-io-pr-s-induction-1-0]{11}) the output is further limited to just goals 2 and 4, by excluding all goals and re-including only 2 and 4.  In goal 4, hypotheses whose type is exactly \texttt{list A} are shown, regardless of previous status, so \texttt{l}, \texttt{l'}, \texttt{l''} are visible (\hyperref[references-rst-io-pr-s-induction-1-g-4-h-l-0]{12}).
+
+\begin{quote}
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \anchor{pr}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Theorem}~\PY{n+nf}{Permutation\PYZus{}In}~\PY{o}{\PYZob{}}\PY{n+nv}{A}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{l}~\PY{n+nv}{l\PYZsq{}}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}\PY{o}{:}~\PY{n}{A}\PY{o}{)}~\PY{o}{:}\nl
+      ~~\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Proof}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{n+nb}{induction}~\PY{l+m+mi}{1}\PY{o}{;}~\PY{n+nb}{intros}~\PY{o}{*}~\PY{n}{Hin}\PY{o}{.}\anchor{references-rst-io-pr-s-induction-1-0}\mrefmarker{11}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}
+            \hyp{H}{\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}}
+            \sep
+            \hyp{IHPermutation}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}}
+            \sep
+            \hyp{Hin}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{o}{(}\PY{n}{x}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}}
+          \end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{o}{(}\PY{n}{x}~\PY{o}{::}~\PY{n}{l\PYZsq{}}\PY{o}{)}
+          \end{conclusion}
+        \end{goal}
+        \sep
+        \begin{extragoals}
+          \begin{goal}
+            \begin{hyps}
+              \hyp{l, l\char`\', l\char`\'\char`\'}{\PY{n}{list}~\PY{n}{A}\anchor{references-rst-io-pr-s-induction-1-g-4-h-l-0}\mrefmarker{12}}
+              \sep
+              \hyp{H}{\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}}
+              \sep
+              \hyp{H0}{\PY{n}{Permutation}~\PY{n}{l\PYZsq{}}~\PY{n}{l\PYZsq{}\PYZsq{}}}
+              \sep
+              \hyp{IHPermutation1}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}}
+              \sep
+              \hyp{IHPermutation2}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}\PYZsq{}}}
+              \sep
+              \hyp{Hin}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}}
+            \end{hyps}
+            \sep
+            \infrule{}
+            \sep
+            \begin{conclusion}
+              \PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}\PYZsq{}}
+            \end{conclusion}
+          \end{goal}
+        \end{extragoals}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kp}{all}\PY{o}{:}~\PY{n+nb}{simpl}~\PY{k+kr}{in}~\PY{o}{*;}~\PY{n+nb+bp}{tauto}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Qed}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+\end{alectryon}
+\end{quote}
 
 \end{document}

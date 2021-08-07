@@ -10,6 +10,9 @@ To compile::
        references.rst -o references.xe.tex --latex-dialect xelatex
        # ReST → HTML; produces ‘references.xe.tex’
 
+Referring to parts of a goal
+============================
+
 Alectryon supports references to individual sentences and hypotheses within a code fragment.  The easiest way to reference a sentence is to use :literal:`:mref:\`search-term\``.  Alectryon will search for that text and automatically add a label to the first matching sentence of the proof.  For example:
 
     .. coq::
@@ -82,3 +85,19 @@ Here is how it looks:
     The second batch of commands perform reduction with a custom strategy: :jref:`.io#cp.s(simpl)` :jref:`.io#cp.s(cbn)` :jref:`.io#cp.s(cbv)` :jref:`.io#cp.s(lazy)` :jref:`.io#cp.s(vm_compute)` :jref:`.io#cp.s(pattern)`.
 
 Each inline reference is a link to the corresponding code fragment.
+
+Using references to customize display (**experimental**)
+========================================================
+
+References can also be used to customize the display of goals and hypotheses.  In the following, hypotheses whose name start with ``l`` are omitted, and so are hypotheses named ``a`` and ``A``.  After the call to ``induction`` (:mref:`.io#pr.s(induction 1)`) the output is further limited to just goals 2 and 4, by excluding all goals and re-including only 2 and 4.  In goal 4, hypotheses whose type is exactly ``list A`` are shown, regardless of previous status, so ``l``, ``l'``, ``l''`` are visible (:mref:`.io#pr.s(induction 1).g#4.h#l`).
+
+    .. coq:: -.h#l* -.h#[aA]
+       :name: pr
+
+       Require Import Coq.Sorting.Permutation. (* .none *)
+       Theorem Permutation_In {A} (l l' : list A) (a: A) :
+         Permutation l l' -> List.In a l -> List.In a l'. (* .unfold *)
+       Proof.
+         induction 1; intros * Hin. (* .unfold -.g#* .g#2 .g#4 .g#4.h{list A} *)
+         all: simpl in *; tauto.
+       Qed.
