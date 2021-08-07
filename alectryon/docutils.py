@@ -67,7 +67,6 @@ side, and a doctree-resolved event on the Sphinx side.
 import re
 import os.path
 from collections import namedtuple, defaultdict
-from fnmatch import fnmatchcase
 from importlib import import_module
 
 import docutils
@@ -80,8 +79,8 @@ from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
-from . import transforms, html, latex
-from .core import RichSentence, Gensym, annotate, SerAPI
+from . import transforms, html, latex, markers
+from .core import Gensym, annotate, SerAPI
 from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
@@ -339,24 +338,6 @@ class RefCounter:
         num = self.counters[style] = self.counters[style] + 1
         return style.fmt(num)
 
-class MrefError(ValueError):
-    pass
-
-class ExactMatcher(str):
-    def match(self, other):
-        return self == other
-
-class PlainMatcher(str):
-    def match(self, other):
-        return self in other
-
-class FnMatcher(str):
-    def match(self, other):
-        return fnmatchcase(other, self)
-
-class NameMatcher(FnMatcher):
-    pass
-
 class AlectryonMrefTransform(OneTimeTransform):
     """Convert Alectryon input/output pairs into HTML or LaTeX.
 
@@ -373,74 +354,33 @@ class AlectryonMrefTransform(OneTimeTransform):
         warn.add_backref(pbid)
         node.replace_self(pb)
 
-    @staticmethod
-    def _find_sentences(fragments, needle):
-        for fr in fragments:
-            # LATER: Add a way to name sentences to make them easier to select
-            if isinstance(fr, RichSentence) and needle.match(fr.contents):
-                yield fr
-
-    @staticmethod
-    def _find_named(items, needle):
-        for item in items:
-            names = getattr(item, "names", (getattr(item, "name", None),))
-            if any(nm and needle.match(nm) for nm in names):
-                yield item
-
     @classmethod
-    def _find_goals(cls, goals, needle):
-        if isinstance(needle, NameMatcher):
-            try:
-                yield goals[int(needle) - 1]
-            except IndexError:
-                yield from cls._find_named(goals, needle)
-            return
-        for g in goals:
-            if needle.match(g.conclusion.contents):
-                yield g
-
-    @staticmethod
-    def _find_one(kind, lookup_fn, haystack, needle):
-        for s in lookup_fn(haystack, needle):
-            return s
-        raise MrefError("No {} matches '{}'".format(kind, needle))
-
-    @classmethod
-    def _find_hyps(cls, hyps, needle):
-        if isinstance(needle, NameMatcher):
-            yield from cls._find_named(hyps, needle)
-            return
-        for h in hyps:
-            if needle.match(h.type) or (h.body and needle.match(h.body)):
-                yield h
-
-    @classmethod
-    def _validate_query(cls, q):
+    def _validate_path(cls, q):
         if "sentence" not in q:
-            raise MrefError("Missing .s(…) sentence component in query.")
+            raise markers.MarkerError("Missing .s(…) sentence component in path.")
         if "ccl" in q or "hyp" in q:
-            q.setdefault("goal", NameMatcher("1"))
+            q.setdefault("goal", markers.NameMatcher("1"))
 
     @classmethod
     def _find_mref_target(cls, node, ios, last_io):
-        query = node.details["query"]
-        cls._validate_query(query)
+        path = node.details["path"]
+        cls._validate_path(path)
 
-        io_name = query.get("io")
+        io_name = path.get("io")
         io = ios.get(io_name) if io_name else last_io
         if io is None:
-            raise MrefError("Reference to unknown Alectryon block")
+            raise markers.MarkerError("Reference to unknown Alectryon block")
 
         fragments = io.details["fragments"]
-        sentence = cls._find_one("sentence", cls._find_sentences, fragments, query["sentence"])
+        sentence = markers.find_one("sentence", markers.find_sentences, fragments, path["sentence"])
 
-        if "goal" in query:
+        if "goal" in path:
             goals = [g for gs in transforms.fragment_goal_sets(sentence) for g in gs]
-            goal = cls._find_one("goal", cls._find_goals, goals, query["goal"])
-            if "ccl" in query:
+            goal = markers.find_one("goal", markers.find_goals, goals, path["goal"])
+            if "ccl" in path:
                 return goal.conclusion
-            if "hyp" in query:
-                return cls._find_one("hypothesis", cls._find_hyps, goal.hypotheses, query["hyp"])
+            if "hyp" in path:
+                return markers.find_one("hypothesis", markers.find_hyps, goal.hypotheses, path["hyp"])
             return goal
 
         return sentence
@@ -453,7 +393,7 @@ class AlectryonMrefTransform(OneTimeTransform):
         if not target.markers:
             style = node.details["counter-style"]
             target.markers.append(node.details["title"] or refcounter.next(style))
-        # print(node.rawsource, "→\n  ", node.details["query"], "→\n  ", target)
+        # print(node.rawsource, "→\n  ", node.details["path"], "→\n  ", target)
         marker, refid = target.markers[-1], target.ids[-1]
         ref = nodes.reference(node.rawsource, marker, classes=[], refid=refid)
         node.replace_self(ref)
@@ -471,7 +411,7 @@ class AlectryonMrefTransform(OneTimeTransform):
             elif isinstance(node, alectryon_pending_mref):
                 try:
                     self.replace_one_mref(gensym, refcounter, node, ios, last_io)
-                except MrefError as e:
+                except markers.MarkerError as e:
                     msg = "Error in '{}': {}".format(node.rawsource, e)
                     self._warn(node, msg)
 
@@ -697,48 +637,6 @@ def coq_id_role(# pylint: disable=dangerous-default-value,unused-argument
 coq_id_role.name = "coqid"
 coq_id_role.options = {'url': directives.unchanged}
 
-MARKER_PATH_SEGMENT = re.compile(r"""
-  [.](?P<kind>s|g|h|ccl|io)
-   (?:(?P<nil>(?![#({]))
-     |[#](?P<name>[^. ]+)
-     |[(](?P<plain>.+?)[)]
-     |[{](?P<fnmatch>.+?)[}])""", re.VERBOSE)
-
-QUERY_KINDS = {
-    "io":  ("io", ("name",)),
-    "s":   ("sentence", ("plain", "fnmatch")),
-    "g":   ("goal", ("plain", "fnmatch", "name")),
-    "h":   ("hyp", ("plain", "fnmatch", "name")),
-    "ccl": ("ccl", ("nil",))
-}
-
-QUERY_MATCHERS = {
-    'nil': ExactMatcher,
-    'name': NameMatcher,
-    'plain': PlainMatcher,
-    'fnmatch': FnMatcher
-}
-
-def _parse_query(target):
-    if target[0] not in "#.":
-        return {"sentence": PlainMatcher(target)}
-
-    query, start = {}, 0
-    while start < len(target):
-        m = MARKER_PATH_SEGMENT.match(target, start)
-        if not m:
-            raise MrefError(target[start:])
-        for matcher_name, matcher in QUERY_MATCHERS.items():
-            needle = m.group(matcher_name)
-            if needle is not None:
-                kind, allowed_matchers = QUERY_KINDS[m.group("kind")]
-                if matcher_name not in allowed_matchers:
-                    raise MrefError(target[start:])
-                query[kind] = matcher(needle)
-        start = m.end()
-
-    return query
-
 COUNTER_STYLES = {
     'decimal': '0 1 2 3 4 5 6 7 8 9',
     'lower-alpha': '_ a b c d e f g h i j k l m n o p q r s t u v w x y z',
@@ -755,8 +653,11 @@ def marker_ref_role(# pylint: disable=dangerous-default-value,unused-argument
         title, target = None, title
 
     try:
-        query = _parse_query(target)
-    except MrefError as e:
+        if target[0] in "#.":
+            path = markers.parse_path(target)
+        else:
+            path = {"sentence": markers.PlainMatcher(target)}
+    except markers.MarkerError as e:
         MSG = "Cannot parse ``:mref:`` target ``{}``.".format(str(e))
         msg = inliner.reporter.error(MSG, line=lineno)
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
@@ -764,7 +665,7 @@ def marker_ref_role(# pylint: disable=dangerous-default-value,unused-argument
     cs = options.pop("counter-style", None) or DEFAULT_COUNTER_STYLE
     details = {"title": title,
                "target": target,
-               "query": query,
+               "path": path,
                "counter-style": cs }
 
     roles.set_classes(options)
