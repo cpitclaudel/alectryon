@@ -23,7 +23,8 @@ import re
 import textwrap
 from copy import copy
 from collections import namedtuple
-from itertools import chain
+
+from . import markers
 from .core import Sentence, Text, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
     Goals, Messages, RichSentence
@@ -33,11 +34,13 @@ class IOAnnots:
         self.filters = None
         self.unfold = None
         self.fails = None
+        self.paths = []
         for annot in annots:
             self.update(annot)
 
     NO = re.compile("no-")
-    RE = re.compile("[.]([-a-z]+)")
+    RE = re.compile("(?P<io>[-a-z]+)")
+    DOTTED_RE = re.compile("[.]" + RE.pattern)
     FILTER_ALL = {'in': True, 'hyps': True, 'ccls': True, 'messages': True}
     FILTER_NONE = {'in': False, 'hyps': False, 'ccls': False, 'messages': False}
     META_FLAGS = {
@@ -77,15 +80,15 @@ class IOAnnots:
 
     def inherit(self, other):
         for field, value in self.__dict__.items():
-            if value is None:
+            if not value:
                 setattr(self, field, copy(getattr(other, field)))
 
     def __getitem__(self, key):
         return self.filters[key] if self.filters else True
 
     def __repr__(self):
-        return "IOAnnots(unfold={}, fails={}, filters={})".format(
-            self.unfold, self.fails, self.filters)
+        return "IOAnnots(unfold={}, fails={}, filters={}, paths={})".format(
+            self.unfold, self.fails, self.filters, self.paths)
 
 def _enrich_goal(g):
     return RichGoal(g.name, RichCode(g.conclusion),
@@ -104,7 +107,39 @@ def enrich_sentences(fragments):
         else:
             yield fr
 
-IO_COMMENT_RE = re.compile(r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(IOAnnots.RE.pattern))
+ISOLATED = r"(?:\s|\A){}(?=\s|\Z)"
+POLARIZED_PATH_SEGMENT = r"(?P<polarity>[-+]?)(?P<path>(?:{})+)".format(
+    markers.MARKER_PATH_SEGMENT.pattern)
+
+ONE_IO_FLAG = r"(?:{}|{})".format(
+    POLARIZED_PATH_SEGMENT, IOAnnots.RE.pattern)
+ONE_IO_FLAG_RE = re.compile(
+    ISOLATED.format(ONE_IO_FLAG), re.VERBOSE)
+
+ONE_IO_ANNOT = r"(?:{}|{})".format(
+    POLARIZED_PATH_SEGMENT, IOAnnots.DOTTED_RE.pattern)
+ONE_IO_ANNOT_RE = re.compile(
+    ISOLATED.format(ONE_IO_ANNOT), re.VERBOSE)
+IO_COMMENT_RE = re.compile(
+    r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(ONE_IO_ANNOT),
+    re.VERBOSE)
+
+def _update_io_flags(annots, flags_str, regex):
+    for mannot in regex.finditer(flags_str):
+        io, path, polarity = mannot.group("io", "path", "polarity")
+        if io:
+            annots.update(io)
+        else:
+            annots.paths.append((polarity, markers.parse_path(path)))
+
+def process_io_flags(annots, flags_str):
+    _update_io_flags(annots, flags_str, ONE_IO_FLAG_RE)
+    return ONE_IO_FLAG_RE.sub("", flags_str)
+
+def _process_io_comments(annots, contents):
+    for m in IO_COMMENT_RE.finditer(contents):
+        _update_io_flags(annots, m.group(0), ONE_IO_ANNOT_RE)
+    return IO_COMMENT_RE.sub("", contents)
 
 def process_io_annotations(fragments):
     """Strip IO comments and update ``.annots`` fields accordingly.
@@ -115,15 +150,13 @@ def process_io_annotations(fragments):
     annotated = []
     for fr in enrich_sentences(fragments):
         if isinstance(fr, Text):
-            target = annotated[-1] if annotated else None
-            assert not isinstance(target, Text)
+            sentence = annotated[-1] if annotated else None
         else:
-            target = fr
-        if target:
-            for m in IO_COMMENT_RE.finditer(fr.contents):
-                for mannot in IOAnnots.RE.finditer(m.group(0)):
-                    target.annots.update(mannot.group(1))
-            fr = fr._replace(contents=IO_COMMENT_RE.sub("", fr.contents))
+            sentence = fr
+        if sentence:
+            assert isinstance(sentence, RichSentence)
+            contents = _process_io_comments(sentence.annots, fr.contents)
+            fr = fr._replace(contents=contents)
         annotated.append(fr)
     return annotated
 
@@ -134,6 +167,32 @@ def should_keep_output(output, annots):
     if isinstance(output, Goals):
         return (annots["hyps"] or annots["ccls"]) and output.goals
     assert False
+
+def _process_io_path(sentence, polarity, path):
+    enabled = polarity != "-"
+
+    if "ccl" in path or "hyp" in path:
+        path.setdefault("goal", markers.TopMatcher())
+
+    assert isinstance(sentence, RichSentence)
+
+    if "sentence" in path and not path.get("sentence").match(sentence.contents):
+        return
+
+    if "goal" in path:
+        for g in markers.find_goals(list(fragment_goals(sentence)), path["goal"]):
+            if "ccl" in path:
+                g.flags["enabled"] = enabled
+            elif "hyp" in path:
+                for h in markers.find_hyps(g.hypotheses, path["hyp"]):
+                    h.flags["enabled"] = enabled
+            else:
+                g.flags["enabled"] = enabled
+    else:
+        sentence.flags["enabled"] = enabled
+
+def _commit_enabled(objs):
+    objs[:] = [o for o in objs if o.flags.get("enabled", True)]
 
 def commit_io_annotations(fragments, discard_folded=False):
     """Use I/O annotations to filter `fragments`.
@@ -147,22 +206,34 @@ def commit_io_annotations(fragments, discard_folded=False):
             if fr.annots.hide:
                 continue
 
+            for pth in fr.annots.paths:
+                _process_io_path(fr, *pth)
+
+            for o in fr.outputs:
+                if isinstance(o, Goals):
+                    _commit_enabled(o.goals)
+                elif isinstance(o, Messages):
+                    _commit_enabled(o.messages)
+                else:
+                    assert False
+
             contents = fr.contents if fr.annots["in"] else None
             if discard_folded and not fr.annots.unfold:
-                outputs = []
+                fr.outputs.clear()
             else:
-                outputs = [o for o in fr.outputs if should_keep_output(o, fr.annots)]
+                fr.outputs[:] = [o for o in fr.outputs if should_keep_output(o, fr.annots)]
 
-            if not fr.annots["hyps"]:
-                for o in outputs:
-                    if isinstance(o, Goals):
-                        for g in o.goals:
+            for o in fr.outputs:
+                if isinstance(o, Goals):
+                    for g in o.goals:
+                        if not fr.annots["hyps"]:
                             g.hypotheses.clear()
+                        _commit_enabled(g.hypotheses)
 
-            if contents is None and outputs and not fr.annots.unfold:
+            if contents is None and fr.outputs and not fr.annots.unfold:
                 MSG = "Cannot show output of {!r} without .in or .unfold."
                 raise ValueError(MSG.format(fr.contents))
-            fr = fr._replace(contents=contents, outputs=outputs)
+            fr = fr._replace(contents=contents)
         yield fr
 
 LEADING_BLANKS_RE = re.compile(r'\A([ \t]*(?:\n|\Z))?(.*?)([ \t]*)\Z',
@@ -255,6 +326,10 @@ def fragment_goal_sets(fr):
     if isinstance(fr, Sentence):
         yield fr.goals
 
+def fragment_goals(fr):
+    for gs in fragment_goal_sets(fr):
+        yield from gs
+
 def fragment_message_sets(fr):
     if isinstance(fr, RichSentence):
         yield from (ms.messages for ms in fr.outputs if isinstance(ms, Messages))
@@ -263,7 +338,7 @@ def fragment_message_sets(fr):
 
 def group_hypotheses(fragments):
     for fr in fragments:
-        for g in chain(*fragment_goal_sets(fr)):
+        for g in fragment_goals(fr):
             hyps = []
             for hyp in g.hypotheses:
                 if (hyps

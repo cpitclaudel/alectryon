@@ -28,20 +28,28 @@ from .core import RichSentence
 class MarkerError(ValueError):
     pass
 
-class ExactMatcher(str):
+class Matcher():
+    def match(self, other):
+        raise NotImplementedError()
+
+class ExactMatcher(str, Matcher):
     def match(self, other):
         return self == other
 
-class PlainMatcher(str):
+class PlainMatcher(str, Matcher):
     def match(self, other):
         return self in other
 
-class FnMatcher(str):
+class FnMatcher(str, Matcher):
     def match(self, other):
         return fnmatchcase(other, self)
 
 class NameMatcher(FnMatcher):
     pass
+
+class TopMatcher(Matcher):
+    def match(self, _):
+        return True
 
 def find_sentences(fragments, needle):
     for fr in fragments:
@@ -51,15 +59,15 @@ def find_sentences(fragments, needle):
 
 def find_named(items, needle):
     for item in items:
-        names = getattr(item, "names", (getattr(item, "name", None),))
-        if any(nm and needle.match(nm) for nm in names):
+        names = getattr(item, "names", []) or (getattr(item, "name", None) or "@unnamed",)
+        if any(needle.match(nm) for nm in names):
             yield item
 
 def find_goals(goals, needle):
     if isinstance(needle, NameMatcher):
         try:
             yield goals[int(needle) - 1]
-        except IndexError:
+        except (IndexError, ValueError):
             yield from find_named(goals, needle)
         return
     for g in goals:
@@ -101,10 +109,11 @@ QUERY_MATCHERS = {
     'fnmatch': FnMatcher
 }
 
-def parse_path(path):
-    query, start = {}, 0
-    while start < len(path):
-        m = MARKER_PATH_SEGMENT.match(path, start)
+def parse_path(path, start=0, endpos=None):
+    parsed = {}
+    endpos = len(path) if endpos is None else endpos
+    while start < endpos:
+        m = MARKER_PATH_SEGMENT.match(path, start, endpos=endpos)
         if not m:
             raise MarkerError(path[start:])
         for matcher_name, matcher in QUERY_MATCHERS.items():
@@ -113,6 +122,6 @@ def parse_path(path):
                 kind, allowed_matchers = QUERY_KINDS[m.group("kind")]
                 if matcher_name not in allowed_matchers:
                     raise MarkerError(path[start:])
-                query[kind] = matcher(needle)
+                parsed[kind] = matcher(needle)
         start = m.end()
-    return query
+    return parsed

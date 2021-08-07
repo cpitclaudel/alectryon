@@ -50,14 +50,17 @@ Text = namedtuple("Text", "contents")
 class Enriched():
     __slots__ = ()
     def __new__(cls, *args, **kwargs):
-        return super().__new__(cls, *args, **{"ids": [], "markers":[], **kwargs})
+        kwargs = {"ids": [], "markers":[], "flags": {}, **kwargs}
+        return super().__new__(cls, *args, **kwargs)
 
 def _enrich(nt):
     # LATER: Use dataclass + multiple inheritance; change `ids` and `markers` to
     # mutable `id` and `marker` fields.
-    name, fields = "Rich" + nt.__name__, nt._fields + ("ids", "markers")
+    name = "Rich" + nt.__name__
+    fields = nt._fields + ("ids", "markers", "flags")
     # Using ``type`` this way ensures compatibility with pickling
-    return type(name, (Enriched, namedtuple(name, fields)), {})
+    return type(name, (Enriched, namedtuple(name, fields)),
+                {"__slots__": ()})
 
 Goals = namedtuple("Goals", "goals")
 Messages = namedtuple("Messages", "messages")

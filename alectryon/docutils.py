@@ -250,8 +250,16 @@ class AlectryonTransform(OneTimeTransform):
         chunks = [pending.details["contents"] for pending in pending_nodes]
         return self.annotate_cached(chunks, sertop_args)
 
+    @staticmethod
+    def _annots_of_directive_argument(argument):
+        annots = transforms.IOAnnots()
+        leftover = transforms.process_io_flags(annots, argument).strip()
+        if leftover:
+            raise ValueError("Unrecognized directive flags: {}".format(leftover))
+        return annots
+
     def replace_node(self, pending, fragments):
-        annots = transforms.IOAnnots(*pending.details['options'])
+        annots = self._annots_of_directive_argument(pending.details["flags"])
         if annots.hide:
             pending.parent.remove(pending)
             return
@@ -355,11 +363,11 @@ class AlectryonMrefTransform(OneTimeTransform):
         node.replace_self(pb)
 
     @classmethod
-    def _validate_path(cls, q):
-        if "sentence" not in q:
+    def _validate_path(cls, path):
+        if "sentence" not in path:
             raise markers.MarkerError("Missing .s(…) sentence component in path.")
-        if "ccl" in q or "hyp" in q:
-            q.setdefault("goal", markers.NameMatcher("1"))
+        if "ccl" in path or "hyp" in path:
+            path.setdefault("goal", markers.NameMatcher("1"))
 
     @classmethod
     def _find_mref_target(cls, node, ios, last_io):
@@ -375,7 +383,7 @@ class AlectryonMrefTransform(OneTimeTransform):
         sentence = markers.find_one("sentence", markers.find_sentences, fragments, path["sentence"])
 
         if "goal" in path:
-            goals = [g for gs in transforms.fragment_goal_sets(sentence) for g in gs]
+            goals = list(transforms.fragment_goals(sentence))
             goal = markers.find_one("goal", markers.find_goals, goals, path["goal"])
             if "ccl" in path:
                 return goal.conclusion
@@ -508,9 +516,9 @@ class CoqDirective(Directive):
         roles.set_classes(self.options)
         self.assert_has_content()
 
-        arguments = self.arguments[0].split() if self.arguments else []
+        argument = self.arguments[0] if self.arguments else ""
         contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
-        details = {"options": set(arguments), "contents": contents}
+        details = {"flags": argument, "contents": contents}
         pending = alectryon_pending(AlectryonTransform, details=details,
                                     **self.options)
 
