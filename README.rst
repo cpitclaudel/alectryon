@@ -260,6 +260,21 @@ These annotations can also be added to individual Coq sentences (⚠ *sentences*
         Fail exact 1. (* .in .messages *) ← Goal omitted
         Fail fail. (* .messages *)        ← Error message shown, input hidden
 
+More precise inclusion/exclusion is possible using the `marker-placement mini-language <marker-language_>`__ described below.  For example:
+
+``-.h(Inhabited)``
+  Hide all hypotheses that mention ``Inhabited``
+``-.g#2.h#IHn``
+  Hide hypothesis ``IHn`` in goal 2.
+``-.g#2.h#*``
+  Hide all hypotheses of goal 2.
+``-.h#* .h#IHn``
+  Show only hypothesis ``IHn``
+``-.g#* .g#1 .g#3 .g{False}``
+  Show only goals 1, 3, and any goal whose conclusion is ``False``.
+
+**This feature is experimental**; the syntax might change.
+
 .. _marker-language:
 
 Referring to subparts of a proof (the marker-placement mini-language)
@@ -340,6 +355,8 @@ Plain search patterns (delimited by ``(…)``) are matched literally, anywhere i
 
 Except for special characters, ``.h(…)`` is the same as ``.h{*…*}``.
 
+**This feature is experimental**; the syntax might change.
+
 Extra roles and directives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -380,6 +397,8 @@ Markers can be customized by setting the ``:counter-style:`` option on a custom 
       :counter-style: ० १ २ ३ ४ ५ ६ ७ ८ ९
 
 More details and examples are given in `<recipes/references.rst>`__.
+
+**This feature is experimental**: the syntax might change.
 
 Links to Coq identifiers
 ************************
