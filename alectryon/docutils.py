@@ -374,46 +374,52 @@ class AlectryonMrefTransform(OneTimeTransform):
         node.replace_self(pb)
 
     @staticmethod
-    def _find_sentence(fragments, needle):
+    def _find_sentences(fragments, needle):
         for fr in fragments:
+            # LATER: Add a way to name sentences to make them easier to select
             if isinstance(fr, RichSentence) and needle.match(fr.contents):
-                return fr
-        # LATER: Add a way to name sentences to make them easier to select
-        raise MrefError("No sentence matches '{}'".format(needle))
+                yield fr
 
     @staticmethod
-    def _find_named(kind, items, needle):
+    def _find_named(items, needle):
         for item in items:
             names = getattr(item, "names", (getattr(item, "name", None),))
             if any(nm and needle.match(nm) for nm in names):
-                return item
-        raise MrefError("No such {}: '{}'".format(kind, needle))
+                yield item
 
     @classmethod
-    def _find_goal(cls, goals, needle):
+    def _find_goals(cls, goals, needle):
         if isinstance(needle, NameMatcher):
             try:
-                return goals[int(needle) - 1]
+                yield goals[int(needle) - 1]
             except IndexError:
-                return cls._find_named("goal", goals, needle)
+                yield from cls._find_named(goals, needle)
+            return
         for g in goals:
             if needle.match(g.conclusion.contents):
-                return g
-        raise MrefError("No goal matches '{}'".format(needle))
+                yield g
+
+    @staticmethod
+    def _find_one(kind, lookup_fn, haystack, needle):
+        for s in lookup_fn(haystack, needle):
+            return s
+        raise MrefError("No {} matches '{}'".format(kind, needle))
 
     @classmethod
-    def _find_hyp(cls, hyps, needle):
+    def _find_hyps(cls, hyps, needle):
         if isinstance(needle, NameMatcher):
-            return cls._find_named("hypothesis", hyps, needle)
+            yield from cls._find_named(hyps, needle)
+            return
         for h in hyps:
             if needle.match(h.type) or (h.body and needle.match(h.body)):
-                return h
-        raise MrefError("No hypothesis matches '{}'".format(needle))
+                yield h
 
     @classmethod
     def _validate_query(cls, q):
         if "sentence" not in q:
             raise MrefError("Missing .s(…) sentence component in query.")
+        if "ccl" in q or "hyp" in q:
+            q.setdefault("goal", NameMatcher("1"))
 
     @classmethod
     def _find_mref_target(cls, node, ios, last_io):
@@ -425,19 +431,18 @@ class AlectryonMrefTransform(OneTimeTransform):
         if io is None:
             raise MrefError("Reference to unknown Alectryon block")
 
-        sentence = cls._find_sentence(io.details["fragments"], query.get("sentence"))
-        goals = [g for gs in transforms.fragment_goal_sets(sentence) for g in gs]
+        fragments = io.details["fragments"]
+        sentence = cls._find_one("sentence", cls._find_sentences, fragments, query["sentence"])
 
-        ccl, hyp, goal = query.get("ccl") is not None, query.get("hyp"), query.get("goal")
-
-        if ccl or hyp or goal:
-            goal = cls._find_goal(goals, goal or NameMatcher("1"))
-            if ccl:
+        if "goal" in query:
+            goals = [g for gs in transforms.fragment_goal_sets(sentence) for g in gs]
+            goal = cls._find_one("goal", cls._find_goals, goals, query["goal"])
+            if "ccl" in query:
                 return goal.conclusion
-            if hyp:
-                return cls._find_hyp(goal.hypotheses, query.get("hyp"))
-            if goal:
-                return goal
+            if "hyp" in query:
+                return cls._find_one("hypothesis", cls._find_hyps, goal.hypotheses, query["hyp"])
+            return goal
+
         return sentence
 
     def replace_one_mref(self, gensym, refcounter, node, ios, last_io):
