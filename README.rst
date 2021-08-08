@@ -298,20 +298,20 @@ In the example below, the markers ``[α]``, ``[β]``, and ``[γ]`` correspond to
 - ``[α]``
 
   ``.s(Goal ∀)``
-     Search for a ``.s``\ entence by matching its contents.
+     Search for a sentence (``.s(…)``) by matching its contents.
 
 - ``[β]``
 
   ``.s(Base case).ccl``
-     Search for a ``.s``\ entence matching ``Base case``, then mark the conclusion of its first goal.
+     Search for a sentence (``.s(…)``) matching ``Base case``, then match the conclusion (``.ccl``) of its first goal.
 
 - ``[γ]``
 
   ``.s(Induction).h#IHm``
-     Search for a ``.s``\ entence matching ``Induction``, then match the ``.h``\ ypothesis ``IHm`` by name in the first goal.
+     Search for a sentence (``.s(…)``) matching ``Induction``, then match the hypothesis ``IHm`` by name  (``.h#…``) in the first goal.
 
   ``.s(Induction).g#1.h(m + n = n + m)``
-     Search for a ``.s``\ entence matching ``Induction``, select its first ``.g``\ oal by ``#`` number, match the ``.h``\ ypothesis ``IHm`` by searching for its contents.
+     Search for a sentence (``.s(…)``) matching ``Induction``, select its first goal by number (``.g#…``), match the hypothesis ``IHm`` by searching for its contents (``.h(…)``).
 
 The full architecture of a path is shown below for reference:
 
@@ -353,7 +353,7 @@ Plain search patterns (delimited by ``(…)``) are matched literally, anywhere i
 - To match hypotheses whole type or body includes ``Permutation`` anywhere, use ``.h(Permutation)`` or ``.h{*Permutation*}``.
 - Etc.
 
-Except for special characters, ``.h(…)`` is the same as ``.h{*…*}``.
+As long as the search term does not contain special characters (``*?[]``), a plain search (``(…)``) is the same as an fnmatch-style search with wildcards on both sides (``{*…*}``).
 
 **This feature is experimental**; the syntax might change.
 
@@ -367,25 +367,7 @@ Markers and marker references
 
 The ``:mref:`` role (short for “marker reference”) can be used to point the reader to a sentence, a goal, or a hypothesis.  The argument is a search pattern written in the `marker-placement mini-language <marker-language_>`__; Alectryon locates the corresponding object in the input sent to the prover or in the prover's output, inserts a marker at that point, and replaces the reference with a link to that marker.
 
-Concretely, the markers in the example above were inserted by the following commands:
-
-- ``[α]``
-
-  :literal:`:mref:\`Goal ∀\``
-    Plain-text search for a sentence (for simplicity, ``xyz`` is short for ``.s(xyz)``).
-
-- ``[β]``
-
-  :literal:`:mref:\`.s(Base case).ccl\``
-     Search for a ``.s``\ entence, then mark the conclusion of the first goal.
-
-- ``[γ]``
-
-  :literal:`:mref:\`.s(Induction).h#IHm\``
-     Search for a ``.s``\ entence, then mark the ``.h``\ ypothesis ``IHm`` by name in the first goal.
-
-  :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m)\``
-     Search for a ``.s``\ entence, select the first ``.g``\ oal by ``#`` number, mark the ``.h``\ ypothesis ``IHm`` by searching for its contents.
+For example, the ``[γ]`` marker in the example above could be inserted using :literal:`:mref:\`.s(Induction).h#IHm\`` or :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m)\``.
 
 By default markers refer to the most recent ``.. coq::`` block, but other blocks can be targeted by name by prepending ``.io#name`` to the argument of ``:mref:``.
 
