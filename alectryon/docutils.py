@@ -393,7 +393,12 @@ class AlectryonMrefTransform(OneTimeTransform):
             if "ccl" in path:
                 return goal.conclusion
             if "hyp" in path:
-                return markers.find_one("hypothesis", markers.find_hyps, goal.hypotheses, path["hyp"])
+                hyp = markers.find_one("hypothesis", markers.find_hyps, goal.hypotheses, path["hyp"])
+                # Unfold to ensure visibility (but only if search succeeded)
+                if sentence.annots.unfold is None:
+                    sentence.annots.unfold = True
+                goal.flags.setdefault("unfold", True)
+                return hyp
             return goal
 
         return sentence

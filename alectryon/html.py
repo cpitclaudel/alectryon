@@ -155,7 +155,8 @@ class HtmlGenerator:
         with tags.div(cls='alectryon-extra-goals'):
             for goal in goals:
                 toggle = goal.hypotheses and \
-                    self.gen_checkbox(False, "alectryon-extra-goal-toggle")
+                    self.gen_checkbox(goal.flags.get("unfold"),
+                                      "alectryon-extra-goal-toggle")
                 self.gen_goal(goal, toggle=toggle)
 
     @deduplicate(".alectryon-goals")
