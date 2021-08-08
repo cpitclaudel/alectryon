@@ -354,6 +354,11 @@ class AlectryonMrefTransform(OneTimeTransform):
     """
     default_priority = 995
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.refcounter = RefCounter()
+        self.gensym = Gensym(_gensym_stem(self.document, "-"))
+
     def _warn(self, node, msg):
         warn = self.document.reporter.warning(msg, base_node=node, line=node.line)
         warnid = self.document.set_id(warn)
@@ -393,32 +398,33 @@ class AlectryonMrefTransform(OneTimeTransform):
 
         return sentence
 
-    def replace_one_mref(self, gensym, refcounter, node, ios, last_io):
-        target = self._find_mref_target(node, ios, last_io)
+    def format_one_ref(self, target, node):
         if not target.ids:
             target_id = nodes.make_id(node.details["target"])
-            target.ids.append(gensym(target_id + "-")) # “-” avoids collisions
+            target.ids.append(self.gensym(target_id + "-")) # “-” avoids collisions
         if not target.markers:
             style = node.details["counter-style"]
-            target.markers.append(node.details["title"] or refcounter.next(style))
-        # print(node.rawsource, "→\n  ", node.details["path"], "→\n  ", target)
+            target.markers.append(node.details["title"] or self.refcounter.next(style))
         marker, refid = target.markers[-1], target.ids[-1]
-        ref = nodes.reference(node.rawsource, marker, classes=[], refid=refid)
-        node.replace_self(ref)
-        ref["classes"].append("alectryon-mref")
+        return nodes.reference(node.rawsource, marker,
+                               classes=["alectryon-mref"], refid=refid)
+
+    def replace_one_mref(self, node, ios, last_io):
+        target = self._find_mref_target(node, ios, last_io)
+        repl = self.format_one_ref(target, node)
+        node.replace_self(repl)
 
     def _apply(self, **_kwargs):
         ios = {id: node
                for node in self.document.traverse(alectryon_pending_io)
                for id in node.get("ids", ())}
-        refcounter, gensym = RefCounter(), Gensym(_gensym_stem(self.document, "-"))
         io_or_mref = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_mref))
         for node in self.document.traverse(io_or_mref):
             if isinstance(node, alectryon_pending_io):
                 last_io = node
             elif isinstance(node, alectryon_pending_mref):
                 try:
-                    self.replace_one_mref(gensym, refcounter, node, ios, last_io)
+                    self.replace_one_mref(node, ios, last_io)
                 except markers.MarkerError as e:
                     msg = "Error in '{}': {}".format(node.rawsource, e)
                     self._warn(node, msg)
