@@ -660,43 +660,58 @@ COUNTER_STYLES = {
 }
 DEFAULT_COUNTER_STYLE = CounterStyle.of_str(COUNTER_STYLES['decimal'])
 
-def marker_ref_role(# pylint: disable=dangerous-default-value,unused-argument
-        role, rawtext, text, lineno, inliner, options={}, content=[]):
+def _marker_ref_role(role, rawtext, text, lineno, inliner, options, content):
     title, target = _parse_ref(text)
     if target is None:
         title, target = None, title
 
-    try:
-        if target[0] in "#.":
+    if target[0] in "#.":
+        try:
             path = markers.parse_path(target)
-        else:
-            path = {"sentence": markers.PlainMatcher(target)}
-    except markers.MarkerError as e:
-        MSG = "Cannot parse ``:mref:`` target ``{}``.".format(str(e))
-        msg = inliner.reporter.error(MSG, line=lineno)
-        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+        except markers.MarkerError as e:
+            MSG = "Cannot parse marker-placement expression ``{}``.".format(e)
+            raise ValueError(MSG) from e
+    else:
+        path = {"sentence": markers.PlainMatcher(target)}
 
     cs = options.pop("counter-style", None) or DEFAULT_COUNTER_STYLE
     details = {"title": title,
                "target": target,
-               "path": path,
-               "counter-style": cs }
+               "path": {**options.pop("prefix", {}), **path},
+               "counter-style": cs}
 
     roles.set_classes(options)
-    node = alectryon_pending_mref(
-        AlectryonMrefTransform, details, rawtext, **options)
+    node = alectryon_pending_mref(AlectryonMrefTransform, details, rawtext, **options)
     set_line(node, lineno, inliner.reporter)
     inliner.document.note_pending(node)
     return [node], []
 
-def _opt_counter_style(arg):
+def marker_ref_role(# pylint: disable=dangerous-default-value,unused-argument
+        role, rawtext, text, lineno, inliner, options={}, content=[]):
+    try:
+        return _marker_ref_role(
+            role, rawtext, text, lineno, inliner, options, content)
+    except ValueError as e:
+        MSG = "In ``:{}:``: {}".format(role, str(e))
+        msg = inliner.reporter.error(MSG, line=lineno)
+        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+
+def _opt_mref_counter_style(arg):
     if " " not in arg:
         arg = COUNTER_STYLES[directives.choice(arg, list(COUNTER_STYLES))]
     return CounterStyle.of_str(arg)
 
+def _opt_mref_prefix(prefix):
+    try:
+        return markers.parse_path(prefix)
+    except markers.MarkerError as e:
+        msg = "Error in marker-placement prefix: {}".format(e)
+        raise ValueError(msg) from e
+
 marker_ref_role.name = "mref"
 marker_ref_role.options = {
-    'counter-style': _opt_counter_style
+    'counter-style': _opt_mref_counter_style,
+    'prefix': _opt_mref_prefix,
 }
 
 # Error printer
