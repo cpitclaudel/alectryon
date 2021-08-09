@@ -1,0 +1,46 @@
+@InProceedings{Alectryon+SLE2020,
+  author       = {Pit-Claudel, Clément},
+  title        = {Untangling Mechanized Proofs},
+  booktitle    = {Proceedings of the 13th {ACM} {SIGPLAN} International
+                  Conference on Software Language Engineering},
+  year         = 2020,
+  series       = {{SLE} 2020},
+  pages        = {155–174},
+  address      = {New York, NY, USA},
+  publisher    = {Association for Computing Machinery},
+  isbn         = 9781450381765,
+  url          = {https://pit-claudel.fr/clement/papers/alectryon-SLE20.pdf},
+  doi          = {10.1145/3426425.3426940},
+  abstract     = {Proof assistants like Coq, Lean, or HOL4 rely heavily on
+                  stateful meta-programs called scripts to assemble
+                  proofs. Unlike pen-and-paper proofs, proof scripts only
+                  describe the steps to take (induct on x, apply a theorem, …),
+                  not the states that these steps lead to; as a result, plain
+                  proof scripts are essentially incomprehensible without the
+                  assistance of an interactive user interface able to run the
+                  script and show the corresponding proof states. Until now, the
+                  standard process to communicate a proof without forcing
+                  readers to execute its script was to manually copy-paste
+                  intermediate proof states into the script, as source code
+                  comments — a tedious and error-prone exercise. Additional
+                  prose (such as for a book or tutorial) was likewise embedded
+                  in comments, preserving executability at the cost of a
+                  mediocre text-editing experience. This paper describes a new
+                  approach to the development and dissemination of literate
+                  proof scripts, with a focus on the Coq proof
+                  assistant. Specifically, we describe two contributions: a
+                  compiler that interleaves Coq’s output with the original proof
+                  script to produce interactive webpages that are complete,
+                  self-contained presentations of Coq proofs; and a new literate
+                  programming toolkit that allows authors to switch seamlessly
+                  between prose- and code-oriented views of the same sources, by
+                  translating back and forth between reStructuredText documents
+                  and literate Coq source files. In combination, these tools
+                  offer a new way to write, communicate, and preserve proofs,
+                  combining the flexibility of procedural proof scripts and the
+                  intelligibility of declarative proofs.},
+  numpages     = 20,
+  keywords     = {formal verification, proof browsing, literate programming,
+                  proof presentation},
+  location     = {Virtual, USA}
+}

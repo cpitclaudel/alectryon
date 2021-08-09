@@ -18,7 +18,7 @@ Alectryon is typically used in one of three ways:
 
 For background information, check out the  `quickstart guide <https://plv.csail.mit.edu/blog/alectryon.html>`__ on the MIT PLV blog, the `SLE2020 paper <https://doi.org/10.1145/3426425.3426940>`__ (open access) and its `live examples <https://alectryon-paper.github.io/>`__, or the `conference talk <https://www.youtube.com/watch?v=f8CKGoP3_us>`__.
 
-Alectryon is free software under a very permissive license.  If you use it, please remember to `cite it <https://pit-claudel.fr/clement/papers/alectryon-SLE20.bib>`__, and please let me know!
+Alectryon is free software under a very permissive license.  If you use it, please remember to `cite it <CITATION.bib>`__, and please let me know!
 
 Some examples of use in the wild are linked `at the bottom of this page <gallery_>`_.  Please add your own work by submitting a PR!
 
