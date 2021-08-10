@@ -105,10 +105,10 @@ class HtmlGenerator:
             with tags.span() if hyp.body else nullctx(): # For alignment
                 if hyp.body:
                     with tags.span(cls="hyp-body"):
-                        tags.b(":=")
+                        tags.b(":= ")
                         tags.span(self.highlight(hyp.body))
                 with tags.span(cls="hyp-type"):
-                    tags.b(":")
+                    tags.b(": ")
                     tags.span(self.highlight(hyp.type))
             self.gen_mrefs(hyp)
 

@@ -401,7 +401,8 @@ In any case, make an exception for comments:
 
 .alectryon-io .goal-hyps > span b {
     font-weight: 600;
-    margin: 0 0.5em;
+    margin: 0 0 0 0.5em;
+    white-space: pre;
 }
 
 .alectryon-io .hyp-body,
