@@ -128,7 +128,7 @@ Newlines in quoted objects are removed, and line breaks are allowed:
 
     The first sentence is :mquote:`.s(Record).in`.  [#f1]_
 
-    .. [#f1] The second sentence is :mquote:`.s(Goal).in`.
+    .. [#f1] The second sentence is :mquote:`.s(Goal).in`.  Later on we'll see a message: :mquote:`.io#pr.s(Check).msg(implicit binder)`.
 
 Customizing proof rendering (**experimental**)
 ==============================================
@@ -139,6 +139,7 @@ References can also be used to customize the display of goals and hypotheses.  I
        :name: pr
 
        Require Import Coq.Sorting.Permutation. (* .none *)
+       Check let t := nat in forall {n: t}, n >= 0. (* .unfold *)
        Theorem Permutation_In {A} (l l' : list A) (a: A) :
          Permutation l l' -> List.In a l -> List.In a l'. (* .unfold *)
        Proof.

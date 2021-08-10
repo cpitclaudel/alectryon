@@ -207,6 +207,8 @@
   {\par\alectryon@vsep}
 \alectryon@newenvironment{message}{\begin{alectryon@inner}\alectryon@raggedright}{\par\end{alectryon@inner}}
   {}
+\alectryon@newenvironment{message@inline}{}{}
+  {}
 \alectryon@newenvironment{conclusion}{\alectryon@strut{}\alectryon@raggedright}{\par}
   {}
 
@@ -245,6 +247,7 @@
 
 \newcommand{\alectryonInline}[1]
   {{\alectryon@copyenvironment[@inline]{hyp}%
+    \alectryon@copyenvironment[@inline]{message}%
     \alectryon@copymacro{mrefmarker}%
     \alectryon@copymacro{hypn}%
     \alectryon@copymacro{sep}%

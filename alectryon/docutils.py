@@ -388,6 +388,9 @@ class AlectryonMrefTransform(OneTimeTransform):
 
         if "in" in path:
             return core.Code(sentence.contents)
+        if "msg" in path:
+            msgs = list(transforms.fragment_messages(sentence))
+            return markers.find_one("message", markers.find_contents, msgs, path["msg"])
         if "g" in path:
             goals = list(transforms.fragment_goals(sentence))
             goal = markers.find_one("goal", markers.find_goals, goals, path["g"])
@@ -728,7 +731,7 @@ def _parse_mref_target(kind, target, prefix):
         raise markers.MarkerError("``.name`` is not supported in ``:mref:`` queries.")
 
     leaf = markers.set_leaf(path)
-    if kind == "quote" and leaf not in ("in", "ccl", "h", "type", "body", "name"):
+    if kind == "quote" and leaf not in ("in", "msg", "ccl", "h", "type", "body", "name"):
         raise markers.MarkerError("Cannot format ``{}`` as an inline quote".format(leaf))
 
     return path

@@ -698,7 +698,10 @@ The second sentence is \alectryonInline{\PY{k+kn}{Goal} \PY{k+kr}{forall} \PY{o}
   \PY{k+kr}{let} \PY{n+nv}{a\PYZus{}first} \PY{o}{:=} \PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)} \PY{k+kr}{in}
   \PY{k+kr}{let} \PY{n+nv}{b\PYZus{}second} \PY{o}{:=} \PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)} \PY{k+kr}{in}
   \PY{o}{\PYZob{}|} \PY{n}{p\PYZus{}first} \PY{o}{:=} \PY{n}{a\PYZus{}first}\PY{o}{;}
-     \PY{n}{p\PYZus{}second} \PY{o}{:=} \PY{n}{b\PYZus{}second} \PY{o}{|\PYZcb{}} \PY{o}{=} \PY{n}{p}\PY{o}{.}}.
+     \PY{n}{p\PYZus{}second} \PY{o}{:=} \PY{n}{b\PYZus{}second} \PY{o}{|\PYZcb{}} \PY{o}{=} \PY{n}{p}\PY{o}{.}}.  Later on we'll see a message: \alectryonInline{\begin{message}
+  \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k+kr}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\nl
+  \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{]}
+\end{message}}.
 }
 \end{quote}
 
@@ -714,6 +717,26 @@ References can also be used to customize the display of goals and hypotheses.  I
   % Generator: Alectryon
   \sep
   \anchor{pr}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Check}~\PY{k+kr}{let}~\PY{n+nv}{t}~\PY{o}{:=}~\PY{n}{nat}~\PY{k+kr}{in}~\PY{k+kr}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{n}\PY{o}{:}~\PY{n}{t}\PY{o}{\PYZcb{},}~\PY{n}{n}~\PY{o}{\PYZgt{}=}~\PY{l+m+mi}{0}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{messages}
+        \begin{message}
+          \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k+kr}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\nl
+          \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{]}
+        \end{message}
+        \sep
+        \begin{message}
+          \PY{k+kr}{let}~\PY{n+nv}{t}~\PY{o}{:=}~\PY{n}{nat}~\PY{k+kr}{in}~\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{t}\PY{o}{,}~\PY{n}{n}~\PY{o}{\PYZgt{}=}~\PY{l+m+mi}{0}\nl
+          ~~~~~\PY{o}{:}~\PY{k+kt}{Prop}
+        \end{message}
+      \end{messages}
+    \end{output}
+  \end{sentence}
   \sep
   \begin{sentence}
     \begin{input}

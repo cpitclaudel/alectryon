@@ -51,11 +51,15 @@ class TopMatcher(Matcher):
     def match(self, _):
         return True
 
+def find_contents(objs, needle):
+    for obj in objs:
+        if needle.match(obj.contents):
+            yield obj
+
 def find_sentences(fragments, needle):
-    for fr in fragments:
-        # LATER: Add a way to name sentences to make them easier to select
-        if isinstance(fr, RichSentence) and needle.match(fr.contents):
-            yield fr
+    # LATER: Add a way to name sentences to make them easier to select
+    sentences = (fr for fr in fragments if isinstance(fr, RichSentence))
+    yield from find_contents(sentences, needle)
 
 def find_named(items, needle):
     for item in items:
@@ -95,7 +99,8 @@ QUERY_SHAPE = \
                   "h": {"type": {},
                         "body": {},
                         "name": {}},
-                  "ccl": {}}}}}
+                  "ccl": {}},
+            "msg": {}}}}
 
 def _invalid_sets(path, leaf, allowed):
     for leaf_, allowed_ in allowed.items():
@@ -120,6 +125,7 @@ def set_leaf(path):
 QUERY_KINDS = {
     "io":   ("name",),
     "s":    ("plain", "fnmatch"),
+    "msg":  ("plain", "fnmatch"),
     "g":    ("plain", "fnmatch", "name"),
     "h":    ("plain", "fnmatch", "name"),
     "in":   ("nil",),

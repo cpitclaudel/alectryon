@@ -185,9 +185,8 @@ class HtmlGenerator(Backend):
             self.gen_mrefs(fr)
 
     def gen_message(self, message):
-        with tags.blockquote(self.highlight(message.contents),
-                             cls="alectryon-message"):
-            self.gen_mrefs(message)
+        self.highlight(message.contents)
+        self.gen_mrefs(message)
 
     @deduplicate(".alectryon-output")
     def gen_output(self, fr):
@@ -200,7 +199,8 @@ class HtmlGenerator(Backend):
                     assert output.messages, "transforms.commit_io_annotations"
                     with tags.div(cls="alectryon-messages"):
                         for message in output.messages:
-                            self.gen_message(message)
+                            with tags.blockquote(cls="alectryon-message"):
+                                self.gen_message(message)
                 if isinstance(output, Goals):
                     assert output.goals, "transforms.commit_io_annotations"
                     self.gen_goals(output.goals)

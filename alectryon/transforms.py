@@ -187,23 +187,29 @@ def should_keep_output(output, annots):
         return (annots["hyps"] or annots["ccls"]) and output.goals
     assert False
 
-def _process_io_path(sentence, polarity, path):
-    enabled = polarity != "-"
-
+def _find_marked(sentence, path):
     assert isinstance(sentence, RichSentence)
 
     if "s" in path and not path["s"].match(sentence.contents):
         return
 
-    if "g" in path:
+    if "msg" in path:
+        for m in markers.find_contents(list(fragment_messages(sentence)), path["msg"]):
+            yield m
+    elif "g" in path:
         for g in markers.find_goals(list(fragment_goals(sentence)), path["g"]):
             if "h" in path:
                 for h in markers.find_hyps(g.hypotheses, path["h"]):
-                    h.flags["enabled"] = enabled
+                    yield h
             else:
-                g.flags["enabled"] = enabled
+                yield g
     else:
-        sentence.flags["enabled"] = enabled
+        yield sentence
+
+def _process_io_path(sentence, polarity, path):
+    enabled = polarity != "-"
+    for obj in _find_marked(sentence, path):
+        obj.flags["enabled"] = enabled
 
 def _commit_enabled(objs):
     objs[:] = [o for o in objs if o.flags.get("enabled", True)]
@@ -368,6 +374,10 @@ def fragment_message_sets(fr):
         yield from (ms.messages for ms in fr.outputs if isinstance(ms, Messages))
     if isinstance(fr, Sentence):
         yield fr.messages
+
+def fragment_messages(fr):
+    for gs in fragment_message_sets(fr):
+        yield from gs
 
 def group_hypotheses(fragments):
     for fr in fragments:
