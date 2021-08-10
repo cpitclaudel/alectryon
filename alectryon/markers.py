@@ -79,7 +79,7 @@ def find_hyps(hyps, needle):
         yield from find_named(hyps, needle)
         return
     for h in hyps:
-        if needle.match(h.type) or (h.body and needle.match(h.body)):
+        if needle.match(h.type.contents) or (h.body and needle.match(h.body.contents)):
             yield h
 
 def find_one(kind, lookup_fn, haystack, needle):
@@ -87,20 +87,25 @@ def find_one(kind, lookup_fn, haystack, needle):
         return s
     raise MarkerError("No {} matches '{}'".format(kind, needle))
 
-MARKER_PATH_SEGMENT = re.compile(r"""
-  [.](?P<kind>s|g|h|ccl|io)
-   (?:(?P<nil>(?![#({]))
-     |[#](?P<name>[^. ]+)
-     |[(](?P<plain>.+?)[)]
-     |[{](?P<fnmatch>.+?)[}])""", re.VERBOSE)
-
 QUERY_KINDS = {
-    "io":  ("io", ("name",)),
-    "s":   ("sentence", ("plain", "fnmatch")),
-    "g":   ("goal", ("plain", "fnmatch", "name")),
-    "h":   ("hyp", ("plain", "fnmatch", "name")),
-    "ccl": ("ccl", ("nil",))
+    "io":   ("io", ("name",)),
+    "s":    ("sentence", ("plain", "fnmatch")),
+    "g":    ("goal", ("plain", "fnmatch", "name")),
+    "h":    ("hyp", ("plain", "fnmatch", "name")),
+    "type": ("type", ("nil",)),
+    "body": ("body", ("nil",)),
+    "name":  ("name", ("nil",)),
+    "ccl":  ("ccl", ("nil",))
 }
+
+MARKER_PATH_SEGMENT = re.compile(
+    r"""[.](?P<kind>${KINDS})
+         (?:(?P<nil>(?![#({]))
+           |[#](?P<name>[^. ]+)
+           |[(](?P<plain>.+?)[)]
+           |[{](?P<fnmatch>.+?)[}])""".replace(
+               "${KINDS}", "|".join(sorted(QUERY_KINDS.keys()))),
+    re.VERBOSE)
 
 QUERY_MATCHERS = {
     'nil': ExactMatcher,
@@ -110,7 +115,7 @@ QUERY_MATCHERS = {
 }
 
 def parse_path(path, start=0, endpos=None):
-    parsed = {}
+    parsed = {"str": path}
     endpos = len(path) if endpos is None else endpos
     while start < endpos:
         m = MARKER_PATH_SEGMENT.match(path, start, endpos=endpos)
@@ -125,3 +130,12 @@ def parse_path(path, start=0, endpos=None):
                 parsed[kind] = matcher(needle)
         start = m.end()
     return parsed
+
+def merge_paths(*pths):
+    out, full_str = {}, ""
+    for pth in pths:
+        if pth:
+            full_str += pth["str"]
+            out.update(pth)
+    out["str"] = full_str
+    return out

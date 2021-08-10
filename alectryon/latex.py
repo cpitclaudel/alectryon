@@ -191,7 +191,7 @@ class LatexGenerator:
                     self.gen_hyp(hyp)
             with macros.infrule():
                 if goal.name:
-                    macros.gid(goal.name)
+                    macros.gid(PlainText(goal.name))
                 self.gen_mref_markers(goal.markers)
             with environments.conclusion(verbatim=True):
                 self.highlight(goal.conclusion.contents)

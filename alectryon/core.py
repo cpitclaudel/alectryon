@@ -65,6 +65,7 @@ def _enrich(nt):
 Goals = namedtuple("Goals", "goals")
 Messages = namedtuple("Messages", "messages")
 
+class Names(list): pass
 RichHypothesis = _enrich(Hypothesis)
 RichGoal = _enrich(Goal)
 RichMessage = _enrich(Message)

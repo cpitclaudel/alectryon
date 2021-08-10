@@ -25,8 +25,8 @@ import pickle
 
 from dominate import tags
 
+from . import core, transforms, GENERATOR
 from .core import b16, Gensym, Text, RichSentence, Goals, Messages
-from . import transforms, GENERATOR
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
 
@@ -98,6 +98,10 @@ class HtmlGenerator:
             return tags.label(*contents, cls=cls, **attrs)
         return tags.span(*contents, cls=cls)
 
+    def gen_code(self, dom, code, **kwargs):
+        with dom(self.highlight(code.contents), **kwargs):
+            self.gen_mrefs(code)
+
     @deduplicate(".goal-hyps > span")
     def gen_hyp(self, hyp):
         with tags.span():
@@ -106,10 +110,10 @@ class HtmlGenerator:
                 if hyp.body:
                     with tags.span(cls="hyp-body"):
                         tags.b(":= ")
-                        tags.span(self.highlight(hyp.body))
+                        self.gen_code(tags.span, hyp.body)
                 with tags.span(cls="hyp-type"):
                     tags.b(": ")
-                    tags.span(self.highlight(hyp.type))
+                    self.gen_code(tags.span, hyp.type)
             self.gen_mrefs(hyp)
 
     @deduplicate(".goal-hyps")
@@ -121,8 +125,7 @@ class HtmlGenerator:
 
     @deduplicate(".goal-conclusion")
     def gen_ccl(self, conclusion):
-        with tags.div(self.highlight(conclusion.contents), cls="goal-conclusion"):
-            self.gen_mrefs(conclusion)
+        self.gen_code(tags.div, conclusion, cls="goal-conclusion")
 
     @deduplicate(".alectryon-goal")
     def gen_goal(self, goal, toggle=None):

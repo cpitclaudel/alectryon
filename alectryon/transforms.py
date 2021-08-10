@@ -25,7 +25,7 @@ from copy import copy
 from collections import namedtuple
 
 from . import markers
-from .core import Sentence, Text, \
+from .core import Sentence, Text, Names, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
     Goals, Messages, RichSentence
 
@@ -91,8 +91,9 @@ class IOAnnots:
             self.unfold, self.fails, self.filters, self.paths)
 
 def _enrich_goal(g):
-    return RichGoal(g.name, RichCode(g.conclusion),
-                    [RichHypothesis(h.names, h.body, h.type)
+    return RichGoal(g.name,
+                    RichCode(g.conclusion),
+                    [RichHypothesis(Names(h.names), h.body and RichCode(h.body), RichCode(h.type))
                      for h in g.hypotheses])
 
 def enrich_sentences(fragments):
@@ -171,7 +172,12 @@ def should_keep_output(output, annots):
 def _process_io_path(sentence, polarity, path):
     enabled = polarity != "-"
 
-    if "ccl" in path or "hyp" in path:
+    unsupported = set(path) & {"ccl", "type", "body", "name"}
+    if unsupported:
+        MSG = "Path {} contains components not supported in visibility annotations: {}."
+        raise ValueError(MSG.format(path["str"], ",".join(unsupported)))
+
+    if "hyp" in path:
         path.setdefault("goal", markers.TopMatcher())
 
     assert isinstance(sentence, RichSentence)
@@ -181,9 +187,7 @@ def _process_io_path(sentence, polarity, path):
 
     if "goal" in path:
         for g in markers.find_goals(list(fragment_goals(sentence)), path["goal"]):
-            if "ccl" in path:
-                g.flags["enabled"] = enabled
-            elif "hyp" in path:
+            if "hyp" in path:
                 for h in markers.find_hyps(g.hypotheses, path["hyp"]):
                     h.flags["enabled"] = enabled
             else:
