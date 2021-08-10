@@ -752,6 +752,39 @@ def coq_code_role(role, rawtext, text, lineno, inliner,
 
 coq_code_role.name = "coq" # type: ignore
 
+ghref_cache = {}
+def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    uri = options.get('src','')
+    pattern = options.get('pattern','')
+    roles.set_classes(options)
+    options.setdefault("classes", []).append("ghref")
+    rawuri = uri.replace('/blob/','/raw/')
+    if rawuri in ghref_cache:
+        html = ghref_cache[rawuri]
+    else:
+        from urllib import request
+        with request.urlopen(rawuri) as f:
+            html = f.read().decode('utf-8')
+    from string import Template
+    pattern = Template(pattern).safe_substitute(name=text)
+    import re
+    pattern = re.compile(pattern)
+    found = False
+    for num, line in enumerate(html.splitlines(), 1):
+        if pattern.match(line):
+            uri = uri + '#L' + str(num)
+            found = True
+            break
+    assert found, Template("ghref: $text not found in $rawuri").safe_substitute(text=text,rawuri=rawuri)
+    node = nodes.reference(rawtext, text, refuri=uri, **options)
+    set_line(node, lineno, inliner.reporter)
+    return [node], []
+ghref_role.name = "ghref"
+ghref_role.options = {
+    "src": directives.uri,
+    "pattern": directives.unchanged
+}
+
 COQ_ID_RE = re.compile(r"^(?P<title>.*?)(?:\s*<(?P<target>.*)>)?$")
 COQ_IDENT_DB_URLS = [
     ("Coq", "https://coq.inria.fr/library/$modpath.html#$ident")
@@ -1257,7 +1290,8 @@ ROLES = [alectryon_bubble,
          coq_code_role,
          coq_id_role,
          marker_ref_role,
-         marker_quote_role]
+         marker_quote_role,
+         ghref_role]
 
 def register():
     """Tell Docutils about our roles and directives."""
