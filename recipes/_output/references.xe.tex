@@ -34,6 +34,19 @@
 \providecommand*\DUroledeleted[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
 \providecommand*\DUrolekeyword[1]{\textbf{#1}}
 \providecommand*\DUrolestring[1]{\textit{#1}}
+% numeric or symbol footnotes with hyperlinks
+\providecommand*{\DUfootnotemark}[3]{%
+  \raisebox{1em}{\hypertarget{#1}{}}%
+  \hyperlink{#2}{\textsuperscript{#3}}%
+}
+\providecommand{\DUfootnotetext}[4]{%
+  \begingroup%
+  \renewcommand{\thefootnote}{%
+    \protect\raisebox{1em}{\protect\hypertarget{#1}{}}%
+    \protect\hyperlink{#2}{#3}}%
+  \footnotetext{#4}%
+  \endgroup%
+}
 
 % inline markup (custom roles)
 % \DUrole{#1}{#2} tries \DUrole#1{#2}
@@ -83,8 +96,8 @@ $ DOCUTILSCONFIG=references.docutils.conf alectryon \textbackslash{}
 \end{quote}
 
 
-\section{Referring to parts of a goal%
-  \label{referring-to-parts-of-a-goal}%
+\section{Inserting numbered references%
+  \label{inserting-numbered-references}%
 }
 
 Alectryon supports references to individual sentences and hypotheses within a code fragment.  The easiest way to reference a sentence is to use \texttt{:mref:`search-term`}.  Alectryon will search for that text and automatically add a label to the first matching sentence of the proof.  For example:
@@ -154,7 +167,7 @@ Alectryon supports references to individual sentences and hypotheses within a co
           \anchor{references-rst-s-destruct-n-g-1-0}
           \sep
           \begin{hyps}
-            \hyp{plus\char`\_comm}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}\anchor{references-rst-s-destruct-n-g-1-h-plus-comm-0}\mrefmarker{8}}
+            \hyp{plus\char`\_comm}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}\anchor{references-rst-s-destruct-n-g-1-h-plus-comm-0}\mrefmarker{9}}
             \sep
             \hyp{n, m}{\PY{n}{nat}\anchor{references-rst-s-destruct-n-g-1-h-n-0}\mrefmarker{3}}
             \sep
@@ -177,13 +190,13 @@ Alectryon supports references to individual sentences and hypotheses within a co
               \sep
               \hyp{n, m, n0}{\PY{n}{nat}}
               \sep
-              \hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}
+              \hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}\anchor{references-rst-s-destruct-n-g-s-n0-h-n-s-0}\mrefmarker{7}}
             \end{hyps}
             \sep
             \infrule{\mrefmarker{6}}
             \sep
             \begin{conclusion}
-              \PY{n}{S}~\PY{n}{n0}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n0}\anchor{references-rst-s-destruct-n-g-s-n0-ccl-0}\mrefmarker{7}
+              \PY{n}{S}~\PY{n}{n0}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n0}\anchor{references-rst-s-destruct-n-g-s-n0-ccl-0}\mrefmarker{8}
             \end{conclusion}
           \end{goal}
         \end{extragoals}
@@ -193,7 +206,7 @@ Alectryon supports references to individual sentences and hypotheses within a co
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{o}{\PYZhy{}}~\PY{c}{(*~Base~case~*)}\anchor{references-rst-io-setup-s-base-case-0}\mrefmarker{9}
+      ~~\PY{o}{\PYZhy{}}~\PY{c}{(*~Base~case~*)}\anchor{references-rst-io-setup-s-base-case-0}\mrefmarker{10}
     \end{input}
     \sep
     \begin{output}
@@ -236,20 +249,22 @@ The proof starts with a case analysis, indicated by “\hyperref[references-rst-
 Instead of whole sentences, is possible to refer to individual goals and hypotheses:
 
 \begin{quote}
-In the first case (\hyperref[references-rst-s-destruct-n-g-1-0]{2}), we see the variable \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{n}}}}} in the context (\hyperref[references-rst-s-destruct-n-g-1-h-n-0]{3}), and we see that it is \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{mi}{0}}}}} (\hyperref[references-rst-s-destruct-n-g-1-h-n-0-0]{4}); notice how the conclusion of the first goal \hyperref[references-rst-s-destruct-n-ccl-0]{5} does not mention \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{n}}}}} (it says \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{mi}{0}}}}} instead).  In the second case \hyperref[references-rst-s-destruct-n-g-s-n0-0]{6}, the conclusion (\hyperref[references-rst-s-destruct-n-g-s-n0-ccl-0]{7}) mentions \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{S} \DUrole{n}{n0}}}}} instead.
+In the first case (\hyperref[references-rst-s-destruct-n-g-1-0]{2}), we see the variable \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{n}}}}} in the context (\hyperref[references-rst-s-destruct-n-g-1-h-n-0]{3}), and we see that it is \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{mi}{0}}}}} (\hyperref[references-rst-s-destruct-n-g-1-h-n-0-0]{4}); notice how the conclusion of the first goal \hyperref[references-rst-s-destruct-n-ccl-0]{5} does not mention \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{n}}}}} (it says \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{mi}{0}}}}} instead). In the second case \hyperref[references-rst-s-destruct-n-g-s-n0-0]{6}, we see that \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{n}}}}} equals \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{S} \DUrole{n}{n0}}}}} (\hyperref[references-rst-s-destruct-n-g-s-n0-h-n-s-0]{7}) and the conclusion (\hyperref[references-rst-s-destruct-n-g-s-n0-ccl-0]{8}) mentions \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{S} \DUrole{n}{n0}}}}} instead of \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{mi}{0}}}}}.
 \end{quote}
 
-Note that we can safely refer multiple times to the same object, even using a different reference:
+Note how the reference to a hypothesis of the second goal caused the whole hypothesis block to be unfolded (by default, hypotheses of secondary goals are folded).
+
+As expected, referring multiple times to the same object creates a single marker, even using different references:
 
 \begin{quote}
 \begin{itemize}
-\item \hyperref[references-rst-s-destruct-n-g-1-h-plus-comm-0]{8}
+\item \hyperref[references-rst-s-destruct-n-g-1-h-plus-comm-0]{9}
 
-\item \hyperref[references-rst-s-destruct-n-g-1-h-plus-comm-0]{8}
+\item \hyperref[references-rst-s-destruct-n-g-1-h-plus-comm-0]{9}
 
-\item \hyperref[references-rst-s-destruct-n-g-1-h-plus-comm-0]{8}
+\item \hyperref[references-rst-s-destruct-n-g-1-h-plus-comm-0]{9}
 
-\item \hyperref[references-rst-s-destruct-n-g-1-h-plus-comm-0]{8}
+\item \hyperref[references-rst-s-destruct-n-g-1-h-plus-comm-0]{9}
 \end{itemize}
 \end{quote}
 
@@ -265,7 +280,7 @@ To allow forward- and back-references, counters are not reset from one block to 
   \sep
   \begin{sentence}
     \begin{input}
-      \PY{o}{\PYZhy{}}~\PY{c}{(*~Induction~*)}\anchor{references-rst-induction-0}\mrefmarker{10}
+      \PY{o}{\PYZhy{}}~\PY{c}{(*~Induction~*)}\anchor{references-rst-induction-0}\mrefmarker{11}
     \end{input}
     \sep
     \begin{output}
@@ -381,11 +396,16 @@ To allow forward- and back-references, counters are not reset from one block to 
 \end{alectryon}
 
 \begin{itemize}
-\item Bullets (\texttt{-}, \texttt{+}, \texttt{*}) delimit subproofs (\hyperref[references-rst-io-setup-s-base-case-0]{9}, \hyperref[references-rst-induction-0]{10})
+\item Bullets (\texttt{-}, \texttt{+}, \texttt{*}) delimit subproofs (\hyperref[references-rst-io-setup-s-base-case-0]{10}, \hyperref[references-rst-induction-0]{11})
 
 \item It all started at \hyperref[references-rst-fixpoint-plus-comm-0]{1}
 \end{itemize}
 \end{quote}
+
+
+\subsection{Defining custom counter styles%
+  \label{defining-custom-counter-styles}%
+}
 
 Custom counter styles can be defined like using the \texttt{.. role::} directive and the \texttt{:counter-style:} option:
 
@@ -571,11 +591,123 @@ The second batch of commands perform reduction with a custom strategy: \hyperref
 Each inline reference is a link to the corresponding code fragment.
 
 
-\section{Using references to customize display (\textbf{experimental})%
-  \label{using-references-to-customize-display-experimental}%
+\section{Inserting textual references%
+  \label{inserting-textual-references}%
 }
 
-References can also be used to customize the display of goals and hypotheses.  In the following, hypotheses whose name start with \texttt{l} are omitted, and so are hypotheses named \texttt{a} and \texttt{A}.  After the call to \texttt{induction} (\hyperref[references-rst-io-pr-s-induction-1-0]{11}) the output is further limited to just goals 2 and 4, by excluding all goals and re-including only 2 and 4.  In goal 4, hypotheses whose type is exactly \texttt{list A} are shown, regardless of previous status, so \texttt{l}, \texttt{l'}, \texttt{l''} are visible (\hyperref[references-rst-io-pr-s-induction-1-g-4-h-l-0]{12}).
+Instead of inserting a link to the relevant goal fragment, you can use the \texttt{:mquote:} role to insert a copy of a goal fragment inline. This only works for an input sentence, the conclusion or name of a goal, and the type, body, or name of a hypothesis:
+
+\begin{quote}
+The proof above had two cases: \alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}\mrefmarker{4}}} and \alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}\mrefmarker{7}}}.
+The second goal below is named \alectryonInline{gg}.
+The last case of the proof below has two induction hypotheses: \alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l} \PY{o}{\PYZhy{}\PYZgt{}} \PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}}} and \alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}} \PY{o}{\PYZhy{}\PYZgt{}} \PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}\PYZsq{}}}. The two permutation hypotheses are \alectryonInline{H} and \alectryonInline{H0}.
+\end{quote}
+
+For conciseness, it is possible to define an alias of \texttt{:mquote:} that uses a fixed prefix.  Notice how the second example overrides the \texttt{.g} part of the prefix, too.
+
+\begin{quote}
+The proof above had two cases: \DUrole{mq-s}{\alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}\mrefmarker{4}}}} and \DUrole{mq-s}{\alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}\mrefmarker{7}}}}.
+The second goal below is named \DUrole{mq-pr}{\alectryonInline{gg}}.
+The last case of the proof below has two induction hypotheses: \DUrole{mq-pr}{\alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l} \PY{o}{\PYZhy{}\PYZgt{}} \PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}}}} and \DUrole{mq-pr}{\alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}} \PY{o}{\PYZhy{}\PYZgt{}} \PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}\PYZsq{}}}}.
+The two permutation hypotheses are \DUrole{mq-pr}{\alectryonInline{H}} and \DUrole{mq-pr}{\alectryonInline{H0}}.
+\end{quote}
+
+Newlines in quoted objects are removed, and line breaks are allowed:
+
+\begin{quote}
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Record}~\PY{n+nf}{P}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=}\nl
+      ~~\PY{o}{\PYZob{}}~\PY{n}{p\PYZus{}first}\PY{o}{:}~\PY{n}{A}\PY{o}{;}\nl
+      ~~~~\PY{n}{p\PYZus{}second}\PY{o}{:}~\PY{n}{B}~\PY{o}{\PYZcb{}.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Goal}~\PY{k+kr}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{o}{@}\PY{n}{P}~\PY{n}{A}~\PY{n}{B}\PY{o}{),}\nl
+      ~~\PY{k+kr}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)}~\PY{k+kr}{in}\nl
+      ~~\PY{k+kr}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k+kr}{in}\nl
+      ~~\PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}\nl
+      ~~~~~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{A}~\PY{n+nv}{B}~\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}~\PY{o}{:}~\PY{n}{P}\PY{o}{),}\nl
+            \PY{k+kr}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p\PYZus{}first}~\PY{n}{p}~\PY{k+kr}{in}\nl
+            \PY{k+kr}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p\PYZus{}second}~\PY{n}{p}~\PY{k+kr}{in}\nl
+            \PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Proof}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{A}~\PY{n+nv}{B}~\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}~\PY{o}{:}~\PY{n}{P}\PY{o}{),}\nl
+            \PY{k+kr}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p\PYZus{}first}~\PY{n}{p}~\PY{k+kr}{in}\nl
+            \PY{k+kr}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p\PYZus{}second}~\PY{n}{p}~\PY{k+kr}{in}\nl
+            \PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb}{destruct}~\PY{n}{p}\PY{o}{;}~\PY{n+nb+bp}{reflexivity}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Qed}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+\end{alectryon}
+
+The first sentence is \alectryonInline{\PY{k+kn}{Record} \PY{n+nf}{P} \PY{o}{\PYZob{}}\PY{n+nv}{A} \PY{n+nv}{B}\PY{o}{:} \PY{k+kt}{Type}\PY{o}{\PYZcb{}} \PY{o}{:=}
+  \PY{o}{\PYZob{}} \PY{n}{p\PYZus{}first}\PY{o}{:} \PY{n}{A}\PY{o}{;}
+    \PY{n}{p\PYZus{}second}\PY{o}{:} \PY{n}{B} \PY{o}{\PYZcb{}.}}.\DUfootnotemark{id1}{f1}{1}
+%
+\DUfootnotetext{f1}{id1}{1}{\phantomsection\label{f1}%
+The second sentence is \alectryonInline{\PY{k+kn}{Goal} \PY{k+kr}{forall} \PY{o}{\PYZob{}}\PY{n+nv}{A} \PY{n+nv}{B}\PY{o}{\PYZcb{}} \PY{o}{(}\PY{n+nv}{p}\PY{o}{:} \PY{o}{@}\PY{n}{P} \PY{n}{A} \PY{n}{B}\PY{o}{),}
+  \PY{k+kr}{let} \PY{n+nv}{a\PYZus{}first} \PY{o}{:=} \PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)} \PY{k+kr}{in}
+  \PY{k+kr}{let} \PY{n+nv}{b\PYZus{}second} \PY{o}{:=} \PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)} \PY{k+kr}{in}
+  \PY{o}{\PYZob{}|} \PY{n}{p\PYZus{}first} \PY{o}{:=} \PY{n}{a\PYZus{}first}\PY{o}{;}
+     \PY{n}{p\PYZus{}second} \PY{o}{:=} \PY{n}{b\PYZus{}second} \PY{o}{|\PYZcb{}} \PY{o}{=} \PY{n}{p}\PY{o}{.}}.
+}
+\end{quote}
+
+
+\section{Customizing proof rendering (\textbf{experimental})%
+  \label{customizing-proof-rendering-experimental}%
+}
+
+References can also be used to customize the display of goals and hypotheses.  In the following, hypotheses whose name start with \texttt{l} are omitted, and so are hypotheses named \texttt{a} and \texttt{A}.  After the call to \texttt{induction} (\hyperref[references-rst-io-pr-s-induction-1-0]{12}) the output is further limited to just goals 2 and 4, by excluding all goals and re-including only 2 and 4.  In goal 4, hypotheses whose type is exactly \texttt{list A} are shown, regardless of previous status, so \texttt{l}, \texttt{l'}, \texttt{l''} are visible (\hyperref[references-rst-io-pr-s-induction-1-g-4-h-l-0]{13}).
 
 \begin{quote}
 \begin{alectryon}
@@ -626,7 +758,7 @@ References can also be used to customize the display of goals and hypotheses.  I
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{n+nb}{induction}~\PY{l+m+mi}{1}\PY{o}{;}~\PY{n+nb}{intros}~\PY{o}{*}~\PY{n}{Hin}\PY{o}{.}\anchor{references-rst-io-pr-s-induction-1-0}\mrefmarker{11}
+      ~~\PY{n+nb}{induction}~\PY{l+m+mi}{1}\PY{o}{;}~\PY{n+nb}{intros}~\PY{o}{*}~\PY{n}{Hin}\PY{o}{;}~\PY{o}{[}~\PY{o}{|}~\PY{n+nb}{refine}~\PY{o}{?[}\PY{n}{gg}\PY{o}{]}~\PY{o}{|}~\PY{o}{..}~\PY{o}{].}\anchor{references-rst-io-pr-s-induction-1-0}\mrefmarker{12}
     \end{input}
     \sep
     \begin{output}
@@ -640,7 +772,7 @@ References can also be used to customize the display of goals and hypotheses.  I
             \hyp{Hin}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{o}{(}\PY{n}{x}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}}
           \end{hyps}
           \sep
-          \infrule{}
+          \infrule{\gid{gg}}
           \sep
           \begin{conclusion}
             \PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{o}{(}\PY{n}{x}~\PY{o}{::}~\PY{n}{l\PYZsq{}}\PY{o}{)}
@@ -650,7 +782,7 @@ References can also be used to customize the display of goals and hypotheses.  I
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \hyp{l, l\char`\', l\char`\'\char`\'}{\PY{n}{list}~\PY{n}{A}\anchor{references-rst-io-pr-s-induction-1-g-4-h-l-0}\mrefmarker{12}}
+              \hyp{l, l\char`\', l\char`\'\char`\'}{\PY{n}{list}~\PY{n}{A}\anchor{references-rst-io-pr-s-induction-1-g-4-h-l-0}\mrefmarker{13}}
               \sep
               \hyp{H}{\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}}
               \sep
@@ -673,6 +805,10 @@ References can also be used to customize the display of goals and hypotheses.  I
       \end{goals}
     \end{output}
   \end{sentence}
+  \sep
+  \begin{txt}
+    \nl
+  \end{txt}
   \sep
   \begin{sentence}
     \begin{input}
