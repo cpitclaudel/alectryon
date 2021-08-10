@@ -25,8 +25,8 @@ from fnmatch import fnmatchcase
 
 from .core import RichSentence
 
-class MarkerError(ValueError):
-    pass
+class MarkerError(ValueError): pass
+class PatternError(MarkerError): pass
 
 class Matcher():
     def match(self, other):
@@ -87,15 +87,46 @@ def find_one(kind, lookup_fn, haystack, needle):
         return s
     raise MarkerError("No {} matches '{}'".format(kind, needle))
 
+QUERY_SHAPE = \
+    {"io": {
+        "s": {
+            "in": {},
+            "g": {"name": {},
+                  "h": {"type": {},
+                        "body": {},
+                        "name": {}},
+                  "ccl": {}}}}}
+
+def _invalid_sets(path, leaf, allowed):
+    for leaf_, allowed_ in allowed.items():
+        if leaf_ in path:
+            path = {k: v for k, v in path.items() if k != leaf_}
+            yield from _invalid_sets(path, leaf_, allowed_)
+    yield (leaf, path)
+
+def path_leaf(path):
+    components = {k: v for k, v in path.items() if k != "str"}
+    (leaf, least_bad) = min(_invalid_sets(components, None, QUERY_SHAPE),
+                            key=lambda p: len(p[1]))
+    if least_bad:
+        MSG = "Incompatible components in path ``{}``: not sure what to do with ``{}``"
+        raise MarkerError(MSG.format(path["str"], ", ".join(least_bad)))
+    return leaf
+
+def set_leaf(path):
+    leaf = path["leaf"] = path_leaf(path)
+    return leaf
+
 QUERY_KINDS = {
-    "io":   ("io", ("name",)),
-    "s":    ("sentence", ("plain", "fnmatch")),
-    "g":    ("goal", ("plain", "fnmatch", "name")),
-    "h":    ("hyp", ("plain", "fnmatch", "name")),
-    "type": ("type", ("nil",)),
-    "body": ("body", ("nil",)),
-    "name":  ("name", ("nil",)),
-    "ccl":  ("ccl", ("nil",))
+    "io":   ("name",),
+    "s":    ("plain", "fnmatch"),
+    "g":    ("plain", "fnmatch", "name"),
+    "h":    ("plain", "fnmatch", "name"),
+    "in":   ("nil",),
+    "type": ("nil",),
+    "body": ("nil",),
+    "name": ("nil",),
+    "ccl":  ("nil",)
 }
 
 MARKER_PATH_SEGMENT = re.compile(
@@ -124,9 +155,10 @@ def parse_path(path, start=0, endpos=None):
         for matcher_name, matcher in QUERY_MATCHERS.items():
             needle = m.group(matcher_name)
             if needle is not None:
-                kind, allowed_matchers = QUERY_KINDS[m.group("kind")]
+                kind = m.group("kind")
+                allowed_matchers = QUERY_KINDS[kind]
                 if matcher_name not in allowed_matchers:
-                    raise MarkerError(path[start:])
+                    raise PatternError(kind, path[start:])
                 parsed[kind] = matcher(needle)
         start = m.end()
     return parsed

@@ -96,6 +96,10 @@
 
 \newcommand{\alectryon@prelude}
   {\alectryon@fontsetup
+   \alectryon@nohyphens}
+
+\newcommand{\alectryon@prelude@io}
+  {\alectryon@prelude
    \alectryon@parsetup
    \alectryon@nohyphens
    \alectryon@nospacestretch
@@ -107,11 +111,16 @@
    \tcbsetforeverylayer{boxsep=0pt, left=\alectryonMargin, right=\alectryonMargin, top=\alectryonMargin, bottom=\alectryonMargin}
    \tcbsetforeverylayer{boxrule=0pt, sharp corners}}
 
+\newcommand{\alectryon@prelude@inline}
+  {\alectryon@prelude
+   \def~{\alectryon@breakspace}}
+
 \newcommand{\alectryon@par}{\leavevmode\par\ignorespaces}
 \newcommand{\alectryon@newline}{\-\\\ignorespaces}
 \newcommand{\alectryon@vsep}{\vspace{0.15em}}
 \newcommand{\alectryon@sep}{\relax}
 \newcommand{\alectryon@nl}{\alectryon@par}
+\newcommand{\alectryon@nl@inline}{\alectryon@space\alectryon@unskip}
 
 % \alectryon@breakspace inserts a breaking space.
 \newcommand{\alectryon@breakspace}{\mbox{} }
@@ -148,13 +157,13 @@
       \ignorespaces}
      {\alectryon@unskip#4}}
 
-\alectryon@newenvironment{io}
-  {\alectryon@prelude\par}
+\alectryon@newenvironment{io}{\alectryon@prelude@io\par}
   {\par}
   {}
-\alectryon@newenvironment{txt}{}{}
+\alectryon@newenvironment{inline}{\alectryon@prelude@inline}
   {}
-\alectryon@newenvironment{wsp}{}{}
+  {}
+\alectryon@newenvironment{txt}{}{}
   {}
 \alectryon@newenvironment{sentence}{}{}
   {\par\alectryon@vsep}
@@ -188,8 +197,10 @@
         \def\alectryon@space{\alectryon@breakspace}%
         \alectryon@maxwidth{\dimexpr\alectryon@hyp@maxwidth-\alectryonHypIndent\relax}
           {\alectryon@raggedright#3}}}}}
+\newcommand*{\alectryon@hyp@inline}[3][]
+  {\alectryon@hypn{#2}\hspace{0.25em}#3}
 \newcommand*{\alectryon@hypn}[1]
-  {\mbox{\textbf{#1}:}}
+  {\mbox{\textbf{#1}:}\nobreak}
 \alectryon@newenvironment{extragoals}{}{}
   {\par\alectryon@vsep}
 \alectryon@newenvironment{messages}{\begin{alectryon@outer}}{\end{alectryon@outer}}
@@ -200,38 +211,45 @@
   {}
 
 \newcommand*{\alectryon@mrefmarker}[1]
-  {\alectryon@nobreakspace%
+  {\alectryon@unskip\hspace{0.5em}%
    {\setlength{\fboxsep}{1pt}\fbox{\footnotesize\textbf{#1}}}}
 
-\newcommand{\alectryon@copymacro}[1]
-  {\expandafter\def\csname #1\endcsname{\csname alectryon@#1\endcsname}}
-\newcommand{\alectryon@copyenvironment}[1]
-  {\expandafter\def\csname #1\endcsname{\csname alectryon@#1\endcsname}%
-   \expandafter\def\csname end#1\endcsname{\csname endalectryon@#1\endcsname}}
+\newcommand{\alectryon@copymacro}[2][]
+  {\expandafter\def\csname #2\endcsname{\csname alectryon@#2#1\endcsname}}
+\newcommand{\alectryon@copyenvironment}[2][]
+  {\expandafter\def\csname #2\endcsname{\csname alectryon@#2#1\endcsname}%
+   \expandafter\def\csname end#2\endcsname{\csname endalectryon@#2#1\endcsname}}
 
 \newenvironment{alectryon}
-  {\alectryon@copyenvironment{txt}
-   \alectryon@copyenvironment{wsp}
-   \alectryon@copyenvironment{sentence}
-   \alectryon@copyenvironment{input}
-   \alectryon@copyenvironment{output}
-   \alectryon@copyenvironment{goals}
-   \alectryon@copyenvironment{goal}
-   \alectryon@copyenvironment{hyps}
-   \alectryon@copyenvironment{hyp}
-   \alectryon@copyenvironment{extragoals}
-   \alectryon@copyenvironment{messages}
-   \alectryon@copyenvironment{message}
-   \alectryon@copyenvironment{conclusion}
-   \alectryon@copymacro{anchor}
-   \alectryon@copymacro{mrefmarker}
-   \alectryon@copymacro{infrule}
-   \alectryon@copymacro{gid}
-   \alectryon@copymacro{hypn}
-   \alectryon@copymacro{sep}
-   \alectryon@copymacro{nl}
+  {\alectryon@copyenvironment{txt}%
+   \alectryon@copyenvironment{sentence}%
+   \alectryon@copyenvironment{input}%
+   \alectryon@copyenvironment{output}%
+   \alectryon@copyenvironment{goals}%
+   \alectryon@copyenvironment{goal}%
+   \alectryon@copyenvironment{hyps}%
+   \alectryon@copyenvironment{hyp}%
+   \alectryon@copyenvironment{extragoals}%
+   \alectryon@copyenvironment{messages}%
+   \alectryon@copyenvironment{message}%
+   \alectryon@copyenvironment{conclusion}%
+   \alectryon@copymacro{anchor}%
+   \alectryon@copymacro{mrefmarker}%
+   \alectryon@copymacro{infrule}%
+   \alectryon@copymacro{gid}%
+   \alectryon@copymacro{hypn}%
+   \alectryon@copymacro{sep}%
+   \alectryon@copymacro{nl}%
    \begin{alectryon@io}}
   {\end{alectryon@io}}
+
+\newcommand{\alectryonInline}[1]
+  {{\alectryon@copyenvironment[@inline]{hyp}%
+    \alectryon@copymacro{mrefmarker}%
+    \alectryon@copymacro{hypn}%
+    \alectryon@copymacro{sep}%
+    \alectryon@copymacro[@inline]{nl}%
+    \begin{alectryon@inline}#1\end{alectryon@inline}}}
 
 \providecommand{\DUrolecode}{\def\DUrole{\PY}}
 \makeatother

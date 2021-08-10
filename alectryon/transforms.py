@@ -25,7 +25,7 @@ from copy import copy
 from collections import namedtuple
 
 from . import markers
-from .core import Sentence, Text, Names, \
+from .core import Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
     Goals, Messages, RichSentence
 
@@ -125,13 +125,31 @@ IO_COMMENT_RE = re.compile(
     r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(ONE_IO_ANNOT),
     re.VERBOSE)
 
+def _parse_path(path):
+    path = markers.parse_path(path)
+
+    if path.get("io") is not None:
+        raise ValueError("``.io`` not supported in visibility annotations")
+
+    path.setdefault("io", None)
+    path.setdefault("s", markers.TopMatcher())
+    if "h" in path:
+        path.setdefault("g", markers.TopMatcher())
+
+    leaf = markers.set_leaf(path)
+    if leaf in {"in", "ccl", "type", "body", "name"}:
+        MSG = "``{}`` not supported in visibility annotations."
+        raise ValueError(MSG.format(path["leaf"]))
+
+    return path
+
 def _update_io_flags(annots, flags_str, regex):
     for mannot in regex.finditer(flags_str):
         io, path, polarity = mannot.group("io", "path", "polarity")
         if io:
             annots.update(io)
         else:
-            annots.paths.append((polarity, markers.parse_path(path)))
+            annots.paths.append((polarity, _parse_path(path))) # FIXME catch error
 
 def process_io_flags(annots, flags_str):
     _update_io_flags(annots, flags_str, ONE_IO_FLAG_RE)
@@ -172,23 +190,15 @@ def should_keep_output(output, annots):
 def _process_io_path(sentence, polarity, path):
     enabled = polarity != "-"
 
-    unsupported = set(path) & {"ccl", "type", "body", "name"}
-    if unsupported:
-        MSG = "Path {} contains components not supported in visibility annotations: {}."
-        raise ValueError(MSG.format(path["str"], ",".join(unsupported)))
-
-    if "hyp" in path:
-        path.setdefault("goal", markers.TopMatcher())
-
     assert isinstance(sentence, RichSentence)
 
-    if "sentence" in path and not path.get("sentence").match(sentence.contents):
+    if "s" in path and not path["s"].match(sentence.contents):
         return
 
-    if "goal" in path:
-        for g in markers.find_goals(list(fragment_goals(sentence)), path["goal"]):
-            if "hyp" in path:
-                for h in markers.find_hyps(g.hypotheses, path["hyp"]):
+    if "g" in path:
+        for g in markers.find_goals(list(fragment_goals(sentence)), path["g"]):
+            if "h" in path:
+                for h in markers.find_hyps(g.hypotheses, path["h"]):
                     h.flags["enabled"] = enabled
             else:
                 g.flags["enabled"] = enabled
@@ -239,6 +249,25 @@ def commit_io_annotations(fragments, discard_folded=False):
                 raise ValueError(MSG.format(fr.contents))
             fr = fr._replace(contents=contents)
         yield fr
+
+def _sub_objects(obj):
+    if isinstance(obj, RichSentence):
+        return obj.outputs
+    if isinstance(obj, RichGoal):
+        return obj.conclusion, *obj.hypotheses
+    if isinstance(obj, RichHypothesis):
+        return obj.body, obj.type
+    if isinstance(obj, (RichMessage, RichCode)):
+        return ()
+    assert False
+
+def strip_ids_and_flags(obj):
+    if isinstance(obj, Enriched):
+        obj.ids.clear()
+        obj.flags.clear()
+        for obj_ in _sub_objects(obj):
+            strip_ids_and_flags(obj_)
+    return obj
 
 LEADING_BLANKS_RE = re.compile(r'\A([ \t]*(?:\n|\Z))?(.*?)([ \t]*)\Z',
                                flags=re.DOTALL)

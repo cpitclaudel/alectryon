@@ -108,6 +108,10 @@ In any case, make an exception for comments:
     margin: -0.25em 0 -0.25em 0.5em;
 }
 
+.alectryon-inline .alectryon-mref-marker {
+    margin: -0.25em 0.15em -0.25em 0.625em; /* 625 = 0.5em / 80% */
+}
+
 .alectryon-mref {
     color: inherit;
     margin: -0.5em 0.25em;
@@ -391,9 +395,13 @@ In any case, make an exception for comments:
     margin: 0.15em 0.25em;
 }
 
+.alectryon-inline var,
 .alectryon-io .goal-hyps > span > var {
     font-weight: 600;
     font-style: unset;
+}
+
+.alectryon-io .goal-hyps > span > var {
     /* Shrink the list of names, but let it grow as long as space is available. */
     flex-basis: min-content;
     flex-grow: 1;

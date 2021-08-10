@@ -66,6 +66,7 @@ side, and a doctree-resolved event on the Sphinx side.
 
 import re
 import os.path
+from copy import deepcopy
 from collections import namedtuple, defaultdict
 from importlib import import_module
 
@@ -79,7 +80,7 @@ from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
-from . import transforms, html, latex, markers
+from . import core, transforms, html, latex, markers
 from .core import Gensym, annotate, SerAPI
 from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
 
@@ -102,6 +103,9 @@ class alectryon_pending_mref(nodes.pending):
     pass
 
 class alectryon_pending_io(nodes.pending):
+    pass
+
+class alectryon_pending_quote(nodes.pending):
     pass
 
 # Transforms
@@ -368,33 +372,30 @@ class AlectryonMrefTransform(OneTimeTransform):
         node.replace_self(pb)
 
     @classmethod
-    def _validate_path(cls, path):
-        if "sentence" not in path:
-            raise markers.MarkerError("Missing .s(…) sentence component in path.")
-        if "ccl" in path or "hyp" in path:
-            path.setdefault("goal", markers.NameMatcher("1"))
+    def _validate_target(cls, target):
+        if not target:
+            raise ValueError("Target is null")
 
     @classmethod
-    def _find_mref_target(cls, node, ios, last_io):
-        path = node.details["path"]
-        cls._validate_path(path)
-
-        io_name = path.get("io")
+    def _find_mref_target(cls, path, ios, last_io):
+        io_name = path["io"]
         io = ios.get(io_name) if io_name else last_io
         if io is None:
             raise markers.MarkerError("Reference to unknown Alectryon block")
 
         fragments = io.details["fragments"]
-        sentence = markers.find_one("sentence", markers.find_sentences, fragments, path["sentence"])
+        sentence = markers.find_one("sentence", markers.find_sentences, fragments, path["s"])
 
-        if "goal" in path:
+        if "in" in path:
+            return core.Code(sentence.contents)
+        if "g" in path:
             goals = list(transforms.fragment_goals(sentence))
-            goal = markers.find_one("goal", markers.find_goals, goals, path["goal"])
+            goal = markers.find_one("goal", markers.find_goals, goals, path["g"])
             if "ccl" in path:
                 return goal.conclusion
-            if "hyp" in path:
+            if "h" in path:
                 hyps = goal.hypotheses
-                hyp = markers.find_one("hypothesis", markers.find_hyps, hyps, path["hyp"])
+                hyp = markers.find_one("hypothesis", markers.find_hyps, hyps, path["h"])
                 # Unfold to ensure visibility (but only if search succeeded)
                 if sentence.annots.unfold is None:
                     sentence.annots.unfold = True
@@ -423,9 +424,24 @@ class AlectryonMrefTransform(OneTimeTransform):
         return nodes.reference(node.rawsource, marker,
                                classes=["alectryon-mref"], refid=refid)
 
+    @staticmethod
+    def format_one_quote(target, node):
+        details = {**node.details, "target": target}
+        return alectryon_pending_quote(
+            AlectryonPostTransform, details, node.rawsource)
+
     def replace_one_mref(self, node, ios, last_io):
-        target = self._find_mref_target(node, ios, last_io)
-        repl = self.format_one_ref(target, node)
+        kind, path = node.details["kind"], node.details["path"]
+        target = self._find_mref_target(path, ios, last_io)
+        self._validate_target(target)
+
+        if kind == "ref":
+            repl = self.format_one_ref(target, node)
+        elif kind == "quote":
+            repl = self.format_one_quote(target, node)
+        else:
+            assert False
+
         node.replace_self(repl)
 
     def _apply(self, **_kwargs):
@@ -439,8 +455,8 @@ class AlectryonMrefTransform(OneTimeTransform):
             elif isinstance(node, alectryon_pending_mref):
                 try:
                     self.replace_one_mref(node, ios, last_io)
-                except markers.MarkerError as e:
-                    msg = "Error in '{}': {}".format(node.rawsource, e)
+                except ValueError as e:
+                    msg = "Error in {}: {}".format(node.rawsource, e)
                     self._warn(node, msg)
 
 class AlectryonPostTransform(OneTimeTransform):
@@ -468,11 +484,20 @@ class AlectryonPostTransform(OneTimeTransform):
         dom = generator.gen_fragments(fragments, ids=ids, classes=classes)
         node.replace_self(nodes.raw(contents, dom.render(pretty=False), format=fmt))
 
+    @staticmethod
+    def replace_one_quote(node, fmt, generator):
+        target = transforms.strip_ids_and_flags(deepcopy(node.details["target"]))
+        dom = generator.gen_inline(target)
+        raw = nodes.raw(node.details["path"], dom.render(pretty=False), format=fmt)
+        node.replace_self(raw)
+
     def _apply(self, **_kwargs):
         fmt, generator = self.init_generator()
         with added_tokens(_alectryon_state(self.document).config.tokens):
             for node in self.document.traverse(alectryon_pending_io):
                 self.replace_one_io(node, fmt, generator)
+            for node in self.document.traverse(alectryon_pending_quote):
+                self.replace_one_quote(node, fmt, generator)
 
 
 # Directives
@@ -674,25 +699,57 @@ COUNTER_STYLES = {
 }
 DEFAULT_COUNTER_STYLE = CounterStyle.of_str(COUNTER_STYLES['decimal'])
 
+MREF_KINDS = ['ref', 'quote']
+
+def _parse_path(s):
+    try:
+        return markers.parse_path(s)
+    except markers.PatternError as e:
+        MSG = "Unsupported pattern for key ``.{}`` in marker-placement expression ``{}``."
+        raise ValueError(MSG.format(*e.args)) from e
+    except markers.MarkerError as e:
+        MSG = "Cannot parse marker-placement expression ``{}``.".format(e)
+        raise ValueError(MSG.format(e)) from e
+
+def _parse_mref_target(kind, target, prefix):
+    if target[0] in "#." or kind == "quote":
+        path = _parse_path(target)
+    else:
+        path = {"s": markers.PlainMatcher(target), "str": ".s({})".format(target)}
+
+    path = markers.merge_paths(prefix, path)
+    path.setdefault("io", None)
+
+    if "s" not in path:
+        raise markers.MarkerError("Missing .s(…) sentence component in path.")
+    if "ccl" in path or "h" in path:
+        path.setdefault("g", markers.NameMatcher("1"))
+    if kind == "ref" and "name" in path:
+        raise markers.MarkerError("``.name`` is not supported in ``:mref:`` queries.")
+
+    leaf = markers.set_leaf(path)
+    if kind == "quote" and leaf not in ("in", "ccl", "h", "type", "body", "name"):
+        raise markers.MarkerError("Cannot format ``{}`` as an inline quote".format(leaf))
+
+    return path
+
 def _marker_ref_role(role, rawtext, text, lineno, inliner, options, content):
+    kind = options.pop("kind", "ref")
+
     title, target = _parse_ref(text)
     if target is None:
         title, target = None, title
 
-    if target[0] in "#.":
-        try:
-            path = markers.parse_path(target)
-        except markers.MarkerError as e:
-            MSG = "Cannot parse marker-placement expression ``{}``.".format(e)
-            raise ValueError(MSG) from e
-    else:
-        path = {"sentence": markers.PlainMatcher(target)}
+    if kind == "quote" and title:
+        raise ValueError("Title syntax (`… <…>`) nor supported with ``:mquote:``")
 
+    path = _parse_mref_target(kind, target, options.pop("prefix", {}))
     cs = options.pop("counter-style", None) or DEFAULT_COUNTER_STYLE
     details = {"title": title,
                "target": target,
-               "path": {**options.pop("prefix", {}), **path},
-               "counter-style": cs}
+               "path": path,
+               "counter-style": cs,
+               "kind": kind}
 
     roles.set_classes(options)
     node = alectryon_pending_mref(AlectryonMrefTransform, details, rawtext, **options)
@@ -716,16 +773,26 @@ def _opt_mref_counter_style(arg):
     return CounterStyle.of_str(arg)
 
 def _opt_mref_prefix(prefix):
-    try:
-        return markers.parse_path(prefix)
-    except markers.MarkerError as e:
-        msg = "Error in marker-placement prefix: {}".format(e)
-        raise ValueError(msg) from e
+    return _parse_path(prefix)
+
+def _opt_mref_kind(arg):
+    return directives.choice(arg, list(MREF_KINDS))
 
 marker_ref_role.name = "mref"
 marker_ref_role.options = {
     'counter-style': _opt_mref_counter_style,
     'prefix': _opt_mref_prefix,
+    'kind': _opt_mref_kind
+}
+
+def marker_quote_role(# pylint: disable=dangerous-default-value,unused-argument
+        role, rawtext, text, lineno, inliner, options={}, content=[]):
+    options.setdefault("kind", "quote")
+    return marker_ref_role(role, rawtext, text, lineno, inliner, options, content)
+
+marker_quote_role.name = "mquote"
+marker_quote_role.options = {
+    'prefix': _opt_mref_prefix
 }
 
 # Error printer
@@ -1004,7 +1071,11 @@ TRANSFORMS = [ActivateMathJaxTransform,
 DIRECTIVES = [CoqDirective,
               AlectryonToggleDirective,
               ExperimentalExerciseDirective]
-ROLES = [alectryon_bubble, coq_code_role, coq_id_role, marker_ref_role]
+ROLES = [alectryon_bubble,
+         coq_code_role,
+         coq_id_role,
+         marker_ref_role,
+         marker_quote_role]
 
 def register():
     """Tell Docutils about our roles and directives."""

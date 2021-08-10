@@ -24,9 +24,10 @@ from os import path
 import pickle
 
 from dominate import tags
+from dominate.util import text as txt
 
-from . import core, transforms, GENERATOR
-from .core import b16, Gensym, Text, RichSentence, Goals, Messages
+from . import transforms, GENERATOR
+from .core import b16, Gensym, Backend, Text, RichSentence, Goals, Messages
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
 
@@ -85,9 +86,9 @@ def deduplicate(selector):
 def nullctx():
     yield
 
-class HtmlGenerator:
+class HtmlGenerator(Backend):
     def __init__(self, highlighter, gensym_stem="", minify=False):
-        self.highlight = highlighter
+        self.highlighter = highlighter
         self.gensym = None if minify else Gensym(gensym_stem + "-" if gensym_stem else "")
         self.minify, self.backrefs = minify, ({} if minify else None)
 
@@ -98,14 +99,21 @@ class HtmlGenerator:
             return tags.label(*contents, cls=cls, **attrs)
         return tags.span(*contents, cls=cls)
 
+    def highlight(self, s):
+        return self.highlighter(s)
+
     def gen_code(self, dom, code, **kwargs):
         with dom(self.highlight(code.contents), **kwargs):
             self.gen_mrefs(code)
 
+    @staticmethod
+    def gen_names(names):
+        tags.var(", ".join(names))
+
     @deduplicate(".goal-hyps > span")
     def gen_hyp(self, hyp):
         with tags.span():
-            tags.var(", ".join(hyp.names))
+            self.gen_names(hyp.names)
             with tags.span() if hyp.body else nullctx(): # For alignment
                 if hyp.body:
                     with tags.span(cls="hyp-body"):
@@ -198,6 +206,10 @@ class HtmlGenerator:
                     self.gen_goals(output.goals)
 
     @staticmethod
+    def gen_txt(s):
+        return txt(s)
+
+    @staticmethod
     def gen_whitespace(wsps):
         for wsp in wsps:
             tags.span(wsp, cls="alectryon-wsp")
@@ -238,11 +250,21 @@ class HtmlGenerator:
         for marker in markers:
             tags.span(marker, cls="alectryon-mref-marker")
 
-    def gen_fragments(self, fragments, ids=(), classes=()):
-        """Serialize a list of `fragments` to HTML."""
-        with tags.pre(cls=" ".join(("alectryon-io", "highlight", *classes))) as pre:
+    def _gen_block(self, container, ids, classes):
+        with container(cls=" ".join(classes)) as block:
             tags.comment(" Generator: {} ".format(GENERATOR))
             self.gen_ids(ids)
+            return block
+
+    def gen_inline(self, obj, ids=(), classes=()):
+        """Serialize a single `obj` to HTML."""
+        with self._gen_block(tags.samp, ids, ("alectryon-inline", "highlight", *classes)) as samp:
+            self._gen_any(obj)
+            return samp
+
+    def gen_fragments(self, fragments, ids=(), classes=()):
+        """Serialize a list of `fragments` to HTML."""
+        with self._gen_block(tags.pre, ids, ("alectryon-io", "highlight", *classes)) as pre:
             fragments = transforms.group_whitespace_with_code(fragments)
             fragments = transforms.commit_io_annotations(fragments)
             for fr in fragments:

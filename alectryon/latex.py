@@ -21,7 +21,7 @@
 import re
 from os import path
 
-from .core import Text, RichSentence, Messages, Goals
+from .core import Backend, Text, RichSentence, Messages, Goals
 from . import transforms, GENERATOR
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
@@ -116,6 +116,13 @@ class Macro(Context):
         children = "".join(c.format(indent, self.verbatim or verbatim) for c in self.children)
         return format_macro(self.name, (*self.args, children), self.optargs)
 
+class Concat(Context):
+    def __init__(self, *children):
+        super().__init__(None, children)
+
+    def format(self, indent, verbatim):
+        return "".join(c.format(indent, self.verbatim or verbatim) for c in self.children)
+
 class Replacements:
     def __init__(self, replacements):
         self.replacements = replacements
@@ -168,18 +175,27 @@ class Macros:
         return lambda *args, **kwargs: Macro(macro_name, *args, **kwargs)
 macros = Macros()
 
-class LatexGenerator:
+class LatexGenerator(Backend):
     def __init__(self, highlighter):
         self.highlighter = highlighter
 
     def highlight(self, s):
         return [Raw(self.highlighter(s, prefix="", suffix=""))]
 
+    def gen_code(self, code):
+        with Concat(*self.highlight(code.contents)) as block:
+            self.gen_mrefs(code)
+            return block
+
+    @staticmethod
+    def gen_names(names):
+        return PlainText(", ".join(names))
+
     def gen_hyp(self, hyp):
-        names = PlainText(", ".join(hyp.names))
-        hbody = self.highlight(hyp.body) if hyp.body else []
+        names = self.gen_names(hyp.names)
+        hbody = [self.gen_code(hyp.body)] if hyp.body else []
         with macros.hyp(args=[names], optargs=hbody, verbatim=True):
-            self.highlight(hyp.type)
+            self.gen_code(hyp.type)
             self.gen_mrefs(hyp)
 
     def gen_goal(self, goal):
@@ -194,8 +210,7 @@ class LatexGenerator:
                     macros.gid(PlainText(goal.name))
                 self.gen_mref_markers(goal.markers)
             with environments.conclusion(verbatim=True):
-                self.highlight(goal.conclusion.contents)
-                self.gen_mrefs(goal.conclusion)
+                self.gen_code(goal.conclusion)
 
     def gen_goals(self, first, more):
         self.gen_goal(first)
@@ -203,6 +218,10 @@ class LatexGenerator:
             with environments.extragoals():
                 for goal in more:
                     self.gen_goal(goal)
+
+    @staticmethod
+    def gen_txt(s):
+        return PlainText(s)
 
     @staticmethod
     def gen_whitespace(wsps):
@@ -224,10 +243,9 @@ class LatexGenerator:
                 self.gen_whitespace(fr.suffixes)
             self.gen_mrefs(fr)
 
-    def gen_message(self, msg):
+    def gen_message(self, message):
         with environments.message(verbatim=True):
-            self.highlight(msg.contents)
-            self.gen_mrefs(msg)
+            self.gen_code(message)
 
     def gen_output(self, fr):
         with environments.output():
@@ -271,6 +289,13 @@ class LatexGenerator:
     def gen_mref_markers(markers):
         for marker in markers:
             macros.mrefmarker(Raw(marker))
+
+    def gen_inline(self, obj, classes=()): # pylint: disable=unused-argument
+        """Serialize a single `obj` to LaTeX."""
+        # FIXME: classes.
+        with macros.alectryonInline() as env:
+            self._gen_any(obj)
+            return env
 
     def gen_fragments(self, fragments, ids=(), classes=()): # pylint: disable=unused-argument
         """Serialize a list of `fragments` to LaTeX."""

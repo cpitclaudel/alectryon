@@ -50,7 +50,9 @@ Text = namedtuple("Text", "contents")
 class Enriched():
     __slots__ = ()
     def __new__(cls, *args, **kwargs):
-        kwargs = {"ids": [], "markers":[], "flags": {}, **kwargs}
+        if len(args) < len(super()._fields): # pylint: disable=no-member
+            # Don't repeat fields given by position (it breaks pickle & deepcopy)
+            kwargs = {"ids": [], "markers":[], "flags": {}, **kwargs}
         return super().__new__(cls, *args, **kwargs)
 
 def _enrich(nt):
@@ -65,6 +67,7 @@ def _enrich(nt):
 Goals = namedtuple("Goals", "goals")
 Messages = namedtuple("Messages", "messages")
 
+class Code(str): pass
 class Names(list): pass
 RichHypothesis = _enrich(Hypothesis)
 RichGoal = _enrich(Goal)
@@ -83,6 +86,27 @@ class Gensym():
     def __call__(self, prefix):
         self.counters[prefix] += 1
         return self.stem + prefix + b16(self.counters[prefix])
+
+class Backend: # pylint: disable=no-member
+    def _gen_any(self, obj):
+        if isinstance(obj, (Text, RichSentence)):
+            self.gen_sentence(obj)
+        elif isinstance(obj, RichHypothesis):
+            self.gen_hyp(obj)
+        elif isinstance(obj, RichGoal):
+            self.gen_goal(obj)
+        elif isinstance(obj, RichMessage):
+            self.gen_message(obj)
+        elif isinstance(obj, RichCode):
+            self.highlight(obj.contents)
+        elif isinstance(obj, Code):
+            self.highlight(obj)
+        elif isinstance(obj, Names):
+            self.gen_names(obj)
+        elif isinstance(obj, str):
+            self.gen_txt(obj)
+        else:
+            raise TypeError("Unexpected object type: {}".format(type(obj)))
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
