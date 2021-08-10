@@ -98,9 +98,9 @@ class HtmlGenerator:
             return tags.label(*contents, cls=cls, **attrs)
         return tags.span(*contents, cls=cls)
 
-    @deduplicate(".goal-hyps > div")
+    @deduplicate(".goal-hyps > span")
     def gen_hyp(self, hyp):
-        with tags.div():
+        with tags.span():
             tags.var(", ".join(hyp.names))
             with tags.span() if hyp.body else nullctx(): # For alignment
                 if hyp.body:
@@ -117,6 +117,7 @@ class HtmlGenerator:
         with tags.div(cls="goal-hyps"):
             for hyp in hyps:
                 self.gen_hyp(hyp)
+                tags.br()
 
     @deduplicate(".goal-conclusion")
     def gen_ccl(self, conclusion):

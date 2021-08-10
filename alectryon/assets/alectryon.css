@@ -347,7 +347,7 @@ In any case, make an exception for comments:
 .alectryon-io .alectryon-message,
 .alectryon-io .alectryon-goals,
 .alectryon-io .alectryon-goal,
-.alectryon-io .goal-hyps > div,
+.alectryon-io .goal-hyps > span,
 .alectryon-io .goal-conclusion {
     border-radius: 0.15em;
 }
@@ -374,20 +374,24 @@ In any case, make an exception for comments:
     padding-bottom: 0.35em; /* 0.5em-0.15em to cancel the 0.5em of .goal-separator */
 }
 
-.alectryon-io .goal-hyps > div,
+.alectryon-io .goal-hyps > br {
+    display: none; /* Only for RSS readers */
+}
+
+.alectryon-io .goal-hyps > span,
 .alectryon-io .goal-conclusion {
     background: #eeeeec;
     display: inline-block;
     padding: 0.15em 0.35em;
 }
 
-.alectryon-io .goal-hyps > div {
+.alectryon-io .goal-hyps > span {
     align-items: baseline;
     display: inline-flex;
     margin: 0.15em 0.25em;
 }
 
-.alectryon-io .goal-hyps > div > var {
+.alectryon-io .goal-hyps > span > var {
     font-weight: 600;
     font-style: unset;
     /* Shrink the list of names, but let it grow as long as space is available. */
@@ -395,7 +399,7 @@ In any case, make an exception for comments:
     flex-grow: 1;
 }
 
-.alectryon-io .goal-hyps > div b {
+.alectryon-io .goal-hyps > span b {
     font-weight: 600;
     margin: 0 0.5em;
 }
