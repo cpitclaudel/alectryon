@@ -140,9 +140,10 @@ class Raw:
         " ": "~",
         "\n": "\\nl\n"})
 
-    def __init__(self, s):
+    def __init__(self, s, verbatim=False):
         self.s = s
         self.parent = None
+        self.verbatim = verbatim
         add_top(self)
 
     @classmethod
@@ -153,7 +154,7 @@ class Raw:
         return tex.replace('\n', '\n' + ' ' * indent)
 
     def format(self, indent, verbatim):
-        return self.raw_format(self.s, indent, verbatim)
+        return self.raw_format(self.s, indent, verbatim or self.verbatim)
 
     def __str__(self):
         return self.format(indent=0, verbatim=False)
@@ -180,7 +181,7 @@ class LatexGenerator(Backend):
         self.highlighter = highlighter
 
     def highlight(self, s):
-        return [Raw(self.highlighter(s, prefix="", suffix=""))]
+        return [Raw(self.highlighter(s, prefix="", suffix=""), verbatim=True)]
 
     def gen_code(self, code):
         with Concat(*self.highlight(code.contents)) as block:

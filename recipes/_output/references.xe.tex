@@ -600,7 +600,7 @@ Instead of inserting a link to the relevant goal fragment, you can use the \text
 \begin{quote}
 The proof above had two cases: \alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}\mrefmarker{4}}} and \alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}\mrefmarker{7}}}.
 The second goal below is named \alectryonInline{gg}.
-The last case of the proof below has two induction hypotheses: \alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l} \PY{o}{\PYZhy{}\PYZgt{}} \PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}}} and \alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}} \PY{o}{\PYZhy{}\PYZgt{}} \PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}\PYZsq{}}}. The two permutation hypotheses are \alectryonInline{H} and \alectryonInline{H0}.
+The last case of the proof below has two induction hypotheses: \alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}} and \alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}\PYZsq{}}}. The two permutation hypotheses are \alectryonInline{H} and \alectryonInline{H0}.
 \end{quote}
 
 For conciseness, it is possible to define an alias of \texttt{:mquote:} that uses a fixed prefix.  Notice how the second example overrides the \texttt{.g} part of the prefix, too.
@@ -608,7 +608,7 @@ For conciseness, it is possible to define an alias of \texttt{:mquote:} that use
 \begin{quote}
 The proof above had two cases: \DUrole{mq-s}{\alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}\mrefmarker{4}}}} and \DUrole{mq-s}{\alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}\mrefmarker{7}}}}.
 The second goal below is named \DUrole{mq-pr}{\alectryonInline{gg}}.
-The last case of the proof below has two induction hypotheses: \DUrole{mq-pr}{\alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l} \PY{o}{\PYZhy{}\PYZgt{}} \PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}}}} and \DUrole{mq-pr}{\alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}} \PY{o}{\PYZhy{}\PYZgt{}} \PY{n}{List}\PY{o}{.}\PY{n}{In} \PY{n}{a} \PY{n}{l\PYZsq{}\PYZsq{}}}}.
+The last case of the proof below has two induction hypotheses: \DUrole{mq-pr}{\alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}}} and \DUrole{mq-pr}{\alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}\PYZsq{}}}}.
 The two permutation hypotheses are \DUrole{mq-pr}{\alectryonInline{H}} and \DUrole{mq-pr}{\alectryonInline{H0}}.
 \end{quote}
 
@@ -689,16 +689,16 @@ Newlines in quoted objects are removed, and line breaks are allowed:
   \end{sentence}
 \end{alectryon}
 
-The first sentence is \alectryonInline{\PY{k+kn}{Record} \PY{n+nf}{P} \PY{o}{\PYZob{}}\PY{n+nv}{A} \PY{n+nv}{B}\PY{o}{:} \PY{k+kt}{Type}\PY{o}{\PYZcb{}} \PY{o}{:=}
-  \PY{o}{\PYZob{}} \PY{n}{p\PYZus{}first}\PY{o}{:} \PY{n}{A}\PY{o}{;}
-    \PY{n}{p\PYZus{}second}\PY{o}{:} \PY{n}{B} \PY{o}{\PYZcb{}.}}.\DUfootnotemark{id1}{f1}{1}
+The first sentence is \alectryonInline{\PY{k+kn}{Record}~\PY{n+nf}{P}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=}\nl
+~~\PY{o}{\PYZob{}}~\PY{n}{p\PYZus{}first}\PY{o}{:}~\PY{n}{A}\PY{o}{;}\nl
+~~~~\PY{n}{p\PYZus{}second}\PY{o}{:}~\PY{n}{B}~\PY{o}{\PYZcb{}.}}.\DUfootnotemark{id1}{f1}{1}
 %
 \DUfootnotetext{f1}{id1}{1}{\phantomsection\label{f1}%
-The second sentence is \alectryonInline{\PY{k+kn}{Goal} \PY{k+kr}{forall} \PY{o}{\PYZob{}}\PY{n+nv}{A} \PY{n+nv}{B}\PY{o}{\PYZcb{}} \PY{o}{(}\PY{n+nv}{p}\PY{o}{:} \PY{o}{@}\PY{n}{P} \PY{n}{A} \PY{n}{B}\PY{o}{),}
-  \PY{k+kr}{let} \PY{n+nv}{a\PYZus{}first} \PY{o}{:=} \PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)} \PY{k+kr}{in}
-  \PY{k+kr}{let} \PY{n+nv}{b\PYZus{}second} \PY{o}{:=} \PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)} \PY{k+kr}{in}
-  \PY{o}{\PYZob{}|} \PY{n}{p\PYZus{}first} \PY{o}{:=} \PY{n}{a\PYZus{}first}\PY{o}{;}
-     \PY{n}{p\PYZus{}second} \PY{o}{:=} \PY{n}{b\PYZus{}second} \PY{o}{|\PYZcb{}} \PY{o}{=} \PY{n}{p}\PY{o}{.}}.  Later on we'll see a message: \alectryonInline{\begin{message}
+The second sentence is \alectryonInline{\PY{k+kn}{Goal}~\PY{k+kr}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{o}{@}\PY{n}{P}~\PY{n}{A}~\PY{n}{B}\PY{o}{),}\nl
+~~\PY{k+kr}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)}~\PY{k+kr}{in}\nl
+~~\PY{k+kr}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k+kr}{in}\nl
+~~\PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}\nl
+~~~~~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}\PY{o}{.}}.  Later on we'll see a message: \alectryonInline{\begin{message}
   \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k+kr}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\nl
   \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{]}
 \end{message}}.
