@@ -113,12 +113,12 @@ POLARIZED_PATH_SEGMENT = r"(?P<polarity>[-+]?)(?P<path>(?:{})+)".format(
     markers.MARKER_PATH_SEGMENT.pattern)
 
 ONE_IO_FLAG = r"(?:{}|{})".format(
-    POLARIZED_PATH_SEGMENT, IOAnnots.RE.pattern)
+    IOAnnots.RE.pattern, POLARIZED_PATH_SEGMENT)
 ONE_IO_FLAG_RE = re.compile(
     ISOLATED.format(ONE_IO_FLAG), re.VERBOSE)
 
 ONE_IO_ANNOT = r"(?:{}|{})".format(
-    POLARIZED_PATH_SEGMENT, IOAnnots.DOTTED_RE.pattern)
+    IOAnnots.DOTTED_RE.pattern, POLARIZED_PATH_SEGMENT)
 ONE_IO_ANNOT_RE = re.compile(
     ISOLATED.format(ONE_IO_ANNOT), re.VERBOSE)
 IO_COMMENT_RE = re.compile(
