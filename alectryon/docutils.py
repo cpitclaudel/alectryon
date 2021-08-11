@@ -754,41 +754,51 @@ coq_code_role.name = "coq" # type: ignore
 
 ghref_cache = {}
 def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    import re
     uri = options.get('src',None)
     if uri is None:
-        msg = "{}: no src option"
+        msg = inliner.reporter.error("{}: no src option".format(role), line=lineno)
+        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+    if not(re.match('^https://github.com',uri)):
+        msg = inliner.reporter.error("{}: only accepts github links".format(role), line=lineno)
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
     pattern = options.get('pattern','')
     roles.set_classes(options)
     options.setdefault("classes", []).append("ghref")
-    import re
     if uri in ghref_cache:
         code, rawuri, uri = ghref_cache[uri]
     else:
         from urllib import request
-        with request.urlopen(uri) as f:
-            html = f.read().decode('utf-8')
+        try:
+            with request.urlopen(uri) as f:
+                html = f.read().decode('utf-8')
+        except:
+            msg = inliner.reporter.error("{}: could not download: {}".format(role,uri), line=lineno)
+            return [inliner.problematic(rawtext, rawtext, msg)], [msg]
         scrape = re.compile("<a(.*?hotkey=.y.*?)>Permalink</a>",re.IGNORECASE)
         link = scrape.search(html).group(1)
         href = re.compile('href=([\'"])(.*?)\\1',re.IGNORECASE)
-        _,puri = href.search(link).groups()
+        puri = href.search(link).group(2)
         puri = "https://github.com" + puri
         rawuri = puri.replace('/blob/','/raw/')
-        with request.urlopen(rawuri) as f:
-            code = f.read().decode('utf-8')
+        try:
+            with request.urlopen(rawuri) as f:
+                code = f.read().decode('utf-8')
+        except:
+            print(rawuri)
+            msg = inliner.reporter.error("{}: could not download: {}".format(role,rawuri), line=lineno)
+            return [inliner.problematic(rawtext, rawtext, msg)], [msg]
         ghref_cache[uri]=(code,rawuri,puri)
         uri=puri
     from string import Template
     pattern = Template(pattern).safe_substitute(name=text)
     pattern = re.compile(pattern)
-    found = False
     for num, line in enumerate(code.splitlines(), 1):
         if pattern.search(line):
             uri = uri + '#L' + str(num)
-            found = True
             break
     else:
-        msg = "{}: {} not found in {}".format(role,text,rawuri)
+        msg = inliner.reporter.error("{}: {} not found in {}".format(role,text,rawuri), line=lineno)
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
     node = nodes.reference(rawtext, text, refuri=uri, **options)
     set_line(node, lineno, inliner.reporter)
