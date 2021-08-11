@@ -19,4 +19,5 @@ upload: dist
 lint:
 	etc/lint_changes.sh CHANGES.rst
 	pylint --rcfile=setup.cfg alectryon
+	mypy alectryon/
 	pyright --project .

@@ -6,3 +6,6 @@ build-backend = "setuptools.build_meta"
 include = ["alectryon"]
 reportOptionalMemberAccess = false
 reportWildcardImportFromLibrary = false
+
+[tool.mypy]
+ignore_missing_imports = true

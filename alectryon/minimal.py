@@ -28,14 +28,16 @@ Invoke with ``python3 -m alectryon.minimal --help``.
 
 # pylint: disable=dangerous-default-value
 
+from typing import Dict, Any
+
 from docutils.parsers.rst import directives, roles, Directive # type: ignore
-import docutils.parsers.rst.directives.body # pylint: disable=unused-import
+import docutils.parsers.rst.directives.body # type: ignore # pylint: disable=unused-import
 
 ## Directives
 
 class CoqDirective(directives.body.CodeBlock):
     final_argument_whitespace = True
-    option_spec = {}
+    option_spec: Dict[str, Any] = {}
 
     def run(self):
         self.arguments = ["coq"] # Ignore arguments
@@ -58,7 +60,7 @@ def coq_code_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
 def no_op(role, rawtext, text, lineno, inliner, options={}, content=[]):
     return roles.generic_custom_role(
         role, rawtext, text, lineno, inliner, options, content)
-no_op.options = {'url': directives.unchanged}
+no_op.options = {'url': directives.unchanged} # type: ignore
 
 ROLES = {"coqid": no_op,
          "coq": coq_code_role,

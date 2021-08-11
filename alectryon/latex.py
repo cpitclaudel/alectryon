@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import List
+
 import re
 from os import path
 
@@ -38,7 +40,7 @@ def format_macro(name, args, optargs, before_optargs=None):
     optargs = "".join("[" + str(optarg) + "]" for optarg in optargs)
     return "\\" + name + first + optargs + args
 
-CONTEXT_STACK = []
+CONTEXT_STACK: List['Context'] = []
 
 ## FIXME just set Verbatim to true by default, and special-case comments?
 
@@ -87,11 +89,9 @@ class Context:
         return self.format(indent=0, verbatim=False)
 
 class Environment(Context):
-    INDENT = {}
-
     def __init__(self, name, *children, args=(), optargs=(), verbatim=False):
         super().__init__(name, children, args, optargs, verbatim)
-        self.indent = Environment.INDENT.get(name, 2)
+        self.indent = 2
 
     def format(self, indent, verbatim):
         begin = format_macro("begin", self.args, self.optargs, self.name)

@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+# pylint: disable=dangerous-default-value,unused-argument
+
 """reStructuredText support for Alectryon.
 
 This file defines a ``.. coq::`` directive, which formats its contents using
@@ -64,7 +66,7 @@ To work around this issue we use a writer-dependent transform on the docutils
 side, and a doctree-resolved event on the Sphinx side.
 """
 
-from typing import Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 import re
 import os.path
@@ -77,7 +79,7 @@ import docutils.frontend
 from docutils import nodes
 
 from docutils.parsers.rst import directives, roles, Directive # type: ignore
-from docutils.parsers.rst.directives.body import Sidebar
+from docutils.parsers.rst.directives.body import Sidebar # type: ignore
 from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
@@ -586,7 +588,7 @@ class AlectryonToggleDirective(Directive):
 
     required_arguments = 0
     optional_arguments = 0
-    option_spec = {}
+    option_spec: Dict[str, Any] = {}
     has_content = False
 
     def run(self):
@@ -617,16 +619,14 @@ class ExperimentalExerciseDirective(Sidebar):
 # Roles
 # -----
 
-# pylint: disable=dangerous-default-value,unused-argument
 def alectryon_bubble(role, rawtext, text, lineno, inliner,
                      options: Dict[str, Any]={}, content=[]):
     node = nodes.inline(rawtext, classes=['alectryon-bubble'])
     set_line(node, lineno, inliner.reporter)
     return [node], []
 
-alectryon_bubble.name = "alectryon-bubble"
+alectryon_bubble.name = "alectryon-bubble" # type: ignore
 
-#pylint: disable=dangerous-default-value,unused-argument
 def coq_code_role(role, rawtext, text, lineno, inliner,
                   options: Dict[str, Any]={}, content=[]):
     options = {**options, "language": "coq"}
@@ -634,7 +634,7 @@ def coq_code_role(role, rawtext, text, lineno, inliner,
     options.setdefault("classes", []).append("highlight")
     return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
 
-coq_code_role.name = "coq"
+coq_code_role.name = "coq" # type: ignore
 
 COQ_ID_RE = re.compile(r"^(?P<title>.*?)(?:\s*<(?P<target>.*)>)?$")
 COQ_IDENT_DB_URLS = [
@@ -646,7 +646,6 @@ def _parse_ref(text):
     title, target = mid.group("title"), mid.group("target")
     return title, target
 
-# pylint: disable=dangerous-default-value,unused-argument
 def coq_id_role(role, rawtext, text, lineno, inliner,
                 options: Dict[str, Any]={}, content=[]):
     title, target = _parse_ref(text)
@@ -697,8 +696,8 @@ def coq_id_role(role, rawtext, text, lineno, inliner,
 
     return [node], []
 
-coq_id_role.name = "coqid"
-coq_id_role.options = {'url': directives.unchanged}
+coq_id_role.name = "coqid" # type: ignore
+coq_id_role.options = {'url': directives.unchanged} # type: ignore
 
 COUNTER_STYLES = {
     'decimal': '0 1 2 3 4 5 6 7 8 9',
@@ -767,7 +766,6 @@ def _marker_ref_role(role, rawtext, text, lineno, inliner, options, content):
     inliner.document.note_pending(node)
     return [node], []
 
-# pylint: disable=dangerous-default-value,unused-argument
 def marker_ref_role(role, rawtext, text, lineno, inliner,
                     options: Dict[str, Any]={}, content=[]):
     try:
@@ -789,21 +787,20 @@ def _opt_mref_prefix(prefix):
 def _opt_mref_kind(arg):
     return directives.choice(arg, list(MREF_KINDS))
 
-marker_ref_role.name = "mref"
-marker_ref_role.options = {
+marker_ref_role.name = "mref" # type: ignore
+marker_ref_role.options = { # type: ignore
     'counter-style': _opt_mref_counter_style,
     'prefix': _opt_mref_prefix,
     'kind': _opt_mref_kind
 }
 
-# pylint: disable=dangerous-default-value,unused-argument
 def marker_quote_role(role, rawtext, text, lineno, inliner,
                       options: Dict[str, Any]={}, content=[]):
     options.setdefault("kind", "quote")
     return marker_ref_role(role, rawtext, text, lineno, inliner, options, content)
 
-marker_quote_role.name = "mquote"
-marker_quote_role.options = {
+marker_quote_role.name = "mquote" # type: ignore
+marker_quote_role.options = { # type: ignore
     'prefix': _opt_mref_prefix
 }
 
@@ -1024,7 +1021,7 @@ XeLatexWriter = make_LatexWriter(xetex.Writer, XeLatexTranslator)
 LuaLatexWriter = make_LatexWriter(xetex.Writer, LuaLatexTranslator) # Same writer
 
 class DummyTranslator:
-    ASSETS = []
+    ASSETS: List[str] = []
 
 Pipeline = namedtuple("Pipeline", "parser reader translator writer")
 

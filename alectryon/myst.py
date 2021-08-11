@@ -27,6 +27,8 @@ This is mostly useful through Alectryon's command line.  For integration with
 Sphinx, use the ``myst_parser`` and the ``alectryon.sphinx`` plugins.
 """
 
+from typing import Type
+
 import docutils.parsers
 
 try:
@@ -40,7 +42,7 @@ try:
         # https://github.com/executablebooks/MyST-Parser/issues/347
         def parse(self, inputstring, document, renderer="docutils") -> None:
             return super().parse(inputstring, document, renderer)
-    Parser = RealParser
+    Parser: Type[docutils.parsers.Parser] = RealParser
 
 except ImportError as err:
     class FallbackParser(docutils.parsers.Parser):
