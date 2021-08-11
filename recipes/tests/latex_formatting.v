@@ -38,7 +38,41 @@ End Long.
 
 Compute (map [11; 22; 33] (fun n a _ => (n, a * a))).
 
+
+Definition t := True.
+Definition ign {A} (_: A) := Prop.
+
 (*|
+.. role:: ltx(raw)
+   :format: latex
+
+:ltx:`\begin{small}`
+|*)
+
+Goal forall
+    (a: ign (t -> t -> t -> t -> t -> t -> t))
+    (aaa: ign (t -> t -> t -> t -> t -> t))
+    (aaaaa: ign (t -> t -> t -> t -> t -> t))
+    (aaaaaaa: ign (t -> t -> t -> t -> t))
+    (aaaaaaaaa: ign (t -> t -> t -> t -> t))
+    (aaaaaaaaaaa: ign (t -> t -> t -> t))
+    (aaaaaaaaaaaaa: ign (t -> t -> t -> t))
+    (aaaaaaaaaaaaaaa: ign (t -> t -> t))
+    (aaaaaaaaaaaaaaaaa: ign (t -> t -> t))
+    (aaaaaaaaaaaaaaaaaaa: ign (t -> t))
+    (aaaaaaaaaaaaaaaaaaaaa: ign (t -> t))
+    (aaaaaaaaaaaaaaaaaaaaaaa: ign t)
+    (aaaaaaaaaaaaaaaaaaaaaaaaa: ign t),
+    a -> aaa -> aaaaa -> aaaaaaa -> aaaaaaaaa ->
+    aaaaaaaaaaa -> aaaaaaaaaaaaa -> aaaaaaaaaaaaaaa ->
+    aaaaaaaaaaaaaaaaa -> aaaaaaaaaaaaaaaaaaa ->
+    aaaaaaaaaaaaaaaaaaaaa -> aaaaaaaaaaaaaaaaaaaaaaa ->
+    aaaaaaaaaaaaaaaaaaaaaaaaa -> True.
+Proof. auto. Qed.
+
+(*|
+:ltx:`\end{small}`
+
 Newlines
 ========
 |*)

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>Syntax highlighting</title>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="tango_subtle.min.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="syntax-highlighting">
+<h1 class="title">Syntax highlighting</h1>
+
+<p>To compile:</p>
+<pre class="literal-block">
+alectryon syntax_highlighting.v
+  # Coq → HTML; produces ‘syntax_highlighting.html’
+</pre>
+<!--  -->
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">a</span> : nat :=
+  <span class="kr">let</span> &#39;(x, y) := (<span class="mi">1</span>, <span class="mi">2</span>) <span class="kr">in</span>
+  <span class="kr">let</span> &#39; (z, t) := (x, y) <span class="kr">in</span>
+  <span class="kr">let</span> <span class="nv">&#39;tt</span> := tt <span class="kr">in</span>
+  <span class="kr">let fix</span> <span class="nv">f</span> (<span class="nv">x</span>: nat) {<span class="nv">struct</span> <span class="nv">x</span>} : nat := x <span class="kr">in</span>
+  (<span class="kr">fun</span> &#39; (f, x, y) =&gt; f (x + y)) (f, t, y).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="syntax-highlighting-v-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="syntax-highlighting-v-chk0"><span class="kn">Print</span> a.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">a = 
+<span class="kr">let</span>
+&#39;(x, y) := (<span class="mi">1</span>, <span class="mi">2</span>) <span class="kr">in</span>
+ <span class="kr">let</span>
+ &#39;(_, t) := (x, y) <span class="kr">in</span>
+  <span class="kr">let</span>
+  <span class="nv">&#39;tt</span> := tt <span class="kr">in</span>
+   <span class="kr">let fix</span> <span class="nv">f</span> (<span class="nv">x0</span> : nat) : nat := x0 <span class="kr">in</span>
+   (<span class="kr">fun</span> &#39;(f0, x0, y1) =&gt; f0 (x0 + y1)) (f, t, y)
+     : nat</blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">test</span> (<span class="nv">as&#39;</span> <span class="nv">is&#39;</span> <span class="nv">with&#39;</span>: nat) :=
+  <span class="kr">match</span> <span class="kr">match</span> <span class="mi">1</span> <span class="kr">with</span>
+        | S is&#39; =&gt; <span class="mi">0</span>
+        | <span class="mi">0</span> =&gt; <span class="mi">1</span>
+        <span class="kr">end</span> <span class="kr">with</span>
+  | S with&#39; =&gt; None
+  | <span class="mi">0</span> =&gt; Some <span class="mi">1</span>
+  <span class="kr">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="syntax-highlighting-v-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="syntax-highlighting-v-chk1"><span class="kn">Print</span> test.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">test = 
+<span class="kr">fun</span> <span class="nv">_</span> <span class="nv">_</span> <span class="nv">_</span> : nat =&gt;
+<span class="kr">match</span> <span class="kr">match</span> <span class="mi">1</span> <span class="kr">with</span>
+      | <span class="mi">0</span> =&gt; <span class="mi">1</span>
+      | S _ =&gt; <span class="mi">0</span>
+      <span class="kr">end</span> <span class="kr">with</span>
+| <span class="mi">0</span> =&gt; Some <span class="mi">1</span>
+| S _ =&gt; None
+<span class="kr">end</span>
+     : nat -&gt; nat -&gt; nat -&gt; option nat
+
+<span class="kn">Arguments</span> test (_ _ _)%nat_scope</blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;$0&quot;</span> := (<span class="mi">0</span>, <span class="mi">0</span>).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Infix</span> <span class="s2">&quot;$+&quot;</span> := (<span class="kr">fun</span> &#39;(u, a) &#39;(_, b) =&gt; (u, a + b)) (<span class="kn">at level</span> <span class="mi">39</span>).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">b</span> := <span class="kr">fun</span> &#39;(x, y) &#39;(pair x&#39; y&#39;) =&gt; (x + x&#39;, y + y&#39;).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="syntax-highlighting-v-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="syntax-highlighting-v-chk2"><span class="kn">Print</span> b.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">b = 
+<span class="kr">fun</span> &#39;(x, y) &#39;(x&#39;, y&#39;) =&gt; (x + x&#39;, y + y&#39;)
+     : nat * nat -&gt; nat * nat -&gt; nat * nat</blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;` x &#39;&#39; y `&quot;</span> := (x + y).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="syntax-highlighting-v-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="syntax-highlighting-v-chk3"><span class="kn">Check</span> (<span class="mi">1</span> + <span class="mi">2</span>).</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">` <span class="mi">1</span> &#39;&#39; <span class="mi">2</span> `
+     : nat</blockquote></div></div></small></span></pre>
+</div>
+</div></body>
+</html>

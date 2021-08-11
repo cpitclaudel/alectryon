@@ -54,3 +54,22 @@ This can't happen from translating a reST file, but it can happen from a user ad
 .. coq::
 
    Qed.
+
+Comments and strings
+====================
+
+Coq comment markers that appear within doc comments (*like this one*) must be escaped, especially if they aren't well-parenthesized (like *this*) (*or this*, for example).
+
+.. coq::
+
+   (* This comment doesn't need "*)" escaping though, even if ProofGeneral mishighlights it *)
+
+Strings can be tricky too:
+
+.. coq::
+
+   Require Import String.
+   Open Scope string_scope.
+
+   Definition a := "a""b""c\n\n\n".
+   Print a.

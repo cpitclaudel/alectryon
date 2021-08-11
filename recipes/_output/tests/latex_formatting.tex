@@ -20,6 +20,23 @@
 
 %%% Fallback definitions for Docutils-specific commands
 
+% inline markup (custom roles)
+% \DUrole{#1}{#2} tries \DUrole#1{#2}
+\providecommand*{\DUrole}[2]{%
+  \ifcsname DUrole#1\endcsname%
+    \csname DUrole#1\endcsname{#2}%
+  \else
+    % backwards compatibility: try \docutilsrole#1{#2}
+    \ifcsname docutilsrole#1\endcsname%
+      \PackageWarningNoLine{docutils}{Command prefix "docutilsrole" is
+         deprecated, \MessageBreak use `\protect\DUrole #1`}
+      \csname docutilsrole#1\endcsname{#2}%
+    \else%
+      #2%
+    \fi%
+  \fi%
+}
+
 % hyperlinks:
 \ifthenelse{\isundefined{\hypersetup}}{
   \usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
@@ -539,7 +556,146 @@ alectryon latex_formatting.v -{}-backend latex
       \end{messages}
     \end{output}
   \end{sentence}
+  \sep
+  \begin{txt}
+    \nl
+    \nl
+  \end{txt}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{t}~\PY{o}{:=}~\PY{k+kt}{True}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{ign}~\PY{o}{\PYZob{}}\PY{n+nv}{A}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{\PYZus{}}\PY{o}{:}~\PY{n}{A}\PY{o}{)}~\PY{o}{:=}~\PY{k+kt}{Prop}\PY{o}{.}
+    \end{input}
+  \end{sentence}
 \end{alectryon}
+
+\DUrole{ltx}{\begin{small}}
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Goal}~\PY{k+kr}{forall}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{a}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaa}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaaaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaaaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaaaaaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaaaaaaaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{n}{t}\PY{o}{)}\nl
+      ~~~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaaaaaaaaaaaa}\PY{o}{:}~\PY{n}{ign}~\PY{n}{t}\PY{o}{),}\nl
+      ~~~~\PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{aaa}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{aaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{aaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{aaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+      ~~~~\PY{n}{aaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{aaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{aaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+      ~~~~\PY{n}{aaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{aaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+      ~~~~\PY{n}{aaaaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{aaaaaaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+      ~~~~\PY{n}{aaaaaaaaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaa}~\PY{n+nv}{aaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaaaaaa}~\PY{n+nv}{aaaaaaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaa}~\PY{n+nv}{aaaaaaaaaaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaa}\nl
+            ~~~\PY{n+nv}{aaaaaaaaaaaaaaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaaaaaa}\nl
+            ~~~\PY{n+nv}{aaaaaaaaaaaaaaaaaaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaaaaaaaaaa}\nl
+            ~~~\PY{n+nv}{aaaaaaaaaaaaaaaaaaaaaaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{n}{t}\PY{o}{),}\nl
+            \PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Proof}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaa}~\PY{n+nv}{aaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaaaaaa}~\PY{n+nv}{aaaaaaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaa}~\PY{n+nv}{aaaaaaaaaaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaa}\nl
+            ~~~\PY{n+nv}{aaaaaaaaaaaaaaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaaaaaa}\nl
+            ~~~\PY{n+nv}{aaaaaaaaaaaaaaaaaaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{o}{(}\PY{n}{t}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{t}\PY{o}{))}\nl
+            ~~\PY{o}{(}\PY{n+nv}{aaaaaaaaaaaaaaaaaaaaaaa}\nl
+            ~~~\PY{n+nv}{aaaaaaaaaaaaaaaaaaaaaaaaa}~\PY{o}{:}~\PY{n}{ign}~\PY{n}{t}\PY{o}{),}\nl
+            \PY{n}{a}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+            \PY{n}{aaaaaaaaaaaaaaaaaaaaaaaaa}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb}{auto}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Qed}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+\end{alectryon}
+
+\DUrole{ltx}{\end{small}}
 
 
 \section{Newlines%
