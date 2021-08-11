@@ -260,7 +260,7 @@ def _sub_objects(obj):
     if isinstance(obj, RichSentence):
         return obj.outputs
     if isinstance(obj, RichGoal):
-        return obj.conclusion, *obj.hypotheses
+        return (obj.conclusion, *obj.hypotheses)
     if isinstance(obj, RichHypothesis):
         return obj.body, obj.type
     if isinstance(obj, (RichMessage, RichCode)):
