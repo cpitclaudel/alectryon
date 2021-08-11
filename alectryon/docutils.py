@@ -785,7 +785,6 @@ def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
             with request.urlopen(rawuri) as f:
                 code = f.read().decode('utf-8')
         except:
-            print(rawuri)
             msg = inliner.reporter.error("{}: could not download: {}".format(role,rawuri), line=lineno)
             return [inliner.problematic(rawtext, rawtext, msg)], [msg]
         ghref_cache[uri]=(code,rawuri,puri)
