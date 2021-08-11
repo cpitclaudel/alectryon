@@ -25,6 +25,8 @@ import os.path
 import shutil
 import sys
 
+from . import __version__
+
 # Pipelines
 # =========
 
@@ -542,6 +544,11 @@ Take input in Coq, reStructuredText, Markdown, or JSON \
 and produce reStructuredText, HTML, LaTeX, or JSON output.""",
         fromfile_prefix_chars='@')
 
+    VERSION_HELP = "Print version and exit."
+    parser.add_argument("--version", action="version",
+                        version="Alectryon v{}".format(__version__),
+                        help=VERSION_HELP)
+
     in_ = parser.add_argument_group("Input configuration")
 
     INPUT_FILES_HELP = "Input files"
@@ -673,7 +680,7 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
 
     debug = parser.add_argument_group("Debugging options")
 
-    EXPECT_UNEXPECTED_HELP = "Ignore unexpected output from SerAPI"
+    EXPECT_UNEXPECTED_HELP = "Ignore unexpected output from SerAPI."
     debug.add_argument("--expect-unexpected", action="store_true",
                        default=False, help=EXPECT_UNEXPECTED_HELP)
 
