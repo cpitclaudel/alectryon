@@ -754,7 +754,10 @@ coq_code_role.name = "coq" # type: ignore
 
 ghref_cache = {}
 def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
-    uri = options.get('src','')
+    uri = options.get('src',None)
+    if uri is None:
+        msg = "{}: no src option"
+        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
     pattern = options.get('pattern','')
     roles.set_classes(options)
     options.setdefault("classes", []).append("ghref")
@@ -770,12 +773,14 @@ def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     import re
     pattern = re.compile(pattern)
     found = False
-    for num, line in enumerate(html.splitlines(), 1):
-        if pattern.match(line):
+    for num, line in enumerate(code.splitlines(), 1):
+        if pattern.search(line):
             uri = uri + '#L' + str(num)
             found = True
             break
-    assert found, Template("ghref: $text not found in $rawuri").safe_substitute(text=text,rawuri=rawuri)
+    else:
+        msg = "{}: {} not found in {}".format(role,text,rawuri)
+        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
     node = nodes.reference(rawtext, text, refuri=uri, **options)
     set_line(node, lineno, inliner.reporter)
     return [node], []
