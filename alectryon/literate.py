@@ -488,31 +488,20 @@ COQ_BLOCK = re.compile(r"""
 def rst_partition(s):
     """Identify ``.. coq::`` blocks in reST sources.
 
-    >>> import black
-    >>> print(black.format_str(repr(list(rst_partition('''\\
+    >>> print(list(rst_partition('''\\
     ... .. coq::
     ...
     ...      Goal True.
     ...        exact I. Qed.\\
-    ... '''))), mode=black.FileMode()))
-    [
-        Lit(
-            lines=deque([Line(num=0, parts=[""])]),
-            directive_lines=deque([Line(num=0, parts=[".. coq::"])]),
-            indent=0,
-        ),
-        CodeBlock(
-            lines=deque(
-                [
-                    Line(num=0, parts=[""]),
-                    Line(num=1, parts=[""]),
-                    Line(num=2, parts=["     Goal True."]),
-                    Line(num=3, parts=["       exact I. Qed."]),
-                ]
-            ),
-            indent=0,
-        ),
-    ]
+    ... ''')))
+    [Lit(lines=deque([Line(num=0, parts=[''])]),
+         directive_lines=deque([Line(num=0, parts=['.. coq::'])]),
+         indent=0),
+     CodeBlock(lines=deque([Line(num=0, parts=['']),
+                            Line(num=1, parts=['']),
+                            Line(num=2, parts=['  Goal True.']),
+                            Line(num=3, parts=['    exact I. Qed.'])]),
+               indent=0)]
     <BLANKLINE>
     """
     beg, linum = 0, 0
