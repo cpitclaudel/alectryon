@@ -761,16 +761,25 @@ def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     pattern = options.get('pattern','')
     roles.set_classes(options)
     options.setdefault("classes", []).append("ghref")
-    rawuri = uri.replace('/blob/','/raw/')
-    if rawuri in ghref_cache:
-        html = ghref_cache[rawuri]
+    import re
+    if uri in ghref_cache:
+        code, rawuri, uri = ghref_cache[uri]
     else:
         from urllib import request
-        with request.urlopen(rawuri) as f:
+        with request.urlopen(uri) as f:
             html = f.read().decode('utf-8')
+        scrape = re.compile("<a(.*?hotkey=.y.*?)>Permalink</a>",re.IGNORECASE)
+        link = scrape.search(html).group(1)
+        href = re.compile('href=([\'"])(.*?)\\1',re.IGNORECASE)
+        _,puri = href.search(link).groups()
+        puri = "https://github.com" + puri
+        rawuri = puri.replace('/blob/','/raw/')
+        with request.urlopen(rawuri) as f:
+            code = f.read().decode('utf-8')
+        ghref_cache[uri]=(code,rawuri,puri)
+        uri=puri
     from string import Template
     pattern = Template(pattern).safe_substitute(name=text)
-    import re
     pattern = re.compile(pattern)
     found = False
     for num, line in enumerate(code.splitlines(), 1):
