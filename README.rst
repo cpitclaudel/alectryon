@@ -326,18 +326,26 @@ The full architecture of a path is shown below for reference:
        .s{*pattern*}                  ex: .s{**forall\*m\*n\*,**}
          Any sentence that completely matches *pattern*.
 
+          .in
+            The input part of the sentence.
+
+          .msg(*str*)                 ex: .msg(**Closed under global context**)
+            Any message whose text includes *str*.
+          .msg{*pattern*}             ex: .msg{**\*[\*syntax\*]\***}
+            Any message whose complete text matches *pattern*.
+
           .g#\ *id*                     ex: .g#\ **1**
             Goal number *id*.
           .g#\ *name*                   ex: .g#\ **base_case**
             The goal named *name* (`documentation <https://coq.inria.fr/refman/proofs/writing-proofs/proof-mode.html#coq:tacn.}>`__).
           .g(*str*)                   ex: .g(**True**)
-            Any goal whole conclusion includes *str*.
+            Any goal whose conclusion includes *str*.
           .g{*pattern*}               ex: .g{**\* ++ \* ++ \* = \***}
-            Any goal whole complete conclusion matches *pattern*.
+            Any goal whose complete conclusion matches *pattern*.
           (.g is optional and defaults to #1.)
 
-              .ccl
-                The conclusion of the goal.
+              .ccl *|* .name
+                The conclusion or name of the goal.
 
               .h#\ *name*               ex: .h#\ **IHn**
                  The hypothesis named *name*.
@@ -345,6 +353,9 @@ The full architecture of a path is shown below for reference:
                  Any hypothesis whose body or type includes *str*.
               .h{*pattern*}           ex: .h{**nat**}
                  Any hypothesis whose complete body or type matches *pattern*.
+
+                  .type *|* .body *|* .name
+                    The type or body or name of the hypothesis.
 
 Plain search patterns (delimited by ``(…)``) are matched literally, anywhere in the term.  Other patterns (``{…}`` patterns and ``#…`` names) use ``fnmatch``-style `matching <https://docs.python.org/3/library/fnmatch.html>`__ (``?`` matches any character; ``*`` matches any sequence of characters; and ``[]`` matches a range of characters), and must match the whole term.  Hence:
 
@@ -381,6 +392,13 @@ Markers can be customized by setting the ``:counter-style:`` option on a custom 
 More details and examples are given in `<recipes/references.rst>`__.
 
 **This feature is experimental**: the syntax might change.
+
+Quoted references to goal fragments
+***********************************
+
+The `:mquote:` role is similar to `:mref:`, but it inserts a copy of the target instead of a link to it.  Targets may only be hypotheses, goal conclusions, or goal or hypothesis names.
+
+For example, using :literal:`:mquote:\`.s(Induction).h#IHm.type\`` in the example above would print the type of ``IHm``, ``∀ n: ℕ, m + n = n + m`` whereas :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m).name\`` would produce only the name of the corresponding hypothesis, ``IHm``.
 
 Links to Coq identifiers
 ************************
