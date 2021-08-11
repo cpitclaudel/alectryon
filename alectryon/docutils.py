@@ -212,7 +212,7 @@ class ActivateMathJaxTransform(Transform):
     This is needed when another part of the pipeline adds mathjax_ignore on the
     root of the document to turn off MathJax's math-detection heuristics.
     """
-    default_priority = 800
+    default_priority = 700
 
     @staticmethod
     def is_math(node):
@@ -223,7 +223,7 @@ class ActivateMathJaxTransform(Transform):
             node.attributes.setdefault("classes", []).append("mathjax_process")
 
 class AlectryonTransform(OneTimeTransform):
-    default_priority = 990
+    default_priority = 800
     auto_toggle = True
 
     SERTOP_ARGS = ()
@@ -360,7 +360,7 @@ class AlectryonMrefTransform(OneTimeTransform):
     This transform is triggered by a ``pending`` node added by
     the ``:mref:`` role.
     """
-    default_priority = 995
+    default_priority = 810
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -473,7 +473,7 @@ class AlectryonPostTransform(OneTimeTransform):
     This transform is triggered by a ``pending`` node added by
     ``AlectryonTransform``.  See ``docutils.components.transforms.Filter``.
     """
-    default_priority = 996
+    default_priority = 820
 
     def init_generator(self):
         formats = set(self.document.transformer.components['writer'].supported)
