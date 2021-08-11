@@ -71,7 +71,7 @@ class IOAnnots:
             flags = self.META_FLAGS.get(annot, (annot,))
             for flag in flags:
                 if flag not in self.filters:
-                    raise ValueError("Unknown flag {}".format(flag))
+                    raise ValueError("Unknown flag `{}`.".format(flag))
                 self.filters[flag] = not negated
 
     @property

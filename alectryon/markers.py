@@ -25,8 +25,17 @@ from fnmatch import fnmatchcase
 
 from .core import RichSentence
 
-class MarkerError(ValueError): pass
-class PatternError(MarkerError): pass
+class MarkerError(ValueError):
+    MSG = "{}"
+    def __str__(self):
+        return self.MSG.format(*self.args)
+class ParseError(MarkerError):
+    MSG = "Cannot parse marker-placement expression ``{}``."
+class MissingPattern(MarkerError):
+    MSG = ("Missing search pattern for key ``.{}`` in expression ``{}``. " +
+           "(maybe an invalid pattern?)")
+class UnsupportedPattern(MarkerError):
+    MSG = "Unsupported search pattern {} for key ``.{}`` in expression ``{}``."
 
 class Matcher():
     def match(self, other):
@@ -89,7 +98,7 @@ def find_hyps(hyps, needle):
 def find_one(kind, lookup_fn, haystack, needle):
     for s in lookup_fn(haystack, needle):
         return s
-    raise MarkerError("No {} matches '{}'".format(kind, needle))
+    raise MarkerError("No {} matches '{}'.".format(kind, needle))
 
 QUERY_SHAPE = \
     {"io": {
@@ -114,7 +123,7 @@ def path_leaf(path):
     (leaf, least_bad) = min(_invalid_sets(components, None, QUERY_SHAPE),
                             key=lambda p: len(p[1]))
     if least_bad:
-        MSG = "Incompatible components in path ``{}``: not sure what to do with ``{}``"
+        MSG = "Incompatible components in path ``{}``: not sure what to do with ``{}``."
         raise MarkerError(MSG.format(path["str"], ", ".join(least_bad)))
     return leaf
 
@@ -135,13 +144,26 @@ QUERY_KINDS = {
     "ccl":  ("nil",)
 }
 
+FULL_NAMES = {
+    "io":   "block",
+    "s":    "sentence",
+    "msg":  "message",
+    "g":    "goal",
+    "h":    "hypothesis",
+    "in":   "input",
+    "type": "type",
+    "body": "body",
+    "name": "name",
+    "ccl":  "conclusion"
+}
+
 MARKER_PATH_SEGMENT = re.compile(
     r"""[.](?P<kind>${KINDS})
-         (?:(?P<nil>(?![#({]))
-           |[#](?P<name>[^. ]+)
-           |[(](?P<plain>.+?)[)]
-           |[{](?P<fnmatch>.+?)[}])""".replace(
-               "${KINDS}", "|".join(sorted(QUERY_KINDS.keys()))),
+         (?P<search>(?P<nil>(?![#({]))
+                   |[#](?P<name>[^. ]+)
+                   |[(](?P<plain>.+?)[)]
+                   |[{](?P<fnmatch>.+?)[}])"""
+        .replace("${KINDS}", "|".join(sorted(QUERY_KINDS.keys()))),
     re.VERBOSE)
 
 QUERY_MATCHERS = {
@@ -157,14 +179,16 @@ def parse_path(path, start=0, endpos=None):
     while start < endpos:
         m = MARKER_PATH_SEGMENT.match(path, start, endpos=endpos)
         if not m:
-            raise MarkerError(path[start:])
+            raise ParseError(path[start:])
         for matcher_name, matcher in QUERY_MATCHERS.items():
             needle = m.group(matcher_name)
             if needle is not None:
                 kind = m.group("kind")
                 allowed_matchers = QUERY_KINDS[kind]
                 if matcher_name not in allowed_matchers:
-                    raise PatternError(kind, path[start:])
+                    if matcher_name == "nil":
+                        raise MissingPattern(kind, path[start:])
+                    raise UnsupportedPattern(m.group("search"), kind, path[start:])
                 parsed[kind] = matcher(needle)
         start = m.end()
     return parsed

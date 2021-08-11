@@ -367,12 +367,12 @@ class AlectryonMrefTransform(OneTimeTransform):
         self.refcounter = RefCounter()
         self.gensym = Gensym(_gensym_stem(self.document, "-"))
 
-    def _warn(self, node, msg):
-        warn = self.document.reporter.warning(msg, base_node=node, line=node.line)
-        warnid = self.document.set_id(warn)
-        pb = nodes.problematic(node.rawsource, node.rawsource, refid=warnid)
+    def _error(self, node, msg):
+        err = self.document.reporter.error(msg, base_node=node, line=node.line)
+        errid = self.document.set_id(err)
+        pb = nodes.problematic(node.rawsource, node.rawsource, refid=errid)
         pbid = self.document.set_id(pb)
-        warn.add_backref(pbid)
+        err.add_backref(pbid)
         node.replace_self(pb)
 
     @classmethod
@@ -385,7 +385,10 @@ class AlectryonMrefTransform(OneTimeTransform):
         io_name = path["io"]
         io = ios.get(io_name) if io_name else last_io
         if io is None:
-            raise markers.MarkerError("Reference to unknown Alectryon block")
+            if io_name:
+                raise ValueError("Reference to unknown Alectryon block.")
+            raise ValueError("Not sure which code block this refers to; "
+                             "add ``.io#…`` to disambiguate.")
 
         fragments = io.details["fragments"]
         sentence = markers.find_one("sentence", markers.find_sentences, fragments, path["s"])
@@ -464,8 +467,8 @@ class AlectryonMrefTransform(OneTimeTransform):
                 try:
                     self.replace_one_mref(node, ios, last_io)
                 except ValueError as e:
-                    msg = "Error in {}: {}".format(node.rawsource, e)
-                    self._warn(node, msg)
+                    msg = "In {}: {}".format(node.rawsource, e)
+                    self._error(node, msg)
 
 class AlectryonPostTransform(OneTimeTransform):
     """Convert Alectryon input/output pairs into HTML or LaTeX.
@@ -641,6 +644,10 @@ COQ_IDENT_DB_URLS = [
     ("Coq", "https://coq.inria.fr/library/$modpath.html#$ident")
 ]
 
+def _role_error(inliner, rawtext, msg, lineno):
+    err = inliner.reporter.error(msg, line=lineno)
+    return [inliner.problematic(rawtext, rawtext, err)], [err]
+
 def _parse_ref(text):
     mid = COQ_ID_RE.match(text)
     title, target = mid.group("title"), mid.group("target")
@@ -668,9 +675,8 @@ def coq_id_role(role, rawtext, text, lineno, inliner,
     url = options.get('url', None)
     if url is None:
         if not modpath:
-            MSG = "{target!r} is not a fully-qualified name."
-            msg = inliner.reporter.error(MSG.format(target=target), line=lineno)
-            return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+            msg = "{target!r} is not a fully-qualified name.".format(target=target)
+            return _role_error(inliner, rawtext, msg, lineno)
 
         for prefix, url in COQ_IDENT_DB_URLS:
             if prefix == modpath or modpath.startswith(prefix + "."):
@@ -684,8 +690,7 @@ def coq_id_role(role, rawtext, text, lineno, inliner,
                    " derive a new role from ‘coqid’ with a custom :url:).")
             prefixes = [prefix for (prefix, _) in COQ_IDENT_DB_URLS]
             msg = MSG.format(target=target, prefixes=prefixes)
-            err = inliner.reporter.error(msg, line=lineno)
-            return [inliner.problematic(rawtext, rawtext, err)], [err]
+            return _role_error(inliner, rawtext, msg, lineno)
 
     from string import Template
     uri = Template(url).safe_substitute(modpath=modpath, ident=ident)
@@ -710,19 +715,9 @@ DEFAULT_COUNTER_STYLE = CounterStyle.of_str(COUNTER_STYLES['decimal'])
 
 MREF_KINDS = ['ref', 'quote']
 
-def _parse_path(s):
-    try:
-        return markers.parse_path(s)
-    except markers.PatternError as e:
-        MSG = "Unsupported pattern for key ``.{}`` in marker-placement expression ``{}``."
-        raise ValueError(MSG.format(*e.args)) from e
-    except markers.MarkerError as e:
-        MSG = "Cannot parse marker-placement expression ``{}``.".format(e)
-        raise ValueError(MSG.format(e)) from e
-
 def _parse_mref_target(kind, target, prefix):
     if target[0] in "#." or kind == "quote":
-        path = _parse_path(target)
+        path = markers.parse_path(target)
     else:
         path = {"s": markers.PlainMatcher(target), "str": ".s({})".format(target)}
 
@@ -730,15 +725,16 @@ def _parse_mref_target(kind, target, prefix):
     path.setdefault("io", None)
 
     if "s" not in path:
-        raise markers.MarkerError("Missing .s(…) sentence component in path.")
+        raise ValueError("Missing .s(…) sentence component in path.")
     if "ccl" in path or "h" in path:
         path.setdefault("g", markers.NameMatcher("1"))
     if kind == "ref" and "name" in path:
-        raise markers.MarkerError("``.name`` is not supported in ``:mref:`` queries.")
+        raise ValueError("``.name`` is not supported in ``:mref:`` queries.")
 
     leaf = markers.set_leaf(path)
-    if kind == "quote" and leaf not in ("in", "msg", "ccl", "h", "type", "body", "name"):
-        raise markers.MarkerError("Cannot format ``{}`` as an inline quote".format(leaf))
+    if kind == "quote" and leaf not in ("msg", "h", "in", "type", "body", "name", "ccl"):
+        MSG = "Cannot quote a full {} (``.{}``) inline."
+        raise ValueError(MSG.format(markers.FULL_NAMES[leaf], leaf))
 
     return path
 
@@ -750,7 +746,7 @@ def _marker_ref_role(role, rawtext, text, lineno, inliner, options, content):
         title, target = None, title
 
     if kind == "quote" and title:
-        raise ValueError("Title syntax (`… <…>`) nor supported with ``:mquote:``")
+        raise ValueError("Title syntax (``… <…>``) not supported with ``:mquote:``.")
 
     path = _parse_mref_target(kind, target, options.pop("prefix", {}))
     cs = options.pop("counter-style", None) or DEFAULT_COUNTER_STYLE
@@ -772,9 +768,8 @@ def marker_ref_role(role, rawtext, text, lineno, inliner,
         return _marker_ref_role(
             role, rawtext, text, lineno, inliner, options, content)
     except ValueError as e:
-        MSG = "In ``:{}:``: {}".format(role, str(e))
-        msg = inliner.reporter.error(MSG, line=lineno)
-        return [inliner.problematic(rawtext, rawtext, msg)], [msg]
+        msg = "In {}: {}".format(rawtext, str(e))
+        return _role_error(inliner, rawtext, msg, lineno)
 
 def _opt_mref_counter_style(arg):
     if " " not in arg:
@@ -782,7 +777,10 @@ def _opt_mref_counter_style(arg):
     return CounterStyle.of_str(arg)
 
 def _opt_mref_prefix(prefix):
-    return _parse_path(prefix)
+    try:
+        return markers.parse_path(directives.unchanged_required(prefix))
+    except ValueError as e:
+        raise ValueError(str(e)) from e
 
 def _opt_mref_kind(arg):
     return directives.choice(arg, list(MREF_KINDS))

@@ -760,11 +760,12 @@ def main():
         process_pipelines(args)
     except (ValueError, FileNotFoundError, ImportError, argparse.ArgumentTypeError) as e:
         from . import core
+        from textwrap import indent
         if core.TRACEBACK:
             raise e
-        MSG = "Exiting early due to an error; use --traceback to diagnose."
+        MSG = "Exiting early due to an error; use --traceback to diagnose:"
         print(MSG, file=sys.stderr)
-        print(str(e), file=sys.stderr)
+        print(indent(str(e), "  "), file=sys.stderr)
         sys.exit(1)
 
 # Alternative CLIs
