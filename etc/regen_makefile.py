@@ -61,6 +61,11 @@ FOOTER = """\
 targets += {all_targets}\
 """
 
+EXCLUDED_SOURCES = {
+    "docutils.conf",
+    "references.docutils.conf"
+}
+
 def main():
     outdir = Path(sys.argv[1])
     print(HEADER.format(outdir=outdir))
@@ -68,6 +73,8 @@ def main():
     all_targets = []
     for fname in sorted(sys.argv[2:]):
         src, targets = Path(fname), []
+        if src.name in EXCLUDED_SOURCES:
+            continue
         for params in parse_rules(src):
             dst, rule = gen_rule(src, outdir, params)
             targets.append(dst)
@@ -75,6 +82,8 @@ def main():
         if targets:
             all_targets.extend(targets)
             print()
+        else:
+            print("Not sure how to compile {}".format(fname), file=sys.stderr)
 
     print(FOOTER.format(all_targets=" ".join(all_targets), outdir=outdir))
 

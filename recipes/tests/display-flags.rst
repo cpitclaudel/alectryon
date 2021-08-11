@@ -2,7 +2,9 @@
  Output flags
 ==============
 
-This file tests various combinations of display flags.
+This file tests various combinations of display flags.  To compile::
+
+   alectryon display-flags.rst # reST → HTML; produces ‘display-flags.html’
 
 .. coq:: none
 
@@ -39,7 +41,11 @@ This file tests various combinations of display flags.
 
 .. coq::
 
-   Require Coq.Arith. (* .none *)      ← Executed but hidden
-   Goal True. (* .unfold *)            ← Goal unfolded
-     Fail exact 1. (* .in .messages *) ← Goal omitted
-     Fail fail. (* .messages *)        ← Error message shown, input hidden
+   Fail Definition a := (* .fails .unfold *)
+     (* `.fails` adds red highlight and removes "indeed failed". *)
+     1 + true.
+
+   Require Coq.Arith.Arith. (* ← Executed but hidden *) (* .none *)
+   Goal True.               (* ← Goal unfolded *) (* .unfold *)
+     Fail exact 1.          (* ← Goal omitted *) (* .in .messages *)
+     Fail fail.             (* ← Error message shown, input hidden *) (* .unfold .messages *)
