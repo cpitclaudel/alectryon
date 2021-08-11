@@ -64,6 +64,8 @@ To work around this issue we use a writer-dependent transform on the docutils
 side, and a doctree-resolved event on the Sphinx side.
 """
 
+from typing import Optional, Dict, Any
+
 import re
 import os.path
 from copy import deepcopy
@@ -74,7 +76,7 @@ import docutils
 import docutils.frontend
 from docutils import nodes
 
-from docutils.parsers.rst import directives, roles, Directive
+from docutils.parsers.rst import directives, roles, Directive # type: ignore
 from docutils.parsers.rst.directives.body import Sidebar
 from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
@@ -133,7 +135,7 @@ HTML_MINIFICATION = False
 # LATER: dataclass
 class AlectryonState:
     def __init__(self, document):
-        self.generator = None
+        self.generator: Optional[core.GeneratorInfo] = None
         self.transforms_executed = set()
         self.config = Config(document)
 
@@ -451,6 +453,7 @@ class AlectryonMrefTransform(OneTimeTransform):
         ios = {id: node
                for node in self.document.traverse(alectryon_pending_io)
                for id in node.get("ids", ())}
+        last_io = None
         io_or_mref = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_mref))
         for node in self.document.traverse(io_or_mref):
             if isinstance(node, alectryon_pending_io):
@@ -542,6 +545,7 @@ def recompute_contents(directive, real_indentation):
     block_lines = directive.block_text.splitlines()
     block_header_len = directive.content_offset - directive.lineno + 1
     header_indentation = measure_indentation(directive.block_text)
+    assert header_indentation is not None
     body_lines = block_lines[block_header_len:]
     min_indentation = measure_min_indentation(body_lines)
     body_indentation = min(header_indentation + real_indentation, min_indentation)
@@ -614,7 +618,8 @@ class ExperimentalExerciseDirective(Sidebar):
 # -----
 
 # pylint: disable=dangerous-default-value,unused-argument
-def alectryon_bubble(role, rawtext, text, lineno, inliner, options={}, content=[]):
+def alectryon_bubble(role, rawtext, text, lineno, inliner,
+                     options: Dict[str, Any]={}, content=[]):
     node = nodes.inline(rawtext, classes=['alectryon-bubble'])
     set_line(node, lineno, inliner.reporter)
     return [node], []
@@ -622,7 +627,8 @@ def alectryon_bubble(role, rawtext, text, lineno, inliner, options={}, content=[
 alectryon_bubble.name = "alectryon-bubble"
 
 #pylint: disable=dangerous-default-value,unused-argument
-def coq_code_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+def coq_code_role(role, rawtext, text, lineno, inliner,
+                  options: Dict[str, Any]={}, content=[]):
     options = {**options, "language": "coq"}
     roles.set_classes(options)
     options.setdefault("classes", []).append("highlight")
@@ -640,8 +646,9 @@ def _parse_ref(text):
     title, target = mid.group("title"), mid.group("target")
     return title, target
 
-def coq_id_role(# pylint: disable=dangerous-default-value,unused-argument
-        role, rawtext, text, lineno, inliner, options={}, content=[]):
+# pylint: disable=dangerous-default-value,unused-argument
+def coq_id_role(role, rawtext, text, lineno, inliner,
+                options: Dict[str, Any]={}, content=[]):
     title, target = _parse_ref(text)
 
     implicit = target is None
@@ -760,8 +767,9 @@ def _marker_ref_role(role, rawtext, text, lineno, inliner, options, content):
     inliner.document.note_pending(node)
     return [node], []
 
-def marker_ref_role(# pylint: disable=dangerous-default-value,unused-argument
-        role, rawtext, text, lineno, inliner, options={}, content=[]):
+# pylint: disable=dangerous-default-value,unused-argument
+def marker_ref_role(role, rawtext, text, lineno, inliner,
+                    options: Dict[str, Any]={}, content=[]):
     try:
         return _marker_ref_role(
             role, rawtext, text, lineno, inliner, options, content)
@@ -788,8 +796,9 @@ marker_ref_role.options = {
     'kind': _opt_mref_kind
 }
 
-def marker_quote_role(# pylint: disable=dangerous-default-value,unused-argument
-        role, rawtext, text, lineno, inliner, options={}, content=[]):
+# pylint: disable=dangerous-default-value,unused-argument
+def marker_quote_role(role, rawtext, text, lineno, inliner,
+                      options: Dict[str, Any]={}, content=[]):
     options.setdefault("kind", "quote")
     return marker_ref_role(role, rawtext, text, lineno, inliner, options, content)
 
@@ -805,7 +814,7 @@ class JsErrorPrinter:
     @staticmethod
     def json_of_message(msg):
         message = msg.children[0].astext() if msg.children else "Unknown error"
-        level = docutils.utils.Reporter.levels[msg['level']].lower()
+        level = docutils.utils.Reporter.levels[msg['level']].lower() # type: ignore
         js = {"level": level,
               "message": message,
               "source": msg['source'],
@@ -829,7 +838,7 @@ class JsErrorPrinter:
 # Parser
 # ------
 
-class RSTCoqParser(docutils.parsers.rst.Parser):
+class RSTCoqParser(docutils.parsers.rst.Parser): # type: ignore
     """A wrapper around the reStructuredText parser for literate Coq files."""
 
     supported = ('coq',)
@@ -869,7 +878,7 @@ class RSTCoqParser(docutils.parsers.rst.Parser):
         from .literate import ParsingError
         self.setup_parse(inputstring, document)
         # pylint: disable=attribute-defined-outside-init
-        self.statemachine = docutils.parsers.rst.states.RSTStateMachine(
+        self.statemachine = docutils.parsers.rst.states.RSTStateMachine( # type: ignore
             state_classes=self.state_classes,
             initial_state=self.initial_state,
             debug=document.reporter.debug_flag)
@@ -1090,7 +1099,7 @@ def register():
 def set_default_role():
     """Set the default role (the one used with single backticks) to :coq:."""
     roles.register_canonical_role(coq_code_role.name, coq_code_role)
-    roles.DEFAULT_INTERPRETED_ROLE = coq_code_role.name
+    roles.DEFAULT_INTERPRETED_ROLE = coq_code_role.name # type: ignore
 
 def setup():
     """Prepare docutils for writing Coq documents with Alectryon.

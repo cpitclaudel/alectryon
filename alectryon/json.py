@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Optional, Dict, Any
+
 import json
 import pickle
 from copy import deepcopy
@@ -27,6 +29,7 @@ from itertools import zip_longest
 from os import path, makedirs, unlink
 
 from . import core
+from .core import GeneratorInfo
 
 TYPE_OF_ALIASES = {
     "text": core.Text,
@@ -43,11 +46,11 @@ ALIASES_OF_TYPE = {
     cls.__name__: alias for (alias, cls) in TYPE_OF_ALIASES.items()
 }
 
-TYPES = list(TYPE_OF_ALIASES.values())
+TYPES = tuple(TYPE_OF_ALIASES.values())
 
 class PlainSerializer:
     @staticmethod
-    def encode(obj):
+    def encode(obj) -> Any:
         if isinstance(obj, list):
             return [PlainSerializer.encode(x) for x in obj]
         if isinstance(obj, dict):
@@ -55,7 +58,7 @@ class PlainSerializer:
             return {k: PlainSerializer.encode(v) for k, v in obj.items()}
         type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
         if type_name:
-            d = {"_type": type_name} # Put _type first
+            d: Dict[str, Any] = {"_type": type_name} # Put _type first
             for k, v in zip(obj._fields, obj):
                 d[k] = PlainSerializer.encode(v)
             return d
@@ -185,13 +188,15 @@ def validate_inputs(annotated, reference):
             return False
         return all(validate_inputs(*p) for p in zip_longest(annotated, reference))
     # pylint: disable=isinstance-second-argument-not-valid-type
-    if isinstance(annotated, TYPES):
+    if isinstance(annotated, TYPES): # type: ignore
         if annotated.contents != reference:
             print(f"Mismatch: {annotated.contents} {reference}")
         return annotated.contents == reference
     return False
 
 class BaseCache:
+    generator: Optional[GeneratorInfo]
+
     def get(self, chunks):
         raise NotImplementedError
 
@@ -215,7 +220,8 @@ class FileCache(BaseCache):
         "xz": ("lzma", ".xz"),
     }
 
-    def __init__(self, cache_root, doc_path, metadata, cache_compression):
+    def __init__(self, cache_root: str, doc_path: str,
+                 metadata: Dict[str, Any], cache_compression):
         self.serializer = PlainSerializer
         self.cache_root = path.realpath(cache_root)
         self.wanted_compression = cache_compression or "none"
@@ -234,7 +240,7 @@ class FileCache(BaseCache):
         self.ondisk_compression, self.data = self._read()
 
     @staticmethod
-    def normalize(obj):
+    def normalize(obj: Any) -> Any:
         if isinstance(obj, (list, tuple)):
             return [FileCache.normalize(o) for o in obj]
         if isinstance(obj, dict):
@@ -243,7 +249,7 @@ class FileCache(BaseCache):
 
     def _open(self, compression, mode):
         mod, ext = self.KNOWN_COMPRESSIONS[compression]
-        return import_module(mod).open(self.cache_file + ext, mode=mode)
+        return import_module(mod).open(self.cache_file + ext, mode=mode) # type: ignore
 
     def _validate(self, reference):
         if self.data is None:
@@ -316,6 +322,6 @@ class DummyCache(BaseCache):
     def put(self, _chunks, _annotated, generator):
         self.generator = generator
 
-def Cache(cache_root, doc_path, metadata, cache_compression):
+def Cache(cache_root, doc_path, metadata, cache_compression) -> BaseCache:
     cls = FileCache if cache_root is not None else DummyCache
     return cls(cache_root, doc_path, metadata, cache_compression)

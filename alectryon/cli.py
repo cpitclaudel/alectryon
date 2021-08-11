@@ -160,7 +160,7 @@ def lint_docutils(source, fpath, frontend):
     from .docutils import JsErrorPrinter, get_parser
 
     parser_class = get_parser(frontend)
-    settings = OptionParser(components=(parser_class,)).get_default_values()
+    settings = OptionParser(components=(parser_class,)).get_default_values() # type: ignore
     settings.traceback = True
     observer = JsErrorPrinter(StringIO(), settings)
     document = new_document(fpath, settings)

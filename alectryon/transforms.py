@@ -269,8 +269,8 @@ def _sub_objects(obj):
 
 def strip_ids_and_flags(obj):
     if isinstance(obj, Enriched):
-        obj.ids.clear()
-        obj.flags.clear()
+        obj.ids.clear() # type: ignore
+        obj.flags.clear() # type: ignore
         for obj_ in _sub_objects(obj):
             strip_ids_and_flags(obj_)
     return obj
@@ -341,8 +341,8 @@ def attach_comments_to_code(fragments, predicate=lambda _: True):
     from .literate import coq_partition, StringView, Code, Comment
     grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
-        prev = idx > 0 and grouped[idx - 1]
-        prev_is_sentence = isinstance(prev, (Sentence, RichSentence))
+        prev = grouped[idx - 1] if idx > 0 else None
+        prev_is_sentence = isinstance(prev, RichSentence)
         if prev_is_sentence and predicate(prev) and isinstance(fr, Text):
             best = prefix = StringView(fr.contents, 0, 0)
             for part in coq_partition(fr.contents):
@@ -427,7 +427,8 @@ def find_long_lines(fragments, threshold):
         yield from _check_line_lengths(lines, linum, threshold, len(lines) - 1)
         linum += len(lines) - 1
         prefix = lines[-1]
-    yield from _check_line_lengths(prefix.split("\n"), linum, threshold, len(lines))
+    lines = prefix.split("\n")
+    yield from _check_line_lengths(lines, linum, threshold, len(lines))
 
 COQ_CHUNK_DELIMITER = re.compile(r"(?:[ \t]*\n){2,}")
 

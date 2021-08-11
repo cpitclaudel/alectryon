@@ -136,7 +136,7 @@ class HtmlGenerator(Backend):
         self.gen_code(tags.div, conclusion, cls="goal-conclusion")
 
     @deduplicate(".alectryon-goal")
-    def gen_goal(self, goal, toggle=None):
+    def gen_goal(self, goal, toggle=None): # pylint: disable=arguments-differ
         """Serialize a goal to HTML."""
         with tags.blockquote(cls="alectryon-goal"):
             self.gen_ids(goal.ids)
@@ -159,8 +159,8 @@ class HtmlGenerator(Backend):
             return {"id": None}
         # Most RSS readers ignore stylesheets, so add `display: none`
         attrs = {"checked": "checked"} if checked else {}
-        return tags.input_(type="checkbox", id=self.gensym("chk"), cls=cls,
-                           style="display: none", **attrs)
+        return tags.input_(type="checkbox", id=self.gensym("chk"), # type: ignore
+                           cls=cls, style="display: none", **attrs)
 
     @deduplicate(".alectryon-extra-goals")
     def gen_extra_goals(self, goals):
@@ -214,17 +214,17 @@ class HtmlGenerator(Backend):
         for wsp in wsps:
             tags.span(wsp, cls="alectryon-wsp")
 
-    def gen_sentence(self, fr):
-        if fr.contents is not None:
-            self.gen_whitespace(fr.prefixes)
+    def gen_sentence(self, s):
+        if s.contents is not None:
+            self.gen_whitespace(s.prefixes)
         with tags.span(cls="alectryon-sentence"):
-            toggle = fr.outputs and self.gen_checkbox(fr.annots.unfold, "alectryon-toggle")
-            if fr.contents is not None:
-                self.gen_input(fr, toggle)
-            if fr.outputs:
-                self.gen_output(fr)
-            if fr.contents is not None:
-                self.gen_whitespace(fr.suffixes)
+            toggle = s.outputs and self.gen_checkbox(s.annots.unfold, "alectryon-toggle")
+            if s.contents is not None:
+                self.gen_input(s, toggle)
+            if s.outputs:
+                self.gen_output(s)
+            if s.contents is not None:
+                self.gen_whitespace(s.suffixes)
 
     def gen_fragment(self, fr):
         if isinstance(fr, Text):

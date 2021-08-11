@@ -28,7 +28,7 @@ Invoke with ``python3 -m alectryon.minimal --help``.
 
 # pylint: disable=dangerous-default-value
 
-from docutils.parsers.rst import directives, roles, Directive
+from docutils.parsers.rst import directives, roles, Directive # type: ignore
 import docutils.parsers.rst.directives.body # pylint: disable=unused-import
 
 ## Directives

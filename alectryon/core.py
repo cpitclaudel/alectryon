@@ -18,14 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections import namedtuple, defaultdict
-from collections.abc import Iterable
-from textwrap import indent
-from sys import stderr
+from typing import Any, Iterator, List, Tuple, Union
 
+from collections import namedtuple, defaultdict
 from shlex import quote
 from shutil import which
 from subprocess import Popen, PIPE, check_output
+from sys import stderr
+from textwrap import indent
+
 from . import sexp as sx
 
 DEBUG = False
@@ -50,9 +51,9 @@ Text = namedtuple("Text", "contents")
 class Enriched():
     __slots__ = ()
     def __new__(cls, *args, **kwargs):
-        if len(args) < len(super()._fields): # pylint: disable=no-member
+        if len(args) < len(getattr(super(), "_fields", ())):
             # Don't repeat fields given by position (it breaks pickle & deepcopy)
-            kwargs = {"ids": [], "markers":[], "flags": {}, **kwargs}
+            kwargs = {"ids": [], "markers": [], "flags": {}, **kwargs}
         return super().__new__(cls, *args, **kwargs)
 
 def _enrich(nt):
@@ -88,6 +89,14 @@ class Gensym():
         return self.stem + prefix + b16(self.counters[prefix])
 
 class Backend: # pylint: disable=no-member
+    def gen_sentence(self, s): raise NotImplementedError()
+    def gen_hyp(self, hyp): raise NotImplementedError()
+    def gen_goal(self, goal): raise NotImplementedError()
+    def gen_message(self, message): raise NotImplementedError()
+    def highlight(self, s): raise NotImplementedError()
+    def gen_names(self, names): raise NotImplementedError()
+    def gen_txt(self, s): raise NotImplementedError()
+
     def _gen_any(self, obj):
         if isinstance(obj, (Text, RichSentence)):
             self.gen_sentence(obj)
@@ -130,7 +139,7 @@ class SerAPI():
     DEFAULT_ARGS = ("--printer=sertop", "--implicit")
 
     # Whether to silently continue past unexpected output
-    EXPECT_UNEXPECTED = False
+    EXPECT_UNEXPECTED: bool = False
 
     # FIXME Pass -topfile (some file in the stdlib fail to compile without it)
     # FIXME Pass --debug when invoked with --traceback
@@ -204,7 +213,7 @@ class SerAPI():
         s = sx.dump([b'query%d' % self.next_qid, sexp])
         self.next_qid += 1
         debug(s, '>> ')
-        self.sertop.stdin.write(s + b'\n')
+        self.sertop.stdin.write(s + b'\n') # type: ignore
         self.sertop.stdin.flush()
 
     @staticmethod
@@ -299,11 +308,8 @@ class SerAPI():
             err += LOC_FMT.format(indent(src.decode('utf-8', 'ignore'), ' ' * 7))
         stderr.write(err)
 
-    def _collect_messages(self, types, chunk, sid):
-        if isinstance(types, Iterable):
-            warn_on_exn = ApiExn not in types
-        else:
-            warn_on_exn = ApiExn != types
+    def _collect_messages(self, typs: Tuple[type, ...], chunk, sid) -> Iterator[Any]:
+        warn_on_exn = ApiExn not in typs
         while True:
             for response in self._deserialize_response(self.next_sexp()):
                 if isinstance(response, ApiAck):
@@ -313,7 +319,7 @@ class SerAPI():
                 if warn_on_exn and isinstance(response, ApiExn):
                     if sid is None or response.sids is None or sid in response.sids:
                         SerAPI._warn_on_exn(response, chunk)
-                if (not types) or isinstance(response, types):
+                if (not typs) or isinstance(response, typs): # type: ignore
                     yield response
 
     def _pprint(self, sexp, sid, kind, pp_depth, pp_margin):
@@ -327,24 +333,26 @@ class SerAPI():
                   [b'pp_depth', utf8(pp_depth)],
                   [b'pp_margin', utf8(pp_margin)]]]]
         self._send([b'Print', meta, sexp])
-        strings = list(self._collect_messages(ApiString, None, sid))
+        strings: List[ApiString] = list(self._collect_messages((ApiString,), None, sid))
         if strings:
             assert len(strings) == 1
             return PrettyPrinted(sid, strings[0].string)
         raise ValueError("No string found in Print answer")
 
-    def _pprint_message(self, msg):
+    def _pprint_message(self, msg: ApiMessage):
         return self._pprint(msg.msg, msg.sid, b'CoqPp', **self.pp_args)
 
     def _exec(self, sid, chunk):
         self._send([b'Exec', sid])
-        messages = list(self._collect_messages(ApiMessage, chunk, sid))
+        messages: List[ApiMessage] = list(self._collect_messages((ApiMessage,), chunk, sid))
         return [self._pprint_message(msg) for msg in messages]
 
     def _add(self, chunk):
         self._send([b'Add', [], sx.escape(chunk)])
         prev_end, spans, messages = 0, [], []
-        for response in self._collect_messages((ApiAdded, ApiMessage), chunk, None):
+        responses: Iterator[Union[ApiAdded, ApiMessage]] = \
+            self._collect_messages((ApiAdded, ApiMessage), chunk, None)
+        for response in responses:
             if isinstance(response, ApiAdded):
                 start, end = response.loc
                 if start != prev_end:
@@ -374,7 +382,7 @@ class SerAPI():
         # LATER Goals instead and CoqGoal and CoqConstr?
         # LATER We'd like to retrieve the formatted version directly
         self._send([b'Query', [[b'sid', sid]], b'EGoals'])
-        goals = list(self._collect_messages(Goal, chunk, sid))
+        goals: List[Goal] = list(self._collect_messages((Goal,), chunk, sid))
         yield from (self._pprint_goal(g, sid) for g in goals)
 
     def run(self, chunk):

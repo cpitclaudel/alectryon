@@ -261,12 +261,12 @@ class LatexGenerator(Backend):
                     with environments.goals():
                         self.gen_goals(output.goals[0], output.goals[1:])
 
-    def gen_sentence(self, fr):
+    def gen_sentence(self, s):
         with environments.sentence():
-            if fr.contents is not None:
-                self.gen_input(fr)
-            if fr.outputs:
-                self.gen_output(fr)
+            if s.contents is not None:
+                self.gen_input(s)
+            if s.outputs:
+                self.gen_output(s)
 
     def gen_fragment(self, fr):
         if isinstance(fr, Text):

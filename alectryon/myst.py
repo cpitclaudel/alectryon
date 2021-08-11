@@ -32,7 +32,7 @@ import docutils.parsers
 try:
     from myst_parser.sphinx_parser import MystParser
 
-    class Parser(MystParser):
+    class RealParser(MystParser):
         def get_transforms(self):
             from .docutils import ActivateMathJaxTransform
             return super().get_transforms() + [ActivateMathJaxTransform]
@@ -40,9 +40,11 @@ try:
         # https://github.com/executablebooks/MyST-Parser/issues/347
         def parse(self, inputstring, document, renderer="docutils") -> None:
             return super().parse(inputstring, document, renderer)
+    Parser = RealParser
 
 except ImportError as err:
-    class Parser(docutils.parsers.Parser):
+    class FallbackParser(docutils.parsers.Parser):
         def parse(self, inputstring, document):
             document.append(document.reporter.warning(
                 'Cannot parse Markdown input without Python package `myst_parser`.'))
+    Parser = FallbackParser

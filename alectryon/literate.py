@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from typing import List, Tuple
+
 import re
 from enum import Enum
 from collections import namedtuple, deque
@@ -274,7 +276,7 @@ def coq_partition(doc):
     """
     pos = 0
     spans = []
-    stack = [(0, 0, State.CODE)]
+    stack: List[Tuple[int, int, State]] = [(0, 0, State.CODE)]
     spans = []
     while True:
         start, token_end, state = stack[-1]
