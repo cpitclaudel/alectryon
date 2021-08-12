@@ -431,6 +431,19 @@ class CoqLexer(RegexLexer):
         default('#pop'),
     ]
 
+    lcase_re = r"[a-z]"
+    ucase_re = r"[A-Z]"
+    digit_re = r"[0-9]"
+    schar2_re = r"(\+|\*|/|\^|<|>|`|'|\?|@|#|~|=|&|!)"
+    schar_re = r"({}|-|\$|_)".format(schar2_re)
+    idchar_re = r"({}|{}|{}|{})".format(lcase_re,ucase_re,digit_re,schar_re)
+    idcharstarns_re = r"({}+|(?=\.[a-z])\.{}+)".format(idchar_re,idchar_re)
+    symbchar_re = r"({}|{}|{}|{}|:)".format(lcase_re, ucase_re, digit_re, schar_re)
+    constant_re = r"({}{}*|{}{}*|{}{}*|_{}+)".format(ucase_re, idchar_re, lcase_re, idcharstarns_re,schar2_re, symbchar_re,idchar_re)
+    symbol_re=r"(,|<=>|->|:-|;|\?-|->|&|=>|as|<|=<|=|==|>=|>|i<|i=<|i>=|i>|is|r<|r=<|r>=|r>|s<|s=<|s>=|s>|@|::|`->|`:|`:=|\^|-|\+|i-|i\+|r-|r\+|/|\*|div|i\*|mod|r\*|~|i~|r~)"
+    escape_re=r"\(({}|{})\)".format(constant_re,symbol_re)
+    const_sym_re = r"({}|{}|{})".format(constant_re,symbol_re,escape_re)
+
     # Names starting with '_' are not real states; they are just intended to be
     # included into other states.
     tokens = {
@@ -512,6 +525,102 @@ class CoqLexer(RegexLexer):
             include('_basic'),
             default("#pop"),
         ],
+        '_quotations': [
+            # Elpi Quotations
+            (r"lp:\{\{",Text, 'elpi'),
+            (r"(lp:)([A-Za-z_0-9']+)",bygroups(Text, Name.ElpiVariable)),
+            (r"(lp:)(\()([A-Z][A-Za-z_0-9']*)([a-z0-9 ]+)(\))",bygroups(Text,Text,Name.ElpiVariable,Text,Text)),
+        ],
+        'antiquotation': [
+            (r"\}\}",Text,'#pop'),
+            include('_gallina'),
+        ],
+        'elpi': [
+            (r"\}\}",Text,'#pop'), # Exit elpi quotation
+            (r"\{\{",Text,'antiquotation'), # back to Coq
+
+            # Coq-Elpi specific
+            (r"global|sort|app|fun|let|prod|match|fix", Keyword.ElpiKeyword),
+
+            # This is real Elpi
+            (r"(:before|:after|:if|:name)(\s*)(\")",bygroups(Keyword.ElpiMode,Text,String.Double),'elpi-string'),
+            (r"(:index)(\s*\()",bygroups(Keyword.ElpiMode,Text),'elpi-indexing-expr'),
+            (r"(external pred|pred)(\s+)({})".format(const_sym_re),bygroups(Keyword.ElpiKeyword,Text,Name.ElpiFunction),'elpi-pred-item'),
+            (r"(external type|type)(\s+)(({}(,\s*)?)+)".format(const_sym_re),bygroups(Keyword.ElpiKeyword,Text,Name.ElpiFunction),'elpi-type'),
+            (r"(kind)(\s+)(({}|,)+)".format(const_sym_re),bygroups(Keyword.ElpiKeyword,Text,Name.ElpiFunction),'elpi-type'),
+            (r"(typeabbrev)(\s+)({})".format(const_sym_re),bygroups(Keyword.ElpiKeyword,Text,Keyword.Type),'elpi-type'),
+            (r"(accumulate)(\s+)(\")",bygroups(Keyword.ElpiKeyword,Text,String.Double),'elpi-string'),
+            (r"(accumulate|shorten|namespace|local)(\s+)({})".format(constant_re),bygroups(Keyword.ElpiKeyword,Text,Text)),
+            (r"(pi|sigma)(\s+)([a-zA-Z][A-Za-z0-9_ ]*)(\\)",bygroups(Keyword.ElpiKeyword,Text,Name.Variable,Text)),
+        
+            (r"(?=[A-Z_]){}".format(constant_re),Name.ElpiVariable),
+            (r"(?=[a-z_]){}\\".format(constant_re),Name.ElpiVariable),
+            (r"_",Name.ElpiVariable),
+            (constant_re,Text),
+            (symbol_re,Keyword.ElpiKeyword),
+            (r"\[|\]|\||=>",Keyword.ElpiKeyword),
+            (r'"', String.Double, 'string'),
+            (r'`', String.Double, 'elpi-btick'),
+            (r'\'', String.Double, 'elpi-tick'),
+            (r'\{[^\{]', Text, 'elpi-spill'),
+            (r"\(",Text,'elpi in parens'),
+            include('_elpi-comment'),
+            (r'\d[\d_]*', Number.ElpiInteger),
+            (r'-?\d[\d_]*(.[\d_]*)?([eE][+\-]?\d[\d_]*)', Number.ElpiFloat),
+            (r"[+\*-/\^]", Operator),
+        ],
+        '_elpi-comment': [
+            (r'%[^\n]*\n',Comment),
+            (r"\s+",Text),
+        ],
+        'elpi-indexing-expr':[
+            (r'[0-9 _]+',Number.ElpiInteger),
+            (r'\)',Text,'#pop'),
+        ],
+        'elpi-type': [
+            (r"(ctype\s+)(\")",bygroups(Keyword.Type,String.Double),'elpi-string'),
+            (r'->',Keyword.Type),
+            (constant_re,Keyword.Type),
+            (r"\(|\)",Keyword.Type),
+            (r"\.",Text,'#pop'),
+            include('_elpi-comment'),
+     ],
+        'elpi-pred-item': [
+            (r"[io]:",Keyword.ElpiMode,'elpi-ctype'),
+            (r"\.",Text,'#pop'),
+            include('_elpi-comment'),
+        ],
+        'elpi-ctype': [
+            (r"(ctype\s+)(\")",bygroups(Keyword.Type,String.Double),'elpi-string'),
+            (constant_re,Keyword.Type),
+            (r"\(|\)",Keyword.Type),
+            (r",",Text,'#pop'),
+            (r"\.",Text,'#pop:2'),
+            include('_elpi-comment'),
+        ],
+        'elpi-btick': [
+            (r'[^` ]+', String.Double),
+            (r'`', String.Double, '#pop'),
+        ],
+        'elpi-tick': [
+            (r'[^\' ]+', String.Double),
+            (r'\'', String.Double, '#pop'),
+        ],
+        'elpi-string': [
+            (r'[^\"]+', String.Double),
+            (r'"', String.Double, '#pop'),
+        ],
+        'elpi-spill': [
+            (r'\{[^\{]', Text, '#push'),
+            (r'\}[^\}]', Text, '#pop'),
+            include('elpi'),
+        ],
+        'elpi in parens': [
+            (r"\(", Operator, '#push'),
+            (r"\)", Operator, '#pop'),
+            include('elpi'),
+        ],
+
 
         # The symbol regexp below consumes symbol chars one by one.  Without
         # this, expressions like ``("x", y)`` would be incorrectly parsed as
@@ -520,6 +629,7 @@ class CoqLexer(RegexLexer):
         # Clients can reconstitute multi-character symbols later (e.g. before
         # running other filters) using a ``TokenMergeFilter``.
         '_other': [
+            include('_quotations'),
             (name_re, Name),
             (evar_re, Name.Label),
             # ['] is not a symbol character according to the grammar, but it has
