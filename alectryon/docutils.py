@@ -196,6 +196,21 @@ class OneTimeTransform(Transform):
     def _apply(self):
         raise NotImplementedError()
 
+    def _error(self, node, msg):
+        err = self.document.reporter.error(msg, base_node=node, line=node.line)
+        errid = self.document.set_id(err)
+        pb = nodes.problematic(node.rawsource, node.rawsource, refid=errid)
+        pbid = self.document.set_id(pb)
+        err.add_backref(pbid)
+        node.replace_self(pb)
+
+    def _try(self, fn, node, *args, **kwargs):
+        try:
+            fn(node, *args, **kwargs)
+        except ValueError as e:
+            msg = "In {}: {}".format(node.rawsource, e)
+            self._error(node, msg)
+
     def apply(self, **_kwargs):
         # Transforms added by pending() nodes are added multiple times: once per
         # directive, and potentially once by add_transform in Sphinx, so we need
@@ -284,7 +299,7 @@ class AlectryonTransform(OneTimeTransform):
         generator, annotated = self.annotate(pending_nodes)
         _alectryon_state(self.document).generator = generator
         for node, fragments in zip(pending_nodes, annotated):
-            self.replace_node(node, fragments)
+            self._try(self.replace_node, node, fragments)
 
     @staticmethod
     def split_around(node):
@@ -464,11 +479,7 @@ class AlectryonMrefTransform(OneTimeTransform):
             if isinstance(node, alectryon_pending_io):
                 last_io = node
             elif isinstance(node, alectryon_pending_mref):
-                try:
-                    self.replace_one_mref(node, ios, last_io)
-                except ValueError as e:
-                    msg = "In {}: {}".format(node.rawsource, e)
-                    self._error(node, msg)
+                self._try(self.replace_one_mref, node, ios, last_io)
 
 class AlectryonPostTransform(OneTimeTransform):
     """Convert Alectryon input/output pairs into HTML or LaTeX.
@@ -576,7 +587,9 @@ class CoqDirective(Directive):
         argument = self.arguments[0] if self.arguments else ""
         contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
         details = {"flags": argument, "contents": contents}
+        rawsource = "`{}`".format(self.block_text.partition('\n')[0])
         pending = alectryon_pending(AlectryonTransform, details=details,
+                                    rawsource=rawsource,
                                     **self.options)
 
         set_line(pending, self.lineno, self.state_machine)

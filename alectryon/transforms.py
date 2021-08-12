@@ -149,7 +149,7 @@ def _update_io_flags(annots, flags_str, regex):
         if io:
             annots.update(io)
         else:
-            annots.paths.append((polarity, _parse_path(path))) # FIXME catch error
+            annots.paths.append((polarity, _parse_path(path)))
 
 def process_io_flags(annots, flags_str):
     _update_io_flags(annots, flags_str, ONE_IO_FLAG_RE)
@@ -179,7 +179,6 @@ def process_io_annotations(fragments):
         annotated.append(fr)
     return annotated
 
-# pylint: disable=inconsistent-return-statements
 def should_keep_output(output, annots):
     if isinstance(output, Messages):
         return annots["messages"] and output.messages
