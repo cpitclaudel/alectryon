@@ -755,14 +755,19 @@ coq_code_role.name = "coq" # type: ignore
 ghref_cache = {}
 def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     import re
-    uri = options.get('src',None)
-    if uri is None:
+    src = options.get('src',None)
+    if src is None:
         msg = inliner.reporter.error("{}: no src option".format(role), line=lineno)
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
-    if not(re.match('^https://github.com',uri)):
-        msg = inliner.reporter.error("{}: only accepts github links".format(role), line=lineno)
+    components = str.split(src,sep=" ")
+    if len(components) != 4:
+        msg = inliner.reporter.error("{}: src should be 4 space separated strings".format(role), line=lineno)
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
-    pattern = options.get('pattern','')
+    org = components[0]
+    repo = components[1]
+    branch = components[2]
+    path = components[3]
+    uri = "https://github.com/{}/{}/blob/{}/{}".format(org,repo,branch,path)
     roles.set_classes(options)
     options.setdefault("classes", []).append("ghref")
     if uri in ghref_cache:
@@ -789,8 +794,11 @@ def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
             return [inliner.problematic(rawtext, rawtext, msg)], [msg]
         ghref_cache[uri]=(code,rawuri,puri)
         uri=puri
+    mangler = options.get('mangle','name')
+    name=eval(mangler,{},{ "name": text})
+    pattern = options.get('pattern','')
     from string import Template
-    pattern = Template(pattern).safe_substitute(name=text)
+    pattern = Template(pattern).safe_substitute(name=name)
     pattern = re.compile(pattern)
     for num, line in enumerate(code.splitlines(), 1):
         if pattern.search(line):
@@ -804,8 +812,17 @@ def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     return [node], []
 ghref_role.name = "ghref"
 ghref_role.options = {
-    "src": directives.uri,
-    "pattern": directives.unchanged
+    # the GH source, 4 fields separated by space: org repo branch path. Eg
+    #   :src: cpitclaudel alectryon master alectryon/docutils.py
+    "src": directives.unchanged,
+    # the regex to find the location in the raw file at path. I must use $name
+    # this is replaced by the text in :ghref:`text`. Eg
+    #   :pattern: ^def $name
+    "pattern": directives.unchanged,
+    # optionally mangle the name beforesubstituting it in the regexp. It is
+    # a python expression evaluated in a context containing name. Eg
+    #   :mangle: name.replace('this','that')
+    "mangle": directives.unchanged
 }
 
 COQ_ID_RE = re.compile(r"^(?P<title>.*?)(?:\s*<(?P<target>.*)>)?$")
