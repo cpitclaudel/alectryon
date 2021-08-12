@@ -85,7 +85,7 @@ from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import core, transforms, html, latex, markers
-from .core import Gensym, annotate, SerAPI
+from .core import Gensym, annotate, SerAPI, Position, PosStr
 from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
 
 # reST extensions
@@ -138,8 +138,17 @@ HTML_MINIFICATION = False
 class AlectryonState:
     def __init__(self, document):
         self.generator: Optional[core.GeneratorInfo] = None
+        self.root_language: Optional[str] = None
         self.transforms_executed = set()
-        self.config = Config(document)
+        self.document = document
+        self._config = None
+
+    @property
+    def config(self):
+        # Lazy because `document` isn't initialized right away, but cached
+        # because constructing a ``Config`` mutates the document.
+        self._config = self._config or Config(self.document)
+        return self._config
 
 def _alectryon_state(document):
     st = getattr(document, "alectryon_state", None)
@@ -382,14 +391,6 @@ class AlectryonMrefTransform(OneTimeTransform):
         self.refcounter = RefCounter()
         self.gensym = Gensym(_gensym_stem(self.document, "-"))
 
-    def _error(self, node, msg):
-        err = self.document.reporter.error(msg, base_node=node, line=node.line)
-        errid = self.document.set_id(err)
-        pb = nodes.problematic(node.rawsource, node.rawsource, refid=errid)
-        pbid = self.document.set_id(pb)
-        err.add_backref(pbid)
-        node.replace_self(pb)
-
     @classmethod
     def _validate_target(cls, target):
         if not target:
@@ -525,7 +526,7 @@ class AlectryonPostTransform(OneTimeTransform):
 # Directives
 # ----------
 
-INDENTATION_RE = re.compile(r" *(?=[^\s])")
+INDENTATION_RE = re.compile(r"^ *(?=[^\s])")
 def measure_indentation(line):
     m = INDENTATION_RE.match(line)
     return m.end() - m.start() if m else None
@@ -565,7 +566,8 @@ def recompute_contents(directive, real_indentation):
     body_lines = block_lines[block_header_len:]
     min_indentation = measure_min_indentation(body_lines)
     body_indentation = min(header_indentation + real_indentation, min_indentation)
-    return "\n".join(ln[body_indentation:] for ln in body_lines)
+    contents = "\n".join(ln[body_indentation:] for ln in body_lines)
+    return body_indentation, contents
 
 class CoqDirective(Directive):
     """Highlight and annotate a Coq snippet."""
@@ -581,20 +583,29 @@ class CoqDirective(Directive):
     EXPECTED_INDENTATION = 3
 
     def run(self):
-        roles.set_classes(self.options)
         self.assert_has_content()
 
+        document = self.state_machine.document
         argument = self.arguments[0] if self.arguments else ""
-        contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
-        details = {"flags": argument, "contents": contents}
+        indent, contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
+        source, line = self.state_machine.get_source_and_line(self.content_offset + 1)
+
+        col_offset = indent
+        if document.get('source', "") == source \
+           and _alectryon_state(document).root_language == "coq":
+            col_offset = 0
+        pos = Position(source, line, col_offset)
+        contents = PosStr(contents, pos, indent)
+
+        roles.set_classes(self.options)
         rawsource = "`{}`".format(self.block_text.partition('\n')[0])
+        details = {"flags": argument, "contents": contents }
         pending = alectryon_pending(AlectryonTransform, details=details,
-                                    rawsource=rawsource,
-                                    **self.options)
+                                    rawsource=rawsource, **self.options)
 
         set_line(pending, self.lineno, self.state_machine)
         self.add_name(pending)
-        self.state_machine.document.note_pending(pending)
+        document.note_pending(pending)
 
         return [pending]
 
@@ -886,6 +897,7 @@ class RSTCoqParser(docutils.parsers.rst.Parser): # type: ignore
         from .literate import ParsingError
         self.setup_parse(inputstring, document)
         # pylint: disable=attribute-defined-outside-init
+        _alectryon_state(document).root_language = "coq"
         self.statemachine = docutils.parsers.rst.states.RSTStateMachine( # type: ignore
             state_classes=self.state_classes,
             initial_state=self.initial_state,
@@ -895,8 +907,7 @@ class RSTCoqParser(docutils.parsers.rst.Parser): # type: ignore
             self.statemachine.run(lines, document, inliner=self.inliner)
         except ParsingError as e:
             self.report_parsing_error(e)
-        if '' in roles._roles: # Reset the default role
-            del roles._roles['']
+        roles._roles.pop('', None) # Reset the default role
         self.finish_parse()
 
 # Writer

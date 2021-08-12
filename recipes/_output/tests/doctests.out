@@ -1,3 +1,5 @@
+translate_offset (alectryon.core.PosView)
+Doctest: alectryon.core.PosView.translate_offset ... ok
 annotate (alectryon.core)
 Doctest: alectryon.core.annotate ... ok
 coq2rst (alectryon.literate)
@@ -14,6 +16,6 @@ highlight_html (alectryon.pygments)
 Doctest: alectryon.pygments.highlight_html ... ok
 
 ----------------------------------------------------------------------
-Ran 7 tests
+Ran 8 tests
 
 OK

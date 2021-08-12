@@ -25,7 +25,7 @@ import os.path
 import shutil
 import sys
 
-from . import __version__
+from . import __version__, core
 
 # Pipelines
 # =========
@@ -43,15 +43,15 @@ def read_json(_, fpath, fname):
     with open(fpath, encoding="utf-8") as f:
         return load(f)
 
-def parse_coq_plain(contents):
-    return [contents]
+def parse_coq_plain(contents, fpath):
+    return [core.PosStr(contents, core.Position(fpath, 1, 1), 0)]
 
 def _catch_parsing_errors(fpath, k, *args):
     from .literate import ParsingError
     try:
         return k(*args)
     except ParsingError as e:
-        raise ValueError("{}:{}".format(fpath, e)) from e
+        raise ValueError("{}: {}".format(fpath, e)) from e
 
 def coq_to_rst(coq, fpath, point, marker):
     from .literate import coq2rst_marked
@@ -734,16 +734,13 @@ def except_hook(etype, value, tb):
 
 def process_pipelines(args):
     if args.debug:
-        from . import core
         core.DEBUG = True
 
     if args.traceback:
-        from . import core
         core.TRACEBACK = True
         sys.excepthook = except_hook
 
     if args.expect_unexpected:
-        from . import core
         core.SerAPI.EXPECT_UNEXPECTED = True
 
     if args.output_directory:
@@ -759,13 +756,11 @@ def main():
         args = parse_arguments()
         process_pipelines(args)
     except (ValueError, FileNotFoundError, ImportError, argparse.ArgumentTypeError) as e:
-        from . import core
-        from textwrap import indent
         if core.TRACEBACK:
             raise e
         MSG = "Exiting early due to an error; use --traceback to diagnose:"
         print(MSG, file=sys.stderr)
-        print(indent(str(e), "  "), file=sys.stderr)
+        print(core.indent(str(e), "  "), file=sys.stderr)
         sys.exit(1)
 
 # Alternative CLIs

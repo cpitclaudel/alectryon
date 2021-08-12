@@ -25,12 +25,19 @@ from shlex import quote
 from shutil import which
 from subprocess import Popen, PIPE, check_output
 from sys import stderr
-from textwrap import indent
+import textwrap
+import re
 
 from . import sexp as sx
 
 DEBUG = False
 TRACEBACK = False
+
+def indent(text, prefix):
+    if prefix.isspace():
+        return textwrap.indent(text, prefix)
+    text = re.sub("^(?!$)", prefix, text, flags=re.MULTILINE)
+    return re.sub("^$", prefix.rstrip(), text, flags=re.MULTILINE)
 
 def debug(text, prefix):
     if isinstance(text, (bytes, bytearray)):
@@ -116,6 +123,65 @@ class Backend: # pylint: disable=no-member
             self.gen_txt(obj)
         else:
             raise TypeError("Unexpected object type: {}".format(type(obj)))
+
+class Position(namedtuple("Position", "fpath line col")):
+    def as_header(self):
+        return "{}:{}:{}:".format(self.fpath or "<unknown>", self.line, self.col)
+
+class Range(namedtuple("Range", "beg end")):
+    def as_header(self):
+        assert self.end is None or self.beg.fpath == self.end.fpath
+        beg = "{}:{}".format(self.beg.line, self.beg.col)
+        end = "{}:{}".format(self.end.line, self.end.col) if self.end else ""
+        pos = ("({})-({})" if end else "{}:{}").format(beg, end)
+        return "{}:{}:".format(self.beg.fpath or "<unknown>", pos)
+
+class PosStr(str):
+    def __new__(cls, s, *_args):
+        return super().__new__(cls, s)
+
+    def __init__(self, _s, pos, col_offset):
+        super().__init__()
+        self.pos, self.col_offset = pos, col_offset
+
+class PosView(bytes):
+    NL = b"\n"
+
+    def __new__(cls, s):
+        bs = s.encode("utf-8")
+        # https://stackoverflow.com/questions/20221858/
+        return super().__new__(cls, bs) if isinstance(s, PosStr) else memoryview(bs)
+
+    def __init__(self, s):
+        super().__init__()
+        self.pos, self.col_offset = s.pos, s.col_offset
+
+    def __getitem__(self, key):
+        return memoryview(self).__getitem__(key)
+
+    def translate_offset(self, offset):
+        r"""Translate a character-based `offset` into a (line, column) pair.
+        Columns are 1-based.
+
+        >>> text = "abc\ndef\nghi"
+        >>> s = PosView(PosStr(text, Position("f", 3, 2), 5))
+        >>> s.translate_offset(0)
+        Position(fpath='f', line=3, col=2)
+        >>> s.translate_offset(10) # col=3, + offset (5) = 8
+        Position(fpath='f', line=5, col=8)
+        """
+        nl = self.rfind(self.NL, 0, offset)
+        if nl == -1: # First line
+            line, col = self.pos.line, self.pos.col + offset
+        else:
+            line = self.pos.line + self.count(self.NL, 0, offset)
+            prefix = bytes(self[nl+1:offset]).decode("utf-8", 'ignore')
+            col = 1 + self.col_offset + len(prefix)
+        return Position(self.pos.fpath, line, col)
+
+    def translate_span(self, beg, end):
+        return Range(self.translate_offset(beg),
+                     self.translate_offset(end))
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
@@ -295,18 +361,38 @@ class SerAPI():
         return b"%b>>>%b<<<%b" % (prefix, substring, suffix)
 
     @staticmethod
+    def _highlight_exn(span, chunk, prefix='    '):
+        src = SerAPI.highlight_substring(chunk, *span)
+        LOC_FMT = ("The offending chunk is delimited by >>>…<<< below:\n{}")
+        return LOC_FMT.format(indent(src.decode('utf-8', 'ignore'), prefix))
+
+    @staticmethod
+    def _clip_span(loc, chunk):
+        loc = loc or (0, len(chunk))
+        return max(0, loc[0]), min(len(chunk), loc[1])
+
+    @staticmethod
+    def _range_of_span(span, chunk):
+        return chunk.translate_span(*span) if isinstance(chunk, PosView) else None
+
+    @staticmethod
+    def _print_warning(msg, loc):
+        header = loc.as_header() if loc else "!!"
+        msg = msg.rstrip().replace("\n", "\n   ")
+        stderr.write("{} (WARNING/2) {}\n".format(header, msg))
+        # FIXME report this error to calling context
+
+    @staticmethod
     def _warn_on_exn(response, chunk):
-        ERR_FMT = ("!! Coq raised an exception:\n{}\n"
-                   "   Results past this point may be unreliable.\n")
-        LOC_FMT = ("   The offending chunk is delimited by >>>.<<< below:\n{}\n")
+        QUOTE = '  > '
+        ERR_FMT = "Coq raised an exception:\n{}"
         msg = sx.tostr(response.exn)
-        err = ERR_FMT.format(indent(msg, ' ' * 7))
+        err = ERR_FMT.format(indent(msg, QUOTE))
+        span = SerAPI._clip_span(response.loc, chunk)
         if chunk:
-            loc = response.loc or (0, len(chunk))
-            beg, end = max(0, loc[0]), min(len(chunk), loc[1])
-            src = SerAPI.highlight_substring(chunk, beg, end)
-            err += LOC_FMT.format(indent(src.decode('utf-8', 'ignore'), ' ' * 7))
-        stderr.write(err)
+            err += "\n" + SerAPI._highlight_exn(span, chunk, prefix=QUOTE)
+        err += "\n" + "Results past this point may be unreliable."
+        SerAPI._print_warning(err, SerAPI._range_of_span(span, chunk))
 
     def _collect_messages(self, typs: Tuple[type, ...], chunk, sid) -> Iterator[Any]:
         warn_on_exn = ApiExn not in typs
@@ -392,9 +478,7 @@ class SerAPI():
         are split, sent to Coq, and returned as a list of ``Text`` instances
         (for whitespace and comments) and ``Sentence`` instances (for code).
         """
-        if isinstance(chunk, str):
-            chunk = chunk.encode("utf-8")
-        chunk = memoryview(chunk)
+        chunk = PosView(chunk)
         spans, messages = self._add(chunk)
         fragments, fragments_by_id = [], {}
         for span_id, contents in spans:
@@ -412,9 +496,9 @@ class SerAPI():
         for message in messages:
             fragment = fragments_by_id.get(message.sid)
             if fragment is None:
-                pp = ("\n" + message.pp).replace("\n", "\n   > ")
-                MSG = "!! Orphaned message for sid {}:{}\n"
-                stderr.write(MSG.format(message.sid, pp))
+                err = "Orphaned message for sid {}:".format(message.sid)
+                err += "\n" + indent(message.pp, " >  ")
+                SerAPI._print_warning(err, SerAPI._range_of_span((0, len(chunk)), chunk))
             else:
                 fragment.messages.append(Message(message.pp))
         return fragments
