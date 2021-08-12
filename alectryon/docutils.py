@@ -282,16 +282,8 @@ class AlectryonTransform(OneTimeTransform):
         chunks = [pending.details["contents"] for pending in pending_nodes]
         return self.annotate_cached(chunks, sertop_args)
 
-    @staticmethod
-    def _annots_of_directive_argument(argument):
-        annots = transforms.IOAnnots()
-        leftover = transforms.process_io_flags(annots, argument).strip()
-        if leftover:
-            raise ValueError("Unrecognized directive flags: {}".format(leftover))
-        return annots
-
     def replace_node(self, pending, fragments):
-        annots = self._annots_of_directive_argument(pending.details["flags"])
+        annots = pending.details["annots"]
         if annots.hide:
             pending.parent.remove(pending)
             return
@@ -582,11 +574,26 @@ class CoqDirective(Directive):
 
     EXPECTED_INDENTATION = 3
 
+    def _error(self, msg):
+        err = self.state_machine.reporter.error(msg, line=self.lineno)
+        err += nodes.literal_block(self.block_text, self.block_text)
+        return [err]
+
+    def _annots_of_arguments(self):
+        annots = transforms.IOAnnots()
+        try:
+            leftover = transforms.process_io_flags(annots, " ".join(self.arguments)).strip()
+            if leftover:
+                raise ValueError("Unrecognized directive flags: {}".format(leftover))
+        except ValueError as e:
+            return annots, self._error(str(e))
+        return annots, []
+
     def run(self):
         self.assert_has_content()
 
         document = self.state_machine.document
-        argument = self.arguments[0] if self.arguments else ""
+        annots, errors = self._annots_of_arguments()
         indent, contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
         source, line = self.state_machine.get_source_and_line(self.content_offset + 1)
 
@@ -594,12 +601,13 @@ class CoqDirective(Directive):
         if document.get('source', "") == source \
            and _alectryon_state(document).root_language == "coq":
             col_offset = 0
+
         pos = Position(source, line, col_offset)
         contents = PosStr(contents, pos, indent)
 
         roles.set_classes(self.options)
         rawsource = "`{}`".format(self.block_text.partition('\n')[0])
-        details = {"flags": argument, "contents": contents }
+        details = {"annots": annots, "contents": contents}
         pending = alectryon_pending(AlectryonTransform, details=details,
                                     rawsource=rawsource, **self.options)
 
@@ -607,7 +615,7 @@ class CoqDirective(Directive):
         self.add_name(pending)
         document.note_pending(pending)
 
-        return [pending]
+        return [pending] + errors
 
 class AlectryonToggleDirective(Directive):
     """Display a checkbox allowing readers to show all output at once."""
