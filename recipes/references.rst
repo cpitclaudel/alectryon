@@ -55,7 +55,7 @@ To allow forward- and back-references, counters are not reset from one block to 
        Qed.
 
     - Bullets (``-``, ``+``, ``*``) delimit subproofs (:mref:`.io#setup.s(Base case)`, :mref:`Induction`)
-    - It all started at :mref:`.io#setup.s(Fixpoint)`
+    - It all started at :mref:`.io#setup.s(Fixpoint).in`
 
 Defining custom counter styles
 ------------------------------

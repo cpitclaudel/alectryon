@@ -402,7 +402,7 @@ class AlectryonMrefTransform(OneTimeTransform):
         sentence = markers.find_one("sentence", markers.find_sentences, fragments, path["s"])
 
         if "in" in path:
-            return core.Code(sentence.contents)
+            return sentence
         if "msg" in path:
             msgs = list(transforms.fragment_messages(sentence))
             return markers.find_one("message", markers.find_contents, msgs, path["msg"])
@@ -444,6 +444,8 @@ class AlectryonMrefTransform(OneTimeTransform):
 
     @staticmethod
     def format_one_quote(target, node):
+        if isinstance(target, core.RichSentence):
+            target = core.Code(target.contents)
         details = {**node.details, "target": target}
         return alectryon_pending_quote(
             AlectryonPostTransform, details, node.rawsource)
