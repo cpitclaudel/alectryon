@@ -512,7 +512,11 @@ class CoqLexer(RegexLexer):
             include('_basic'),
             default("#pop"),
         ],
-
+        '_quotations': [
+        ],
+        'antiquotation': [
+            include('_gallina'),
+        ],
         # The symbol regexp below consumes symbol chars one by one.  Without
         # this, expressions like ``("x", y)`` would be incorrectly parsed as
         # ``("``, ``x``, and ``", y)``, with the first ``"`` coalesced with the
@@ -520,6 +524,7 @@ class CoqLexer(RegexLexer):
         # Clients can reconstitute multi-character symbols later (e.g. before
         # running other filters) using a ``TokenMergeFilter``.
         '_other': [
+            include('_quotations'),
             (name_re, Name),
             (evar_re, Name.Label),
             # ['] is not a symbol character according to the grammar, but it has
@@ -530,3 +535,4 @@ class CoqLexer(RegexLexer):
     }
 
 __all__ = ["CoqLexer"]
+
