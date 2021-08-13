@@ -107,8 +107,8 @@ QUERY_SHAPE = \
 def _invalid_sets(path, leaf, allowed):
     for leaf_, allowed_ in allowed.items():
         if leaf_ in path:
-            path = {k: v for k, v in path.items() if k != leaf_}
-            yield from _invalid_sets(path, leaf_, allowed_)
+            pth = {k: v for k, v in path.items() if k != leaf_}
+            yield from _invalid_sets(pth, leaf_, allowed_)
     yield (leaf, path)
 
 def path_leaf(path):
