@@ -509,7 +509,7 @@ def annotate(chunks, sertop_args=()):
     All fragments are executed in the same Coq instance, started with arguments
     `sertop_args`.  The return value is a list with as many elements as in
     `chunks`, but each element is a list of fragments: either ``Text``
-    instances (whitespace and comments) and ``Sentence`` instances (code).
+    instances (whitespace and comments) or ``Sentence`` instances (code).
 
     >>> annotate(["Check 1."])
     [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
