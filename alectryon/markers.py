@@ -23,8 +23,6 @@
 import re
 from fnmatch import fnmatchcase
 
-from .core import RichSentence
-
 class MarkerError(ValueError):
     MSG = "{}"
     def __str__(self):
@@ -64,11 +62,6 @@ def find_contents(objs, needle):
     for obj in objs:
         if needle.match(obj.contents):
             yield obj
-
-def find_sentences(fragments, needle):
-    # LATER: Add a way to name sentences to make them easier to select
-    sentences = (fr for fr in fragments if isinstance(fr, RichSentence))
-    yield from find_contents(sentences, needle)
 
 def find_named(items, needle):
     for item in items:

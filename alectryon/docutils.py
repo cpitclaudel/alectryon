@@ -399,7 +399,9 @@ class AlectryonMrefTransform(OneTimeTransform):
                              "add ``.io#…`` to disambiguate.")
 
         fragments = io.details["fragments"]
-        sentence = markers.find_one("sentence", markers.find_sentences, fragments, path["s"])
+        # LATER: Add a way to name sentences to make them easier to select
+        sentences = (fr for fr in fragments if isinstance(fr, core.RichSentence))
+        sentence = markers.find_one("sentence", markers.find_contents, sentences, path["s"])
 
         if "in" in path:
             return sentence
