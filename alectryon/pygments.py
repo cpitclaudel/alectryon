@@ -40,6 +40,12 @@ HTML_FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=TangoSubtle
 LATEX_FORMATTER = LatexFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
 WHITESPACE_RE = re.compile(r"\A(\s*)(.*?)(\s*)\Z", re.DOTALL)
 
+def resolve_token(kind):
+    tokentype = LEXER.TOKEN_TYPES.get(kind) if isinstance(kind, str) else kind
+    if not tokentype:
+        raise ValueError("Unknown token kind: {}".format(kind))
+    return tokentype
+
 def add_tokens(tokens):
     """Register additional `tokens` to add custom syntax highlighting.
 
@@ -59,10 +65,8 @@ def add_tokens(tokens):
     ... })
     """
     filters = []
-    for kind, names in tokens.items():
-        tokentype = LEXER.TOKEN_TYPES.get(kind)
-        if not tokentype:
-            raise ValueError("Unknown token kind: {}".format(kind))
+    for tokentype, names in tokens.items():
+        tokentype = resolve_token(tokentype)
         filters.append(NameHighlightFilter(names=names, tokentype=tokentype))
     for f in filters:
         LEXER.add_filter(f)

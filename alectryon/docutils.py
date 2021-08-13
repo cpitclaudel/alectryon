@@ -86,7 +86,8 @@ from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import core, transforms, html, latex, markers
 from .core import Gensym, annotate, SerAPI, Position, PosStr
-from .pygments import highlight_html, highlight_latex, added_tokens, replace_builtin_coq_lexer
+from .pygments import highlight_html, highlight_latex, added_tokens, \
+    resolve_token, replace_builtin_coq_lexer
 
 # reST extensions
 # ===============
@@ -134,6 +135,22 @@ See the documentation of --cache-compression."""
 HTML_MINIFICATION = False
 """Whether to minify generated HTML files."""
 
+def _node_error(document, node, msg):
+    err = document.reporter.error(msg, base_node=node, line=node.line)
+    errid = document.set_id(err)
+    pb = nodes.problematic(node.rawsource, node.rawsource, refid=errid)
+    pbid = document.set_id(pb)
+    err.add_backref(pbid)
+    node.replace_self(pb)
+
+def _try(document, fn, node, *args, **kwargs):
+    try:
+        return fn(node, *args, **kwargs)
+    except ValueError as e:
+        msg = "In {}: {}".format(getattr(node, "text", node.rawsource), e)
+        _node_error(document, node, msg)
+        return None
+
 # LATER: dataclass
 class AlectryonState:
     def __init__(self, document):
@@ -143,12 +160,15 @@ class AlectryonState:
         self.document = document
         self._config = None
 
-    @property
-    def config(self):
+    def populate_config(self):
         # Lazy because `document` isn't initialized right away, but cached
         # because constructing a ``Config`` mutates the document.
         self._config = self._config or Config(self.document)
         return self._config
+
+    @property
+    def config(self):
+        return self.populate_config()
 
 def _alectryon_state(document):
     st = getattr(document, "alectryon_state", None)
@@ -164,16 +184,22 @@ class Config:
     def __init__(self, document):
         self.tokens = {}
         self.sertop_args = []
+        self.read_docinfo(document)
+
+    def read_docinfo(self, document):
         # Sphinx doesn't translate ``field_list`` to ``docinfo``
         selector = lambda n: isinstance(n, (nodes.field_list, nodes.docinfo))
         for di in document.traverse(selector):
             for field in di.traverse(nodes.field):
                 name, body = field.children
-                self.parse_docinfo_field(field, name.rawsource, body.rawsource)
+                field.text = "`:{}:`".format(name.rawsource)
+                field.rawsource = ":{}: {}".format(name.rawsource, body.rawsource)
+                _try(document, self.parse_docinfo_field, field, name.rawsource, body.rawsource)
 
     def parse_docinfo_field(self, node, name, body):
         if name.startswith("alectryon/pygments/"):
             token = name[len("alectryon/pygments/"):]
+            resolve_token(token) # Check that this is a valid token
             # LATER: It would be nice to support multi-words tokens.  Using
             # ``shlex.split(body)`` instead of ``body.split()`` would work find
             # here, but the filter added by ``added_tokens`` processes words
@@ -205,20 +231,8 @@ class OneTimeTransform(Transform):
     def _apply(self):
         raise NotImplementedError()
 
-    def _error(self, node, msg):
-        err = self.document.reporter.error(msg, base_node=node, line=node.line)
-        errid = self.document.set_id(err)
-        pb = nodes.problematic(node.rawsource, node.rawsource, refid=errid)
-        pbid = self.document.set_id(pb)
-        err.add_backref(pbid)
-        node.replace_self(pb)
-
     def _try(self, fn, node, *args, **kwargs):
-        try:
-            fn(node, *args, **kwargs)
-        except ValueError as e:
-            msg = "In {}: {}".format(node.rawsource, e)
-            self._error(node, msg)
+        return _try(self.document, fn, node, *args, **kwargs)
 
     def apply(self, **_kwargs):
         # Transforms added by pending() nodes are added multiple times: once per
