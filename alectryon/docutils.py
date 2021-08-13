@@ -555,6 +555,8 @@ def recompute_contents(directive, real_indentation):
     there's no guarantee that the contents are indented by at least three
     spaces, so we must also measure the minimum indentation and respect that.
     """
+    if directive.content_offset <= directive.lineno: # MyST bug
+        return (0, "\n".join(directive.content))
     block_lines = directive.block_text.splitlines()
     block_header_len = directive.content_offset - directive.lineno + 1
     header_indentation = measure_indentation(directive.block_text)
