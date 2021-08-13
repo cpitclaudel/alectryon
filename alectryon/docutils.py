@@ -578,7 +578,12 @@ class CoqDirective(Directive):
 
     EXPECTED_INDENTATION = 3
 
+    @property
+    def header(self):
+        return "`{}`".format(self.block_text.partition('\n')[0])
+
     def _error(self, msg):
+        msg = "In {}: {}".format(self.header, msg)
         err = self.state_machine.reporter.error(msg, line=self.lineno)
         err += nodes.literal_block(self.block_text, self.block_text)
         return [err]
@@ -610,10 +615,9 @@ class CoqDirective(Directive):
         contents = PosStr(contents, pos, indent)
 
         roles.set_classes(self.options)
-        rawsource = "`{}`".format(self.block_text.partition('\n')[0])
         details = {"annots": annots, "contents": contents}
         pending = alectryon_pending(AlectryonTransform, details=details,
-                                    rawsource=rawsource, **self.options)
+                                    rawsource=self.header, **self.options)
 
         set_line(pending, self.lineno, self.state_machine)
         self.add_name(pending)
@@ -681,6 +685,7 @@ COQ_IDENT_DB_URLS = [
 ]
 
 def _role_error(inliner, rawtext, msg, lineno):
+    msg = "In {}: {}".format(rawtext, msg)
     err = inliner.reporter.error(msg, line=lineno)
     return [inliner.problematic(rawtext, rawtext, err)], [err]
 
@@ -804,8 +809,7 @@ def marker_ref_role(role, rawtext, text, lineno, inliner,
         return _marker_ref_role(
             role, rawtext, text, lineno, inliner, options, content)
     except ValueError as e:
-        msg = "In {}: {}".format(rawtext, str(e))
-        return _role_error(inliner, rawtext, msg, lineno)
+        return _role_error(inliner, rawtext, str(e), lineno)
 
 def _opt_mref_counter_style(arg):
     if " " not in arg:
