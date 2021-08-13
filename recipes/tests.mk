@@ -36,6 +36,13 @@ _output/tests/display-flags.html: tests/display-flags.rst
 _output/tests/doctests.out: tests/doctests.py | _output/tests/
 	$(PYTHON) $< | sed 's/\(tests\) in [0-9.]\+s$$/\1/g' > $@
 
+# reST → JSON errors
+_output/tests/errors.lint.json: tests/errors.rst
+	$(alectryon) $< --backend lint
+# reST → HTML + errors
+_output/tests/errors.txt: tests/errors.rst
+	$(alectryon) $< --copy-assets none --backend webpage -o /dev/null 2> $@
+
 # Coq → HTML
 _output/tests/goal-name.html: tests/goal-name.v
 	$(alectryon) $<
@@ -67,6 +74,6 @@ _output/tests/screenshot.html: tests/screenshot.v
 _output/tests/syntax_highlighting.html: tests/syntax_highlighting.v
 	$(alectryon) $<
 
-_output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/goal-name.html _output/tests/goal-name.xe.tex _output/tests/latex_formatting.tex _output/tests/linter.lint.json _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/syntax_highlighting.html: out_dir := _output/tests
+_output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/errors.lint.json _output/tests/errors.txt _output/tests/goal-name.html _output/tests/goal-name.xe.tex _output/tests/latex_formatting.tex _output/tests/linter.lint.json _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/syntax_highlighting.html: out_dir := _output/tests
 
-targets += _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/goal-name.html _output/tests/goal-name.xe.tex _output/tests/latex_formatting.tex _output/tests/linter.lint.json _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/syntax_highlighting.html
+targets += _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/errors.lint.json _output/tests/errors.txt _output/tests/goal-name.html _output/tests/goal-name.xe.tex _output/tests/latex_formatting.tex _output/tests/linter.lint.json _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/syntax_highlighting.html

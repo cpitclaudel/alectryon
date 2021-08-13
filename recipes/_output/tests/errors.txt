@@ -1,0 +1,63 @@
+tests/errors.rst:23: (WARNING/2) Inline emphasis start-string without end-string.
+tests/errors.rst:32: (ERROR/3) In :coqid:`A`: 'A' is not a fully-qualified name.
+tests/errors.rst:35: (ERROR/3) In :coqid:`Lib.A`: Not sure where to find documentation for Lib.A.
+Make sure that ‘Lib.A’ is fully qualified and that Alectryon knows where to find it.
+Known prefixes: ['Coq']
+(Add prefixes to alectryon.docutils.COQ_IDENT_DB_URLS or derive a new role from ‘coqid’ with a custom :url:).
+tests/errors.rst:41: (ERROR/3) In :mref:`...`: Cannot parse marker-placement expression ``...``.
+tests/errors.rst:42: (ERROR/3) In :mref:`.io`: Missing search pattern for key ``.io`` in expression ``.io``. (maybe an invalid pattern?)
+tests/errors.rst:43: (ERROR/3) In :mref:`.abc`: Cannot parse marker-placement expression ``.abc``.
+tests/errors.rst:44: (ERROR/3) In :mref:`.s()`: Cannot parse marker-placement expression ``.s()``.
+tests/errors.rst:45: (ERROR/3) In :mref:`.s.g`: Missing search pattern for key ``.s`` in expression ``.s.g``. (maybe an invalid pattern?)
+tests/errors.rst:46: (ERROR/3) In :mref:`.io{*}.g`: Unsupported search pattern {*} for key ``.io`` in expression ``.io{*}.g``.
+tests/errors.rst:47: (ERROR/3) In :mref:`.s[a-z]`: Missing search pattern for key ``.s`` in expression ``.s[a-z]``. (maybe an invalid pattern?)
+tests/errors.rst:48: (ERROR/3) In :mref:`.s(abc)[a-z]`: Cannot parse marker-placement expression ``[a-z]``.
+tests/errors.rst:51: (ERROR/3) In :mref:`.s(Goal).g#0.name`: ``.name`` is not supported in ``:mref:`` queries.
+tests/errors.rst:54: (ERROR/3) In :mref:`.s(Goal).in.ccl`: Incompatible components in path ``.s(Goal).in.ccl``: not sure what to do with ``in``.
+tests/errors.rst:57: (ERROR/3) In :mquote:`.s(Goal)`: Cannot quote a full sentence (``.s``) inline.
+tests/errors.rst:58: (ERROR/3) In :mquote:`.s(Goal).g#1`: Cannot quote a full goal (``.g``) inline.
+tests/errors.rst:61: (ERROR/3) In :mquote:`test <.s(Goal)>`: Title syntax (``… <…>``) not supported with ``:mquote:``.
+tests/errors.rst:64: (ERROR/3) Error in "role" directive:
+invalid option value: (option: "prefix"; value: None)
+argument required but none supplied.
+
+.. role:: mq2(mquote)
+   :prefix:
+tests/errors.rst:66: (ERROR/3) Error in "role" directive:
+invalid option value: (option: "prefix"; value: '.s.i')
+Missing search pattern for key ``.s`` in expression ``.s.i``. (maybe an invalid pattern?).
+
+.. role:: mq2(mquote)
+   :prefix: .s.i
+
+tests/errors.rst:77: (ERROR/3) Error in "coq" directive:
+Unknown flag `unknown`.
+
+.. coq:: unknown
+
+   Check nat.
+
+tests/errors.rst:82: (ERROR/3) Error in "coq" directive:
+Missing search pattern for key ``.s`` in expression ``.s.g``. (maybe an invalid pattern?)
+
+.. coq:: .s.g
+
+   Check nat.
+
+tests/errors.rst:5: (ERROR/3) In `:alectryon/pygments/xyz:`: Unknown token kind: xyz
+tests/errors.rst:(104:62)-(104:64): (WARNING/2) Coq raised an exception:
+     > Syntax error: '.' expected after [vernac:syntax_command] (in [vernac_aux]).
+   The offending chunk is delimited by >>>…<<< below:
+     > Notation "'🆄🄽🅘ⓒ⒪𝖉∈' α ⊕ ⤋ β" := α >>>++<<< β. (* Bytes vs. str *)
+   Results past this point may be unreliable.
+tests/errors.rst:(109:8)-(109:12): (WARNING/2) Coq raised an exception:
+     > The term "true" has type "bool" which should be Set, Prop or Type.
+   The offending chunk is delimited by >>>…<<< below:
+     > Definition a
+     >   : >>>true<<< := 1. (* Next line *)
+   Results past this point may be unreliable.
+tests/errors.rst:15: (WARNING/2) Long line: '  exact I. (* A very long line *) (* whose contents are split *) (* across *) (* multiple *) (* comments *)' (107 characters)
+tests/errors.rst:87: (ERROR/3) In `.. coq::`: Missing search pattern for key ``.io`` in expression ``.io.s``. (maybe an invalid pattern?)
+tests/errors.rst:93: (ERROR/3) In `.. coq::`: ``.io`` not supported in visibility annotations
+tests/errors.rst:70: (ERROR/3) In :mref:`.io#nope.s(123)`: Reference to unknown Alectryon block.
+tests/errors.rst:71: (ERROR/3) In :mref:`.s(Goal).g#25`: No goal matches '25'.
