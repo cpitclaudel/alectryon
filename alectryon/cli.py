@@ -70,18 +70,13 @@ def annotate_chunks(chunks, fpath, cache_directory, cache_compression, sertop_ar
 
 def register_docutils(v, ctx):
     from . import docutils
+
     docutils.AlectryonTransform.SERTOP_ARGS = ctx["sertop_args"]
     docutils.CACHE_DIRECTORY = ctx["cache_directory"]
     docutils.CACHE_COMPRESSION = ctx["cache_compression"]
     docutils.HTML_MINIFICATION = ctx["html_minification"]
     docutils.LONG_LINE_THRESHOLD = ctx["long_line_threshold"]
     docutils.setup()
-    return v
-
-def _gen_docutils(source, fpath,
-                  Parser, Reader, Writer,
-                  settings_overrides):
-    from docutils.core import publish_string
 
     # The encoding/decoding dance below happens because setting output_encoding
     # to "unicode" causes reST to generate a bad <meta> tag, and setting
@@ -91,13 +86,22 @@ def _gen_docutils(source, fpath,
     # from our own docutils components and avoid asking users to make a report
     # to the docutils mailing list.
 
-    settings_overrides = {
+    ctx["docutils_settings_overrides"] = {
         'traceback': True,
         'stylesheet_path': None,
         'input_encoding': 'utf-8',
         'output_encoding': 'utf-8',
-        **settings_overrides
+        'alectryon_banner': ctx["include_banner"],
+        'alectryon_vernums': ctx["include_vernums"],
+        'alectryon_webpage_style': ctx["webpage_style"],
     }
+
+    return v
+
+def _gen_docutils(source, fpath,
+                  Parser, Reader, Writer,
+                  settings_overrides):
+    from docutils.core import publish_string
 
     parser = Parser()
     return publish_string(
@@ -106,8 +110,7 @@ def _gen_docutils(source, fpath,
         reader=Reader(parser), reader_name=None,
         parser=parser, parser_name=None,
         writer=Writer(), writer_name=None,
-        settings=None, settings_spec=None,
-        settings_overrides=settings_overrides, config_section=None,
+        settings_overrides=settings_overrides,
         enable_exit_status=True).decode("utf-8")
 
 def _resolve_dialect(backend, html_dialect, latex_dialect):
@@ -118,22 +121,15 @@ def _record_assets(assets, path, names):
         assets.append((path, name))
 
 def gen_docutils(src, frontend, backend, fpath, dialect,
-                 webpage_style, include_banner, include_vernums,
-                 assets):
+                 docutils_settings_overrides, assets):
     from .docutils import get_pipeline
 
     pipeline = get_pipeline(frontend, backend, dialect)
     _record_assets(assets, pipeline.translator.ASSETS_PATH, pipeline.translator.ASSETS)
 
-    settings_overrides = {
-        'alectryon_banner': include_banner,
-        'alectryon_vernums': include_vernums,
-        'alectryon_webpage_style': webpage_style,
-    }
-
     return _gen_docutils(src, fpath,
                          pipeline.parser, pipeline.reader, pipeline.writer,
-                         settings_overrides)
+                         docutils_settings_overrides)
 
 def _docutils_cmdline(description, frontend, backend):
     import locale
@@ -152,26 +148,21 @@ def _docutils_cmdline(description, frontend, backend):
         description="{} {}".format(description, default_description)
     )
 
-def lint_docutils(source, fpath, frontend):
-    from io import StringIO
-    from docutils.utils import new_document
-    from docutils.frontend import OptionParser
-    from docutils.utils import Reporter
-    from .docutils import JsErrorPrinter, get_parser
+def lint_docutils(source, fpath, frontend, docutils_settings_overrides):
+    from docutils.core import publish_doctree
+    from .docutils import get_parser, LintingReader
 
-    parser_class = get_parser(frontend)
-    settings = OptionParser(components=(parser_class,)).get_default_values() # type: ignore
-    settings.traceback = True
-    observer = JsErrorPrinter(StringIO(), settings)
-    document = new_document(fpath, settings)
+    parser = get_parser(frontend)()
+    reader = LintingReader(parser)
 
-    document.reporter.report_level = 0 # Report all messages
-    document.reporter.halt_level = Reporter.SEVERE_LEVEL + 1 # Do not exit early
-    document.reporter.stream = False # Disable textual reporting
-    document.reporter.attach_observer(observer)
-    parser_class().parse(source, document)
+    publish_doctree(
+        source=source.encode("utf-8"), source_path=fpath,
+        reader=reader, reader_name=None,
+        parser=parser, parser_name=None,
+        settings_overrides=docutils_settings_overrides,
+        enable_exit_status=True)
 
-    return observer.stream.getvalue()
+    return reader.error_stream.getvalue() # FIXME exit code
 
 def _scrub_fname(fname):
     import re

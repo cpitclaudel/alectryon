@@ -80,7 +80,7 @@ from docutils import nodes
 
 from docutils.parsers.rst import directives, roles, Directive # type: ignore
 from docutils.parsers.rst.directives.body import Sidebar # type: ignore
-from docutils.readers.standalone import Reader
+from docutils.readers.standalone import Reader as StandaloneReader
 from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
@@ -252,6 +252,18 @@ class OneTimeTransform(Transform):
         if type(self).__name__ not in state.transforms_executed:
             state.transforms_executed.add(type(self).__name__)
             self._apply()
+
+class LoadConfigTransform(OneTimeTransform):
+    """Process ``field_list`` and ``docinfo`` configuration.
+
+    This transform is not strictly necessary: a ``Config`` object will be
+    initialized anyway when later code calls ``AlectryonState.config``.
+    The point of this transform it to detect config issues at lint time.
+    """
+    default_priority = 300
+
+    def _apply(self):
+        _alectryon_state(self.document).populate_config()
 
 class ActivateMathJaxTransform(Transform):
     """Add the ``mathjax_process`` class on math nodes.
@@ -608,9 +620,9 @@ class CoqDirective(Directive):
         return "`{}`".format(self.block_text.partition('\n')[0])
 
     def _error(self, msg):
-        msg = "In {}: {}".format(self.header, msg)
-        err = self.state_machine.reporter.error(msg, line=self.lineno)
-        err += nodes.literal_block(self.block_text, self.block_text)
+        msg = 'Error in "{}" directive:\n{}'.format(self.name, msg)
+        literal = nodes.literal_block(self.block_text, self.block_text)
+        err = self.state_machine.reporter.error(msg, literal, line=self.lineno)
         return [err]
 
     def _annots_of_arguments(self):
@@ -1109,6 +1121,41 @@ BACKENDS = {
     }
 }
 
+# Linter
+# ======
+
+class EarlyTransformer(docutils.transforms.Transformer):
+    """A transformer that only applies transforms below a certain threshold."""
+    PRIORITY_THRESHOLD = "700-000"
+
+    def apply_transforms(self):
+        self.transforms = [t for t in self.transforms if t[0] < self.PRIORITY_THRESHOLD]
+        super().apply_transforms()
+
+class LintingReader(StandaloneReader):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from io import StringIO
+        self.error_stream = StringIO()
+
+    def get_transforms(self):
+        return super().get_transforms() + [LoadConfigTransform]
+
+    def new_document(self):
+        doc = super().new_document()
+        doc.transformer = EarlyTransformer(doc)
+
+        observer = JsErrorPrinter(self.error_stream, self.settings)
+        doc.reporter.report_level = 0 # Report all messages
+        doc.reporter.halt_level = docutils.utils.Reporter.SEVERE_LEVEL + 1 # Do not exit early
+        doc.reporter.stream = False # Disable textual reporting
+        doc.reporter.attach_observer(observer)
+
+        return doc
+
+# API
+# ===
+
 def _maybe_import(tp):
     return getattr(import_module(tp[0]), tp[1]) if isinstance(tp, tuple) else tp
 
@@ -1128,7 +1175,7 @@ def get_writer(backend, dialect):
 def get_pipeline(frontend, backend, dialect):
     parser = get_parser(frontend)
     translator, writer = get_writer(backend, dialect)
-    return Pipeline(parser, Reader, translator, writer)
+    return Pipeline(parser, StandaloneReader, translator, writer)
 
 # Entry points
 # ============
