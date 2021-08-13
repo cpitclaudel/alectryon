@@ -195,6 +195,15 @@ class Config:
                 field.text = "`:{}:`".format(name.rawsource)
                 field.rawsource = ":{}: {}".format(name.rawsource, body.rawsource)
                 _try(document, self.parse_docinfo_field, field, name.rawsource, body.rawsource)
+        for di in document.traverse(selector):
+            errors = []
+            for field in di.traverse(nodes.problematic):
+                errors.append(field)
+                field.parent.remove(field)
+            if errors:
+                di.parent.insert(di.parent.index(di) + 1, errors)
+            if not di.children:
+                di.parent.remove(di)
 
     def parse_docinfo_field(self, node, name, body):
         if name.startswith("alectryon/pygments/"):
