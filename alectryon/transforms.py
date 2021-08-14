@@ -423,7 +423,7 @@ def find_long_lines(fragments, threshold):
     for fr in fragments:
         prefix += "".join(getattr(fr, "prefixes", ()))
         suffix = "".join(getattr(fr, "suffixes", ()))
-        lines = (prefix + fr.contents + suffix).split("\n")
+        lines = (prefix + (fr.contents or "") + suffix).split("\n")
         yield from _check_line_lengths(lines, linum, threshold, len(lines) - 1)
         linum += len(lines) - 1
         prefix = lines[-1]
@@ -518,7 +518,10 @@ DEFAULT_TRANSFORMS = [
     group_hypotheses,
     process_io_annotations,
     strip_failures,
-    dedent
+    dedent,
+    # Not included:
+    #   group_whitespace_with_code (not semantically relevant except)
+    #   commit_io_annotations (breaks mref resolution by removing elements)
 ]
 
 def filter_errors(outputs, delay_errors=False):
