@@ -4,6 +4,9 @@ test:
 	+$(MAKE) -C recipes clean
 	+$(MAKE) -C recipes
 
+coverage:
+	+$(MAKE) -C recipes coverage
+
 develop:
 	(which opam || { echo "OPAM not found; please install it"; exit 1; })
 	eval $$(opam env); opam install coq-serapi
