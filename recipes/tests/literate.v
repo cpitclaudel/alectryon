@@ -5,7 +5,8 @@
 
 To compile::
 
-   $ alectryon literate.v --backend rst # Coq → reST; produces ‘literate.v.rst’
+   $ alectryon literate.v --backend rst --mark-point 522 ⊙
+       # Coq → reST; produces ‘literate.v.rst’
 
 .. coq::
 |*)

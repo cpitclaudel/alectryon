@@ -64,7 +64,7 @@ _output/tests/literate.v: tests/literate.rst
 
 # Coq → reST
 _output/tests/literate.v.rst: tests/literate.v
-	$(alectryon) $< --backend rst
+	$(alectryon) $< --backend rst --mark-point 522 ⊙
 
 # Coq → HTML
 _output/tests/screenshot.html: tests/screenshot.v

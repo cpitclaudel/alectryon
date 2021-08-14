@@ -4,7 +4,8 @@
 
 To compile::
 
-   $ alectryon literate.v --backend rst # Coq → reST; produces ‘literate.v.rst’
+   $ alectryon literate.v --backend rst --mark-point 522 ⊙
+       # Coq → reST; produces ‘literate.v.rst’
 
 .. coq::
 
@@ -23,7 +24,7 @@ This one is needed because it includes a ``:name:``:
 
      exact I.
 
-.. note:: This note includes two Coq fragments:
+.. note:: This note includes two⊙ Coq fragments:
 
    .. coq::
 
