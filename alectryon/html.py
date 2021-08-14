@@ -181,8 +181,9 @@ class HtmlGenerator(Backend):
 
     def gen_input(self, fr, toggle):
         cls = "alectryon-input" + (" alectryon-failed" if fr.annots.fails else "")
-        with self.gen_clickable(toggle, cls, self.highlight(fr.contents)):
+        with self.gen_clickable(toggle, cls, self.highlight(fr.input.contents)):
             self.gen_mrefs(fr)
+            self.gen_mrefs(fr.input)
 
     def gen_message(self, message):
         self.highlight(message.contents)
@@ -215,15 +216,15 @@ class HtmlGenerator(Backend):
             tags.span(wsp, cls="alectryon-wsp")
 
     def gen_sentence(self, s):
-        if s.contents is not None:
+        if s.input is not None:
             self.gen_whitespace(s.prefixes)
         with tags.span(cls="alectryon-sentence"):
             toggle = s.outputs and self.gen_checkbox(s.annots.unfold, "alectryon-toggle")
-            if s.contents is not None:
+            if s.input is not None:
                 self.gen_input(s, toggle)
             if s.outputs:
                 self.gen_output(s)
-            if s.contents is not None:
+            if s.input is not None:
                 self.gen_whitespace(s.suffixes)
 
     def gen_fragment(self, fr):

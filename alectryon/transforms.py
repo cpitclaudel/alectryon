@@ -101,7 +101,7 @@ def enrich_sentences(fragments):
             # Always add goals & messages; empty lists are filtered out later
             outputs = [Messages([RichMessage(m.contents) for m in fr.messages]),
                        Goals([_enrich_goal(g) for g in fr.goals])]
-            yield RichSentence(contents=fr.contents, outputs=outputs,
+            yield RichSentence(input=RichCode(fr.contents), outputs=outputs,
                                prefixes=[], suffixes=[], annots=IOAnnots())
         else:
             yield fr
@@ -158,6 +158,16 @@ def _process_io_comments(annots, contents):
         _update_io_flags(annots, m.group(0), ONE_IO_ANNOT_RE)
     return IO_COMMENT_RE.sub("", contents)
 
+def _contents(obj):
+    if isinstance(obj, RichSentence):
+        return obj.input.contents
+    return obj.contents
+
+def _replace_contents(fr, contents):
+    if isinstance(fr, RichSentence):
+        return fr._replace(input=fr.input._replace(contents=contents))
+    return fr._replace(contents=contents)
+
 def process_io_annotations(fragments):
     """Strip IO comments and update ``.annots`` fields accordingly.
 
@@ -170,8 +180,8 @@ def process_io_annotations(fragments):
         if sentence:
             assert isinstance(sentence, RichSentence)
             try:
-                contents = _process_io_comments(sentence.annots, fr.contents)
-                fr = fr._replace(contents=contents)
+                contents = _process_io_comments(sentence.annots, _contents(fr))
+                fr = _replace_contents(fr, contents)
             except ValueError as e:
                 yield e
         last_sentence = fr
@@ -187,7 +197,7 @@ def should_keep_output(output, annots):
 def _find_marked(sentence, path):
     assert isinstance(sentence, RichSentence)
 
-    if "s" in path and not path["s"].match(sentence.contents):
+    if "s" in path and not path["s"].match(sentence.input.contents):
         return
 
     if "msg" in path:
@@ -215,7 +225,7 @@ def commit_io_annotations(fragments, discard_folded=False):
     """Use I/O annotations to filter `fragments`.
 
     Hidden outputs of each `RichSentence` in `fragments` are discarded.
-    Sentences with hidden inputs are set to ``contents=None``.  If
+    Sentences with hidden inputs are set to ``input=None``.  If
     `discard_folded` is ``True``, folded outputs are also discarded.
     """
     for fr in fragments:
@@ -237,7 +247,7 @@ def commit_io_annotations(fragments, discard_folded=False):
                 else:
                     assert False
 
-            contents = fr.contents if fr.annots["in"] else None
+            input = fr.input if fr.annots["in"] else None
             if discard_folded and not fr.annots.unfold:
                 fr.outputs.clear()
             else:
@@ -250,10 +260,10 @@ def commit_io_annotations(fragments, discard_folded=False):
                             g.hypotheses.clear()
                         _commit_enabled(g.hypotheses)
 
-            if contents is None and fr.outputs and not fr.annots.unfold:
+            if input is None and fr.outputs and not fr.annots.unfold:
                 MSG = "Cannot show output of {!r} without .in or .unfold."
-                yield ValueError(MSG.format(fr.contents))
-            fr = fr._replace(contents=contents)
+                yield ValueError(MSG.format(fr.input.contents))
+            fr = fr._replace(input=input)
         yield fr
 
 def _sub_objects(obj):
@@ -318,7 +328,7 @@ def group_whitespace_with_code(fragments):
 
 BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
 def is_bullet(fr):
-    return BULLET.match(fr.contents)
+    return BULLET.match(fr.input.contents)
 
 def attach_comments_to_code(fragments, predicate=lambda _: True):
     """Attach comments immediately following a sentence to the sentence itself.
@@ -355,7 +365,7 @@ def attach_comments_to_code(fragments, predicate=lambda _: True):
                     best = prefix
             if best:
                 rest = fr.contents[len(best):]
-                grouped[idx - 1] = prev._replace(contents=prev.contents + str(best))
+                grouped[idx - 1] = _replace_contents(prev, prev.input.contents + str(best))
                 grouped[idx] = Text(rest) if rest else None
     return [g for g in grouped if g is not None]
 
@@ -398,11 +408,11 @@ FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
 
 def strip_failures(fragments):
     for fr in fragments:
-        if isinstance(fr, RichSentence) and fr.annots.fails and FAIL_RE.match(fr.contents):
+        if isinstance(fr, RichSentence) and fr.annots.fails and FAIL_RE.match(fr.input.contents):
             for msgs in fragment_message_sets(fr):
                 for idx, r in enumerate(msgs):
                     msgs[idx] = r._replace(contents=FAIL_MSG_RE.sub("", r.contents))
-            fr = fr._replace(contents=FAIL_RE.sub("", fr.contents))
+            fr = _replace_contents(fr, FAIL_RE.sub("", fr.input.contents))
         yield fr
 
 def dedent(fragments):
@@ -423,7 +433,7 @@ def find_long_lines(fragments, threshold):
     for fr in fragments:
         prefix += "".join(getattr(fr, "prefixes", ()))
         suffix = "".join(getattr(fr, "suffixes", ()))
-        lines = (prefix + (fr.contents or "") + suffix).split("\n")
+        lines = (prefix + (_contents(fr) or "") + suffix).split("\n")
         yield from _check_line_lengths(lines, linum, threshold, len(lines) - 1)
         linum += len(lines) - 1
         prefix = lines[-1]

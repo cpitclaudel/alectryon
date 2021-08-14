@@ -69,6 +69,12 @@ def find_named(items, needle):
         if any(needle.match(nm) for nm in names):
             yield item
 
+def find_sentences(objs, needle):
+    for fr in objs:
+        # LATER: Add a way to name sentences to make them easier to select
+        if needle.match(fr.input.contents):
+            yield fr
+
 def find_goals(goals, needle):
     if isinstance(needle, NameMatcher):
         try:

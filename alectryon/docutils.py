@@ -441,7 +441,7 @@ class AlectryonMrefTransform(OneTimeTransform):
         fragments = io.details["fragments"]
         # LATER: Add a way to name sentences to make them easier to select
         sentences = (fr for fr in fragments if isinstance(fr, core.RichSentence))
-        sentence = markers.find_one("sentence", markers.find_contents, sentences, path["s"])
+        sentence = markers.find_one("sentence", markers.find_sentences, sentences, path["s"])
 
         if "in" in path:
             return sentence
@@ -487,7 +487,7 @@ class AlectryonMrefTransform(OneTimeTransform):
     @staticmethod
     def format_one_quote(target, node):
         if isinstance(target, core.RichSentence):
-            target = core.Code(target.contents)
+            target = target.input
         details = {**node.details, "target": target}
         return alectryon_pending_quote(
             AlectryonPostTransform, details, node.rawsource)

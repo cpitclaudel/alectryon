@@ -233,7 +233,7 @@ class LatexGenerator(Backend):
     def gen_input(self, fr):
         with environments.input(verbatim=True):
             self.gen_whitespace(fr.prefixes)
-            self.highlight(fr.contents)
+            self.gen_code(fr.input)
             # In HTML this space is hidden dynamically when the outputs are
             # visible; in LaTeX we hide it statically.  Hiding these spaces
             # makes our lives easier because we can unconditionally add a line
@@ -263,7 +263,7 @@ class LatexGenerator(Backend):
 
     def gen_sentence(self, s):
         with environments.sentence():
-            if s.contents is not None:
+            if s.input is not None:
                 self.gen_input(s)
             if s.outputs:
                 self.gen_output(s)

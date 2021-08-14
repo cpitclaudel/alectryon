@@ -81,7 +81,7 @@ RichHypothesis = _enrich(Hypothesis)
 RichGoal = _enrich(Goal)
 RichMessage = _enrich(Message)
 RichCode = _enrich(namedtuple("Code", "contents"))
-RichSentence = _enrich(namedtuple("Sentence", "contents outputs annots prefixes suffixes"))
+RichSentence = _enrich(namedtuple("Sentence", "input outputs annots prefixes suffixes"))
 
 def b16(i):
     return hex(i)[len("0x"):]
