@@ -226,6 +226,9 @@ def commit_io_annotations(fragments, discard_folded=False):
             for pth in fr.annots.paths:
                 _process_io_path(fr, *pth)
 
+            if not fr.flags.get("enabled", True):
+                continue
+
             for o in fr.outputs:
                 if isinstance(o, Goals):
                     _commit_enabled(o.goals)
