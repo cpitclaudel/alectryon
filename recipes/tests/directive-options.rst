@@ -29,4 +29,5 @@ This file checks that ``:class:`` and ``:name:`` attributes work on ``.. coq::``
 
    Definition test := " =: ʇsǝʇ uoıʇıuıɟǝᗡ".
 
-Link to `first Coq fragment <test_>`__.
+Link to `first Coq fragment <test_>`_.
+Another `link <first Coq fragment_>`__.
