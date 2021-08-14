@@ -57,7 +57,12 @@ tests/errors.rst:(109:8)-(109:12): (WARNING/2) Coq raised an exception:
      >   : >>>true<<< := 1. (* Next line *)
    Results past this point may be unreliable.
 tests/errors.rst:15: (WARNING/2) Long line: '  exact I. (* A very long line *) (* whose contents are split *) (* across *) (* multiple *) (* comments *)' (107 characters)
-tests/errors.rst:87: (ERROR/3) In `.. coq::`: Missing search pattern for key ``.io`` in expression ``.io.s``. (maybe an invalid pattern?)
-tests/errors.rst:93: (ERROR/3) In `.. coq::`: ``.io`` not supported in visibility annotations
+tests/errors.rst:87: (ERROR/3) In `.. coq::`:
+   Missing search pattern for key ``.io`` in expression ``.io.s``. (maybe an invalid pattern?)
+   Unknown flag `xyz`.
+tests/errors.rst:93: (ERROR/3) In `.. coq::`:
+   ``.io`` not supported in visibility annotations
+   ``ccl`` not supported in visibility annotations.
+   ``body`` not supported in visibility annotations.
 tests/errors.rst:70: (ERROR/3) In :mref:`.io#nope.s(123)`: Reference to unknown Alectryon block.
 tests/errors.rst:71: (ERROR/3) In :mref:`.s(Goal).g#25`: No goal matches '25'.

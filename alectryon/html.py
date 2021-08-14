@@ -265,8 +265,10 @@ class HtmlGenerator(Backend):
     def gen_fragments(self, fragments, ids=(), classes=()):
         """Serialize a list of `fragments` to HTML."""
         with self._gen_block(tags.pre, ids, ("alectryon-io", "highlight", *classes)) as pre:
-            fragments = transforms.group_whitespace_with_code(fragments)
-            fragments = transforms.commit_io_annotations(fragments)
+            fragments = transforms.apply_transforms(fragments, [
+                transforms.group_whitespace_with_code,
+                transforms.commit_io_annotations
+            ], delay_errors=False)
             for fr in fragments:
                 self.gen_fragment(fr)
             return pre

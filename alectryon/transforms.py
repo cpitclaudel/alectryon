@@ -30,13 +30,11 @@ from .core import Sentence, Text, Names, Enriched, \
     Goals, Messages, RichSentence
 
 class IOAnnots:
-    def __init__(self, *annots):
+    def __init__(self):
         self.filters = None
         self.unfold = None
         self.fails = None
         self.paths = []
-        for annot in annots:
-            self.update(annot)
 
     NO = re.compile("no-")
     RE = re.compile("(?P<io>[-a-z]+)")
@@ -166,18 +164,18 @@ def process_io_annotations(fragments):
     This pass assumes that consecutive ``Text`` fragments have been
     coalesced.
     """
-    annotated = []
+    last_sentence = None
     for fr in enrich_sentences(fragments):
-        if isinstance(fr, Text):
-            sentence = annotated[-1] if annotated else None
-        else:
-            sentence = fr
+        sentence = last_sentence if isinstance(fr, Text) else fr
         if sentence:
             assert isinstance(sentence, RichSentence)
-            contents = _process_io_comments(sentence.annots, fr.contents)
-            fr = fr._replace(contents=contents)
-        annotated.append(fr)
-    return annotated
+            try:
+                contents = _process_io_comments(sentence.annots, fr.contents)
+                fr = fr._replace(contents=contents)
+            except ValueError as e:
+                yield e
+        last_sentence = fr
+        yield fr
 
 def should_keep_output(output, annots):
     if isinstance(output, Messages):
@@ -251,7 +249,7 @@ def commit_io_annotations(fragments, discard_folded=False):
 
             if contents is None and fr.outputs and not fr.annots.unfold:
                 MSG = "Cannot show output of {!r} without .in or .unfold."
-                raise ValueError(MSG.format(fr.contents))
+                yield ValueError(MSG.format(fr.contents))
             fr = fr._replace(contents=contents)
         yield fr
 
@@ -435,7 +433,7 @@ def partition_fragments(fragments, delim=COQ_CHUNK_DELIMITER):
     """Partition a list of `fragments` into chunks.
 
     The result is a list of chunks, each containing multiple fragments.  This
-    can be useful as a post-processing step for .v files.  `delim` is a regular
+    can be useful as a pre-processing step for .v files.  `delim` is a regular
     expression matching the delimiter (by default, two blank lines).
     """
     partitioned = [[]]
@@ -520,7 +518,27 @@ DEFAULT_TRANSFORMS = [
     dedent
 ]
 
-def default_transform(fragments):
-    for transform in DEFAULT_TRANSFORMS:
-        fragments = transform(fragments)
-    return list(fragments)
+def filter_errors(outputs, delay_errors=False):
+    transformed, errors = [], []
+    for output in outputs:
+        if isinstance(output, Exception):
+            if not delay_errors:
+                raise output
+            errors.append(output)
+        else:
+            transformed.append(output)
+    return transformed, errors
+
+class CollectedErrors(ValueError):
+    pass
+
+def apply_transforms(fragments, transforms, delay_errors):
+    errors = []
+    for transform in transforms:
+        fragments, errors[len(errors):] = filter_errors(transform(fragments), delay_errors)
+    if errors:
+        raise CollectedErrors(*errors)
+    return fragments
+
+def default_transform(fragments, delay_errors=False):
+    return apply_transforms(fragments, DEFAULT_TRANSFORMS, delay_errors)

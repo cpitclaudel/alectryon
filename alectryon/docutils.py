@@ -146,10 +146,15 @@ def _node_error(document, node, msg):
 def _try(document, fn, node, *args, **kwargs):
     try:
         return fn(node, *args, **kwargs)
+    except transforms.CollectedErrors as e:
+        errs = e.args
     except ValueError as e:
-        msg = "In {}: {}".format(getattr(node, "text", node.rawsource), e)
-        _node_error(document, node, msg)
-        return None
+        errs = [e]
+    msg = "\n".join(map(str, errs))
+    msg = "\n" + core.indent(msg, "   ") if len(errs) > 1 else  " " + msg
+    msg = "In {}:{}".format(getattr(node, "text", node.rawsource), msg)
+    _node_error(document, node, msg)
+    return None
 
 # LATER: dataclass
 class AlectryonState:
@@ -323,7 +328,7 @@ class AlectryonTransform(OneTimeTransform):
             pending.parent.remove(pending)
             return
         fragments = self.set_fragment_annots(fragments, annots)
-        fragments = transforms.default_transform(fragments)
+        fragments = transforms.default_transform(fragments, delay_errors=True)
         self.check_for_long_lines(pending, fragments)
         details = {**pending.details, "fragments": fragments}
         io = alectryon_pending_io(AlectryonPostTransform, details)

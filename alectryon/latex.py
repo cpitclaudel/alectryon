@@ -304,9 +304,11 @@ class LatexGenerator(Backend):
         with environments.alectryon() as env:
             Raw("% Generator: {}".format(GENERATOR))
             self.gen_ids(ids)
-            # fragments = transforms.merge_fragments_by_line(fragments) # FIXME
-            fragments = transforms.group_whitespace_with_code(fragments)
-            fragments = transforms.commit_io_annotations(fragments)#, discard_folded=True)
+            fragments = transforms.apply_transforms(fragments, [
+                # transforms.merge_fragments_by_line(fragments) # FIXME
+                transforms.group_whitespace_with_code,
+                transforms.commit_io_annotations
+            ], delay_errors=False)
             for fr in fragments:
                 self.gen_fragment(fr)
             return env
