@@ -45,6 +45,12 @@ This file tests various combinations of display flags.  To compile::
    Fail Definition a := asd.
    Definition xyz := 123. (* .succeeds *)
 
+.. coq:: none
+
+   Set Printing Implicit.
+   Check id. (* .all *)
+   Unset Printing Implicit.
+
 .. coq::
 
    Fail Definition a := (* .fails .unfold *)
