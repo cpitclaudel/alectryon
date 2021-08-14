@@ -170,8 +170,8 @@ def _scrub_fname(fname):
 
 def apply_transforms(annotated):
     from .transforms import default_transform
-    for chunk in annotated:
-        yield default_transform(chunk)
+    for fragments in annotated:
+        yield default_transform(fragments)
 
 def gen_html_snippets(annotated, fname, html_minification):
     from .html import HtmlGenerator
