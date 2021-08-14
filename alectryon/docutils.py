@@ -76,6 +76,8 @@ from importlib import import_module
 
 import docutils
 import docutils.frontend
+import docutils.transforms
+import docutils.utils
 from docutils import nodes
 
 from docutils.parsers.rst import directives, roles, Directive # type: ignore

@@ -19,6 +19,9 @@
 # SOFTWARE.
 
 """Post-process annotated fragments of source code."""
+
+from typing import Optional
+
 import re
 import textwrap
 from copy import copy
@@ -177,11 +180,11 @@ def read_io_comments(fragments):
     """
     last_sentence = None
     for fr in enrich_sentences(fragments):
-        sentence = last_sentence if isinstance(fr, Text) else fr
+        sentence: Optional[RichSentence] = last_sentence if isinstance(fr, Text) else fr
         if sentence:
             assert isinstance(sentence, RichSentence)
             try:
-                contents = _read_io_comments(sentence.annots, _contents(fr))
+                contents = _read_io_comments(sentence.annots, _contents(fr)) # type: ignore
                 fr = _replace_contents(fr, contents)
             except ValueError as e:
                 yield e
