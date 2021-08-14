@@ -77,11 +77,6 @@ class IOAnnots:
     def update_paths(self, polarity, path):
         self.paths.append(PathAnnot(polarity != "-", path))
 
-    @property
-    def hide(self):
-        return (self.filters == self.FILTER_NONE and
-                not any(pth.enabled for pth in self.paths))
-
     def inherit(self, other):
         for field, value in self.__dict__.items():
             if not value:
@@ -244,9 +239,12 @@ def process_io_annots(fragments):
                 if not any(_enabled(h) for h in g.hypotheses) and not _enabled(g.conclusion):
                     g.flags["enabled"] = False
 
-            if not fr.annots.unfold and \
-               not _enabled(fr.input) and \
-               any(_enabled(o) for os in fr.outputs for o in _output_objects(os)):
+            any_output = any(_enabled(o) for os in fr.outputs for o in _output_objects(os))
+
+            if not _enabled(fr.input) and not any_output:
+                fr.flags["enabled"] = False
+
+            if not fr.annots.unfold and not _enabled(fr.input) and any_output:
                 MSG = "Cannot show output of {!r} without .in or .unfold."
                 yield ValueError(MSG.format(fr.input.contents))
         yield fr
@@ -256,6 +254,10 @@ def _enabled(o):
 
 def _commit_enabled(objs):
     objs[:] = [o for o in objs if _enabled(o)]
+
+def all_hidden(fragments):
+    return all(_enabled(fr) is False for fr in fragments
+               if isinstance(fr, RichSentence))
 
 def _output_objects(o):
     if isinstance(o, Goals):
@@ -273,7 +275,7 @@ def commit_io_annotations(fragments, discard_folded=False):
     """
     for fr in fragments:
         if isinstance(fr, RichSentence):
-            if not _enabled(fr) or fr.annots.hide:
+            if not _enabled(fr):
                 continue
 
             for gs in fragment_goal_sets(fr):

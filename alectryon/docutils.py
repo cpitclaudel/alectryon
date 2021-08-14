@@ -324,11 +324,11 @@ class AlectryonTransform(OneTimeTransform):
 
     def replace_node(self, pending, fragments):
         annots = pending.details["annots"]
-        if annots.hide:
-            pending.parent.remove(pending)
-            return
         fragments = self.set_fragment_annots(fragments, annots)
         fragments = transforms.default_transform(fragments, delay_errors=True)
+        if transforms.all_hidden(fragments):
+            pending.parent.remove(pending)
+            return
         self.check_for_long_lines(pending, fragments)
         details = {**pending.details, "fragments": fragments}
         io = alectryon_pending_io(AlectryonPostTransform, details)
