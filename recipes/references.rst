@@ -133,9 +133,9 @@ Newlines in quoted objects are removed, and line breaks are allowed:
 Customizing proof rendering (**experimental**)
 ==============================================
 
-References can also be used to customize the display of goals and hypotheses.  In the following, hypotheses whose name start with ``l`` are omitted, and so are hypotheses named ``a`` and ``A``.  After the call to ``induction`` (:mref:`.io#pr.s(induction 1)`) the output is further limited to just goals 2 and 4, by excluding all goals and re-including only 2 and 4.  In goal 4, hypotheses whose type is exactly ``list A`` are shown, regardless of previous status, so ``l``, ``l'``, ``l''`` are visible (:mref:`.io#pr.s(induction 1).g#4.h#l`).
+References can also be used to customize the display of goals and hypotheses.  In the following, hypotheses whose name start with ``l`` are omitted, and so are hypotheses named ``a`` and ``A``.  After the call to ``induction`` (:mref:`.io#pr.s(induction 1)`) the output is further limited to just goals 2 and 4, by excluding all goals and re-including only 2 and 4.  In goal 4, hypotheses whose type is exactly ``list A`` are shown, regardless of previous status, so ``l``, ``l'``, ``l''`` are visible (:mref:`.io#pr.s(induction 1).g#4.h#l`).  Finally, the ``-.s(…).msg(…)`` annotation reduces output for the second line (``Check …``) to include only the warning that it produces (and not its regular output); and the ``-.s{Proof.}`` annotation completely hides the ``Proof.`` line.
 
-    .. coq:: -.h#l* -.h#[aA]
+    .. coq:: -.h#l* -.h#[aA] -.s(Check let).msg(let) -.s{Proof.}
        :name: pr
 
        Require Import Coq.Sorting.Permutation. (* .none *)

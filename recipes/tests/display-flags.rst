@@ -30,14 +30,20 @@ This file tests various combinations of display flags.  To compile::
      - (* n ← S _ *) (* .hyps *)
        rewrite Mult.mult_plus_distr_l. (* .fold *)
        rewrite IHn.
-       Show Proof. (* .no-goals *)
+       Show Proof. (* .all .no-goals *)
        ring.
    Qed.
 
-.. coq:: unfold out
+.. coq:: unfold
 
    Check nat.
-   About bool.
+   About bool. (* .fold *)
+
+.. coq:: fails
+
+   Fail Check 1 + true.
+   Fail Definition a := asd.
+   Definition xyz := 123. (* .succeeds *)
 
 .. coq::
 

@@ -710,7 +710,7 @@ The second sentence is \alectryonInline{\PY{k+kn}{Goal}~\PY{k+kr}{forall}~\PY{o}
   \label{customizing-proof-rendering-experimental}%
 }
 
-References can also be used to customize the display of goals and hypotheses.  In the following, hypotheses whose name start with \texttt{l} are omitted, and so are hypotheses named \texttt{a} and \texttt{A}.  After the call to \texttt{induction} (\hyperref[references-rst-io-pr-s-induction-1-0]{12}) the output is further limited to just goals 2 and 4, by excluding all goals and re-including only 2 and 4.  In goal 4, hypotheses whose type is exactly \texttt{list A} are shown, regardless of previous status, so \texttt{l}, \texttt{l'}, \texttt{l''} are visible (\hyperref[references-rst-io-pr-s-induction-1-g-4-h-l-0]{13}).
+References can also be used to customize the display of goals and hypotheses.  In the following, hypotheses whose name start with \texttt{l} are omitted, and so are hypotheses named \texttt{a} and \texttt{A}.  After the call to \texttt{induction} (\hyperref[references-rst-io-pr-s-induction-1-0]{12}) the output is further limited to just goals 2 and 4, by excluding all goals and re-including only 2 and 4.  In goal 4, hypotheses whose type is exactly \texttt{list A} are shown, regardless of previous status, so \texttt{l}, \texttt{l'}, \texttt{l''} are visible (\hyperref[references-rst-io-pr-s-induction-1-g-4-h-l-0]{13}).  Finally, the \texttt{-.s(…).msg(…)} annotation reduces output for the second line (\texttt{Check …}) to include only the warning that it produces (and not its regular output); and the \texttt{-.s\{Proof.\}} annotation completely hides the \texttt{Proof.} line.
 
 \begin{quote}
 \begin{alectryon}
@@ -729,11 +729,6 @@ References can also be used to customize the display of goals and hypotheses.  I
           \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k+kr}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\nl
           \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{]}
         \end{message}
-        \sep
-        \begin{message}
-          \PY{k+kr}{let}~\PY{n+nv}{t}~\PY{o}{:=}~\PY{n}{nat}~\PY{k+kr}{in}~\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{t}\PY{o}{,}~\PY{n}{n}~\PY{o}{\PYZgt{}=}~\PY{l+m+mi}{0}\nl
-          ~~~~~\PY{o}{:}~\PY{k+kt}{Prop}
-        \end{message}
       \end{messages}
     \end{output}
   \end{sentence}
@@ -742,26 +737,6 @@ References can also be used to customize the display of goals and hypotheses.  I
     \begin{input}
       \PY{k+kn}{Theorem}~\PY{n+nf}{Permutation\PYZus{}In}~\PY{o}{\PYZob{}}\PY{n+nv}{A}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{l}~\PY{n+nv}{l\PYZsq{}}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}\PY{o}{:}~\PY{n}{A}\PY{o}{)}~\PY{o}{:}\nl
       ~~\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
-            \PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Proof}\PY{o}{.}
     \end{input}
     \sep
     \begin{output}
