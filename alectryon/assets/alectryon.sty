@@ -88,11 +88,12 @@
    \setlength{\lineskiplimit}{\alectryon@@lineskiplimit}}
 
 % \alectryon@parbox{WIDTH}{TEXT} wraps TEXT in a box with standard line skip
+% \leavevmode: See https://tex.stackexchange.com/questions/610679/
 \newcommand*{\alectryon@parbox}[2]
   {{\alectryon@resetlineskip%
     % \setlength{\fboxsep}{0pt}%
     % \fbox{%
-      \parbox[t][][t]{\alectryon@@width}{#2}%
+      \parbox[t][][t]{#1}{\leavevmode#2}%
     % }%
    }}
 % \alectryon@maxwidth{WIDTH}{TEXT} typesets TEXT as a paragraph of maximum width WIDTH
@@ -148,7 +149,8 @@
 % improve the spacing we give it 0 depth.
 \newcommand{\alectryon@strut}{\rule[0pt]{0pt}{\ht\strutbox}}
 % \alectryon@label inserts a label and a phantomsection
-\newcommand{\alectryon@anchor}[1]{\phantomsection\label{#1}}
+% \leavevmode: See https://tex.stackexchange.com/questions/610679/
+\newcommand{\alectryon@anchor}[1]{\leavevmode\phantomsection\label{#1}}
 % alectryon@outer wraps collections of goals and messages
 \newenvironment{alectryon@outer}
   {\begin{tcolorbox}[colframe=alectryon@tango@medium@gray, colback=alectryon@tango@medium@aluminium]}
@@ -201,6 +203,9 @@
   {\par}
   {\discretionary{}{}{\hbox{\hspace{\alectryonHypH}}}}
 \newlength{\alectryon@hyp@maxwidth}
+% \alectryon@hyp[BODY]{NAMES}{TYPE} formats a single hypothesis.  The code is
+% gnarly because we're trying to give each hypothesis a maxwidth, but also have
+% its bounding box be tight.
 \newcommand*{\alectryon@hyp}[3][]
   {{\def\alectryon@nl{\alectryon@newline}%
     % Save \linewidth since \parbox overwrites it

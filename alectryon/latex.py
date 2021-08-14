@@ -44,18 +44,19 @@ CONTEXT_STACK: List['Context'] = []
 
 ## FIXME just set Verbatim to true by default, and special-case comments?
 
-def add_top(element):
+def add_top(*elements, prepend=False):
     if CONTEXT_STACK:
-        CONTEXT_STACK[-1].add(element)
+        CONTEXT_STACK[-1].add(*elements, prepend=prepend)
 
 class Context:
-    def __init__(self, name, children, args=(), optargs=(), verbatim=False):
+    def __init__(self, name, *children, args=(), optargs=(), verbatim=False, detach=False):
         self.name = name
         self.args = args
         self.optargs = optargs
         self.verbatim = verbatim
         self.children = []
-        add_top(self)
+        if not detach:
+            add_top(self)
         for c in children:
             self.add(c)
         self.claim(*args, *optargs)
@@ -64,11 +65,11 @@ class Context:
         for child in children:
             child.parent = self
 
-    def add(self, child):
-        if isinstance(child, str):
-            child = PlainText(child)
-        self.children.append(child)
-        self.claim(child)
+    def add(self, *children, prepend=False):
+        children = [(PlainText(c) if isinstance(c, str) else c) for c in children]
+        idx = 0 if prepend else len(self.children)
+        self.children[idx:idx] = children
+        self.claim(*children)
 
     def __enter__(self):
         CONTEXT_STACK.append(self)
@@ -89,8 +90,8 @@ class Context:
         return self.format(indent=0, verbatim=False)
 
 class Environment(Context):
-    def __init__(self, name, *children, args=(), optargs=(), verbatim=False):
-        super().__init__(name, children, args, optargs, verbatim)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.indent = 2
 
     def format(self, indent, verbatim):
@@ -109,16 +110,13 @@ class Environment(Context):
         return begin + end
 
 class Macro(Context):
-    def __init__(self, name, *children, args=(), optargs=(), verbatim=False):
-        super().__init__(name, children, args, optargs, verbatim)
-
     def format(self, indent, verbatim):
         children = "".join(c.format(indent, self.verbatim or verbatim) for c in self.children)
         return format_macro(self.name, (*self.args, children), self.optargs)
 
 class Concat(Context):
     def __init__(self, *children):
-        super().__init__(None, children)
+        super().__init__(None, *children)
 
     def format(self, indent, verbatim):
         return "".join(c.format(indent, self.verbatim or verbatim) for c in self.children)
@@ -279,8 +277,8 @@ class LatexGenerator(Backend):
 
     @staticmethod
     def gen_ids(ids):
-        for name in ids:
-            macros.anchor(Raw(name)) # FIXME insert at beginning of parent
+        anchors = (macros.anchor(Raw(name), detach=True) for name in ids)
+        add_top(*anchors, prepend=True)
 
     @classmethod
     def gen_mrefs(cls, nt):
