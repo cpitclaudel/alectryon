@@ -239,8 +239,17 @@ def process_io_annots(fragments):
                     obj.flags["enabled"] = enabled
             for obj in _find_flagged(fr):
                 obj.flags["enabled"] = False
-        yield fr
 
+            for g in fragment_goals(fr):
+                if not any(_enabled(h) for h in g.hypotheses) and not _enabled(g.conclusion):
+                    g.flags["enabled"] = False
+
+            if not fr.annots.unfold and \
+               not _enabled(fr.input) and \
+               any(_enabled(o) for os in fr.outputs for o in _output_objects(os)):
+                MSG = "Cannot show output of {!r} without .in or .unfold."
+                yield ValueError(MSG.format(fr.input.contents))
+        yield fr
 
 def _enabled(o):
     return o.flags.get("enabled", True)
@@ -272,8 +281,6 @@ def commit_io_annotations(fragments, discard_folded=False):
                     _commit_enabled(g.hypotheses)
                     if not _enabled(g.conclusion):
                         gs[idx] = g._replace(conclusion=None)
-                    if not g.hypotheses and not g.conclusion:
-                        g.flags["enabled"] = False
 
             for o in fr.outputs:
                 _commit_enabled(_output_objects(o))
@@ -285,10 +292,6 @@ def commit_io_annotations(fragments, discard_folded=False):
                 fr.outputs.clear()
             else:
                 fr.outputs[:] = [o for o in fr.outputs if _output_objects(o)]
-
-            if fr.input is None and fr.outputs and not fr.annots.unfold:
-                MSG = "Cannot show output of {!r} without .in or .unfold."
-                yield ValueError(MSG.format(fr.input.contents))
         yield fr
 
 def _sub_objects(obj):
