@@ -1,6 +1,13 @@
 default: all
 
-PYTHON ?= python3 -Wd # -X tracemalloc
+export PYTHON ?= python3 -Wd # -X tracemalloc
+export SPHINXBUILD ?= $(PYTHON) "$(shell which sphinx-build)"
+export COVERAGE_FILE := $(abspath coverage/.coverage)
+
+COVERAGE ?=
+ifneq (, $(COVERAGE))
+PYTHON := $(PYTHON) -m coverage run --source=$(abspath ../alectryon) --parallel-mode
+endif
 
 PYTHONPATH ?=
 export PYTHONPATH:=$(realpath ../):$(PYTHONPATH)
@@ -21,7 +28,9 @@ _output/.version-info: | _output/
 	@echo "Docutils: $(shell $(PYTHON) -c 'import docutils; print(docutils.__version__)')" >> $@
 	@echo "Sphinx: $(shell $(PYTHON) -c 'import sphinx; print(sphinx.__version__)')" >> $@
 
+ifeq (, $(COVERAGE))
 targets += _output/.version-info
+endif
 
 ########################
 # Auto-generated rules #
@@ -43,6 +52,7 @@ include recipes.mk tests.mk
 # Sphinx #
 ##########
 
+sphinx/_build/html/index.html: export SPHINXBUILD := $(PYTHON) "$(shell which sphinx-build)"
 sphinx/_build/html/index.html: sphinx/index.rst
 	+$(MAKE) -C sphinx html
 
@@ -84,12 +94,19 @@ targets += $(patsubst %.tex,%.pdf,$(filter-out %.snippets.tex,$(filter %.tex,$(t
 
 all: $(targets)
 
+coverage:
+	mkdir -p coverage
+	+$(MAKE) clean
+	+$(MAKE) COVERAGE=1
+	cd coverage && coverage combine && coverage html
+.PHONY: coverage
+
 ###########
 # Cleanup #
 ###########
 
 clean:
-	rm -rf *.mk _output/ sphinx/_build/
+	rm -rf *.mk coverage/ _output/ sphinx/_build/
 
 .PHONY: clean
 FORCE:

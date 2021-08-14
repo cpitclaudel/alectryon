@@ -8,3 +8,4 @@
 **/sphinx/_build/html/*index*
 **/sphinx/_build/html/*search*
 **/sphinx/_build/html/*.inv
+/coverage/
