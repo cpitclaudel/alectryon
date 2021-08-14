@@ -56,7 +56,8 @@ tests/errors.rst:(109:8)-(109:12): (WARNING/2) Coq raised an exception:
      > Definition a
      >   : >>>true<<< := 1. (* Next line *)
    Results past this point may be unreliable.
-tests/errors.rst:15: (WARNING/2) Long line: '  exact I. (* A very long line *) (* whose contents are split *) (* across *) (* multiple *) (* comments *)' (107 characters)
+tests/errors.rst:15: (WARNING/2) Long line (107 characters)
+     exact I. (* A very long line *) (* whose contents are split *) (* across *) (* multiple *) (* comments *)
 tests/errors.rst:87: (ERROR/3) In `.. coq::`:
    Missing search pattern for key ``.io`` in expression ``.io.s``. (maybe an invalid pattern?)
    Unknown flag `xyz`.
