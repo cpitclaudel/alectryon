@@ -237,10 +237,9 @@ class HtmlGenerator(Backend):
 
     @staticmethod
     def gen_ids(ids):
+        assert len(ids) <= 1
         if ids:
             tags.attr(id=ids[0])
-        for name in ids[1:]:
-            tags.span(id=name) # FIXME insert at beg of parent
 
     @classmethod
     def gen_mrefs(cls, nt):
