@@ -210,8 +210,9 @@ class LatexGenerator(Backend):
                 if goal.name:
                     macros.gid(PlainText(goal.name))
                 self.gen_mref_markers(goal.markers)
-            with environments.conclusion(verbatim=True):
-                self.gen_code(goal.conclusion)
+            if goal.conclusion:
+                with environments.conclusion(verbatim=True):
+                    self.gen_code(goal.conclusion)
 
     def gen_goals(self, first, more):
         self.gen_goal(first)

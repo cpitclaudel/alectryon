@@ -55,3 +55,19 @@ This file tests various combinations of display flags.  To compile::
    Goal True.               (* ← Goal unfolded *) (* .unfold *)
      Fail exact 1.          (* ← Goal omitted *) (* .in .messages *)
      Fail fail.             (* ← Error message shown, input hidden *) (* .unfold .messages *)
+     exact I.               (* ← Executed but hidden *) (* -.s{*} *)
+   Qed.
+
+.. coq:: -.h#l* -.h#[aA] -.s(Check let).msg(Check) -.s{Proof.}.in -.s{Proof.}.g#* -.s{Proof.}.msg(*)
+   :name: pr
+
+   Require Import Coq.Sorting.Permutation. (* .none *)
+   Check let t := nat in forall {n: t}, n >= 0. (* .unfold *)
+   Theorem Permutation_In {A} (l l' : list A) (a: A) :
+     Permutation l l' -> List.In a l -> List.In a l'. (* .unfold *)
+   Proof.
+     induction 1; intros * Hin; [ | refine ?[gg] | .. ]. (*
+       .unfold -.g#* .g#2 .g#4 .g#4.h{list A} *)
+     all: simpl in *. (* -.g#*.ccl *)
+     all: tauto.
+   Qed.

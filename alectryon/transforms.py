@@ -135,7 +135,7 @@ def _parse_path(path):
         path.setdefault("g", markers.TopMatcher())
 
     leaf = markers.set_leaf(path)
-    if leaf in {"in", "ccl", "type", "body", "name"}:
+    if leaf in {"type", "body", "name"}:
         MSG = "``{}`` not supported in visibility annotations."
         raise ValueError(MSG.format(path["leaf"]))
 
@@ -208,8 +208,12 @@ def _find_marked(sentence, path):
             if "h" in path:
                 for h in markers.find_hyps(g.hypotheses, path["h"]):
                     yield h
+            elif "ccl" in path:
+                yield g.conclusion
             else:
                 yield g
+    elif "in" in path:
+        yield sentence.input
     else:
         yield sentence
 
@@ -218,8 +222,18 @@ def _process_io_path(sentence, polarity, path):
     for obj in _find_marked(sentence, path):
         obj.flags["enabled"] = enabled
 
+def _enabled(o):
+    return o.flags.get("enabled", True)
+
 def _commit_enabled(objs):
-    objs[:] = [o for o in objs if o.flags.get("enabled", True)]
+    objs[:] = [o for o in objs if _enabled(o)]
+
+def _output_objects(o):
+    if isinstance(o, Goals):
+        return o.goals
+    if isinstance(o, Messages):
+        return o.messages
+    assert False
 
 def commit_io_annotations(fragments, discard_folded=False):
     """Use I/O annotations to filter `fragments`.
@@ -239,26 +253,24 @@ def commit_io_annotations(fragments, discard_folded=False):
             if not fr.flags.get("enabled", True):
                 continue
 
-            for o in fr.outputs:
-                if isinstance(o, Goals):
-                    _commit_enabled(o.goals)
-                elif isinstance(o, Messages):
-                    _commit_enabled(o.messages)
-                else:
-                    assert False
+            for gs in fragment_goal_sets(fr):
+                for idx, g in enumerate(gs):
+                    if not fr.annots["hyps"]:
+                        g.hypotheses.clear()
+                    _commit_enabled(g.hypotheses)
+                    if not _enabled(g.conclusion):
+                        gs[idx] = g._replace(conclusion=None)
+                    if not g.hypotheses and not g.conclusion:
+                        g.flags["enabled"] = False
 
-            input = fr.input if fr.annots["in"] else None
+            for o in fr.outputs:
+                _commit_enabled(_output_objects(o))
+
+            input = fr.input if fr.annots["in"] and _enabled(fr.input) else None
             if discard_folded and not fr.annots.unfold:
                 fr.outputs.clear()
             else:
                 fr.outputs[:] = [o for o in fr.outputs if should_keep_output(o, fr.annots)]
-
-            for o in fr.outputs:
-                if isinstance(o, Goals):
-                    for g in o.goals:
-                        if not fr.annots["hyps"]:
-                            g.hypotheses.clear()
-                        _commit_enabled(g.hypotheses)
 
             if input is None and fr.outputs and not fr.annots.unfold:
                 MSG = "Cannot show output of {!r} without .in or .unfold."

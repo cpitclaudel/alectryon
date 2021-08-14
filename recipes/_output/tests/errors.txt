@@ -63,7 +63,7 @@ tests/errors.rst:87: (ERROR/3) In `.. coq::`:
    Unknown flag `xyz`.
 tests/errors.rst:93: (ERROR/3) In `.. coq::`:
    ``.io`` not supported in visibility annotations
-   ``ccl`` not supported in visibility annotations.
+   ``name`` not supported in visibility annotations.
    ``body`` not supported in visibility annotations.
 tests/errors.rst:70: (ERROR/3) In :mref:`.io#nope.s(123)`: Reference to unknown Alectryon block.
 tests/errors.rst:71: (ERROR/3) In :mref:`.s(Goal).g#25`: No goal matches '25'.

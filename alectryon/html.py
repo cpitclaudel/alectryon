@@ -152,7 +152,8 @@ class HtmlGenerator(Backend):
                 if goal.name:
                     tags.span(goal.name, cls="goal-name")
                 self.gen_mref_markers(goal.markers)
-            self.gen_ccl(goal.conclusion)
+            if goal.conclusion:
+                self.gen_ccl(goal.conclusion)
 
     def gen_checkbox(self, checked, cls):
         if self.minify:
