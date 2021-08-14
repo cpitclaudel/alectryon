@@ -29,6 +29,8 @@ from .core import Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
     Goals, Messages, RichSentence
 
+PathAnnot = namedtuple("PathAnnot", "enabled path")
+
 class IOAnnots:
     def __init__(self):
         self.filters = None
@@ -72,9 +74,13 @@ class IOAnnots:
                     raise ValueError("Unknown flag `{}`.".format(flag))
                 self.filters[flag] = not negated
 
+    def update_paths(self, polarity, path):
+        self.paths.append(PathAnnot(polarity != "-", path))
+
     @property
     def hide(self):
-        return self.filters == self.FILTER_NONE
+        return (self.filters == self.FILTER_NONE and
+                not any(pth.enabled for pth in self.paths))
 
     def inherit(self, other):
         for field, value in self.__dict__.items():
@@ -147,13 +153,13 @@ def _update_io_flags(annots, flags_str, regex):
         if io:
             annots.update(io)
         else:
-            annots.paths.append((polarity, _parse_path(path)))
+            annots.update_paths(polarity, _parse_path(path))
 
-def process_io_flags(annots, flags_str):
+def read_io_flags(annots, flags_str):
     _update_io_flags(annots, flags_str, ONE_IO_FLAG_RE)
     return ONE_IO_FLAG_RE.sub("", flags_str)
 
-def _process_io_comments(annots, contents):
+def _read_io_comments(annots, contents):
     for m in IO_COMMENT_RE.finditer(contents):
         _update_io_flags(annots, m.group(0), ONE_IO_ANNOT_RE)
     return IO_COMMENT_RE.sub("", contents)
@@ -168,7 +174,7 @@ def _replace_contents(fr, contents):
         return fr._replace(input=fr.input._replace(contents=contents))
     return fr._replace(contents=contents)
 
-def process_io_annotations(fragments):
+def read_io_comments(fragments):
     """Strip IO comments and update ``.annots`` fields accordingly.
 
     This pass assumes that consecutive ``Text`` fragments have been
@@ -180,19 +186,12 @@ def process_io_annotations(fragments):
         if sentence:
             assert isinstance(sentence, RichSentence)
             try:
-                contents = _process_io_comments(sentence.annots, _contents(fr))
+                contents = _read_io_comments(sentence.annots, _contents(fr))
                 fr = _replace_contents(fr, contents)
             except ValueError as e:
                 yield e
         last_sentence = fr
         yield fr
-
-def should_keep_output(output, annots):
-    if isinstance(output, Messages):
-        return annots["messages"] and output.messages
-    if isinstance(output, Goals):
-        return (annots["hyps"] or annots["ccls"]) and output.goals
-    assert False
 
 def _find_marked(sentence, path):
     assert isinstance(sentence, RichSentence)
@@ -217,10 +216,31 @@ def _find_marked(sentence, path):
     else:
         yield sentence
 
-def _process_io_path(sentence, polarity, path):
-    enabled = polarity != "-"
-    for obj in _find_marked(sentence, path):
-        obj.flags["enabled"] = enabled
+def _find_flagged(sentence):
+    annots = sentence.annots
+    if not annots["in"]:
+        yield sentence.input
+    if not annots["hyps"]:
+        for g in fragment_goals(sentence):
+            yield from g.hypotheses
+    if not annots["ccls"]:
+        for g in fragment_goals(sentence):
+            yield g.conclusion
+    if not annots["messages"]:
+        for m in fragment_messages(sentence):
+            yield m
+
+def process_io_annots(fragments):
+    """Convert IO annotations to "enabled" flags."""
+    for fr in fragments:
+        if isinstance(fr, RichSentence):
+            for (enabled, path) in fr.annots.paths:
+                for obj in _find_marked(fr, path):
+                    obj.flags["enabled"] = enabled
+            for obj in _find_flagged(fr):
+                obj.flags["enabled"] = False
+        yield fr
+
 
 def _enabled(o):
     return o.flags.get("enabled", True)
@@ -244,19 +264,11 @@ def commit_io_annotations(fragments, discard_folded=False):
     """
     for fr in fragments:
         if isinstance(fr, RichSentence):
-            if fr.annots.hide:
-                continue
-
-            for pth in fr.annots.paths:
-                _process_io_path(fr, *pth)
-
-            if not fr.flags.get("enabled", True):
+            if not _enabled(fr) or fr.annots.hide:
                 continue
 
             for gs in fragment_goal_sets(fr):
                 for idx, g in enumerate(gs):
-                    if not fr.annots["hyps"]:
-                        g.hypotheses.clear()
                     _commit_enabled(g.hypotheses)
                     if not _enabled(g.conclusion):
                         gs[idx] = g._replace(conclusion=None)
@@ -266,16 +278,17 @@ def commit_io_annotations(fragments, discard_folded=False):
             for o in fr.outputs:
                 _commit_enabled(_output_objects(o))
 
-            input = fr.input if fr.annots["in"] and _enabled(fr.input) else None
+            if not _enabled(fr.input):
+                fr = fr._replace(input=None)
+
             if discard_folded and not fr.annots.unfold:
                 fr.outputs.clear()
             else:
-                fr.outputs[:] = [o for o in fr.outputs if should_keep_output(o, fr.annots)]
+                fr.outputs[:] = [o for o in fr.outputs if _output_objects(o)]
 
-            if input is None and fr.outputs and not fr.annots.unfold:
+            if fr.input is None and fr.outputs and not fr.annots.unfold:
                 MSG = "Cannot show output of {!r} without .in or .unfold."
                 yield ValueError(MSG.format(fr.input.contents))
-            fr = fr._replace(input=input)
         yield fr
 
 def _sub_objects(obj):
@@ -538,7 +551,8 @@ DEFAULT_TRANSFORMS = [
     enrich_sentences,
     attach_comments_to_code,
     group_hypotheses,
-    process_io_annotations,
+    read_io_comments,
+    process_io_annots,
     strip_failures,
     dedent,
     # Not included:

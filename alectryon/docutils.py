@@ -633,7 +633,7 @@ class CoqDirective(Directive):
     def _annots_of_arguments(self):
         annots = transforms.IOAnnots()
         try:
-            leftover = transforms.process_io_flags(annots, " ".join(self.arguments)).strip()
+            leftover = transforms.read_io_flags(annots, " ".join(self.arguments)).strip()
             if leftover:
                 raise ValueError("Unrecognized directive flags: {}".format(leftover))
         except ValueError as e:
