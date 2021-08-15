@@ -2,7 +2,8 @@
  Errors and warnings
 =====================
 
-:alectryon/pygments/xyz: test
+:alectryon/pygments/tacn: test
+:alectryon/pygments/coq/xyz: test
 
 The ``lint`` backend in Alectryon runs the compiler and reports errors on ``stderr``::
 
