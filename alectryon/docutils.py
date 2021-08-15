@@ -309,7 +309,10 @@ class AlectryonTransform(OneTimeTransform):
         for linum, s in transforms.find_long_lines(fragments, threshold=LONG_LINE_THRESHOLD):
             msg = "Long line ({} characters)\n   {}".format(len(s), s)
             opts = dict(line=node.line + linum) if hasattr(node, "line") else {}
-            self.document.reporter.warning(msg, base_node=node, **opts)
+            w = self.document.reporter.warning(msg, base_node=node, **opts)
+            # We want a message on the command line but not in the document, so
+            # remove the node created by ``Reporter.system_message``:
+            self.document.transform_messages.remove(w)
 
     def annotate_cached(self, chunks, sertop_args):
         from .json import Cache
