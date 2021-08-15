@@ -2,8 +2,8 @@
  Major changes
 ===============
 
-Unreleased
-==========
+Version 1.3.0
+=============
 
 - **EXPERIMENTAL** A new mini-language lets authors show or hide specific sentences, hypotheses, and goals within a fragment of Coq code.  The same language can be used in conjunction with a new ``:mref:`` role to place markers and create references to a subpart of a goal, and with a new ``:mquote:`` role to replicate subparts of a goal inline. [8a02bce, 14f45b7, 4f91484] [GH-36, GH-2]
 
