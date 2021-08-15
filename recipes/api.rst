@@ -16,9 +16,9 @@ To compile::
 Annotating Coq snippets
 =======================
 
-Use ``alectryon.core.annotate`` to transform a process a list of fragments of statements using SerAPI:
+Use ``alectryon.serapi.annotate`` to transform a process a list of fragments of statements using SerAPI:
 
-   >>> from alectryon.core import annotate
+   >>> from alectryon.serapi import annotate
    >>> annotate(["Check surjective_pairing."])
    [[Sentence(contents='Check surjective_pairing.',
               messages=[Message(contents='surjective_pairing\n

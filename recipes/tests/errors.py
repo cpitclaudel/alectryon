@@ -82,7 +82,8 @@ class core(unittest.TestCase):
 
 class serapi(unittest.TestCase):
     def test_warnings(self):
-        from alectryon.core import SerAPI, View, PrettyPrinted
+        from alectryon.core import View
+        from alectryon.serapi import SerAPI, PrettyPrinted
 
         api = SerAPI()
         with redirected_std() as (_, err):
@@ -91,7 +92,7 @@ class serapi(unittest.TestCase):
             self.assertRegex(err.getvalue(), "Orphaned message")
 
         with self.assertRaisesRegex(ValueError, "not found"):
-            SerAPI.resolve_sertop(sertop_bin="\0")
+            SerAPI.resolve_driver(binpath="\0")
 
 class pygments(unittest.TestCase):
     def test_warnings(self):

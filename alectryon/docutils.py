@@ -89,7 +89,8 @@ from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import core, transforms, html, latex, markers
-from .core import Gensym, SerAPI, Position, PosStr
+from .core import Gensym, Position, PosStr
+from .serapi import annotate, SerAPI
 from .pygments import make_highlighter, added_tokens, validate_style, \
     get_lexer, resolve_token, replace_builtin_coq_lexer
 
@@ -330,11 +331,12 @@ class AlectryonTransform(OneTimeTransform):
     def annotate_cached(self, chunks, sertop_args):
         from .json import Cache
         docpath = self.document['source']
+        # Later: decouple from SerAPI by generalizing over `annotate`
         prover = SerAPI(sertop_args, fpath=docpath)
         prover.observer = DocutilsObserver(self.document)
         metadata = {"sertop_args": sertop_args}
         cache = Cache(CACHE_DIRECTORY, docpath, metadata, CACHE_COMPRESSION)
-        annotated = cache.update(chunks, prover.annotate, SerAPI.version_info())
+        annotated = cache.update(chunks, prover.annotate, prover.version_info())
         return cache.generator, annotated
 
     def annotate(self, pending_nodes):

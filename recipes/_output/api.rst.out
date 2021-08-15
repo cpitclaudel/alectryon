@@ -11,7 +11,7 @@ Trying:
 Expecting nothing
 ok
 Trying:
-    from alectryon.core import annotate
+    from alectryon.serapi import annotate
 Expecting nothing
 ok
 Trying:

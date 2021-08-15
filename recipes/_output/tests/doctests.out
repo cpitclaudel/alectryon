@@ -1,7 +1,5 @@
 translate_offset (alectryon.core.PosView)
 Doctest: alectryon.core.PosView.translate_offset ... ok
-annotate (alectryon.core)
-Doctest: alectryon.core.annotate ... ok
 DeduplicatingSerializer (alectryon.json)
 Doctest: alectryon.json.DeduplicatingSerializer ... ok
 FullyDeduplicatingSerializer (alectryon.json)
@@ -28,6 +26,8 @@ add_tokens (alectryon.pygments)
 Doctest: alectryon.pygments.add_tokens ... ok
 highlight_html (alectryon.pygments)
 Doctest: alectryon.pygments.highlight_html ... ok
+annotate (alectryon.serapi)
+Doctest: alectryon.serapi.annotate ... ok
 _all_sub_objects (alectryon.transforms)
 Doctest: alectryon.transforms._all_sub_objects ... ok
 attach_comments_to_code (alectryon.transforms)

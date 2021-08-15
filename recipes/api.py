@@ -19,13 +19,13 @@ libdir = recipes / "src"
 
 def api_annotate():
     """Annotate a fragment of Coq code."""
-    from alectryon.core import annotate
+    from alectryon.serapi import annotate
     annotated = annotate(["Check 1."], sertop_args=("-Q", "{},lib".format(libdir)))
     pprint(annotated)
 
 def annotated_to_json():
     """Save results of annotation to JSON."""
-    from alectryon.core import annotate
+    from alectryon.serapi import annotate
     from alectryon.json import PlainSerializer
     annotated = annotate([r"Goal True /\ True. split. ", "all: eauto."],
                          ("-Q", "{},lib".format(libdir)))

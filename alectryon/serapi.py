@@ -18,232 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Dict, DefaultDict, Iterator, List, Tuple, Union, NamedTuple
+from typing import Any, Iterator, List, Tuple, Union
 
-from collections import namedtuple, defaultdict
-from contextlib import contextmanager
-from shlex import quote
-from shutil import which
-from subprocess import Popen, PIPE, check_output
-from pathlib import Path
-import textwrap
+from collections import namedtuple
 import re
 import sys
 import unicodedata
 
 from . import sexp as sx
-
-DEBUG = False
-TRACEBACK = False
-
-class UnexpectedError(ValueError):
-    pass
-
-def indent(text, prefix):
-    if prefix.isspace():
-        return textwrap.indent(text, prefix)
-    text = re.sub("^(?!$)", prefix, text, flags=re.MULTILINE)
-    return re.sub("^$", prefix.rstrip(), text, flags=re.MULTILINE)
-
-def debug(text, prefix):
-    if isinstance(text, (bytes, bytearray)):
-        text = text.decode("utf-8", errors="replace")
-    if DEBUG:
-        print(indent(text.rstrip(), prefix), flush=True)
-
-class GeneratorInfo(namedtuple("GeneratorInfo", "name version")):
-    def fmt(self, include_version_info=True):
-        return "{} v{}".format(self.name, self.version) if include_version_info else self.name
-
-Hypothesis = namedtuple("Hypothesis", "names body type")
-Goal = namedtuple("Goal", "name conclusion hypotheses")
-Message = namedtuple("Message", "contents")
-Sentence = namedtuple("Sentence", "contents messages goals")
-Text = namedtuple("Text", "contents")
-
-class Enriched():
-    __slots__ = ()
-    def __new__(cls, *args, **kwargs):
-        if len(args) < len(getattr(super(), "_fields", ())):
-            # Don't repeat fields given by position (it breaks pickle & deepcopy)
-            kwargs = {"ids": [], "markers": [], "props": {}, **kwargs}
-        return super().__new__(cls, *args, **kwargs)
-
-def _enrich(nt):
-    # LATER: Use dataclass + multiple inheritance; change `ids` and `markers` to
-    # mutable `id` and `marker` fields.
-    name = "Rich" + nt.__name__
-    fields = nt._fields + ("ids", "markers", "props")
-    # Using ``type`` this way ensures compatibility with pickling
-    return type(name, (Enriched, namedtuple(name, fields)),
-                {"__slots__": ()})
-
-Goals = namedtuple("Goals", "goals")
-Messages = namedtuple("Messages", "messages")
-
-class Names(list): pass
-RichHypothesis = _enrich(Hypothesis)
-RichGoal = _enrich(Goal)
-RichMessage = _enrich(Message)
-RichCode = _enrich(namedtuple("Code", "contents"))
-RichSentence = _enrich(namedtuple("Sentence", "input outputs annots prefixes suffixes"))
-
-def b16(i):
-    return hex(i)[len("0x"):]
-
-class Gensym():
-    # Having a global table of counters ensures that creating multiple Gensym
-    # instances in the same session doesn't cause collisions
-    GENSYM_COUNTERS: Dict[str, DefaultDict[str, int]] = {}
-
-    def __init__(self, stem):
-        self.stem = stem
-        self.counters = self.GENSYM_COUNTERS.setdefault(stem, defaultdict(lambda: -1))
-
-    def __call__(self, prefix):
-        self.counters[prefix] += 1
-        return self.stem + prefix + b16(self.counters[prefix])
-
-@contextmanager
-def nullctx():
-    yield
-
-class Backend:
-    def __init__(self, highlighter):
-        self.highlighter = highlighter
-
-    def gen_fragment(self, fr): raise NotImplementedError()
-    def gen_hyp(self, hyp): raise NotImplementedError()
-    def gen_goal(self, goal): raise NotImplementedError()
-    def gen_message(self, message): raise NotImplementedError()
-    def highlight(self, s): raise NotImplementedError()
-    def gen_names(self, names): raise NotImplementedError()
-    def gen_code(self, code): raise NotImplementedError()
-    def gen_txt(self, s): raise NotImplementedError()
-
-    def highlight_enriched(self, obj):
-        lang = obj.props.get("lang")
-        with self.highlighter.override(lang=lang) if lang else nullctx():
-            return self.highlight(obj.contents)
-
-    def _gen_any(self, obj):
-        if isinstance(obj, (Text, RichSentence)):
-            self.gen_fragment(obj)
-        elif isinstance(obj, RichHypothesis):
-            self.gen_hyp(obj)
-        elif isinstance(obj, RichGoal):
-            self.gen_goal(obj)
-        elif isinstance(obj, RichMessage):
-            self.gen_message(obj)
-        elif isinstance(obj, RichCode):
-            self.gen_code(obj)
-        elif isinstance(obj, Names):
-            self.gen_names(obj)
-        elif isinstance(obj, str):
-            self.gen_txt(obj)
-        else:
-            raise TypeError("Unexpected object type: {}".format(type(obj)))
-
-class Asset(str):
-    def __new__(cls, fname, _gen):
-        return super().__new__(cls, fname)
-
-    def __init__(self, _fname, gen):
-        super().__init__()
-        self.gen = gen
-
-class Position(namedtuple("Position", "fpath line col")):
-    def as_header(self):
-        return "{}:{}:{}:".format(self.fpath or "<unknown>", self.line, self.col)
-
-class Range(namedtuple("Range", "beg end")):
-    def as_header(self):
-        assert self.end is None or self.beg.fpath == self.end.fpath
-        beg = "{}:{}".format(self.beg.line, self.beg.col)
-        end = "{}:{}".format(self.end.line, self.end.col) if self.end else ""
-        pos = ("({})-({})" if end else "{}:{}").format(beg, end)
-        return "{}:{}:".format(self.beg.fpath or "<unknown>", pos)
-
-class PosStr(str):
-    def __new__(cls, s, *_args):
-        return super().__new__(cls, s)
-
-    def __init__(self, _s, pos, col_offset):
-        super().__init__()
-        self.pos, self.col_offset = pos, col_offset
-
-class View(bytes):
-    def __getitem__(self, key):
-        return memoryview(self).__getitem__(key)
-
-    def __init__(self, s):
-        super().__init__()
-        self.s = s
-
-class PosView(View):
-    NL = b"\n"
-
-    def __new__(cls, s):
-        bs = s.encode("utf-8")
-        # https://stackoverflow.com/questions/20221858/
-        return super().__new__(cls, bs) if isinstance(s, PosStr) else View(bs)
-
-    def __init__(self, s):
-        super().__init__(s)
-        self.pos, self.col_offset = s.pos, s.col_offset
-
-    def __getitem__(self, key):
-        return memoryview(self).__getitem__(key)
-
-    def translate_offset(self, offset):
-        r"""Translate a character-based `offset` into a (line, column) pair.
-        Columns are 1-based.
-
-        >>> text = "abc\ndef\nghi"
-        >>> s = PosView(PosStr(text, Position("f", 3, 2), 5))
-        >>> s.translate_offset(0)
-        Position(fpath='f', line=3, col=2)
-        >>> s.translate_offset(10) # col=3, + offset (5) = 8
-        Position(fpath='f', line=5, col=8)
-        """
-        nl = self.rfind(self.NL, 0, offset)
-        if nl == -1: # First line
-            line, col = self.pos.line, self.pos.col + offset
-        else:
-            line = self.pos.line + self.count(self.NL, 0, offset)
-            prefix = bytes(self[nl+1:offset]).decode("utf-8", 'ignore')
-            col = 1 + self.col_offset + len(prefix)
-        return Position(self.pos.fpath, line, col)
-
-    def translate_span(self, beg, end):
-        return Range(self.translate_offset(beg),
-                     self.translate_offset(end))
-
-class Notification(NamedTuple):
-    obj: Any
-    message: str
-    location: Range
-    level: int
-
-class Observer:
-    def _notify(self, n: Notification):
-        raise NotImplementedError()
-
-    def notify(self, obj, message, location, level):
-        self._notify(Notification(obj, message, location, level))
-
-class StderrObserver(Observer):
-    def __init__(self):
-        self.exit_code = 0
-
-    def _notify(self, n: Notification):
-        self.exit_code = max(self.exit_code, n.level)
-        header = n.location.as_header() if n.location else "!!"
-        message = n.message.rstrip().replace("\n", "\n   ")
-        level_name = {2: "WARNING", 3: "ERROR"}.get(n.level, "??")
-        sys.stderr.write("{} ({}/{}) {}\n".format(header, level_name, n.level, message))
-
-PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
+from .core import UnexpectedError, REPLDriver, \
+    Hypothesis, Goal, Message, Sentence, Text, \
+    PrettyPrinted, PosView, indent, debug
 
 def sexp_hd(sexp):
     if isinstance(sexp, list):
@@ -262,9 +47,13 @@ ApiString = namedtuple("ApiString", "string")
 
 Pattern = type(re.compile("")) # LATER (3.7+): re.Pattern
 
-class SerAPI():
-    SERTOP_BIN = "sertop"
+class SerAPI(REPLDriver):
+    BIN = "sertop"
+    NAME = "Coq+SerAPI"
     DEFAULT_ARGS = ("--printer=sertop", "--implicit")
+
+    ID = "sertop"
+    LANGUAGE = "coq"
 
     # Whether to silently continue past unexpected output
     EXPECT_UNEXPECTED: bool = False
@@ -272,41 +61,23 @@ class SerAPI():
     MIN_PP_MARGIN = 20
     DEFAULT_PP_ARGS = {'pp_depth': 30, 'pp_margin': 55}
 
-    @staticmethod
-    def version_info(sertop_bin=SERTOP_BIN):
-        bs = check_output([SerAPI.resolve_sertop(sertop_bin), "--version"])
-        return GeneratorInfo("Coq+SerAPI", bs.decode('ascii', 'ignore').strip())
-
-    def __init__(self, args=(), # pylint: disable=dangerous-default-value
+    # pylint: disable=dangerous-default-value
+    def __init__(self, args=(),
                  fpath="-",
-                 sertop_bin=SERTOP_BIN,
+                 binpath=None,
                  pp_args=DEFAULT_PP_ARGS):
-        """Configure a ``sertop`` instance."""
-        self.fpath = Path(fpath)
-        self.args = [*args, *SerAPI.DEFAULT_ARGS, "--topfile={}".format(self.topfile)]
-        self.sertop_bin = sertop_bin
-        self.sertop = None
+        """Prepare to run ``sertop``."""
+        super().__init__(args=args, fpath=fpath, binpath=binpath)
+        self.args.append("--topfile={}".format(self.topfile))
         self.next_qid = 0
         self.pp_args = {**SerAPI.DEFAULT_PP_ARGS, **pp_args}
         self.last_response = None
-        self.observer : Observer = StderrObserver()
 
-    def __enter__(self):
-        self.reset()
-        return self
-
-    def __exit__(self, *_exn):
-        self.kill()
-        return False
-
-    def kill(self):
-        if self.sertop:
-            self.sertop.kill()
-            try:
-                self.sertop.stdin.close()
-                self.sertop.stdout.close()
-            finally:
-                self.sertop.wait()
+    @classmethod
+    def driver_not_found(cls, binpath):
+        MSG = ("`sertop` binary not found (bin={});"
+               " please run `opam install coq-serapi`")
+        raise ValueError(MSG.format(binpath))
 
     COQ_IDENT_START = (
         'lu', # Letter, uppercase
@@ -353,25 +124,9 @@ class SerAPI():
                 self.sub_chars(stem[1:], self.COQ_IDENT_PART))
         return stem + self.fpath.suffix
 
-    @staticmethod
-    def resolve_sertop(sertop_bin):
-        path = which(sertop_bin)
-        if path is None:
-            msg = ("sertop not found (sertop_bin={});" +
-                   " please run `opam install coq-serapi`")
-            raise ValueError(msg.format(sertop_bin))
-        return path
-
-    def reset(self):
-        self.kill()
-        cmd = [self.resolve_sertop(self.sertop_bin), *self.args]
-        debug(" ".join(quote(s) for s in cmd), '# ')
-        # pylint: disable=consider-using-with
-        self.sertop = Popen(cmd, stdin=PIPE, stderr=sys.stderr, stdout=PIPE)
-
-    def next_sexp(self):
+    def _next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceding it."""
-        response = self.sertop.stdout.readline()
+        response = self._read()
         if not response: # pragma: no cover
             # https://github.com/ejgallego/coq-serapi/issues/212
             MSG = "SerTop printed an empty line.  Last response: {!r}."
@@ -386,9 +141,7 @@ class SerAPI():
     def _send(self, sexp):
         s = sx.dump([b'query%d' % self.next_qid, sexp])
         self.next_qid += 1
-        debug(s, '>> ')
-        self.sertop.stdin.write(s + b'\n') # type: ignore
-        self.sertop.stdin.flush()
+        self._write(s, b'\n')
 
     @staticmethod
     def _deserialize_loc(loc):
@@ -458,7 +211,11 @@ class SerAPI():
         elif tag == b'Feedback':
             yield from SerAPI._deserialize_feedback(sexp[1])
         elif not self.EXPECT_UNEXPECTED: # pragma: no cover
-            raise UnexpectedError("Unexpected response: {}".format(self.last_response))
+            UNEXPECTED = "Unexpected response: {}"
+            # Print early to get some information out even if sertop hangs
+            print(UNEXPECTED.format(self.last_response), file=sys.stderr)
+            MSG = "Unexpected response: {}\nFull output: {}"
+            raise ValueError(MSG.format(self.last_response, self.repl.stdout.read()))
 
     @staticmethod
     def highlight_substring(chunk, beg, end):
@@ -496,7 +253,7 @@ class SerAPI():
     def _collect_messages(self, typs: Tuple[type, ...], chunk, sid) -> Iterator[Any]:
         warn_on_exn = ApiExn not in typs
         while True:
-            for response in self._deserialize_response(self.next_sexp()):
+            for response in self._deserialize_response(self._next_sexp()):
                 if isinstance(response, ApiAck):
                     continue
                 if isinstance(response, ApiCompleted):
@@ -610,15 +367,10 @@ class SerAPI():
         with self as api:
             return [api.run(chunk) for chunk in chunks]
 
-def annotate(chunks, sertop_args=()):
+def annotate(chunks, sertop_args=(), fpath="-", binpath=None):
     r"""Annotate multiple `chunks` of Coq code.
-
-    All fragments are executed in the same Coq instance, started with arguments
-    `sertop_args`.  The return value is a list with as many elements as in
-    `chunks`, but each element is a list of fragments: either ``Text``
-    instances (whitespace and comments) or ``Sentence`` instances (code).
 
     >>> annotate(["Check 1."])
     [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
     """
-    return SerAPI(args=sertop_args).annotate(chunks)
+    return SerAPI(args=sertop_args, fpath=fpath, binpath=binpath).annotate(chunks)

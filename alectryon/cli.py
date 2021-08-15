@@ -62,7 +62,8 @@ def rst_to_coq(coq, fpath, point, marker):
 
 def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
                     sertop_args, exit_code):
-    from .core import SerAPI, StderrObserver
+    from .serapi import SerAPI
+    from .core import StderrObserver
     from .json import Cache
     api = SerAPI(sertop_args, fpath=fpath)
     metadata = {"sertop_args": sertop_args}
@@ -292,7 +293,7 @@ def dump_html_standalone(snippets, fname, webpage_style,
     from dominate import tags, document
     from dominate.util import raw
     from . import GENERATOR
-    from .core import SerAPI
+    from .serapi import SerAPI
     from .html import ASSETS, ADDITIONAL_HEADS, JS_UNMINIFY, gen_banner, wrap_classes
 
     doc = document(title=fname)
@@ -771,7 +772,8 @@ def process_pipelines(args):
         sys.excepthook = except_hook
 
     if args.expect_unexpected:
-        core.SerAPI.EXPECT_UNEXPECTED = True
+        from . import serapi
+        serapi.SerAPI.EXPECT_UNEXPECTED = True
 
     for fpath, frontend, backend, pipeline in args.pipelines:
         state, ctx = None, build_context(fpath, args, frontend, backend)
