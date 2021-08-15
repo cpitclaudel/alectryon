@@ -80,6 +80,10 @@ class IOAnnots:
     def update_paths(self, polarity, path):
         self.paths.append(PathAnnot(polarity != "-", path))
 
+    @property
+    def hidden(self):
+        return self.filters == self.FILTER_NONE
+
     def inherit(self, other):
         for field, value in self.__dict__.items():
             if not value:
@@ -258,9 +262,17 @@ def _enabled(o):
 def _commit_enabled(objs):
     objs[:] = [o for o in objs if _enabled(o)]
 
-def all_hidden(fragments):
-    return all(_enabled(fr) is False for fr in fragments
-               if isinstance(fr, RichSentence))
+def all_hidden(fragments, annots):
+    """Check whether all `fragments` are hidden.
+    ``RichSentence`` objects are hidden if their ``"enabled"` flag is set to
+    false; ``Text`` objects are hidden if the default `annots` say so.
+    """
+    for fr in fragments:
+        if isinstance(fr, RichSentence) and _enabled(fr):
+            return False
+        if isinstance(fr, Text) and not annots.hidden:
+            return False
+    return True
 
 def _output_objects(o):
     if isinstance(o, Goals):

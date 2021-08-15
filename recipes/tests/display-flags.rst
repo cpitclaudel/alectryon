@@ -53,6 +53,14 @@ This file tests various combinations of display flags.  To compile::
 
 .. coq::
 
+   (* Visible *)
+
+.. coq:: none
+
+   (* Hidden *)
+
+.. coq::
+
    Fail Definition a := (* .fails .unfold *)
      (* `.fails` adds red highlight and removes "indeed failed". *)
      1 + true.

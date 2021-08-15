@@ -325,10 +325,10 @@ class AlectryonTransform(OneTimeTransform):
         return self.annotate_cached(chunks, sertop_args)
 
     def replace_node(self, pending, fragments):
-        annots = pending.details["annots"]
-        fragments = self.set_fragment_annots(fragments, annots)
+        directive_annots = pending.details["directive_annots"]
+        fragments = self.set_fragment_annots(fragments, directive_annots)
         fragments = transforms.default_transform(fragments, delay_errors=True)
-        if transforms.all_hidden(fragments):
+        if transforms.all_hidden(fragments, directive_annots):
             pending.parent.remove(pending)
             return
         self.check_for_long_lines(pending, fragments)
@@ -659,7 +659,7 @@ class CoqDirective(Directive):
         contents = PosStr(contents, pos, indent)
 
         roles.set_classes(self.options)
-        details = {"annots": annots, "contents": contents}
+        details = {"directive_annots": annots, "contents": contents}
         pending = alectryon_pending(AlectryonTransform, details=details,
                                     rawsource=self.header, **self.options)
 
