@@ -5,6 +5,8 @@
 Unreleased
 ==========
 
+- Per-document Coq syntax-highlighting rules added to the docinfo section at the beginning of each document are now prefixed with ``alectryon/pygments/coq/`` instead of ``alectryon/pygments/`` (the legacy prefix is still supported). [6a26ac48]
+
 - A new extension of the marker-placement mini-language allows authors to attach properties to parts of a proof; for example, ``.. coq:: .s(Extraction).msg[lang]=haskell`` highlights all messages produced by ``Extraction`` commands using the Haskell lexer instead of the usual Coq lexer. [409fa6c3]
 
 - A new ``massert`` directive silently provides a simple form of unit-testing by silently checking a collection of marker-placement references, thus confirming that the prover's output matches user-provided search patterns. [bc2d8a42] [GH-63]
