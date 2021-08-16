@@ -58,7 +58,7 @@ _output/literate_reST.html: literate_reST.rst
 	$(alectryon) $<
 # reST+Coq → LaTeX
 _output/literate_reST.tex: literate_reST.rst
-	$(alectryon) $< --backend latex
+	DOCUTILSCONFIG=literate_reST.docutils.conf $(alectryon) $< --backend latex
 # reST+Coq → Coq
 _output/literate_reST.v: literate_reST.rst
 	$(alectryon) $< --backend coq

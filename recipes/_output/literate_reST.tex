@@ -12,10 +12,8 @@
 \usepackage{textcomp} % text symbol macros
 
 %%% Custom LaTeX preamble
-% PDF Standard Fonts
-\usepackage{mathptmx} % Times
-\usepackage[scaled=.90]{helvet}
-\usepackage{courier}
+
+\usepackage[margin=1in]{geometry}
 
 %%% User specified packages and stylesheets
 \usepackage{alectryon}
@@ -76,11 +74,12 @@ Alectryon supports literate programs and documents (combinations of code and pro
 \begin{quote}
 \begin{alltt}
 alectryon literate_reST.rst
-  # reST+Coq → HTML;  produces ‘literate_reST.html’
-alectryon literate_reST.rst -{}-backend latex
-  # reST+Coq → LaTeX; produces ‘literate_reST.tex’
+    # reST+Coq → HTML;  produces ‘literate_reST.html’
+$ DOCUTILSCONFIG=literate_reST.docutils.conf alectryon \textbackslash{}
+  literate_reST.rst -{}-backend latex
+    # reST+Coq → LaTeX; produces ‘literate_reST.tex’
 alectryon literate_reST.rst -{}-backend coq
-  # reST+Coq → Coq;   produces ‘literate_reST.v’
+    # reST+Coq → Coq;   produces ‘literate_reST.v’
 \end{alltt}
 \end{quote}
 
