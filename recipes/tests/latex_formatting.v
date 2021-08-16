@@ -12,10 +12,36 @@ This files tests various aspects of the conversion to LaTeX, including spacing a
 
    \setlength{\parskip}{8pt}
 
+Space after punctuation
+=======================
+
+.. coq:: in
+|*)
+
+Module Space.
+  Infix "?" := plus (at level 10).
+  Infix ":" := plus (at level 10).
+  Infix ";" := plus (at level 10).
+  Infix "," := plus (at level 10).
+
+  Check (1 ? 1).
+  Check (1 : 1).
+  Check (1 ; 1).
+  Check (1 , 1).
+
+  Goal True -> True.
+    intros. intros.
+    intros; intros. generalize 0 1.
+    intros? intros. refine ?[gggg].
+    [gggg]: intros.
+    exact I.
+  Qed.
+End Space.
+
+(*|
 Long hypotheses
 ===============
 |*)
-
 From Coq Require List.
 Import List.ListNotations.
 Open Scope list_scope.
