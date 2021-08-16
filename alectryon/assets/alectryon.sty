@@ -50,7 +50,7 @@
    \fontdimen3\font=0.225em% plus
    \fontdimen4\font=0.15em% minus
    \fontdimen7\font=0.08em% extra space
-   \hyphenchar\font=`\-
+   \hyphenchar\font=`\-%
    % \fontdimen3\font=.5\fontdimen2\font% plus
    % \fontdimen4\font=.3\fontdimen2\font% minus
    }
@@ -69,10 +69,10 @@
 % \alectryon@unskip removes preceding blanks
 \newcommand{\alectryon@unskip}{\ifhmode\unskip\fi}
 % \alectryon@raggedright allows all line breaks
-\newcommand{\alectryon@raggedright}{\rightskip \z@ plus 1fil\relax}
+\newcommand{\alectryon@raggedright}{\rightskip \@flushglue\relax}
 % \alectryon@parsetup removes paragraph skips and indents
 \newcommand*{\alectryon@parsetup}
-  {\setlength{\parskip}{0pt}
+  {\setlength{\parskip}{0pt}%
    \setlength{\parindent}{0pt}}
 % \alectryon@setlineskip{LENGTH} ensures that lines are LENGTH apart
 \newlength{\alectryon@@lineskip}
@@ -107,20 +107,21 @@
    \alectryon@parbox{\alectryon@@width}{#2}}
 
 \newcommand{\alectryon@prelude}
-  {\alectryon@fontsetup
+  {\alectryon@fontsetup%
    \alectryon@nohyphens}
 
 \newcommand{\alectryon@prelude@io}
-  {\alectryon@prelude
-   \alectryon@parsetup
-   \alectryon@nohyphens
-   \alectryon@spacestretch@off
-   \alectryon@arraystretch
-   \def~{\alectryon@space}
+  {\alectryon@prelude%
+   \alectryon@parsetup%
+   \alectryon@nohyphens%
+   \alectryon@spacestretch@off%
+   \alectryon@arraystretch%
+   \alectryon@raggedright%
+   \def~{\alectryon@space}%
    % FIXME make this into a new box style
-   \tcbsetforeverylayer{before={},after={}}
-   \tcbsetforeverylayer{halign=flush left}
-   \tcbsetforeverylayer{boxsep=0pt, left=\alectryonMargin, right=\alectryonMargin, top=\alectryonMargin, bottom=\alectryonMargin}
+   \tcbsetforeverylayer{before={},after={}}%
+   \tcbsetforeverylayer{halign=flush left}%
+   \tcbsetforeverylayer{boxsep=0pt, left=\alectryonMargin, right=\alectryonMargin, top=\alectryonMargin, bottom=\alectryonMargin}%
    \tcbsetforeverylayer{boxrule=0pt, sharp corners}}
 
 \newcommand{\alectryon@prelude@inline}
@@ -177,14 +178,13 @@
   {\begin{trivlist}\alectryon@prelude@io\item}
   {\end{trivlist}}
   {}
-\alectryon@newenvironment{inline}{\alectryon@prelude@inline}
-  {}
+\alectryon@newenvironment{inline}{\alectryon@prelude@inline}{}
   {}
 \alectryon@newenvironment{txt}{}{}
   {}
 \alectryon@newenvironment{sentence}{}{}
   {\par\alectryon@vsep}
-\alectryon@newenvironment{input}{\alectryon@raggedright}{}
+\alectryon@newenvironment{input}{}{}
   {} % No \par here: the \sep in \sentence takes care of it.
 \alectryon@newenvironment{output}{\alectryon@output@setsize}{\par}
   {\par\alectryon@vsep}
@@ -225,11 +225,11 @@
   {\par\alectryon@vsep}
 \alectryon@newenvironment{messages}{\begin{alectryon@outer}}{\end{alectryon@outer}}
   {\par\alectryon@vsep}
-\alectryon@newenvironment{message}{\begin{alectryon@inner}\alectryon@raggedright}{\par\end{alectryon@inner}}
+\alectryon@newenvironment{message}{\begin{alectryon@inner}}{\par\end{alectryon@inner}}
   {}
 \alectryon@newenvironment{message@inline}{}{}
   {}
-\alectryon@newenvironment{conclusion}{\alectryon@strut{}\alectryon@raggedright}{\par}
+\alectryon@newenvironment{conclusion}{\alectryon@strut{}}{\par}
   {}
 
 \newcommand*{\alectryon@mrefmarker}[1]
@@ -242,8 +242,9 @@
   {\expandafter\def\csname #2\endcsname{\csname alectryon@#2#1\endcsname}%
    \expandafter\def\csname end#2\endcsname{\csname endalectryon@#2#1\endcsname}}
 
-\newenvironment{alectryon}
-  {\alectryon@copyenvironment{txt}%
+\newcommand*{\alectryon@copymacros}
+  {\alectryon@copyenvironment{io}%
+   \alectryon@copyenvironment{txt}%
    \alectryon@copyenvironment{sentence}%
    \alectryon@copyenvironment{input}%
    \alectryon@copyenvironment{output}%
@@ -261,17 +262,22 @@
    \alectryon@copymacro{gid}%
    \alectryon@copymacro{hypn}%
    \alectryon@copymacro{sep}%
-   \alectryon@copymacro{nl}%
-   \begin{alectryon@io}}
-  {\end{alectryon@io}}
+   \alectryon@copymacro{nl}}
+
+\newenvironment{alectryon}
+  {\alectryon@copymacros\begin{io}}
+  {\end{io}}
+
+\newcommand*{\alectryon@inline@copymacros}
+  {\alectryon@copyenvironment[@inline]{hyp}%
+   \alectryon@copyenvironment[@inline]{message}%
+   \alectryon@copymacro{mrefmarker}%
+   \alectryon@copymacro{hypn}%
+   \alectryon@copymacro{sep}%
+   \alectryon@copymacro[@inline]{nl}}
 
 \newcommand{\alectryonInline}[1]
-  {{\alectryon@copyenvironment[@inline]{hyp}%
-    \alectryon@copyenvironment[@inline]{message}%
-    \alectryon@copymacro{mrefmarker}%
-    \alectryon@copymacro{hypn}%
-    \alectryon@copymacro{sep}%
-    \alectryon@copymacro[@inline]{nl}%
+  {{\alectryon@inline@copymacros%
     \begin{alectryon@inline}#1\end{alectryon@inline}}}
 
 \providecommand{\DUrolecode}{\def\DUrole{\PY}}
