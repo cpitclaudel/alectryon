@@ -20,6 +20,16 @@
 
 %%% Fallback definitions for Docutils-specific commands
 
+% class handling for environments (block-level elements)
+% \begin{DUclass}{spam} tries \DUCLASSspam and
+% \end{DUclass}{spam} tries \endDUCLASSspam
+\ifx\DUclass\undefined % poor man's "provideenvironment"
+ \newenvironment{DUclass}[1]%
+  {\def\DocutilsClassFunctionName{DUCLASS#1}% arg cannot be used in end-part of environment.
+     \csname \DocutilsClassFunctionName \endcsname}%
+  {\csname end\DocutilsClassFunctionName \endcsname}%
+\fi
+
 % inline markup (custom roles)
 % \DUrole{#1}{#2} tries \DUrole#1{#2}
 \providecommand*{\DUrole}[2]{%
@@ -35,6 +45,12 @@
       #2%
     \fi%
   \fi%
+}
+
+% transition (break, fancybreak, anonymous section)
+\providecommand*{\DUtransition}{%
+  \hspace*{\fill}\hrulefill\hspace*{\fill}
+  \vskip 0.5\baselineskip
 }
 
 % hyperlinks:
@@ -63,6 +79,8 @@ alectryon latex_formatting.v -{}-backend latex
   # Coq+reST → LaTeX; produces ‘latex_formatting.tex’
 \end{alltt}
 \end{quote}
+
+\setlength{\parskip}{8pt}
 
 
 \section{Long hypotheses%
@@ -696,6 +714,627 @@ alectryon latex_formatting.v -{}-backend latex
 \end{alectryon}
 
 \DUrole{ltx}{\end{small}}
+
+
+\section{Paragraph-code spacing%
+  \label{paragraph-code-spacing}%
+}
+
+Some text.
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~Some~code~*)}
+  \end{txt}
+\end{alectryon}
+
+Some text.
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~Some~code~*)}
+  \end{txt}
+\end{alectryon}
+
+Some text.
+
+Some text.
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~Some~code~*)}
+  \end{txt}
+\end{alectryon}
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~Some~code~*)}
+  \end{txt}
+\end{alectryon}
+
+Some text.
+
+\begin{DUclass}{code}
+\begin{quote}
+\begin{alltt}
+Some code
+\end{alltt}
+\end{quote}
+\end{DUclass}
+
+%___________________________________________________________________________
+\DUtransition
+
+\begin{DUclass}{compound}
+Some text in compound.
+
+Some text in compound.  Spacing isn't right; see \url{https://sourceforge.net/p/docutils/patches/183/}.
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~Some~code~in~compound~*)}
+  \end{txt}
+\end{alectryon}
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~Some~code~in~compound~*)}
+  \end{txt}
+\end{alectryon}
+Some text in compound.
+\begin{DUclass}{code}
+\begin{quote}
+\begin{alltt}
+Some code in compound
+\end{alltt}
+\end{quote}
+\end{DUclass}
+\end{DUclass}
+
+
+\section{Line breaks in input-only fragments%
+  \label{line-breaks-in-input-only-fragments}%
+}
+
+There should be no extra line breaks when showing only inputs:
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Goal}~\PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{o}{\PYZhy{}}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kp}{idtac}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Abort}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{txt}
+    \nl
+  \end{txt}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Goal}~\PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Proof}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{n+nb}{split}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{o}{\PYZhy{}}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kp}{idtac}~\PY{l+s+s2}{\PYZdq{}message\PYZdq{}}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb}{cut}~\PY{k+kt}{True}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{o}{+}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{tauto}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{+}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{\PYZob{}}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{tauto}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{\PYZcb{}}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{o}{\PYZhy{}}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{\PYZob{}}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kr}{match~goal~with}\nl
+      ~~~~~~\PY{o}{|}~\PY{n}{\PYZus{}}~\PY{o}{=\PYZgt{}}~\PY{k+kp}{idtac}\nl
+      ~~~~~~\PY{k+kr}{end}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{exact}~\PY{n}{I}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{\PYZcb{}}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Qed}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+\end{alectryon}
+
+Showing outputs may still introduce line breaks:
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Goal}~\PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{o}{\PYZhy{}}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kp}{idtac}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Abort}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{txt}
+    \nl
+  \end{txt}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Goal}~\PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Proof}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{n+nb}{split}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+        \sep
+        \begin{extragoals}
+          \begin{goal}
+            \begin{hyps}\end{hyps}
+            \sep
+            \infrule{}
+            \sep
+            \begin{conclusion}
+              \PY{k+kt}{True}
+            \end{conclusion}
+          \end{goal}
+        \end{extragoals}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{o}{\PYZhy{}}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kp}{idtac}~\PY{l+s+s2}{\PYZdq{}message\PYZdq{}}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{messages}
+        \begin{message}
+          \PY{n}{message}
+        \end{message}
+      \end{messages}
+      \sep
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb}{cut}~\PY{k+kt}{True}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+        \sep
+        \begin{extragoals}
+          \begin{goal}
+            \begin{hyps}\end{hyps}
+            \sep
+            \infrule{}
+            \sep
+            \begin{conclusion}
+              \PY{k+kt}{True}
+            \end{conclusion}
+          \end{goal}
+        \end{extragoals}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{o}{+}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{tauto}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{+}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{\PYZob{}}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{tauto}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{\PYZcb{}}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{o}{\PYZhy{}}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{\PYZob{}}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kr}{match~goal~with}\nl
+      ~~~~~~\PY{o}{|}~\PY{n}{\PYZus{}}~\PY{o}{=\PYZgt{}}~\PY{k+kp}{idtac}\nl
+      ~~~~~~\PY{k+kr}{end}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{exact}~\PY{n}{I}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{\PYZcb{}}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Qed}\PY{o}{.}
+    \end{input}
+  \end{sentence}
+\end{alectryon}
 
 
 \section{Newlines%

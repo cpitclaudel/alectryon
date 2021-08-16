@@ -8,6 +8,10 @@ This files tests various aspects of the conversion to LaTeX, including spacing a
    alectryon latex_formatting.v --backend latex
      # Coq+reST → LaTeX; produces ‘latex_formatting.tex’
 
+.. raw:: latex
+
+   \setlength{\parskip}{8pt}
+
 Long hypotheses
 ===============
 |*)
@@ -73,6 +77,102 @@ Proof. auto. Qed.
 (*|
 :ltx:`\end{small}`
 
+Paragraph-code spacing
+======================
+
+Some text.
+|*)
+
+(* Some code *)
+
+(*|
+Some text.
+|*)
+
+(* Some code *)
+
+(*|
+Some text.
+
+Some text.
+|*)
+
+(* Some code *)
+
+(*||*)
+
+(* Some code *)
+
+(*|
+Some text.
+
+.. code::
+
+   Some code
+
+-----
+
+.. compound::
+
+   Some text in compound.
+
+   Some text in compound.  Spacing isn't right; see `<https://sourceforge.net/p/docutils/patches/183/>`__.
+|*)
+
+(* Some code in compound *)
+
+(*||*)
+
+(* Some code in compound *)
+
+(*|
+   Some text in compound.
+
+   .. code::
+
+      Some code in compound
+
+Line breaks in input-only fragments
+===================================
+
+There should be no extra line breaks when showing only inputs:
+
+.. coq:: in
+|*)
+
+Goal True /\ True.
+  - idtac.
+Abort.
+
+Goal True /\ True.
+Proof.
+  split.
+  - idtac "message". cut True.
+    + tauto. + { tauto. }
+  - { match goal with
+      | _ => idtac
+      end. exact I. }
+Qed.
+
+(*|
+Showing outputs may still introduce line breaks:
+|*)
+
+Goal True /\ True.
+  - idtac.
+Abort.
+
+Goal True /\ True.
+Proof.
+  split.
+  - idtac "message". cut True.
+    + tauto. + { tauto. }
+  - { match goal with
+      | _ => idtac
+      end. exact I. }
+Qed.
+
+(*|
 Newlines
 ========
 |*)
