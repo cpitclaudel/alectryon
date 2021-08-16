@@ -173,8 +173,9 @@
       \ignorespaces}
      {\alectryon@unskip#4}}
 
-\alectryon@newenvironment{io}{\alectryon@prelude@io\par}
-  {\par}
+\alectryon@newenvironment{io}
+  {\begin{trivlist}\alectryon@prelude@io\item}
+  {\end{trivlist}}
   {}
 \alectryon@newenvironment{inline}{\alectryon@prelude@inline}
   {}
