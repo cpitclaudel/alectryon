@@ -253,7 +253,7 @@ def copy_assets(state, assets, copy_fn, output_directory):
     for (path, name) in assets:
         src = os.path.join(path, name)
         dst = os.path.join(output_directory, name)
-        if copy_fn is not shutil.copy:
+        if copy_fn is not shutil.copyfile:
             try:
                 os.unlink(dst)
             except FileNotFoundError:
@@ -491,7 +491,7 @@ expecting one of {}"""
     return frontend, backend, supported_backends[backend]
 
 COPY_FUNCTIONS = {
-    "copy": shutil.copy,
+    "copy": shutil.copyfile,
     "symlink": os.symlink,
     "hardlink": os.link,
     "none": None
