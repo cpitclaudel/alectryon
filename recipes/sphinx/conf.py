@@ -45,9 +45,10 @@ mathjax_options = { "priority": 1000 }
 
 # or this (but inline the configuration instead of open(…).read()):
 
+from pathlib import Path
 html_js_files = [
     (None, {
-        "body": open("_static/mathjax_config.js").read(),
+        "body": Path("_static/mathjax_config.js").read_text(),
         "priority": 0
     })
 ]
