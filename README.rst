@@ -157,25 +157,24 @@ Use ``alectryon.core.annotate(chunks: List[str])``, which returns an object with
 .. code-block:: python
 
     >>> from alectryon.core import annotate
-    >>> annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Print xyz."])
+    >>> annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Check xyz."])
     [# A list of processed fragments
      [# Each fragment is a list of records (each an instance of a namedtuple)
-      CoqSentence(sentence='Example xyz (H: False): True.',
-                  responses=[],
-                  goals=[CoqGoal(name='2',
-                                 conclusion='True',
-                                 hypotheses=[
-                                     CoqHypothesis(name='H',
-                                                   body=None,
-                                                   type='False')])]),
-      CoqText(string=' (* ... *) '),
-      CoqSentence(sentence='exact I.', responses=[], goals=[]),
-      CoqText(string=' '),
-      CoqSentence(sentence='Qed.', responses=[], goals=[])],
+      Sentence(contents='Example xyz (H: False): True.',
+               messages=[],
+               goals=[Goal(name=None,
+                           conclusion='True',
+                           hypotheses=[Hypothesis(names=['H'],
+                                                  body=None,
+                                                  type='False')])]),
+      Text(contents=' (* ... *) '),
+      Sentence(contents='exact I.', messages=[], goals=[]),
+      Text(contents=' '),
+      Sentence(contents='Qed.', messages=[], goals=[])],
      [# This is the second fragment
-      CoqSentence(sentence='Print xyz.',
-                  responses=['xyz = fun _ : False => I\n     : False -> True'],
-                  goals=[])]]
+      Sentence(contents='Check xyz.',
+               messages=[Message(contents='xyz\n     : False -> True')],
+               goals=[])]]
 
 The results of ``annotate`` can be fed to ``alectryon.html.HtmlGenerator(highlighter).gen()`` to generate HTML (with CSS classes defined in ``alectryon.css``).  Pass ``highlighter=alectryon.pygments.highlight_html`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
 
