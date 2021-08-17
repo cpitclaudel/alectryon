@@ -147,6 +147,8 @@ Use ``alectryon --help`` for full command line details.
                  "responses": ["xyz = fun _ : False => I\n     : False -> True"],
                  "goals": [] } ] ]
 
+- The exit code produced by Alectryon indicates whether the conversion succeeded: ``0`` for success, ``1`` for a generic error, and ``10`` + the level of the most severe Docutils error if using a Docutils-based pipeline (hence ``10`` is debug, ``11`` is info, ``12`` is warning, ``13`` is error, and ``14`` is severe error).  Docutils errors at levels below `exit_status_level <https://docutils.sourceforge.io/docs/user/config.html#exit-status-level>`__ (default: 3) do not affect the exit code, so level ``10``, ``11``, and ``12`` are not used by default.
+
 As a library
 ------------
 

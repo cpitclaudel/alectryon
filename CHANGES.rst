@@ -2,6 +2,11 @@
  Major changes
 ===============
 
+Unreleased
+==========
+
+- Alectryon now exists with an informative error code (``10`` + the level of the most severe Docutils error). [GH-57] [dffde22c]
+
 Version 1.3.1
 =============
 
