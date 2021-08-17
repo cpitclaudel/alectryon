@@ -87,7 +87,7 @@ from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import core, transforms, html, latex, markers
-from .core import Gensym, annotate, SerAPI, Position, PosStr
+from .core import Gensym, SerAPI, Position, PosStr
 from .pygments import highlight_html, highlight_latex, added_tokens, \
     resolve_token, replace_builtin_coq_lexer
 
@@ -288,6 +288,16 @@ class ActivateMathJaxTransform(Transform):
         for node in self.document.traverse(self.is_math):
             node.attributes.setdefault("classes", []).append("mathjax_process")
 
+class DocutilsObserver(core.Observer):
+    def __init__(self, document):
+        self.document = document
+
+    def _notify(self, n: core.Notification):
+        beg, end = n.location.beg, n.location.end
+        self.document.reporter.system_message(
+            n.level, n.message, line=beg.line, column=beg.col,
+            end_line=end.line, end_column=end.col)
+
 class AlectryonTransform(OneTimeTransform):
     default_priority = 800
     auto_toggle = True
@@ -316,9 +326,11 @@ class AlectryonTransform(OneTimeTransform):
 
     def annotate_cached(self, chunks, sertop_args):
         from .json import Cache
+        prover = SerAPI(sertop_args)
+        prover.observer = DocutilsObserver(self.document)
         metadata = {"sertop_args": sertop_args}
         cache = Cache(CACHE_DIRECTORY, self.document['source'], metadata, CACHE_COMPRESSION)
-        annotated = cache.update(chunks, lambda c: annotate(c, sertop_args), SerAPI.version_info())
+        annotated = cache.update(chunks, prover.annotate, SerAPI.version_info())
         return cache.generator, annotated
 
     def annotate(self, pending_nodes):

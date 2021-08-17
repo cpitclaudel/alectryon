@@ -62,11 +62,12 @@ def rst_to_coq(coq, fpath, point, marker):
     return _catch_parsing_errors(fpath, rst2coq_marked, coq, point, marker)
 
 def annotate_chunks(chunks, fpath, cache_directory, cache_compression, sertop_args):
-    from .core import SerAPI, annotate
+    from .core import SerAPI
     from .json import Cache
+    api = SerAPI(sertop_args)
     metadata = {"sertop_args": sertop_args}
     cache = Cache(cache_directory, fpath, metadata, cache_compression)
-    return cache.update(chunks, lambda c: annotate(c, sertop_args), SerAPI.version_info())
+    return cache.update(chunks, api.annotate, SerAPI.version_info())
 
 def register_docutils(v, ctx):
     from . import docutils

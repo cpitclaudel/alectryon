@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Iterator, List, Tuple, Union
+from typing import Any, Iterator, List, Tuple, Union, NamedTuple, TypeVar, Generic
 
 from collections import namedtuple, defaultdict
 from shlex import quote
@@ -144,16 +144,24 @@ class PosStr(str):
         super().__init__()
         self.pos, self.col_offset = pos, col_offset
 
-class PosView(bytes):
+class View(bytes):
+    def __getitem__(self, key):
+        return memoryview(self).__getitem__(key)
+
+    def __init__(self, s):
+        super().__init__()
+        self.s = s
+
+class PosView(View):
     NL = b"\n"
 
     def __new__(cls, s):
         bs = s.encode("utf-8")
         # https://stackoverflow.com/questions/20221858/
-        return super().__new__(cls, bs) if isinstance(s, PosStr) else memoryview(bs)
+        return super().__new__(cls, bs) if isinstance(s, PosStr) else View(bs)
 
     def __init__(self, s):
-        super().__init__()
+        super().__init__(s)
         self.pos, self.col_offset = s.pos, s.col_offset
 
     def __getitem__(self, key):
@@ -182,6 +190,27 @@ class PosView(bytes):
     def translate_span(self, beg, end):
         return Range(self.translate_offset(beg),
                      self.translate_offset(end))
+
+_T = TypeVar("_T")
+class Notification(NamedTuple, Generic[_T]): # type: ignore
+    obj: _T
+    message: str
+    location: Range
+    level: int
+
+class Observer:
+    def _notify(self, n: Notification):
+        raise NotImplementedError()
+
+    def notify(self, obj, message, location, level):
+        self._notify(Notification(obj, message, location, level))
+
+class StderrObserver(Observer):
+    def _notify(self, n: Notification):
+        header = n.location.as_header() if n.location else "!!"
+        message = n.message.rstrip().replace("\n", "\n   ")
+        level_name = {2: "WARNING", 3: "ERROR"}.get(n.level, "??")
+        stderr.write("{} ({}/{}) {}\n".format(header, level_name, n.level, message))
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
@@ -221,12 +250,13 @@ class SerAPI():
     def __init__(self, args=(), # pylint: disable=dangerous-default-value
                  sertop_bin=SERTOP_BIN,
                  pp_args=DEFAULT_PP_ARGS):
-        """Configure and start a ``sertop`` instance."""
+        """Configure a ``sertop`` instance."""
         self.args, self.sertop_bin = [*args, *SerAPI.DEFAULT_ARGS], sertop_bin
         self.sertop = None
         self.next_qid = 0
         self.pp_args = {**SerAPI.DEFAULT_PP_ARGS, **pp_args}
         self.last_response = None
+        self.observer : Observer = StderrObserver()
 
     def __enter__(self):
         self.reset()
@@ -375,15 +405,7 @@ class SerAPI():
     def _range_of_span(span, chunk):
         return chunk.translate_span(*span) if isinstance(chunk, PosView) else None
 
-    @staticmethod
-    def _print_warning(msg, loc):
-        header = loc.as_header() if loc else "!!"
-        msg = msg.rstrip().replace("\n", "\n   ")
-        stderr.write("{} (WARNING/2) {}\n".format(header, msg))
-        # FIXME report this error to calling context
-
-    @staticmethod
-    def _warn_on_exn(response, chunk):
+    def _warn_on_exn(self, response, chunk):
         QUOTE = '  > '
         ERR_FMT = "Coq raised an exception:\n{}"
         msg = sx.tostr(response.exn)
@@ -392,7 +414,7 @@ class SerAPI():
         if chunk:
             err += "\n" + SerAPI._highlight_exn(span, chunk, prefix=QUOTE)
         err += "\n" + "Results past this point may be unreliable."
-        SerAPI._print_warning(err, SerAPI._range_of_span(span, chunk))
+        self.observer.notify(chunk.s, err, SerAPI._range_of_span(span, chunk), level=3)
 
     def _collect_messages(self, typs: Tuple[type, ...], chunk, sid) -> Iterator[Any]:
         warn_on_exn = ApiExn not in typs
@@ -404,7 +426,7 @@ class SerAPI():
                     return
                 if warn_on_exn and isinstance(response, ApiExn):
                     if sid is None or response.sids is None or sid in response.sids:
-                        SerAPI._warn_on_exn(response, chunk)
+                        self._warn_on_exn(response, chunk)
                 if (not typs) or isinstance(response, typs): # type: ignore
                     yield response
 
@@ -498,10 +520,15 @@ class SerAPI():
             if fragment is None:
                 err = "Orphaned message for sid {}:".format(message.sid)
                 err += "\n" + indent(message.pp, " >  ")
-                SerAPI._print_warning(err, SerAPI._range_of_span((0, len(chunk)), chunk))
+                err_range = SerAPI._range_of_span((0, len(chunk)), chunk)
+                self.observer.notify(chunk.s, err, err_range, level=2)
             else:
                 fragment.messages.append(Message(message.pp))
         return fragments
+
+    def annotate(self, chunks):
+        with self as api:
+            return [api.run(chunk) for chunk in chunks]
 
 def annotate(chunks, sertop_args=()):
     r"""Annotate multiple `chunks` of Coq code.
@@ -514,5 +541,4 @@ def annotate(chunks, sertop_args=()):
     >>> annotate(["Check 1."])
     [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
     """
-    with SerAPI(args=sertop_args) as api:
-        return [api.run(chunk) for chunk in chunks]
+    return SerAPI(args=sertop_args).annotate(chunks)

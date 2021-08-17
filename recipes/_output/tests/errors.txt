@@ -45,17 +45,17 @@ Missing search pattern for key ``.s`` in expression ``.s.g``. (maybe an invalid 
    Check nat.
 
 tests/errors.rst:5: (ERROR/3) In `:alectryon/pygments/xyz:`: Unknown token kind: xyz
-tests/errors.rst:(109:62)-(109:64): (WARNING/2) Coq raised an exception:
-     > Syntax error: '.' expected after [vernac:syntax_command] (in [vernac_aux]).
-   The offending chunk is delimited by >>>…<<< below:
-     > Notation "'🆄🄽🅘ⓒ⒪𝖉∈' α ⊕ ⤋ β" := α >>>++<<< β. (* Bytes vs. str *)
-   Results past this point may be unreliable.
-tests/errors.rst:(114:8)-(114:12): (WARNING/2) Coq raised an exception:
-     > The term "true" has type "bool" which should be Set, Prop or Type.
-   The offending chunk is delimited by >>>…<<< below:
-     > Definition a
-     >   : >>>true<<< := 1. (* Next line *)
-   Results past this point may be unreliable.
+tests/errors.rst:109: (ERROR/3) Coq raised an exception:
+  > Syntax error: '.' expected after [vernac:syntax_command] (in [vernac_aux]).
+The offending chunk is delimited by >>>…<<< below:
+  > Notation "'🆄🄽🅘ⓒ⒪𝖉∈' α ⊕ ⤋ β" := α >>>++<<< β. (* Bytes vs. str *)
+Results past this point may be unreliable.
+tests/errors.rst:114: (ERROR/3) Coq raised an exception:
+  > The term "true" has type "bool" which should be Set, Prop or Type.
+The offending chunk is delimited by >>>…<<< below:
+  > Definition a
+  >   : >>>true<<< := 1. (* Next line *)
+Results past this point may be unreliable.
 tests/errors.rst:15: (WARNING/2) Long line (107 characters)
      exact I. (* A very long line *) (* whose contents are split *) (* across *) (* multiple *) (* comments *)
 tests/errors.rst:87: (ERROR/3) In `.. coq::`:
