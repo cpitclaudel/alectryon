@@ -19,3 +19,4 @@
 {"level": "error", "message": "Error in \"coq\" directive:\nUnknown flag `unknown`.", "source": "tests/errors.rst", "line": 77, "column": null, "end_line": null, "end_column": null}
 {"level": "error", "message": "Error in \"coq\" directive:\nMissing search pattern for key ``.s`` in expression ``.s.g``. (maybe an invalid pattern?)", "source": "tests/errors.rst", "line": 82, "column": null, "end_line": null, "end_column": null}
 {"level": "error", "message": "In `:alectryon/pygments/xyz:`: Unknown token kind: xyz", "source": "tests/errors.rst", "line": 5, "column": null, "end_line": null, "end_column": null}
+exit: 13

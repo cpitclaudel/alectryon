@@ -1,2 +1,0 @@
-{"level": "error", "message": "Unknown directive type \"unknown\".", "source": "tests/linter.v", "line": 10, "column": null, "end_line": null, "end_column": null}
-{"level": "warning", "message": "Inline emphasis start-string without end-string.", "source": "tests/linter.v", "line": 12, "column": null, "end_line": null, "end_column": null}

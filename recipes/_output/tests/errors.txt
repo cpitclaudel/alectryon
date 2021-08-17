@@ -68,3 +68,4 @@ tests/errors.rst:93: (ERROR/3) In `.. coq::`:
 tests/errors.rst:100: (ERROR/3) In `.. coq:: unfold out`: Cannot show output of 'Check nat.' without .in or .unfold.
 tests/errors.rst:70: (ERROR/3) In :mref:`.io#nope.s(123)`: Reference to unknown Alectryon block.
 tests/errors.rst:71: (ERROR/3) In :mref:`.s(Goal).g#25`: No goal matches '25'.
+exit: 13

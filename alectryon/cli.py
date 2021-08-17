@@ -92,6 +92,7 @@ def register_docutils(v, ctx):
         'stylesheet_path': None,
         'input_encoding': 'utf-8',
         'output_encoding': 'utf-8',
+        'exit_status_level': 3,
         'alectryon_banner': ctx["include_banner"],
         'alectryon_vernums': ctx["include_vernums"],
         'alectryon_webpage_style': ctx["webpage_style"],
@@ -102,17 +103,26 @@ def register_docutils(v, ctx):
 def _gen_docutils(source, fpath,
                   Parser, Reader, Writer,
                   settings_overrides):
-    from docutils.core import publish_string
+    from docutils.core import publish_programmatically
+    from docutils.io import StringInput, StringOutput
 
     parser = Parser()
-    return publish_string(
-        source=source.encode("utf-8"),
+    output, pub = publish_programmatically(
+        source_class=StringInput, destination_class=StringOutput,
+        source=source.encode("utf-8"), destination=None,
         source_path=fpath, destination_path=None,
+
         reader=Reader(parser), reader_name=None,
         parser=parser, parser_name=None,
         writer=Writer(), writer_name=None,
-        settings_overrides=settings_overrides,
-        enable_exit_status=True).decode("utf-8")
+
+        settings=None, settings_spec=None,
+        settings_overrides=settings_overrides, config_section=None,
+        enable_exit_status=False)
+
+    max_level = pub.document.reporter.max_level
+    exit_code = max_level + 10 if max_level >= pub.settings.exit_status_level else 0
+    return output.decode("utf-8"), exit_code
 
 def _resolve_dialect(backend, html_dialect, latex_dialect):
     return {"webpage": html_dialect, "latex": latex_dialect}.get(backend, None)
@@ -122,15 +132,17 @@ def _record_assets(assets, path, names):
         assets.append((path, name))
 
 def gen_docutils(src, frontend, backend, fpath, dialect,
-                 docutils_settings_overrides, assets):
+                 docutils_settings_overrides, assets, exit_code):
     from .docutils import get_pipeline
 
     pipeline = get_pipeline(frontend, backend, dialect)
     _record_assets(assets, pipeline.translator.ASSETS_PATH, pipeline.translator.ASSETS)
 
-    return _gen_docutils(src, fpath,
-                         pipeline.parser, pipeline.reader, pipeline.writer,
-                         docutils_settings_overrides)
+    output, exit_code.val = \
+        _gen_docutils(src, fpath,
+                      pipeline.parser, pipeline.reader, pipeline.writer,
+                      docutils_settings_overrides)
+    return output
 
 def _docutils_cmdline(description, frontend, backend):
     import locale
@@ -146,24 +158,7 @@ def _docutils_cmdline(description, frontend, backend):
     publish_cmdline(
         parser=pipeline.parser(), writer=pipeline.writer(),
         settings_overrides={'stylesheet_path': None},
-        description="{} {}".format(description, default_description)
-    )
-
-def lint_docutils(source, fpath, frontend, docutils_settings_overrides):
-    from docutils.core import publish_doctree
-    from .docutils import get_parser, LintingReader
-
-    parser = get_parser(frontend)()
-    reader = LintingReader(parser)
-
-    publish_doctree(
-        source=source.encode("utf-8"), source_path=fpath,
-        reader=reader, reader_name=None,
-        parser=parser, parser_name=None,
-        settings_overrides=docutils_settings_overrides,
-        enable_exit_status=True)
-
-    return reader.error_stream.getvalue() # FIXME exit code
+        description="{} {}".format(description, default_description))
 
 def _scrub_fname(fname):
     import re
@@ -380,7 +375,7 @@ PIPELINES = {
         (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
          gen_latex_snippets, dump_latex_snippets, write_file(".snippets.tex")),
         'lint':
-        (read_plain, register_docutils, lint_docutils,
+        (read_plain, register_docutils, gen_docutils,
          write_file(".lint.json")),
         'rst':
         (read_plain, coq_to_rst, write_file(".v.rst")),
@@ -396,7 +391,7 @@ PIPELINES = {
         (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".tex")),
         'lint':
-        (read_plain, register_docutils, lint_docutils,
+        (read_plain, register_docutils, gen_docutils,
          write_file(".lint.json")),
         'rst':
         (read_plain, coq_to_rst, write_file(".v.rst"))
@@ -415,7 +410,7 @@ PIPELINES = {
         (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".tex")),
         'lint':
-        (read_plain, register_docutils, lint_docutils,
+        (read_plain, register_docutils, gen_docutils,
          write_file(".lint.json")),
         'coq':
         (read_plain, rst_to_coq, write_file(".v")),
@@ -430,7 +425,7 @@ PIPELINES = {
         (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".tex")),
         'lint':
-        (read_plain, register_docutils, lint_docutils,
+        (read_plain, register_docutils, gen_docutils,
          write_file(".lint.json"))
     }
 }
@@ -694,6 +689,10 @@ def parse_arguments():
 # Entry point
 # ===========
 
+class ExitCode:
+    def __init__(self, n):
+        self.val = n
+
 def call_pipeline_step(step, state, ctx):
     params = list(inspect.signature(step).parameters.keys())[1:]
     return step(state, **{p: ctx[p] for p in params})
@@ -708,7 +707,7 @@ def build_context(fpath, args, frontend, backend):
     ctx = {**vars(args),
            "fpath": fpath, "fname": fname,
            "frontend": frontend, "backend": backend, "dialect": dialect,
-           "assets": [], "html_classes": []}
+           "assets": [], "html_classes": [], "exit_code": ExitCode(0)}
     ctx["ctx"] = ctx
 
     if args.output_directory is None:
@@ -742,11 +741,12 @@ def process_pipelines(args):
         state, ctx = None, build_context(fpath, args, frontend, backend)
         for step in pipeline:
             state = call_pipeline_step(step, state, ctx)
+        yield ctx["exit_code"].val
 
 def main():
     try:
         args = parse_arguments()
-        process_pipelines(args)
+        sys.exit(max(process_pipelines(args), default=0))
     except (ValueError, FileNotFoundError, ImportError, argparse.ArgumentTypeError) as e:
         if core.TRACEBACK:
             raise e

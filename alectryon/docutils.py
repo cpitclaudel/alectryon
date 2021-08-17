@@ -78,6 +78,7 @@ import docutils
 import docutils.frontend
 import docutils.transforms
 import docutils.utils
+import docutils.writers
 from docutils import nodes
 
 from docutils.parsers.rst import directives, roles, Directive # type: ignore
@@ -904,7 +905,7 @@ marker_quote_role.options = { # type: ignore
 # Error printer
 # -------------
 
-class JsErrorPrinter:
+class JsErrorObserver:
     @staticmethod
     def json_of_message(msg):
         message = msg.children[0].astext() if msg.children else "Unknown error"
@@ -919,12 +920,14 @@ class JsErrorPrinter:
         return js
 
     def __init__(self, stream, settings):
+        self.errors = []
         self.stream = stream
         self.report_level = settings.report_level
 
     def __call__(self, msg):
         import json
-        if msg['level'] >= self.report_level:
+        self.errors.append(msg)
+        if self.stream and msg['level'] >= self.report_level:
             js = self.json_of_message(msg)
             json.dump(js, self.stream)
             self.stream.write('\n')
@@ -1119,8 +1122,49 @@ LuaLatexWriter = make_LatexWriter(xetex.Writer, LuaLatexTranslator) # Same write
 
 class DummyTranslator:
     ASSETS: List[str] = []
+    ASSETS_PATH = ""
 
-Pipeline = namedtuple("Pipeline", "parser reader translator writer")
+# Linter
+# ======
+
+class EarlyTransformer(docutils.transforms.Transformer):
+    """A transformer that only applies transforms below a certain threshold."""
+    PRIORITY_THRESHOLD = "700-000"
+
+    def apply_transforms(self):
+        self.transforms = [t for t in self.transforms if t[0] < self.PRIORITY_THRESHOLD]
+        super().apply_transforms()
+
+class LintingReader(StandaloneReader):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from io import StringIO
+        self.error_stream = kwargs.get("error_stream", StringIO())
+
+    def get_transforms(self):
+        return super().get_transforms() + [LoadConfigTransform]
+
+    def new_document(self):
+        doc = super().new_document()
+        doc.transformer = EarlyTransformer(doc)
+
+        js_observer = JsErrorObserver(self.error_stream, self.settings)
+        doc.reporter.report_level = 0 # Report all messages
+        doc.reporter.halt_level = docutils.utils.Reporter.SEVERE_LEVEL + 1 # Do not exit early
+        doc.reporter.stream = False # Disable textual reporting
+        doc.reporter.attach_observer(js_observer)
+        doc["js_observer"] = js_observer
+
+        return doc
+
+class LintingWriter(docutils.writers.UnfilteredWriter):
+    def translate(self):
+        self.output = self.document["js_observer"].stream.getvalue()
+
+# API
+# ===
+
+Pipeline = namedtuple("Pipeline", "reader parser translator writer")
 
 PARSERS = {
     "coq+rst": (__name__, "RSTCoqParser"),
@@ -1138,48 +1182,19 @@ BACKENDS = {
         'xelatex': (XeLatexTranslator, XeLatexWriter),
         'lualatex': (LuaLatexTranslator, LuaLatexWriter),
     },
+    'lint': {
+        None: (DummyTranslator, LintingWriter),
+    },
     'pseudoxml': {
         None: (DummyTranslator, ("docutils.writers.pseudoxml", "Writer")),
     }
 }
 
-# Linter
-# ======
-
-class EarlyTransformer(docutils.transforms.Transformer):
-    """A transformer that only applies transforms below a certain threshold."""
-    PRIORITY_THRESHOLD = "700-000"
-
-    def apply_transforms(self):
-        self.transforms = [t for t in self.transforms if t[0] < self.PRIORITY_THRESHOLD]
-        super().apply_transforms()
-
-class LintingReader(StandaloneReader):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        from io import StringIO
-        self.error_stream = StringIO()
-
-    def get_transforms(self):
-        return super().get_transforms() + [LoadConfigTransform]
-
-    def new_document(self):
-        doc = super().new_document()
-        doc.transformer = EarlyTransformer(doc)
-
-        observer = JsErrorPrinter(self.error_stream, self.settings)
-        doc.reporter.report_level = 0 # Report all messages
-        doc.reporter.halt_level = docutils.utils.Reporter.SEVERE_LEVEL + 1 # Do not exit early
-        doc.reporter.stream = False # Disable textual reporting
-        doc.reporter.attach_observer(observer)
-
-        return doc
-
-# API
-# ===
-
 def _maybe_import(tp):
     return getattr(import_module(tp[0]), tp[1]) if isinstance(tp, tuple) else tp
+
+def get_reader(_frontend, backend):
+    return LintingReader if backend == 'lint' else StandaloneReader
 
 def get_parser(frontend):
     if frontend not in PARSERS:
@@ -1195,9 +1210,10 @@ def get_writer(backend, dialect):
     return _maybe_import(translator), _maybe_import(writer)
 
 def get_pipeline(frontend, backend, dialect):
+    reader = get_reader(frontend, backend)
     parser = get_parser(frontend)
     translator, writer = get_writer(backend, dialect)
-    return Pipeline(parser, StandaloneReader, translator, writer)
+    return Pipeline(reader, parser, translator, writer)
 
 # Entry points
 # ============
