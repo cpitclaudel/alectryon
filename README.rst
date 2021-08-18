@@ -245,6 +245,7 @@ The ``.. coq::`` directive takes a list of space-separated flags to control the 
   - ``in``: Include input sentences (``no-in``: hide them)
   - ``goals``: Include goals (``no-goals``: hide them)
   - ``messages``: Include messages (``no-messages``: hide them)
+  - ``hyps``: Include hypotheses (``no-hyps``: hide them)
   - ``out``: Include goals and messages (``no-out``: hide them)
   - ``all``: Include input, goals, and messages (``none``: hide them)
 
