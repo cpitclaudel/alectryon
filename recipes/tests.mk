@@ -5,6 +5,13 @@
 _output/tests/:
 	mkdir -p $@
 
+# Coq → HTML
+_output/tests/corner_cases.html: tests/corner_cases.rst
+	$(alectryon) --stdin-filename $< --frontend rst -o $@ - < $<
+# Coq → LaTeX
+_output/tests/corner_cases.xe.tex: tests/corner_cases.rst
+	$(alectryon) $< -o $@ --latex-dialect xelatex
+
 # HTML4
 _output/tests/dialects.4.html: tests/dialects.rst
 	$(alectryon) --html-dialect=html4 -o $@ $<
@@ -43,13 +50,6 @@ _output/tests/errors.lint.json: tests/errors.rst
 _output/tests/errors.txt: tests/errors.rst
 	$(alectryon) $< --copy-assets none --backend webpage -o /dev/null 2> $@; echo "exit: $$?" >> $@
 
-# Coq → HTML
-_output/tests/goal-name.html: tests/goal-name.v
-	$(alectryon) $<
-# Coq → LaTeX
-_output/tests/goal-name.xe.tex: tests/goal-name.v
-	$(alectryon) $< -o $@ --latex-dialect xelatex
-
 # Coq+reST → LaTeX
 _output/tests/latex_formatting.tex: tests/latex_formatting.v
 	$(alectryon) $< --backend latex
@@ -70,6 +70,6 @@ _output/tests/screenshot.html: tests/screenshot.v
 _output/tests/syntax_highlighting.html: tests/syntax_highlighting.v
 	$(alectryon) $<
 
-_output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/errors.lint.json _output/tests/errors.txt _output/tests/goal-name.html _output/tests/goal-name.xe.tex _output/tests/latex_formatting.tex _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/syntax_highlighting.html: out_dir := _output/tests
+_output/tests/corner_cases.html _output/tests/corner_cases.xe.tex _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/errors.lint.json _output/tests/errors.txt _output/tests/latex_formatting.tex _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/syntax_highlighting.html: out_dir := _output/tests
 
-targets += _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/errors.lint.json _output/tests/errors.txt _output/tests/goal-name.html _output/tests/goal-name.xe.tex _output/tests/latex_formatting.tex _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/syntax_highlighting.html
+targets += _output/tests/corner_cases.html _output/tests/corner_cases.xe.tex _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/errors.lint.json _output/tests/errors.txt _output/tests/latex_formatting.tex _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/syntax_highlighting.html

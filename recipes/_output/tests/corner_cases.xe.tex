@@ -10,6 +10,7 @@
 \fi
 \usepackage{ifthen}
 \usepackage{alltt}
+\setcounter{secnumdepth}{0}
 
 %%% Custom LaTeX preamble
 
@@ -28,23 +29,34 @@
   \usepackage{bookmark}
   \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
 }{}
+\hypersetup{
+  pdftitle={Corner cases},
+}
 
+\title{Corner cases%
+  \label{corner-cases}}
+\author{}
+\date{}
 
 %%% Body
 \begin{document}
+\maketitle
 
 To compile:
 
 \begin{quote}
 \begin{alltt}
-alectryon goal-name.v
-  # Coq → HTML; produces ‘goal-name.html’
-alectryon goal-name.v -o goal-name.xe.tex --latex-dialect xelatex
-  # Coq → LaTeX; produces ‘goal-name.xe.tex’
+alectryon --stdin-filename corner_cases.rst --frontend rst -o corner_cases.html - < corner_cases.rst
+  # Coq → HTML; produces ‘corner_cases.html’
+alectryon corner_cases.rst -o corner_cases.xe.tex --latex-dialect xelatex
+  # Coq → LaTeX; produces ‘corner_cases.xe.tex’
 \end{alltt}
 \end{quote}
 
-% 
+
+\section{Goal names%
+  \label{goal-names}%
+}
 
 \begin{alectryon}
   % Generator: Alectryon
@@ -137,6 +149,36 @@ alectryon goal-name.v -o goal-name.xe.tex --latex-dialect xelatex
     \begin{input}
       \PY{k+kn}{Qed}\PY{o}{.}
     \end{input}
+  \end{sentence}
+\end{alectryon}
+
+
+\section{Self-reference%
+  \label{self-reference}%
+}
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Definition}~\PY{n+nf}{a}~\PY{o}{:=}~\PY{l+m+mi}{1}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Check}~\PY{n}{corner\PYZus{}cases}\PY{o}{.}\PY{n}{a}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{messages}
+        \begin{message}
+          \PY{n}{a}\nl
+          ~~~~~\PY{o}{:}~\PY{n}{nat}
+        \end{message}
+      \end{messages}
+    \end{output}
   \end{sentence}
 \end{alectryon}
 
