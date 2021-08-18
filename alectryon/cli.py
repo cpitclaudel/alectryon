@@ -30,15 +30,15 @@ from . import __version__, core
 # Pipelines
 # =========
 
-def read_plain(_, fpath, fname):
-    if fname == "-":
+def read_plain(_, fpath, input_is_stdin):
+    if input_is_stdin:
         return sys.stdin.read()
     with open(fpath, encoding="utf-8") as f:
         return f.read()
 
-def read_json(_, fpath, fname):
+def read_json(_, fpath, input_is_stdin):
     from json import load
-    if fname == "-":
+    if input_is_stdin:
         return load(sys.stdin)
     with open(fpath, encoding="utf-8") as f:
         return load(f)
@@ -64,7 +64,7 @@ def rst_to_coq(coq, fpath, point, marker):
 def annotate_chunks(chunks, fpath, cache_directory, cache_compression, sertop_args):
     from .core import SerAPI
     from .json import Cache
-    api = SerAPI(sertop_args)
+    api = SerAPI(sertop_args, fpath=fpath)
     metadata = {"sertop_args": sertop_args}
     cache = Cache(cache_directory, fpath, metadata, cache_compression)
     return cache.update(chunks, api.annotate, SerAPI.version_info())
@@ -334,8 +334,8 @@ def strip_extension(fname):
             return fname[:-len(ext)]
     return fname
 
-def write_output(ext, contents, fname, output, output_directory):
-    if output == "-" or (output is None and fname == "-"):
+def write_output(ext, contents, fname, input_is_stdin, output, output_directory):
+    if output == "-" or (output is None and input_is_stdin):
         sys.stdout.write(contents)
     else:
         if not output:
@@ -344,8 +344,8 @@ def write_output(ext, contents, fname, output, output_directory):
             f.write(contents)
 
 def write_file(ext):
-    return lambda contents, fname, output, output_directory: \
-        write_output(ext, contents, fname, output, output_directory)
+    return lambda contents, fname, input_is_stdin, output, output_directory: \
+        write_output(ext, contents, fname, input_is_stdin, output, output_directory)
 
 # No ‘apply_transforms’ in JSON pipelines: (we save the prover output without
 # modifications).
@@ -698,20 +698,22 @@ def call_pipeline_step(step, state, ctx):
     return step(state, **{p: ctx[p] for p in params})
 
 def build_context(fpath, args, frontend, backend):
-    if fpath == "-":
-        fname, fpath = "-", (args.stdin_filename or "-")
-    else:
-        fname = os.path.basename(fpath)
+    input_is_stdin = fpath == "-"
+
+    if input_is_stdin:
+        fpath = args.stdin_filename or fpath
+    fname = os.path.basename(fpath)
 
     dialect = _resolve_dialect(backend, args.html_dialect, args.latex_dialect)
+
     ctx = {**vars(args),
-           "fpath": fpath, "fname": fname,
+           "fpath": fpath, "fname": fname, "input_is_stdin": input_is_stdin,
            "frontend": frontend, "backend": backend, "dialect": dialect,
            "assets": [], "html_classes": [], "exit_code": ExitCode(0)}
     ctx["ctx"] = ctx
 
     if args.output_directory is None:
-        if fname == "-":
+        if input_is_stdin:
             ctx["output_directory"] = "."
         else:
             ctx["output_directory"] = os.path.dirname(os.path.abspath(fpath))

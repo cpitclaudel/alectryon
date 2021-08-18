@@ -25,8 +25,10 @@ from shlex import quote
 from shutil import which
 from subprocess import Popen, PIPE, check_output
 from sys import stderr
+from pathlib import Path
 import textwrap
 import re
+import unicodedata
 
 from . import sexp as sx
 
@@ -228,15 +230,14 @@ ApiExn = namedtuple("ApiExn", "sids exn loc")
 ApiMessage = namedtuple("ApiMessage", "sid level msg")
 ApiString = namedtuple("ApiString", "string")
 
+Pattern = type(re.compile("")) # LATER (3.7+): re.Pattern
+
 class SerAPI():
     SERTOP_BIN = "sertop"
     DEFAULT_ARGS = ("--printer=sertop", "--implicit")
 
     # Whether to silently continue past unexpected output
     EXPECT_UNEXPECTED: bool = False
-
-    # FIXME Pass -topfile (some file in the stdlib fail to compile without it)
-    # FIXME Pass --debug when invoked with --traceback
 
     MIN_PP_MARGIN = 20
     DEFAULT_PP_ARGS = {'pp_depth': 30, 'pp_margin': 55}
@@ -247,10 +248,13 @@ class SerAPI():
         return GeneratorInfo("Coq+SerAPI", bs.decode('ascii', 'ignore').strip())
 
     def __init__(self, args=(), # pylint: disable=dangerous-default-value
+                 fpath="-",
                  sertop_bin=SERTOP_BIN,
                  pp_args=DEFAULT_PP_ARGS):
         """Configure a ``sertop`` instance."""
-        self.args, self.sertop_bin = [*args, *SerAPI.DEFAULT_ARGS], sertop_bin
+        self.fpath = Path(fpath)
+        self.args = [*args, *SerAPI.DEFAULT_ARGS, "--topfile={}".format(self.topfile)]
+        self.sertop_bin = sertop_bin
         self.sertop = None
         self.next_qid = 0
         self.pp_args = {**SerAPI.DEFAULT_PP_ARGS, **pp_args}
@@ -273,6 +277,51 @@ class SerAPI():
                 self.sertop.stdout.close()
             finally:
                 self.sertop.wait()
+
+    COQ_IDENT_START = (
+        'lu', # Letter, uppercase
+        'll', # Letter, lowercase
+        'lt', # Letter, titlecase
+        'lo', # Letter, others
+        'lm', # Letter, modifier
+        re.compile("""[
+           \u01D00-\u01D7F # Phonetic Extensions
+           \u01D80-\u01DBF # Phonetic Extensions Suppl
+           \u01DC0-\u01DFF # Combining Diacritical Marks Suppl
+           \u005F # Underscore
+           \u00A0 # Non breaking space
+         ]""", re.VERBOSE)
+    )
+
+    COQ_IDENT_PART = (
+        *COQ_IDENT_START,
+        'nd', # Number, decimal digits
+        'nl', # Number, letter
+        'no', # Number, other
+        re.compile("\u0027") # Single quote
+    )
+
+    @staticmethod
+    def valid_char(c, allowed):
+        for pattern in allowed:
+            if isinstance(pattern, str) and unicodedata.category(c) == pattern:
+                return True
+            if isinstance(pattern, Pattern) and pattern.match(c):
+                return True
+        return False
+
+    @classmethod
+    def sub_chars(cls, chars, allowed):
+        return "".join(c if cls.valid_char(c, allowed) else "_" for c in chars)
+
+    @property
+    def topfile(self):
+        stem = self.fpath.stem
+        if stem in ("-", ""):
+            return "Top"
+        stem = (self.sub_chars(stem[0], self.COQ_IDENT_START) +
+                self.sub_chars(stem[1:], self.COQ_IDENT_PART))
+        return self.fpath.with_name(stem + self.fpath.suffix)
 
     @staticmethod
     def resolve_sertop(sertop_bin):

@@ -327,10 +327,11 @@ class AlectryonTransform(OneTimeTransform):
 
     def annotate_cached(self, chunks, sertop_args):
         from .json import Cache
-        prover = SerAPI(sertop_args)
+        docpath = self.document['source']
+        prover = SerAPI(sertop_args, fpath=docpath)
         prover.observer = DocutilsObserver(self.document)
         metadata = {"sertop_args": sertop_args}
-        cache = Cache(CACHE_DIRECTORY, self.document['source'], metadata, CACHE_COMPRESSION)
+        cache = Cache(CACHE_DIRECTORY, docpath, metadata, CACHE_COMPRESSION)
         annotated = cache.update(chunks, prover.annotate, SerAPI.version_info())
         return cache.generator, annotated
 
