@@ -14,7 +14,7 @@ export PYTHONPATH:=$(realpath ../):$(PYTHONPATH)
 
 ALECTRYON_OPTS ?=
 
-alectryon = $(PYTHON) ../alectryon.py --copy-assets hardlink --output-directory $(out_dir) --no-version-numbers
+alectryon = $(PYTHON) ../alectryon.py --copy-assets hardlink --output-directory $(out_dir) --no-version-numbers $(ALECTRYON_OPTS)
 
 targets :=
 
@@ -86,7 +86,7 @@ _output/latex.aux/%.lua.pdf: _output/%.lua.tex | $$(dir $$@)
 _output/latex.aux/%.pdf: _output/%.tex | $$(dir $$@)
 	texfot --tee=/dev/null --no-stderr latexmk -cd -pdf -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
 
-targets += $(patsubst %.tex,%.pdf,$(filter-out %.snippets.tex,$(filter %.tex,$(targets))))
+targets += $(patsubst %.tex,%.pdf,$(filter-out %.snippets.tex %.part.tex,$(filter %.tex,$(targets))))
 
 ###############
 # Entry point #

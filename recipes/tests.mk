@@ -66,10 +66,19 @@ _output/tests/literate.v.rst: tests/literate.v
 _output/tests/screenshot.html: tests/screenshot.v
 	$(alectryon) $<
 
+# reST → HTML
+_output/tests/stylesheets.html: tests/stylesheets.v
+	DOCUTILSCONFIG=tests/stylesheets.docutils.conf \
+       $(alectryon) $< --pygments-style emacs --backend webpage -o - | sed -r '/^ *<style type="text.css">/,/^ *<.style>/ { /^ *<style |<.style>|Alectryon/b; d}' > $@
+# reST → LaTeX
+_output/tests/stylesheets.part.tex: tests/stylesheets.v
+	DOCUTILSCONFIG=tests/stylesheets.docutils.conf \
+       $(alectryon) $< --pygments-style emacs --backend latex -o - | sed -r '/^% embedded stylesheet/,/^\\makeatother/ { /^\\makeat|Alectryon/b; d}' > $@
+
 # Coq → HTML
 _output/tests/syntax_highlighting.html: tests/syntax_highlighting.v
 	$(alectryon) $<
 
-_output/tests/corner_cases.html _output/tests/corner_cases.xe.tex _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/errors.lint.json _output/tests/errors.txt _output/tests/latex_formatting.tex _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/syntax_highlighting.html: out_dir := _output/tests
+_output/tests/corner_cases.html _output/tests/corner_cases.xe.tex _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/errors.lint.json _output/tests/errors.txt _output/tests/latex_formatting.tex _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/stylesheets.html _output/tests/stylesheets.part.tex _output/tests/syntax_highlighting.html: out_dir := _output/tests
 
-targets += _output/tests/corner_cases.html _output/tests/corner_cases.xe.tex _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/errors.lint.json _output/tests/errors.txt _output/tests/latex_formatting.tex _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/syntax_highlighting.html
+targets += _output/tests/corner_cases.html _output/tests/corner_cases.xe.tex _output/tests/dialects.4.html _output/tests/dialects.5.html _output/tests/dialects.tex _output/tests/dialects.xe.tex _output/tests/dialects.lua.tex _output/tests/directive-options.html _output/tests/directive-options.xe.tex _output/tests/display-flags.html _output/tests/doctests.out _output/tests/errors.lint.json _output/tests/errors.txt _output/tests/latex_formatting.tex _output/tests/literate.v _output/tests/literate.v.rst _output/tests/screenshot.html _output/tests/stylesheets.html _output/tests/stylesheets.part.tex _output/tests/syntax_highlighting.html
