@@ -1,5 +1,5 @@
 # Original theme Copyright 2006-2019 by the Pygments team.
-# Modifications Copyright © 2019 Clément Pit-Claudel.
+# Modifications Copyright © 2019, 2021 Clément Pit-Claudel.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -48,11 +48,12 @@ from pygments.style import Style
 from pygments.token import Keyword, Name, Comment, String, Error, \
      Number, Operator, Generic, Whitespace, Punctuation, Other, Literal
 
-class TangoSubtleStyle(Style):
-    """
-    A style inspired by the color palette of the Tango icon theme.
+class AlectryonStyle(Style):
+    """A style inspired by the color palette of the Tango icon theme.
+    The main difference with the default is the number of distinct colors.
     """
 
+    name = "alectryon"
     background_color = "none"
     default_style = ""
 

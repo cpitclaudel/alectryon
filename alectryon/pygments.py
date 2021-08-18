@@ -32,12 +32,12 @@ from pygments.formatters import HtmlFormatter, LatexFormatter # pylint: disable=
 from dominate.util import raw as dom_raw
 
 from .pygments_lexer import CoqLexer
-from .pygments_style import TangoSubtleStyle
+from .pygments_style import AlectryonStyle
 
 LEXER = CoqLexer(ensurenl=False) # pylint: disable=no-member
 LEXER.add_filter(TokenMergeFilter())
-HTML_FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
-LATEX_FORMATTER = LatexFormatter(nobackground=True, nowrap=True, style=TangoSubtleStyle)
+HTML_FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=AlectryonSubtleStyle)
+LATEX_FORMATTER = LatexFormatter(nobackground=True, nowrap=True, style=AlectryonSubtleStyle)
 WHITESPACE_RE = re.compile(r"\A(\s*)(.*?)(\s*)\Z", re.DOTALL)
 
 def resolve_token(kind):
