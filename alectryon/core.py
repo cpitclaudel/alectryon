@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Iterator, List, Tuple, Union, NamedTuple, TypeVar, Generic
+from typing import Any, Iterator, List, Tuple, Union, NamedTuple
 
 from collections import namedtuple, defaultdict
 from shlex import quote
@@ -191,9 +191,8 @@ class PosView(View):
         return Range(self.translate_offset(beg),
                      self.translate_offset(end))
 
-_T = TypeVar("_T")
-class Notification(NamedTuple, Generic[_T]): # type: ignore
-    obj: _T
+class Notification(NamedTuple):
+    obj: Any
     message: str
     location: Range
     level: int
