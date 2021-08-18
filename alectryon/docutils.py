@@ -180,9 +180,9 @@ class AlectryonState:
         return self.populate_config()
 
 def alectryon_state(document):
-    st = getattr(document, "alectryon_state", None)
+    st = document.get("alectryon_state")
     if st is None:
-        st = document.alectryon_state = AlectryonState(document)
+        st = document["alectryon_state"] = AlectryonState(document)
     return st
 
 def _docutils_config(document, attr, default=None):
