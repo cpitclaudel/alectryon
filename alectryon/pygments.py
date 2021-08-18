@@ -25,6 +25,7 @@ from textwrap import indent
 from contextlib import contextmanager
 
 import pygments
+import pygments.styles
 from pygments.token import Error, STANDARD_TYPES, Name, Operator
 from pygments.filters import Filter, TokenMergeFilter, NameHighlightFilter
 from pygments.formatters import HtmlFormatter, LatexFormatter # pylint: disable=no-name-in-module
@@ -36,8 +37,6 @@ from .pygments_style import AlectryonStyle
 
 LEXER = CoqLexer(ensurenl=False) # pylint: disable=no-member
 LEXER.add_filter(TokenMergeFilter())
-HTML_FORMATTER = HtmlFormatter(nobackground=True, nowrap=True, style=AlectryonSubtleStyle)
-LATEX_FORMATTER = LatexFormatter(nobackground=True, nowrap=True, style=AlectryonSubtleStyle)
 WHITESPACE_RE = re.compile(r"\A(\s*)(.*?)(\s*)\Z", re.DOTALL)
 
 def resolve_token(kind):
@@ -94,7 +93,33 @@ def _highlight(coqstr, lexer, formatter):
         before, code, after = WHITESPACE_RE.match(coqstr).groups()
         return before, pygments.highlight(code, lexer, formatter).strip(), after
 
-def highlight_html(coqstr):
+def validate_style(name):
+    if isinstance(name, str):
+        known_styles = sorted(pygments.styles.get_all_styles())
+        if name not in known_styles:
+            MSG = "Unknown Pygments style `{}`.  Expecting one of {}."
+            raise ValueError(MSG.format(name, ", ".join(known_styles)))
+    return name
+
+def _get_style(name):
+    # Pygments' style resolver will only work for "alectryon" if Alectryon
+    # is installed via Pip, hence the special case here.
+    if name in (None, AlectryonStyle.name):
+        return AlectryonStyle
+    return validate_style(name)
+
+def get_formatter(fmt, style=None):
+    style = _get_style(style)
+    if fmt == "html":
+        return HtmlFormatter(nobackground=True, nowrap=True, style=style)
+    if fmt == "latex":
+        return LatexFormatter(nobackground=True, nowrap=True, style=style)
+    raise ValueError("Unknown format {}".format(fmt))
+
+def get_stylesheet(fmt, style):
+    return get_formatter(fmt, style).get_style_defs('.highlight')
+
+def highlight_html(coqstr, style=None):
     """Highlight a Coq string `coqstr`.
 
     Return a raw HTML string.  This function is just a convenience wrapper
@@ -106,27 +131,36 @@ def highlight_html(coqstr):
 
     If you use Alectryon's command line interface directly, you won't have to
     jump through that last hoop: it renders and writes out the HTML for you,
-    with the appropriate CSS inlined.  It might be instructive to consult the
-    implementation of ``alectryon.cli.dump_html_standalone`` to see how the CLI
-    does it.
+    with the appropriate CSS inlined or linked to.  It might be instructive to
+    consult the implementation of ``alectryon.cli.dump_html_standalone`` to see
+    how the CLI does it.
 
     >>> str(highlight_html("Program Fixpoint a."))
     '<span class="kn">Program Fixpoint</span> <span class="nf">a</span>.'
     """
-    return dom_raw("".join(_highlight(coqstr, LEXER, HTML_FORMATTER)))
+    return dom_raw("".join(_highlight(coqstr, LEXER, get_formatter("html", style))))
 
 PYGMENTS_LATEX_PREFIX = r"\begin{Verbatim}[commandchars=\\\{\}]" + "\n"
 PYGMENTS_LATEX_SUFFIX = r"\end{Verbatim}"
 
-def highlight_latex(coqstr, prefix=PYGMENTS_LATEX_PREFIX, suffix=PYGMENTS_LATEX_SUFFIX):
+def highlight_latex(coqstr,
+                    prefix=PYGMENTS_LATEX_PREFIX,
+                    suffix=PYGMENTS_LATEX_SUFFIX,
+                    style=None):
     """Highlight a Coq string `coqstr`.
 
     Like ``highlight_html``, but return a plain LaTeX string.
     """
-    before, tex, after = _highlight(coqstr, LEXER, LATEX_FORMATTER)
+    before, tex, after = _highlight(coqstr, LEXER, get_formatter("latex", style))
     assert tex.startswith(PYGMENTS_LATEX_PREFIX) and tex.endswith(PYGMENTS_LATEX_SUFFIX), tex
     body = tex[len(PYGMENTS_LATEX_PREFIX):-len(PYGMENTS_LATEX_SUFFIX)]
     return prefix + before + body + after + suffix
+
+def make_highlighter(fmt, style=None):
+    fn = {"html": highlight_html, "latex": highlight_latex}.get(fmt)
+    if not fn:
+        raise ValueError("Unknown language {}".format(fmt))
+    return lambda s, *args, **kwargs: fn(s, *args, **{"style": style, **kwargs}) # type: ignore
 
 @contextmanager
 def munged_dict(d, updates):

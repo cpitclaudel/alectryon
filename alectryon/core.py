@@ -126,6 +126,14 @@ class Backend: # pylint: disable=no-member
         else:
             raise TypeError("Unexpected object type: {}".format(type(obj)))
 
+class Asset(str):
+    def __new__(cls, fname, _gen):
+        return super().__new__(cls, fname)
+
+    def __init__(self, _fname, gen):
+        super().__init__()
+        self.gen = gen
+
 class Position(namedtuple("Position", "fpath line col")):
     def as_header(self):
         return "{}:{}:{}:".format(self.fpath or "<unknown>", self.line, self.col)

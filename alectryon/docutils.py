@@ -89,7 +89,7 @@ from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import core, transforms, html, latex, markers
 from .core import Gensym, SerAPI, Position, PosStr
-from .pygments import highlight_html, highlight_latex, added_tokens, \
+from .pygments import make_highlighter, added_tokens, validate_style, \
     resolve_token, replace_builtin_coq_lexer
 
 # reST extensions
@@ -165,6 +165,7 @@ class AlectryonState:
         self.generator: Optional[core.GeneratorInfo] = None
         self.root_language: Optional[str] = None
         self.transforms_executed = set()
+        self.embedded_assets = []
         self.document = document
         self._config = None
 
@@ -178,11 +179,19 @@ class AlectryonState:
     def config(self):
         return self.populate_config()
 
-def _alectryon_state(document):
+def alectryon_state(document):
     st = getattr(document, "alectryon_state", None)
     if st is None:
         st = document.alectryon_state = AlectryonState(document)
     return st
+
+def _docutils_config(document, attr, default=None):
+    """Look up `attr` in Sphinx config, falling back to docutils settings."""
+    settings = document.settings
+    value = getattr(settings, attr, default)
+    if hasattr(settings, "env"):
+        value = getattr(settings.env.config, attr, value)
+    return value
 
 def _gensym_stem(document, suffix=""):
     source = document.get('source', "")
@@ -256,7 +265,7 @@ class OneTimeTransform(Transform):
         # directive, and potentially once by add_transform in Sphinx, so we need
         # to make sure that running them twice is safe (in particular, we must
         # not overwrite the cache).
-        state = _alectryon_state(self.document)
+        state = alectryon_state(self.document)
         if type(self).__name__ not in state.transforms_executed:
             state.transforms_executed.add(type(self).__name__)
             self._apply()
@@ -271,7 +280,7 @@ class LoadConfigTransform(OneTimeTransform):
     default_priority = 300
 
     def _apply(self):
-        _alectryon_state(self.document).populate_config()
+        alectryon_state(self.document).populate_config()
 
 class ActivateMathJaxTransform(Transform):
     """Add the ``mathjax_process`` class on math nodes.
@@ -336,7 +345,7 @@ class AlectryonTransform(OneTimeTransform):
         return cache.generator, annotated
 
     def annotate(self, pending_nodes):
-        config = _alectryon_state(self.document).config
+        config = alectryon_state(self.document).config
         sertop_args = (*self.SERTOP_ARGS, *config.sertop_args)
         chunks = [pending.details["contents"] for pending in pending_nodes]
         return self.annotate_cached(chunks, sertop_args)
@@ -357,7 +366,7 @@ class AlectryonTransform(OneTimeTransform):
     def apply_coq(self):
         pending_nodes = list(self.document.traverse(alectryon_pending))
         generator, annotated = self.annotate(pending_nodes)
-        _alectryon_state(self.document).generator = generator
+        alectryon_state(self.document).generator = generator
         for node, fragments in zip(pending_nodes, annotated):
             self._try(self.replace_node, node, fragments)
 
@@ -547,11 +556,14 @@ class AlectryonPostTransform(OneTimeTransform):
 
     def init_generator(self):
         formats = set(self.document.transformer.components['writer'].supported)
+        style = _docutils_config(self.document, "pygments_style")
         if 'html' in formats:
+            highlighter = make_highlighter("html", style)
             return "html", html.HtmlGenerator(
-                highlight_html, _gensym_stem(self.document), HTML_MINIFICATION)
+                highlighter, _gensym_stem(self.document), HTML_MINIFICATION)
         if {'latex', 'xelatex', 'lualatex'} & formats:
-            return "latex", latex.LatexGenerator(highlight_latex)
+            highlighter = make_highlighter("latex", style)
+            return "latex", latex.LatexGenerator(highlighter)
         raise NotImplementedError("Unknown output format")
 
     @staticmethod
@@ -571,7 +583,7 @@ class AlectryonPostTransform(OneTimeTransform):
 
     def _apply(self, **_kwargs):
         fmt, generator = self.init_generator()
-        with added_tokens(_alectryon_state(self.document).config.tokens):
+        with added_tokens(alectryon_state(self.document).config.tokens):
             for node in self.document.traverse(alectryon_pending_io):
                 self.replace_one_io(node, fmt, generator)
             for node in self.document.traverse(alectryon_pending_quote):
@@ -669,7 +681,7 @@ class CoqDirective(Directive):
 
         col_offset = indent
         if document.get('source', "") == source \
-           and _alectryon_state(document).root_language == "coq":
+           and alectryon_state(document).root_language == "coq":
             col_offset = 0
 
         pos = Position(source, line, col_offset)
@@ -976,7 +988,7 @@ class RSTCoqParser(docutils.parsers.rst.Parser): # type: ignore
         from .literate import ParsingError
         self.setup_parse(inputstring, document)
         # pylint: disable=attribute-defined-outside-init
-        _alectryon_state(document).root_language = "coq"
+        alectryon_state(document).root_language = "coq"
         self.statemachine = docutils.parsers.rst.states.RSTStateMachine( # type: ignore
             state_classes=self.state_classes,
             initial_state=self.initial_state,
@@ -993,11 +1005,17 @@ class RSTCoqParser(docutils.parsers.rst.Parser): # type: ignore
 # ------
 
 def register_stylesheets(translator, stylesheets, assets_path):
-    for name in stylesheets:
+    for asset in stylesheets:
         if translator.settings.embed_stylesheet:
+            alectryon_state(translator.document).embedded_assets.append(asset)
+            if isinstance(asset, core.Asset):
+                # Inline by hand, since the file doesn't exist on disk
+                contents = asset.gen(vars(translator.settings))
+                translator.stylesheet.append(translator.embedded_stylesheet % contents)
+                continue
             # Expand only if we're going to inline; otherwise keep relative
-            name = os.path.join(assets_path, name)
-        translator.stylesheet.append(translator.stylesheet_call(name))
+            asset = os.path.join(assets_path, asset)
+        translator.stylesheet.append(translator.stylesheet_call(asset))
 
 def make_HtmlTranslator(base):
     class Translator(base):
@@ -1037,7 +1055,7 @@ def make_HtmlTranslator(base):
             self.body_prefix.append('<div class="{}">'.format(cls))
 
             if self.settings.alectryon_banner:
-                generator = _alectryon_state(document).generator
+                generator = alectryon_state(document).generator
                 include_vernums = document.settings.alectryon_vernums
                 self.body_prefix.append(html.gen_banner(generator, include_vernums))
 
@@ -1055,6 +1073,10 @@ ALECTRYON_SETTINGS = (
      {"choices": ("centered", "floating", "windowed"),
       "dest": "alectryon_webpage_style",
       "default": "centered", "metavar": "STYLE"}),
+    ("Choose a Pygments style by name",
+     ["--pygments-style"],
+     {'default': None, 'dest': "pygments_style",
+      'validator': validate_style}),
     ("Omit Alectryon's explanatory header",
      ["--no-header"],
      {'default': True, 'action': 'store_false',
@@ -1094,6 +1116,8 @@ def make_LatexTranslator(base):
 
         ASSETS = STY
         ASSETS_PATH = latex.ASSETS.PATH
+
+        embedded_stylesheet = "%% embedded stylesheet\n\\makeatletter\n%s\n\\makeatother\n"
 
         def __init__(self, document, *args, **kwargs):
             super().__init__(document, *args, **kwargs)

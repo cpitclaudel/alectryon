@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Tuple, List, Union
+
 import argparse
 import inspect
 import os
@@ -93,6 +95,7 @@ def register_docutils(v, ctx):
         'input_encoding': 'utf-8',
         'output_encoding': 'utf-8',
         'exit_status_level': 3,
+        'pygments_style': ctx["pygments_style"],
         'alectryon_banner': ctx["include_banner"],
         'alectryon_vernums': ctx["include_vernums"],
         'alectryon_webpage_style': ctx["webpage_style"],
@@ -122,7 +125,7 @@ def _gen_docutils(source, fpath,
 
     max_level = pub.document.reporter.max_level
     exit_code = max_level + 10 if max_level >= pub.settings.exit_status_level else 0
-    return output.decode("utf-8"), exit_code
+    return output.decode("utf-8"), pub, exit_code
 
 def _resolve_dialect(backend, html_dialect, latex_dialect):
     return {"webpage": html_dialect, "latex": latex_dialect}.get(backend, None)
@@ -133,15 +136,19 @@ def _record_assets(assets, path, names):
 
 def gen_docutils(src, frontend, backend, fpath, dialect,
                  docutils_settings_overrides, assets, exit_code):
-    from .docutils import get_pipeline
+    from .docutils import get_pipeline, alectryon_state
 
     pipeline = get_pipeline(frontend, backend, dialect)
-    _record_assets(assets, pipeline.translator.ASSETS_PATH, pipeline.translator.ASSETS)
-
-    output, exit_code.val = \
+    output, pub, exit_code.val = \
         _gen_docutils(src, fpath,
                       pipeline.parser, pipeline.reader, pipeline.writer,
                       docutils_settings_overrides)
+
+    embedded_assets = alectryon_state(pub.document).embedded_assets
+    _record_assets(assets,
+                   pipeline.translator.ASSETS_PATH,
+                   [a for a in pipeline.translator.ASSETS if a not in embedded_assets])
+
     return output
 
 def _docutils_cmdline(description, frontend, backend):
@@ -242,13 +249,20 @@ def gen_html_snippets_with_coqdoc(annotated, html_classes, fname, html_minificat
     # ‘return’ instead of ‘yield from’ to update html_classes eagerly
     return _gen_html_snippets_with_coqdoc(annotated, fname, html_minification)
 
-def copy_assets(state, assets, copy_fn, output_directory):
+def copy_assets(state, assets: List[Tuple[str, Union[str, core.Asset]]],
+                copy_fn, output_directory, ctx):
     if copy_fn is None:
         return state
 
-    for (path, name) in assets:
-        src = os.path.join(path, name)
-        dst = os.path.join(output_directory, name)
+    for (path, asset) in assets:
+        src = os.path.join(path, asset)
+        dst = os.path.join(output_directory, asset)
+
+        if isinstance(asset, core.Asset):
+            with open(dst, mode="w") as f:
+                f.write(asset.gen(ctx))
+            continue
+
         if copy_fn is not shutil.copyfile:
             try:
                 os.unlink(dst)
@@ -268,7 +282,6 @@ def dump_html_standalone(snippets, fname, webpage_style,
     from dominate.util import raw
     from . import GENERATOR
     from .core import SerAPI
-    from .pygments import HTML_FORMATTER
     from .html import ASSETS, ADDITIONAL_HEADS, JS_UNMINIFY, gen_banner, wrap_classes
 
     doc = document(title=fname)
@@ -281,18 +294,16 @@ def dump_html_standalone(snippets, fname, webpage_style,
         doc.head.add(raw(hd))
     if html_minification:
         doc.head.add(raw(JS_UNMINIFY))
-    for css in ASSETS.ALECTRYON_CSS:
-        doc.head.add(tags.link(rel="stylesheet", href=css))
+    for css in ASSETS.ALECTRYON_CSS + ASSETS.PYGMENTS_CSS:
+        doc.head.add(tags.link(rel="stylesheet", href=str(css)))
     for link in (ASSETS.IBM_PLEX_CDN, ASSETS.FIRA_CODE_CDN):
-        doc.head.add(raw(link))
+        doc.head.add(raw("\n    " + link))
     for js in ASSETS.ALECTRYON_JS:
         doc.head.add(tags.script(src=js))
 
     _record_assets(assets, ASSETS.PATH, ASSETS.ALECTRYON_CSS)
     _record_assets(assets, ASSETS.PATH, ASSETS.ALECTRYON_JS)
-
-    pygments_css = HTML_FORMATTER.get_style_defs('.highlight')
-    doc.head.add(tags.style(pygments_css, type="text/css"))
+    _record_assets(assets, ASSETS.PATH, ASSETS.PYGMENTS_CSS)
 
     if html_minification:
         html_classes.append("minified")
@@ -571,11 +582,15 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
     out.add_argument("--output-directory", default=None,
                      help=OUT_DIR_HELP)
 
-    COPY_ASSETS_HELP = ("Chose the method to use to copy assets " +
-                        "along the generated file(s) when creating webpages.")
+    COPY_ASSETS_HELP = ("Chose the method to use to copy assets along the " +
+                        "generated file(s) when creating webpages and TeX docs.")
     out.add_argument("--copy-assets", choices=list(COPY_FUNCTIONS.keys()),
                      default="copy", dest="copy_fn",
                      help=COPY_ASSETS_HELP)
+
+    PYGMENTS_STYLE_HELP = "Choose a pygments style by name."
+    out.add_argument("--pygments-style", default=None,
+                     help=PYGMENTS_STYLE_HELP)
 
     MARK_POINT_HELP = "Mark a point in the output with a given marker."
     out.add_argument("--mark-point", nargs=2, default=(None, None),

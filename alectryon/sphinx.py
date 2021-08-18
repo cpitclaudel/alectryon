@@ -35,8 +35,8 @@ def add_html_assets(app):
     if app.builder.name == "html":
         app.config.html_static_path.append(ASSETS.PATH)
 
-        for css in ASSETS.ALECTRYON_CSS + ASSETS.PYGMENTS_CSS:
-            app.add_css_file(css)
+        for css in ASSETS.ALECTRYON_CSS:
+            app.add_css_file(css) # Not PYGMENTS_CSS: Sphinx generates its own
         for js in ASSETS.ALECTRYON_JS:
             app.add_js_file(js)
 
@@ -57,7 +57,8 @@ def setup(app):
         app.config.default_role = docutils.coq_code_role.name
 
     for (_doc, _flags, opts) in docutils.ALECTRYON_SETTINGS:
-        app.add_config_value(opts["dest"], opts["default"], "env")
+        if opts["dest"] not in ("pygments_style",): # Already in Sphinx
+            app.add_config_value(opts["dest"], opts["default"], "env")
 
     # All custom transforms are run through pending nodes,
     # so no need for ``app.add_transform(...)`` except for MyST.
