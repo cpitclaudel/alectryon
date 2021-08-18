@@ -22,6 +22,8 @@ try:
 except ImportError:
     print("/!\\ `myst_parser` not found, skipping MyST tests /!\\", file=sys.stderr)
 
+pygments_style = "emacs"
+
 # -- Options for HTML output -------------------------------------------------
 
 html_theme = 'alabaster'
