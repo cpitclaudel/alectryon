@@ -59,9 +59,10 @@ def latex_of_movie():
     """Load the result of a JSON → JSON conversion and write LaTeX snippets."""
     from alectryon.json import PlainSerializer
     from alectryon.latex import LatexGenerator
-    from alectryon.pygments import highlight_latex
+    from alectryon.pygments import make_highlighter
     annotated = PlainSerializer.decode(json.loads(JS))
-    for ltx in LatexGenerator(highlight_latex).gen(annotated):
+    highlighter = make_highlighter("latex")
+    for ltx in LatexGenerator(highlighter).gen(annotated):
         print("<latex>")
         print(ltx)
         print("</latex>")
