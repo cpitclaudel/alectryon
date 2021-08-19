@@ -582,6 +582,11 @@ Compressed caches kept in a Git repository can be inspected by `automatically de
    # In .gitattributes:
    *.cache.xz diff=xz
 
+Building without SerAPI
+-----------------------
+
+Alectryon can compile documents using ``coqc``.  Sentences be split correctly, but goals and messages will not be collected, and error reporting will be less precise.  To use this feature, pass ``--coq-driver=coqc_time`` to Alectryon.
+
 Building without Alectryon
 --------------------------
 
