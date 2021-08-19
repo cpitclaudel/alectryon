@@ -342,6 +342,7 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
 DRIVERS_BY_LANGUAGE = {
     "coq": {
         "sertop": (".serapi", "SerAPI"),
+        "sertop_noexec": (".serapi", "SerAPI_noexec"),
         "coqc_time": (".coqc_time", "CoqcTime"),
     }
 }

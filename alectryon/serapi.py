@@ -327,6 +327,19 @@ class SerAPI(REPLDriver):
         with self as api:
             return [api.run(chunk) for chunk in chunks]
 
+class SerAPI_noexec(SerAPI):
+    """A variant of SerAPI that segments the code without executing it.
+
+    This runs faster, but the results don't include goals and messages."""
+
+    NAME = "Coq+SerAPI-noexec"
+    ID = "sertop_noexec"
+
+    def _exec(self, sid, chunk):
+        return []
+    def _goals(self, sid, chunk):
+        return []
+
 def annotate(chunks, sertop_args=(), fpath="-", binpath=None):
     r"""Annotate multiple `chunks` of Coq code.
 
