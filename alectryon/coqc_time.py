@@ -30,6 +30,9 @@ from .serapi import CoqIdents
 
 Positioned = namedtuple("Positioned", "item beg end")
 
+class Separator(str):
+    pass
+
 class CoqcTime(CLIDriver):
     BIN = "coqc"
     NAME = "Coq+coqc-time"
@@ -89,6 +92,8 @@ class CoqcTime(CLIDriver):
             fr0 = Sentence(before, messages=[], goals=[])
         return fr0, fr._replace(contents=after)
 
+    CHUNK_SEPARATOR = Separator("\n")
+
     @classmethod
     def recover_chunks(cls, chunks, fragments):
         fragments = deque(cls.with_boundaries(fragments))
@@ -103,12 +108,21 @@ class CoqcTime(CLIDriver):
                 before, after = cls.split_fragment(fragments[0].item, cutoff)
                 fragments[0] = fragments[0]._replace(item=after, beg=chunk.end)
                 chunk_fragments.append(before)
-            yield chunk_fragments
-        assert not fragments
+            assert chunk.item == "".join(c.contents for c in chunk_fragments)
+            if not isinstance(chunk.item, Separator):
+                yield chunk_fragments
+        assert not fragments, fragments
+
+    @staticmethod
+    def intersperse(items, separator):
+        interspersed = [separator] * (2 * len(items) - 1)
+        interspersed[::2] = items
+        return interspersed
 
     def annotate(self, chunks):
-        document = "".join(chunks)
-        return list(self.recover_chunks(chunks, self.partition_sentences(document)))
+        with_separator = self.intersperse(chunks, self.CHUNK_SEPARATOR)
+        document = "".join(with_separator)
+        return list(self.recover_chunks(with_separator, self.partition_sentences(document)))
 
 def annotate(chunks, args=(), fpath="-", binpath=None):
     r"""Use ``coqc -time`` to fragment multiple chunks of Coq code.
