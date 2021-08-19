@@ -129,9 +129,6 @@ def _gen_docutils(source, fpath,
     exit_code = max_level + 10 if max_level >= pub.settings.exit_status_level else 0
     return output.decode("utf-8"), pub, exit_code
 
-def _resolve_dialect(backend, html_dialect, latex_dialect):
-    return {"webpage": html_dialect, "latex": latex_dialect}.get(backend, None)
-
 def _record_assets(assets, path, names):
     for name in names:
         assets.append((path, name))
@@ -153,7 +150,7 @@ def gen_docutils(src, frontend, backend, fpath, dialect,
 
     return output
 
-def _docutils_cmdline(description, frontend, backend):
+def _docutils_cmdline(description, frontend, backend, dialect):
     import locale
     locale.setlocale(locale.LC_ALL, '')
 
@@ -162,7 +159,6 @@ def _docutils_cmdline(description, frontend, backend):
 
     setup()
 
-    dialect = _resolve_dialect(backend, "html4", "pdflatex")
     pipeline = get_pipeline(frontend, backend, dialect)
     return publish_cmdline(
         parser=pipeline.parser(), writer=pipeline.writer(),
@@ -524,6 +520,11 @@ def post_process_arguments(parser, args):
     if args.stdin_filename and "-" not in args.input:
         parser.error("argument --stdin-filename: input must be '-'")
 
+    args.backend_dialects = {
+        "webpage": args.html_dialect,
+        "latex": args.latex_dialect
+    }
+
     for (dirpath,) in args.coq_args_I:
         args.sertop_args.extend(("-I", dirpath))
     for pair in args.coq_args_R:
@@ -735,7 +736,7 @@ def build_context(fpath, args, frontend, backend):
         fpath = args.stdin_filename or fpath
     fname = os.path.basename(fpath)
 
-    dialect = _resolve_dialect(backend, args.html_dialect, args.latex_dialect)
+    dialect = args.backend_dialects.get(backend)
 
     ctx = {**vars(args),
            "fpath": fpath, "fname": fname, "input_is_stdin": input_is_stdin,
