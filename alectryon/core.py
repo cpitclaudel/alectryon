@@ -285,9 +285,9 @@ class SerAPI():
         'lo', # Letter, others
         'lm', # Letter, modifier
         re.compile("""[
-           \u01D00-\u01D7F # Phonetic Extensions
-           \u01D80-\u01DBF # Phonetic Extensions Suppl
-           \u01DC0-\u01DFF # Combining Diacritical Marks Suppl
+           \u1D00-\u1D7F # Phonetic Extensions
+           \u1D80-\u1DBF # Phonetic Extensions Suppl
+           \u1DC0-\u1DFF # Combining Diacritical Marks Suppl
            \u005F # Underscore
            \u00A0 # Non breaking space
          ]""", re.VERBOSE)
@@ -304,7 +304,7 @@ class SerAPI():
     @staticmethod
     def valid_char(c, allowed):
         for pattern in allowed:
-            if isinstance(pattern, str) and unicodedata.category(c) == pattern:
+            if isinstance(pattern, str) and unicodedata.category(c).lower() == pattern:
                 return True
             if isinstance(pattern, Pattern) and pattern.match(c):
                 return True
