@@ -21,14 +21,13 @@
 from typing import Any, Iterator, List, Tuple, Union
 
 from collections import namedtuple
-import re
 import sys
-import unicodedata
 
 from . import sexp as sx
 from .core import UnexpectedError, REPLDriver, \
     Hypothesis, Goal, Message, Sentence, Text, \
     PrettyPrinted, PosView, indent, debug
+from .coq import CoqIdents
 
 def sexp_hd(sexp):
     if isinstance(sexp, list):
@@ -44,8 +43,6 @@ ApiAdded = namedtuple("ApiAdded", "sid loc")
 ApiExn = namedtuple("ApiExn", "sids exn loc")
 ApiMessage = namedtuple("ApiMessage", "sid level msg")
 ApiString = namedtuple("ApiString", "string")
-
-Pattern = type(re.compile("")) # LATER (3.7+): re.Pattern
 
 class SerAPI(REPLDriver):
     BIN = "sertop"
@@ -79,50 +76,9 @@ class SerAPI(REPLDriver):
                " please run `opam install coq-serapi`")
         raise ValueError(MSG.format(binpath))
 
-    COQ_IDENT_START = (
-        'lu', # Letter, uppercase
-        'll', # Letter, lowercase
-        'lt', # Letter, titlecase
-        'lo', # Letter, others
-        'lm', # Letter, modifier
-        re.compile("""[
-           \u1D00-\u1D7F # Phonetic Extensions
-           \u1D80-\u1DBF # Phonetic Extensions Suppl
-           \u1DC0-\u1DFF # Combining Diacritical Marks Suppl
-           \u005F # Underscore
-           \u00A0 # Non breaking space
-         ]""", re.VERBOSE)
-    )
-
-    COQ_IDENT_PART = (
-        *COQ_IDENT_START,
-        'nd', # Number, decimal digits
-        'nl', # Number, letter
-        'no', # Number, other
-        re.compile("\u0027") # Single quote
-    )
-
-    @staticmethod
-    def valid_char(c, allowed):
-        for pattern in allowed:
-            if isinstance(pattern, str) and unicodedata.category(c).lower() == pattern:
-                return True
-            if isinstance(pattern, Pattern) and pattern.match(c):
-                return True
-        return False
-
-    @classmethod
-    def sub_chars(cls, chars, allowed):
-        return "".join(c if cls.valid_char(c, allowed) else "_" for c in chars)
-
     @property
     def topfile(self):
-        stem = self.fpath.stem
-        if stem in ("-", ""):
-            return "Top"
-        stem = (self.sub_chars(stem[0], self.COQ_IDENT_START) +
-                self.sub_chars(stem[1:], self.COQ_IDENT_PART))
-        return stem + self.fpath.suffix
+        return CoqIdents.topfile_of_fpath(self.fpath)
 
     def _next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceding it."""
