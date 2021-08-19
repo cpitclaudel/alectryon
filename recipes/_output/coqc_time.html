@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>Using coqc to compile Alectryon documents</title>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="pygments.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+coqc-time. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="using-coqc-to-compile-alectryon-documents">
+<h1 class="title">Using <tt class="docutils literal">coqc</tt> to compile Alectryon documents</h1>
+
+<p>The normal way to compile Coq documents with Alectryon is to use <tt class="docutils literal">serapi</tt>.
+When this is not possible, however, you can use <tt class="docutils literal">coqc</tt> with (much) reduced
+functionality: Alectryon will be able to parse individual sentences and refer to
+them, but not to compute goals and messages.  To compile with <tt class="docutils literal">coqc</tt>, pass
+<tt class="docutils literal"><span class="pre">--coq-driver=coqc_time</span></tt> to Alectryon:</p>
+<pre class="literal-block">
+alectryon --coq-driver=coqc_time coqc_time.v
+  # Coq+reST → HTML; produces ‘coqc_time.html’
+</pre>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">fold_left_app</span> : <span class="kr">forall</span> {<span class="nv">A</span> <span class="nv">B</span>} (<span class="nv">f</span>: A -&gt; B -&gt; A) (<span class="nv">l</span> <span class="nv">l&#39;</span>: list B) <span class="nv">a</span>,
+    fold_left f (l ++ l&#39;) a = fold_left f l&#39; (fold_left f l a).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input" id="coqc-time-v-s-proof-0"><span class="kn">Proof</span>.<span class="alectryon-mref-marker">1</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> l; <span class="nb">simpl</span>; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input" id="coqc-time-v-s-goal-in-0"><span class="kn">Goal</span> <span class="kr">forall</span> {<span class="nv">A</span> <span class="nv">B</span>} (<span class="nv">f</span>: A -&gt; B -&gt; B) (<span class="nv">l</span>: list A) <span class="nv">b</span>,
+    fold_right f b l = fold_left (<span class="kr">fun</span> <span class="nv">acc</span> <span class="nv">b</span> =&gt; f b acc) (rev l) b.<span class="alectryon-mref-marker">2</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">intros</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> l; <span class="nb">simpl</span>; <span class="nb">intros</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> IHl, fold_left_app; <span class="nb">simpl</span>; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Check</span> nat.</span></span></pre><p>Limited reference functionality is still available: <a class="alectryon-mref reference internal" href="#coqc-time-v-s-proof-0">1</a>, <a class="alectryon-mref reference internal" href="#coqc-time-v-s-goal-in-0">2</a>, <samp class="alectryon-inline highlight"><!-- Generator: Alectryon --><span class="kn">Goal</span> <span class="kr">forall</span> {<span class="nv">A</span> <span class="nv">B</span>} (<span class="nv">f</span>: A -&gt; B -&gt; B) (<span class="nv">l</span>: list A) <span class="nv">b</span>,
+    fold_right f b l = fold_left (<span class="kr">fun</span> <span class="nv">acc</span> <span class="nv">b</span> =&gt; f b acc) (rev l) b.</samp>.</p>
+</div>
+</div></body>
+</html>

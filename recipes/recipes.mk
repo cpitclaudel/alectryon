@@ -27,6 +27,11 @@ _output/caching.html: caching.v
 	$(alectryon) --cache-directory _output/ --cache-compression=xz $<
 recipes_targets += _output/caching.html
 
+# Coq+reST → HTML
+_output/coqc_time.html: coqc_time.v
+	$(alectryon) --coq-driver=coqc_time $<
+recipes_targets += _output/coqc_time.html
+
 # Coqdoc → HTML
 _output/coqdoc.html: coqdoc.v
 	$(alectryon) $< --frontend coqdoc
