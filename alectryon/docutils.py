@@ -66,7 +66,7 @@ To work around this issue we use a writer-dependent transform on the docutils
 side, and a doctree-resolved event on the Sphinx side.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Iterable, DefaultDict
 
 import re
 import os.path
@@ -90,7 +90,6 @@ from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import core, transforms, html, latex, markers
 from .core import Gensym, Position, PosStr
-from .serapi import annotate, SerAPI
 from .pygments import make_highlighter, added_tokens, validate_style, \
     get_lexer, resolve_token, replace_builtin_coq_lexer
 
@@ -206,7 +205,11 @@ def _gensym_stem(document, suffix=""):
 class Config:
     def __init__(self, document):
         self.tokens = {}
-        self.sertop_args = []
+        self.language_drivers = AlectryonTransform.LANGUAGE_DRIVERS.copy()
+        self.driver_args: DefaultDict[str, List[str]] = defaultdict(list)
+        for nm, args in AlectryonTransform.DRIVER_ARGS.items():
+            self.driver_args[nm] = list(args)
+        self.driver_args["sertop"].extend(AlectryonTransform.SERTOP_ARGS)
         self.document = document
         self.read_docinfo()
 
@@ -247,7 +250,7 @@ class Config:
             self.tokens.setdefault(token, []).extend(body.split())
         elif name == "alectryon/serapi/args":
             import shlex
-            self.sertop_args.extend(self.parse_args(shlex.split(body)))
+            self.driver_args["sertop"].extend(self.parse_args(shlex.split(body)))
         else:
             return
         node.parent.remove(node)
@@ -266,6 +269,13 @@ class Config:
             for vals in instances:
                 yield "-" + arg
                 yield ",".join(vals)
+
+    def driver_info(self, lang):
+        driver_name = self.language_drivers[lang]
+        driver_cls = core.resolve_driver(lang, driver_name)
+        driver_args = self.driver_args[driver_name]
+        assert driver_name == driver_cls.ID
+        return driver_cls, driver_args
 
 class OneTimeTransform(Transform):
     def _apply(self):
@@ -327,7 +337,10 @@ class AlectryonTransform(OneTimeTransform):
     auto_toggle = True
 
     SERTOP_ARGS = ()
-    """Arguments to pass to SerAPI, in SerAPI format."""
+    """Arguments to pass to SerAPI, in SerAPI format (deprecated)."""
+
+    LANGUAGE_DRIVERS: Dict[str, str] = {"coq": "sertop"}
+    DRIVER_ARGS: Dict[str, Iterable[str]] = {"sertop": (), "coqc_time": ()}
 
     def check_for_long_lines(self, node, fragments):
         if LONG_LINE_THRESHOLD is None:
@@ -340,22 +353,20 @@ class AlectryonTransform(OneTimeTransform):
             # remove the node created by ``Reporter.system_message``:
             self.document.transform_messages.remove(w)
 
-    def annotate_cached(self, chunks, sertop_args):
+    def annotate_cached(self, chunks, driver_cls, driver_args):
         from .json import Cache
         docpath = self.document['source']
-        # Later: decouple from SerAPI by generalizing over `annotate`
-        prover = SerAPI(sertop_args, fpath=docpath)
-        prover.observer = DocutilsObserver(self.document)
-        metadata = {"sertop_args": sertop_args}
-        cache = Cache(CACHE_DIRECTORY, docpath, metadata, CACHE_COMPRESSION)
-        annotated = cache.update(chunks, prover.annotate, prover.version_info())
+        driver = driver_cls(driver_args, fpath=docpath)
+        driver.observer = DocutilsObserver(self.document)
+        cache = Cache(CACHE_DIRECTORY, docpath, driver.metadata, CACHE_COMPRESSION)
+        annotated = cache.update(chunks, driver.annotate, driver.version_info())
         return cache.generator, annotated
 
     def annotate(self, pending_nodes):
         config = alectryon_state(self.document).config
-        sertop_args = (*self.SERTOP_ARGS, *config.sertop_args)
         chunks = [pending.details["contents"] for pending in pending_nodes]
-        return self.annotate_cached(chunks, sertop_args)
+        driver_cls, driver_args = config.driver_info("coq")
+        return self.annotate_cached(chunks, driver_cls, driver_args)
 
     def replace_node(self, pending, fragments):
         directive_annots = pending.details["directive_annots"]

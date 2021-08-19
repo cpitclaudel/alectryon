@@ -61,22 +61,22 @@ def rst_to_coq(coq, fpath, point, marker):
     return _catch_parsing_errors(fpath, rst2coq_marked, coq, point, marker)
 
 def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
-                    sertop_args, exit_code):
-    from .serapi import SerAPI
+                    input_language, driver_name, driver_args, exit_code):
     from .core import StderrObserver
     from .json import Cache
-    api = SerAPI(sertop_args, fpath=fpath)
-    metadata = {"sertop_args": sertop_args}
-    cache = Cache(cache_directory, fpath, metadata, cache_compression)
-    annotated = cache.update(chunks, api.annotate, SerAPI.version_info())
-    assert isinstance(api.observer, StderrObserver)
-    exit_code.val = int(api.observer.exit_code >= 3)
+    driver_cls = core.resolve_driver(input_language, driver_name)
+    driver = driver_cls(driver_args, fpath=fpath)
+    cache = Cache(cache_directory, fpath, driver.metadata, cache_compression)
+    annotated = cache.update(chunks, driver.annotate, driver.version_info())
+    assert isinstance(driver.observer, StderrObserver)
+    exit_code.val = int(driver.observer.exit_code >= 3)
     return annotated
 
 def register_docutils(v, ctx):
     from . import docutils
 
-    docutils.AlectryonTransform.SERTOP_ARGS = ctx["sertop_args"]
+    docutils.AlectryonTransform.DRIVER_ARGS = ctx["driver_args_by_name"]
+    docutils.AlectryonTransform.LANGUAGE_DRIVERS = ctx["language_drivers"]
     docutils.CACHE_DIRECTORY = ctx["cache_directory"]
     docutils.CACHE_COMPRESSION = ctx["cache_compression"]
     docutils.HTML_MINIFICATION = ctx["html_minification"]
@@ -285,11 +285,10 @@ def copy_assets(state, assets: List[Tuple[str, Union[str, core.Asset]]],
 
 def dump_html_standalone(snippets, fname, webpage_style,
                          html_minification, include_banner, include_vernums,
-                         assets, html_classes):
+                         assets, html_classes, input_language, driver_name):
     from dominate import tags, document
     from dominate.util import raw
     from . import GENERATOR
-    from .serapi import SerAPI
     from .html import ASSETS, ADDITIONAL_HEADS, JS_UNMINIFY, gen_banner, wrap_classes
 
     doc = document(title=fname)
@@ -319,7 +318,8 @@ def dump_html_standalone(snippets, fname, webpage_style,
     cls = wrap_classes(webpage_style, *html_classes)
     root = doc.body.add(tags.article(cls=cls))
     if include_banner:
-        root.add(raw(gen_banner(SerAPI.version_info(), include_vernums)))
+        driver = core.resolve_driver(input_language, driver_name)
+        root.add(raw(gen_banner(driver.version_info(), include_vernums)))
     for snippet in snippets:
         root.add(snippet)
 
@@ -475,6 +475,13 @@ DEFAULT_BACKENDS = {
     'md': 'webpage',
 }
 
+INPUT_LANGUAGE = {
+    "coq": "coq",
+    "coqdoc": "coq",
+    "coq+rst": "coq",
+    "json": "coq",
+}
+
 def infer_mode(fpath, kind, arg, table):
     for (ext, mode) in table:
         if fpath.endswith(ext):
@@ -525,12 +532,25 @@ def post_process_arguments(parser, args):
         "latex": args.latex_dialect
     }
 
+    args.language_drivers = {
+        "coq": args.coq_driver
+    }
+
+    coq_args = []
     for (dirpath,) in args.coq_args_I:
-        args.sertop_args.extend(("-I", dirpath))
+        coq_args.extend(("-I", dirpath))
     for pair in args.coq_args_R:
-        args.sertop_args.extend(("-R", ",".join(pair)))
+        coq_args.extend(("-R", ",".join(pair)))
     for pair in args.coq_args_Q:
-        args.sertop_args.extend(("-Q", ",".join(pair)))
+        coq_args.extend(("-Q", ",".join(pair)))
+
+    args.sertop_args.extend(coq_args)
+    args.coqc_args.extend(coq_args)
+
+    args.driver_args_by_name = {
+        "sertop": args.sertop_args,
+        "coqc_time": args.coqc_args,
+    }
 
     # argparse applies ‘type’ before ‘choices’, so we do the conversion here
     args.copy_fn = COPY_FUNCTIONS[args.copy_fn]
@@ -580,6 +600,11 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
     in_.add_argument("--frontend", default=None, choices=FRONTEND_CHOICES,
                      help=FRONTEND_HELP)
 
+    COQ_DRIVER_HELP = "Choose which driver to use to execute Coq proofs."
+    COQ_DRIVER_CHOICES = sorted(core.DRIVERS_BY_LANGUAGE["coq"])
+    in_.add_argument("--coq-driver", default="sertop",
+                     choices=COQ_DRIVER_CHOICES,
+                     help=COQ_DRIVER_HELP)
 
     out = parser.add_argument_group("Output configuration")
 
@@ -670,11 +695,19 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
 
     subp = parser.add_argument_group("SerAPI process configuration")
 
-    SERTOP_ARGS_HELP = "Pass a single argument to SerAPI (e.g. -Q dir,lib)."
+    SERTOP_ARGS_HELP = ("Pass a single argument to SerAPI "
+                        "(e.g. --sertop-arg=-Q --sertop-arg=dir,lib).")
     subp.add_argument("--sertop-arg", dest="sertop_args",
                       action="append", default=[],
-                      metavar="SERAPI_ARG",
+                      metavar="SERTOP_ARG",
                       help=SERTOP_ARGS_HELP)
+
+    COQC_ARGS_HELP = ("Pass a single argument to coqc "
+                        "(e.g. --coqc-arg=-noinit).")
+    subp.add_argument("--coqc-arg", dest="coqc_args",
+                      action="append", default=[],
+                      metavar="SERAPI_ARG",
+                      help=COQC_ARGS_HELP)
 
     I_HELP = "Pass -I DIR to the SerAPI subprocess."
     subp.add_argument("-I", "--ml-include-path", dest="coq_args_I",
@@ -738,10 +771,16 @@ def build_context(fpath, args, frontend, backend):
 
     dialect = args.backend_dialects.get(backend)
 
+    # These may be none (e.g. in reST mode)
+    input_language = INPUT_LANGUAGE.get(frontend)
+    driver_name = args.language_drivers.get(input_language)
+    driver_args = args.driver_args_by_name.get(driver_name, ())
+
     ctx = {**vars(args),
            "fpath": fpath, "fname": fname, "input_is_stdin": input_is_stdin,
            "frontend": frontend, "backend": backend, "dialect": dialect,
-           "input_language": "coq",
+           "input_language": input_language,
+           "driver_name": driver_name, "driver_args": driver_args,
            "assets": [], "html_classes": [], "exit_code": ExitCode(0)}
     ctx["ctx"] = ctx
 
@@ -800,19 +839,19 @@ def main():
 def rstcoq2html():
     """Docutils entry point for Coq → HTML conversion."""
     DESCRIPTION = 'Build an HTML document from an Alectryon Coq file.'
-    return _docutils_cmdline(DESCRIPTION, "coq+rst", "webpage")
+    return _docutils_cmdline(DESCRIPTION, "coq+rst", "webpage", "html4")
 
 def coqrst2html():
     """Docutils entry point for reST → HTML conversion."""
     DESCRIPTION = 'Build an HTML document from an Alectryon reStructuredText file.'
-    return _docutils_cmdline(DESCRIPTION, "rst", "webpage")
+    return _docutils_cmdline(DESCRIPTION, "rst", "webpage", "html4")
 
 def rstcoq2latex():
     """Docutils entry point for Coq → LaTeX conversion."""
     DESCRIPTION = 'Build a LaTeX document from an Alectryon Coq file.'
-    return _docutils_cmdline(DESCRIPTION, "coq+rst", "latex")
+    return _docutils_cmdline(DESCRIPTION, "coq+rst", "latex", "pdflatex")
 
 def coqrst2latex():
     """Docutils entry point for reST → LaTeX conversion."""
     DESCRIPTION = 'Build a LaTeX document from an Alectryon reStructuredText file.'
-    return _docutils_cmdline(DESCRIPTION, "rst", "latex")
+    return _docutils_cmdline(DESCRIPTION, "rst", "latex", "pdflatex")

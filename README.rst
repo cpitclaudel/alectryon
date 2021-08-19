@@ -497,12 +497,12 @@ When compiling reStructuredText documents, you can add custom SerAPI arguments i
 
    :alectryon/serapi/args: -R . Lib -I mldir
 
-To set SerAPI's arguments for all input files, modify ``AlectryonTransform.SERTOP_ARGS`` in ``alectryon.docutils``.  Here's an example that you could use in a Sphinx config file::
+To set SerAPI's arguments for all input files, modify ``AlectryonTransform.DRIVER_ARGS["sertop"]`` in ``alectryon.docutils``.  Here's an example that you could use in a Sphinx config file::
 
    from alectryon.docutils import AlectryonTransform
-   AlectryonTransform.SERTOP_ARGS = ["-Q", "/coq/source/path/,LibraryName"]
+   AlectryonTransform.DRIVER_ARGS["sertop"] = ["-Q", "/coq/source/path/,LibraryName"]
 
-Note that the syntax of ``SERTOP_ARGS`` is the one of ``sertop``, not the one of
+Note that the syntax of ``DRIVER_ARGS["sertop"]`` is the one of ``sertop``, not the one of
 ``coqc`` (https://github.com/ejgallego/coq-serapi/issues/215).
 
 Adding custom keywords

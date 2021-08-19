@@ -22,6 +22,7 @@ from typing import Any, Dict, DefaultDict, Optional, Tuple, NamedTuple, NoReturn
 
 from collections import namedtuple, defaultdict
 from contextlib import contextmanager
+from importlib import import_module
 from pathlib import Path
 from shlex import quote
 from shutil import which
@@ -279,6 +280,10 @@ class CLIDriver(Driver):
         bs = check_output([cls.resolve_driver(binpath or cls.BIN), *cls.VERSION_FLAGS])
         return GeneratorInfo(cls.NAME, bs.decode('ascii', 'ignore').strip())
 
+    @property
+    def metadata(self):
+        return {"args": self.user_args}
+
     @classmethod
     def driver_not_found(cls, binpath) -> NoReturn:
         """Raise an error to indicate that ``binpath`` cannot be found."""
@@ -333,3 +338,20 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
     def reset(self):
         """Start or restart this proper instance."""
         self.repl = self.start(stderr=sys.stderr)
+
+DRIVERS_BY_LANGUAGE = {
+    "coq": {
+        "sertop": (".serapi", "SerAPI"),
+        "coqc_time": (".coqc_time", "CoqcTime"),
+    }
+}
+
+def resolve_driver(input_language, driver_name):
+    if input_language not in DRIVERS_BY_LANGUAGE:
+        raise ValueError("Unknown language: {}".format(input_language))
+    known_drivers = DRIVERS_BY_LANGUAGE[input_language]
+    if driver_name not in known_drivers:
+        MSG = "Unknown driver for language {}: {}"
+        raise ValueError(MSG.format(input_language, driver_name))
+    mod, cls = known_drivers[driver_name]
+    return getattr(import_module(mod, __package__), cls)

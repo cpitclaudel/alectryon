@@ -80,6 +80,10 @@ class SerAPI(REPLDriver):
     def topfile(self):
         return CoqIdents.topfile_of_fpath(self.fpath)
 
+    @property
+    def metadata(self):
+        return {"sertop_args": self.user_args}
+
     def _next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceding it."""
         response = self._read()
