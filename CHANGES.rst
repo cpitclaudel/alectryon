@@ -5,6 +5,8 @@
 Unreleased
 ==========
 
+- Alectryon can now compile Coq documents without running proofs nor recording Coq's output.  This is useful for quick experimentation. [GH-52] [745633c4]
+
 - Alectryon can now compile Coq documents with ``coqc`` instead of ``SerAPI``.  The results do not include goals or messages.  This is useful when trying out a version of Coq that SerAPI does not support yet. [GH-60] [9c5fe161]
 
 - Per-document Coq syntax-highlighting rules added to the docinfo section at the beginning of each document are now prefixed with ``alectryon/pygments/coq/`` instead of ``alectryon/pygments/`` (the legacy prefix is still supported). [6a26ac48]
