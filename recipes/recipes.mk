@@ -67,6 +67,11 @@ _output/fragments.snippets.tex: fragments.v.json
 	$(alectryon) $< --backend snippets-latex
 recipes_targets += _output/fragments.snippets.tex
 
+# reST+Lean → HTML
+_output/lean3-tutorial.html: lean3-tutorial.rst
+	$(alectryon) $<
+recipes_targets += _output/lean3-tutorial.html
+
 # MyST → HTML
 _output/literate_MyST.html: literate_MyST.md
 	$(alectryon) $<
@@ -132,6 +137,11 @@ recipes_targets += _output/minimal.html
 _output/minimal.no-alectryon.html: minimal.rst | _output/
 	cd ..; $(PYTHON) -m alectryon.minimal recipes/$< recipes/$@
 recipes_targets += _output/minimal.no-alectryon.html
+
+# Lean → HTML
+_output/plain.lean.html: plain.lean
+	$(alectryon) --frontend lean3 $<
+recipes_targets += _output/plain.lean.html
 
 # Coq → HTML
 _output/plain.v.html: plain.v
