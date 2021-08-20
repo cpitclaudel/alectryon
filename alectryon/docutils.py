@@ -203,8 +203,12 @@ def _gensym_stem(document, suffix=""):
     return nodes.make_id(os.path.basename(source)) + (source and suffix)
 
 class Config:
+    @staticmethod
+    def _token_dict(): # Not a lambda because of pickling
+        return defaultdict(list)
+
     def __init__(self, document):
-        self.tokens = {}
+        self.tokens_by_lang = defaultdict(self._token_dict)
         self.language_drivers = AlectryonTransform.LANGUAGE_DRIVERS.copy()
         self.driver_args: DefaultDict[str, List[str]] = defaultdict(list)
         for nm, args in AlectryonTransform.DRIVER_ARGS.items():
@@ -247,7 +251,7 @@ class Config:
             # ``shlex.split(body)`` instead of ``body.split()`` would work find
             # here, but the filter added by ``added_tokens`` processes words
             # (“names”) one by one, so multi-word tokens would never match.
-            self.tokens.setdefault(token, []).extend(body.split())
+            self.tokens_by_lang[lang][token].extend(body.split())
         elif name == "alectryon/serapi/args":
             import shlex
             self.driver_args["sertop"].extend(self.parse_args(shlex.split(body)))
@@ -611,7 +615,7 @@ class AlectryonPostTransform(OneTimeTransform):
 
     def _apply(self, **_kwargs):
         fmt, generator = self.init_generator()
-        with added_tokens(alectryon_state(self.document).config.tokens, lang="coq"):
+        with added_tokens(alectryon_state(self.document).config.tokens_by_lang["coq"], lang="coq"):
             for node in self.document.traverse(alectryon_pending_io):
                 self.replace_one_io(node, fmt, generator)
             for node in self.document.traverse(alectryon_pending_quote):
