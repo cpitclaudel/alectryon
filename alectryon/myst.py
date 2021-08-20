@@ -47,6 +47,6 @@ try:
 except ImportError as err:
     class FallbackParser(docutils.parsers.Parser):
         def parse(self, inputstring, document):
-            document.append(document.reporter.warning(
+            document.append(document.reporter.severe(
                 'Cannot parse Markdown input without Python package `myst_parser`.'))
     Parser = FallbackParser
