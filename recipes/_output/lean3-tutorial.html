@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>An Introduction to Lean</title>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="pygments.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Lean3. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="an-introduction-to-lean">
+<h1 class="title">An Introduction to Lean</h1>
+
+<input type="checkbox" class="alectryon-toggle" id="alectryon-toggle-0" /><label for="alectryon-toggle-0" class="alectryon-toggle-label">Display all goals and responses</label><div class="alectryon-container docutils container">
+<p>To compile:</p>
+<pre class="literal-block">
+alectryon lean3-tutorial.rst # reST+Lean → HTML; produces ‘lean3-tutorial.html’ -/
+</pre>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The original document is at <a class="reference external" href="https://leanprover.github.io/introduction_to_lean/">https://leanprover.github.io/introduction_to_lean/</a></p>
+</div>
+<div class="section" id="overview">
+<h1>1 Overview</h1>
+<p>This introduction offers a tour of Lean and its features, with a number
+of examples for you to play around with and explore. If you are reading
+this in our online tutorial system, you can run examples like the one
+below by clicking the button that says “try it yourself.”</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"> </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk0"><span class="k">#check</span> <span class="s2">&quot;hello world!&quot;</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="s2">&quot;hello world!&quot;</span> : string</blockquote></div></div></small></span></pre><p>The response from Lean appears in the small window underneath the editor
+text, and also in popup windows that you can read when you hover over
+the indicators in the left margin. Alternatively, if you have installed
+Lean and have it running in a stand-alone editor, you can copy and paste
+examples and try them there.</p>
+<div class="section" id="perspectives-on-lean">
+<h2>1.1 Perspectives on Lean</h2>
+<p>Lean is an implementation of a logical foundation known as <em>dependent
+type theory</em>. Specifically, it implements a version of dependent type
+theory known as the <em>Calculus of Inductive Constructions</em>. The <em>CIC</em> is
+a formal language with a small and precise set of rules that governs the
+formation of expressions. In this formal system, moreover, every
+expression has a <em>type</em>. The type of expression indicates what sort of
+object the expression denotes. For example, an expression may denote a
+mathematical object like a natural number, a data type, an assertion, or
+a proof.</p>
+<p>Lean has a small and carefully written kernel, which serves to check
+that an expression is well-formed and confirm that it has a given type.
+It is this kernel that gives Lean its special character. Dependent type
+theory serves as a foundational language, allowing us to describe all
+sorts of objects and prove things about them. The foundational language
+fixes the meaning of the objects we introduce, and the kernel ensures
+that the things we prove about them are correct.</p>
+<p>Put simply, Lean is designed to help you construct, manipulate, and
+check expressions in this foundational language. This may not sound like
+much, but what makes the system powerful is the fact that dependent type
+theory is expressive enough to allow us to define and reason about all
+sorts of objects. For example, Lean’s standard library defines the
+natural numbers to be the structure generated freely and inductively by
+a constant, <em>zero</em>, and a unary function <em>succ</em>:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kn">namespace</span> hidden
+  <span class="kd">inductive</span> nat : <span class="kt">Type</span>
+  <span class="bp">|</span> zero : nat
+  <span class="bp">|</span> succ : nat <span class="bp">→</span> nat</span></pre><p>If you copy this definition into the editor window at right you will see
+that we have wrapped it in a <em>namespace</em> to avoid conflicting with the
+standard definition, which is loaded by default. Even so, choosing the
+name <tt class="docutils literal">nat</tt> means that within the namespace this identifier is
+overloaded, which can cause confusion. Thus we will do this only
+sparingly, for purposes of illustration.</p>
+<p>Having specified this data type, we can go on to define addition by
+recursion on the second argument:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp">  <span class="kd">def</span> add : nat <span class="bp">→</span> nat <span class="bp">→</span> nat
+  <span class="bp">|</span> m nat.zero     := m
+  <span class="bp">|</span> m (nat.succ n) := nat.succ (add m n)
+<span class="kd">end</span> hidden</span></pre><p>Lean compiles definitions like these down to a single axiomatic
+primitive that governs use of both induction and recursion on
+inductively defined structures. The library defines notation for the
+data type, as well as for <tt class="docutils literal">zero</tt> and <tt class="docutils literal">add</tt>. (In fact, Lean uses
+<em>type classes</em>, a very handy mechanism used by functional programming
+languages like Haskell, to share notation and properties across
+algebraic structures.) Lean uses the Unicode character <tt class="docutils literal">ℕ</tt> as
+alternative notation for the type <tt class="docutils literal">nat</tt>. You can enter this in an
+editor by writing <tt class="docutils literal">\nat</tt>.</p>
+<p>Of course, we can also define non-recursive functions by giving an
+explicit definition:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">def</span> double (n : ℕ) : ℕ := n <span class="bp">+</span> n</span></pre><p>We can then go on to define other data types like the integers, the
+rationals, and the real numbers, the booleans, characters and strings,
+lists, products, disjoint sums, and so on. We can also define algebraic
+structures like groups, rings, fields, vector spaces, and categories. In
+fact, dependent type theory was designed to serve as a foundation for
+all conventional mathematics.</p>
+<p>This points to a first intended use of Lean: it serves as a
+<em>specification language</em>, that is, a means to specify and define
+mathematical objects in precise terms. With these specifications, Lean
+can interpret basic objects and infer their types:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk1"><span class="k">#check</span> (<span class="mi">27</span> <span class="bp">+</span> <span class="mi">9</span>) <span class="bp">*</span> <span class="mi">33</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">(<span class="mi">27</span> <span class="bp">+</span> <span class="mi">9</span>) <span class="bp">*</span> <span class="mi">33</span> : ℕ</blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk2"><span class="k">#check</span> [(<span class="mi">1</span>, <span class="mi">2</span>), (<span class="mi">3</span>, <span class="mi">4</span>), (<span class="mi">5</span>, <span class="mi">6</span>)] <span class="bp">++</span> [(<span class="mi">7</span>, <span class="mi">8</span>), (<span class="mi">9</span>, <span class="mi">10</span>)]</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">[(<span class="mi">1</span>, <span class="mi">2</span>), (<span class="mi">3</span>, <span class="mi">4</span>), (<span class="mi">5</span>, <span class="mi">6</span>)] <span class="bp">++</span> [(<span class="mi">7</span>, <span class="mi">8</span>), (<span class="mi">9</span>, <span class="mi">10</span>)] : list (ℕ <span class="bp">×</span> ℕ)</blockquote></div></div></small></span></pre><p>When there is no other information present to constrain the type of a
+numeral, Lean assumes it denotes a natural, by default. Thus Lean can
+recognize that the first expression denotes a natural number, and that
+the second, a concatenation of two lists of pairs of natural numbers, is
+again a list of pairs. It also remembers that <tt class="docutils literal">double</tt> is a function
+from the natural numbers to the natural numbers, and can print out the
+definition when requested to do so:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk3"><span class="k">#check</span> double</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">double : ℕ <span class="bp">→</span> ℕ</blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk4"><span class="k">#print</span> double</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kd">def</span> double : ℕ <span class="bp">→</span> ℕ :=
+<span class="bp">λ</span> (n : ℕ), n <span class="bp">+</span> n</blockquote></div></div></small></span></pre><p>Lean can reason about abstract objects as well as it can reason about
+concrete ones. In the following example, we declare a type <tt class="docutils literal">G</tt> with a
+group structure, and variables <tt class="docutils literal">g₁</tt> and <tt class="docutils literal">g₂</tt> that range over <tt class="docutils literal">G</tt>.
+With those declarations, Lean knows that the expression
+<tt class="docutils literal">g₂⁻¹ * g₁ * g₂</tt> denotes an element of <tt class="docutils literal">G</tt>.</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kn">section</span>
+  <span class="kd">variables</span> (G : <span class="kt">Type</span>) [has_mul G] [has_inv G]
+
+  <span class="kd">variables</span> g₁ g₂ : G
+
+</span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk5" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk5"><span class="k">#check</span> g₂<span class="bp">⁻¹</span> <span class="bp">*</span> g₁ <span class="bp">*</span> g₂</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">g₂<span class="bp">⁻¹</span> <span class="bp">*</span> g₁ <span class="bp">*</span> g₂ : G</blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp"><span class="kd">end</span></span></pre><p>Putting the declarations in a <tt class="docutils literal">section</tt>, as we do here, delimits their
+scope. In this case, the section declaration is not needed, and no harm
+would be done if we had declared these variables at the top level.</p>
+<p>An important feature of dependent type theory is that every expression
+has a computational interpretation, which is to say, there are rules
+that specify how they can be <em>reduced</em> to a normal form. Moreover,
+expressions in a computationally pure fragment of the language evaluate
+to <em>values</em> in the way you would expect. For example, assuming the
+definition does not depend on nonconstructive components in an essential
+way, every closed term of type <tt class="docutils literal">ℕ</tt> evaluates to a numeral. Lean’s
+kernel can carry out this evaluation:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk6" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk6"><span class="k">#eval</span> (<span class="mi">27</span> <span class="bp">+</span> <span class="mi">9</span>) <span class="bp">*</span> <span class="mi">33</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="mi">1188</span></blockquote></div></div></small></span></pre><p>As part of the kernel, the results of this evaluation can be highly
+trusted. The evaluator is not very efficient, however, and is not
+intended to be used for substantial computational tasks. For that
+purpose, Lean also generates bytecode for every definition of a
+computable object, and can evaluate it on demand. To process the
+bytecode quickly, it uses an efficient <em>virtual machine</em>, similar to the
+ones used to interpret OCaml and Python.</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk7" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk7"><span class="k">#eval</span> (<span class="mi">27</span> <span class="bp">+</span> <span class="mi">9</span>) <span class="bp">*</span> <span class="mi">33</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="mi">1188</span></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk8" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk8"><span class="k">#eval</span> (<span class="mi">2227</span> <span class="bp">+</span> <span class="mi">9999</span>) <span class="bp">*</span> <span class="mi">33</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="mi">403458</span></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk9" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk9"><span class="k">#eval</span> double <span class="mi">9999</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="mi">19998</span></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chka" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chka"><span class="k">#eval</span> [(<span class="mi">1</span>, <span class="mi">2</span>), (<span class="mi">3</span>, <span class="mi">4</span>), (<span class="mi">5</span>, <span class="mi">6</span>)] <span class="bp">++</span> [(<span class="mi">7</span>, <span class="mi">8</span>), (<span class="mi">9</span>, <span class="mi">10</span>)]</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">[(<span class="mi">1</span>, <span class="mi">2</span>), (<span class="mi">3</span>, <span class="mi">4</span>), (<span class="mi">5</span>, <span class="mi">6</span>), (<span class="mi">7</span>, <span class="mi">8</span>), (<span class="mi">9</span>, <span class="mi">10</span>)]</blockquote></div></div></small></span></pre><p>Relying on results from the bytecode evaluator requires a higher level
+of trust than relying on the kernel. For example, for efficiency, the
+bytecode evaluator uses the GNU multiple precision library to carry out
+numerical computations involving the natural numbers and integers, so
+the correctness of those computations are no longer underwritten by the
+axiomatic foundation.</p>
+<p>This points to a second intended use of Lean, namely, as a <em>programming
+language</em>. Because dependent type theory is so expressive, we can make
+use of all the usual methods and techniques of functional programming,
+including higher types, type classes, records, monads, and other
+abstractions. In fact, we have the entire Lean library at our disposal.
+With just a few lines of code, we can write a generic sort procedure
+that sorts elements of a list according to a specified binary relation
+<tt class="docutils literal">r</tt> on an arbitrary type <tt class="docutils literal">α</tt>, assuming only that we can determine
+computationally when <tt class="docutils literal">r</tt> holds.</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kn">section</span> sort
+  <span class="kd">universe</span> u
+  <span class="kd">parameters</span> {α : <span class="kt">Type</span> u} (r : α <span class="bp">→</span> α <span class="bp">→</span> <span class="kt">Prop</span>) [decidable_rel r]
+  <span class="kn">local</span> <span class="kd">infix</span> <span class="bp">`≼`</span> : <span class="mi">50</span> := r
+
+  <span class="kd">def</span> ordered_insert (a : α) : list α <span class="bp">→</span> list α
+  <span class="bp">|</span> []       := [a]
+  <span class="bp">|</span> (b :: l) := <span class="k">if</span> a <span class="bp">≼</span> b <span class="k">then</span> a :: (b :: l) <span class="k">else</span> b :: ordered_insert l
+
+  <span class="kd">def</span> insertion_sort : list α <span class="bp">→</span> list α
+  <span class="bp">|</span> []       := []
+  <span class="bp">|</span> (b :: l) := ordered_insert b (insertion_sort l)
+<span class="kd">end</span> sort</span></pre><p>For foundational reasons, types in Lean have to be stratified into a
+hierarchy of <em>type universes</em>, and the definitions above work for any
+type <tt class="docutils literal">α</tt> in any such universe. We can run the procedure above on a
+list of natural numbers, using the usual ordering:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chkb" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chkb"><span class="k">#eval</span> insertion_sort (<span class="bp">λ</span> m n : ℕ, m <span class="bp">≤</span> n) [<span class="mi">5</span>, <span class="mi">27</span>, <span class="mi">221</span>, <span class="mi">95</span>, <span class="mi">17</span>, <span class="mi">43</span>, <span class="mi">7</span>, <span class="mi">2</span>]</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">[<span class="mi">2</span>, <span class="mi">5</span>, <span class="mi">7</span>, <span class="mi">17</span>, <span class="mi">27</span>, <span class="mi">43</span>, <span class="mi">95</span>, <span class="mi">221</span>]</blockquote></div></div></small></span></pre><p>Substantial programs can be written in Lean and run by the bytecode
+interpreter. In fact, a full-blown <a class="reference external" href="https://github.com/leanprover/super">resolution theorem
+prover</a> for Lean has been
+written in Lean itself.</p>
+<p>You can profile your code by setting the relevant options:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">set_option</span> profiler true <span class="kd">set_option</span> profiler.freq <span class="mi">10</span></span></pre><p>The second option determines the frequency that the virtual machine is
+polled with. Be careful: if the task you profile is too short, there
+won’t be any output! You can even implement your own
+<a class="reference external" href="https://github.com/leanprover/lean/tree/master/library/tools/debugger">debugger</a>
+in Lean itself.</p>
+<p>What makes Lean special as a programming language is that the programs
+we write define functions in a precise axiomatic framework. Which brings
+us to third, and central, intended use of Lean: namely we can make
+assertions about the objects we define and then go on to prove those
+assertions. We can do this because the language of dependent type theory
+is rich enough to encode such assertions and proofs. For example, we can
+express the property that a natural number is even:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">def</span> even (n : ℕ) : <span class="kt">Prop</span> := <span class="bp">∃</span> m, n <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> m</span></pre><p>As presented, it is not clear that the property of being even is
+decidable, since we cannot in general test every natural number to
+determine whether any of them serves as a witness to the given
+existential statement. But we can nonetheless use this definition to
+form compound statements:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chkc" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chkc"><span class="k">#check</span> even <span class="mi">10</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">even <span class="mi">10</span> : <span class="kt">Prop</span></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chkd" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chkd"><span class="k">#check</span> even <span class="mi">11</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">even <span class="mi">11</span> : <span class="kt">Prop</span></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chke" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chke"><span class="k">#check</span> <span class="bp">∀</span> n, even n <span class="bp">∨</span> even (n <span class="bp">+</span> <span class="mi">1</span>)</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="bp">∀</span> (n : ℕ), even n <span class="bp">∨</span> even (n <span class="bp">+</span> <span class="mi">1</span>) : <span class="kt">Prop</span></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chkf" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chkf"><span class="k">#check</span> <span class="bp">∀</span> n m, even n <span class="bp">→</span> even m <span class="bp">→</span> even (n <span class="bp">+</span> m)</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="bp">∀</span> (n m : ℕ), even n <span class="bp">→</span> even m <span class="bp">→</span> even (n <span class="bp">+</span> m) : <span class="kt">Prop</span></blockquote></div></div></small></span></pre><p>In each case, the expression has type <tt class="docutils literal">Prop</tt>, indicating that Lean
+recognizes it as an assertion.</p>
+<p>Incidentally, of course, we do know that the property of being
+<tt class="docutils literal">even n</tt> is algorithmically decidable. We can develop any algorithm we
+want for that purpose. Provided we can prove that it behaves as
+advertised, we can then use Lean’s type class mechanism to associate
+this decision procedure to the predicate. Once we do so, we can use the
+predicate <tt class="docutils literal">even</tt> in conditional statements in any program.</p>
+<p>In any case, in order to <em>prove</em> assertions like the ones above (at
+least, the ones that are true), we need a proof language. Fortunately,
+dependent type theory can play that role: proofs are nothing more than
+certain kinds of expressions in the formal language. In the encoding
+used, if <tt class="docutils literal">p</tt> is any proposition, a proof of <tt class="docutils literal">p</tt> is just an
+expression <tt class="docutils literal">e</tt> of type <tt class="docutils literal">p</tt>. Thus, in Lean, checking a proof is just
+a special case of checking that an expression is well-formed and has a
+given type. We can prove that 10 is even as follows:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">example</span> : even <span class="mi">10</span> := ⟨<span class="mi">5</span>, rfl⟩</span></pre><p>In general, to prove an existential statement, it is enough to present a
+witness to the existential quantifier and then show that the subsequent
+claim is true of that witness. The Unicode angle brackets just package
+this data together; you can enter them in an editor with <tt class="docutils literal">\&lt;</tt> and
+<tt class="docutils literal">\&gt;</tt>, or use the ASCII equivalents <tt class="docutils literal">(|</tt> and <tt class="docutils literal">|)</tt>. The second
+component, <tt class="docutils literal">rfl</tt>, is short for reflexivity. Lean’s kernel can verify
+that <tt class="docutils literal">10 = 2 * 5</tt> by reducing both sides and confirming that they are,
+in fact, identical. (For longer expressions, Lean’s simplifier, which
+will be discussed below, can do this more efficiently, producing a proof
+instead that carries out the calculation using binary representations.)</p>
+<p>As noted above, dependent type theory is designed to serve as a
+mathematical foundation, so that any conventional mathematical assertion
+can be reasonably expressed, and any theorem that can be proved using
+conventional mathematical means can be carried out formally, with enough
+effort. Here is a proof that the sum of two even numbers is even:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="c1">-- theorem even_add : ∀ m n, even m → even n → even (n + m) :=</span>
+<span class="c1">--   take m n,</span>
+<span class="c1">--   assume ⟨k, (hk : m = 2 * k)⟩,</span>
+<span class="c1">--   assume ⟨l, (hl : n = 2 * l)⟩,</span>
+<span class="c1">--   have n + m = 2 * (k + l),</span>
+<span class="c1">--     by simp [hk, hl, mul_add],</span>
+<span class="c1">--   show even (n + m),</span>
+<span class="c1">--     from ⟨_, this⟩</span></span></pre><p>Again, we emphasize that the proof is really just an expression in
+dependent type theory, presented with syntactic sugar that makes it look
+somewhat like any informal mathematical proof. There is also a tiny bit
+of automated reasoning thrown in: the command <tt class="docutils literal">by simp</tt> calls on
+Lean’s built-in simplifier to prove the assertion after the <tt class="docutils literal">have</tt>,
+using the two facts labelled <tt class="docutils literal">hk</tt> and <tt class="docutils literal">hl</tt>, and the distributivity
+of multiplication over addition.</p>
+<p>Lean supports another style of writing proofs, namely, using <em>tactics</em>.
+These are instructions, or procedures, that tell Lean how to construct
+the requisite expression. Here is a tactic-style proof of the theorem
+above:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">axiom</span> mul_add: <span class="bp">∀</span> m n p: nat, m <span class="bp">*</span> (n <span class="bp">+</span> p) <span class="bp">=</span> m <span class="bp">*</span> n <span class="bp">+</span> m <span class="bp">*</span> p
+<span class="kd">axiom</span> add_sym: <span class="bp">∀</span> m n: nat, n <span class="bp">+</span> m <span class="bp">=</span> m <span class="bp">+</span> n
+
+<span class="kd">theorem</span> even_add : <span class="bp">∀</span> m n, even m <span class="bp">→</span> even n <span class="bp">→</span> even (n <span class="bp">+</span> m) :=
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk10" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk10"><span class="kd">begin</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="bp">∀</span> (m n : ℕ), even m <span class="bp">→</span> even n <span class="bp">→</span> even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk11" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk11">intros m n hm hn,</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hm</var><span class="hyp-type"><b>: </b><span>even m</span></span></span><br><span><var>hn</var><span class="hyp-type"><b>: </b><span>even n</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk12" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk12">cases hm <span class="k">with</span> k hk,</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hn</var><span class="hyp-type"><b>: </b><span>even n</span></span></span><br><span><var>k</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hk</var><span class="hyp-type"><b>: </b><span>m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> k</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk13" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk13">cases hn <span class="k">with</span> l hl,</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n, k</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hk</var><span class="hyp-type"><b>: </b><span>m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> k</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hl</var><span class="hyp-type"><b>: </b><span>n <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> l</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk14" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk14">unfold even,</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n, k</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hk</var><span class="hyp-type"><b>: </b><span>m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> k</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hl</var><span class="hyp-type"><b>: </b><span>n <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> l</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="bp">∃</span> (m_1 : ℕ), n <span class="bp">+</span> m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> m_1</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk15" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk15">existsi (k <span class="bp">+</span> l),</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n, k</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hk</var><span class="hyp-type"><b>: </b><span>m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> k</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hl</var><span class="hyp-type"><b>: </b><span>n <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> l</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">n <span class="bp">+</span> m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> (k <span class="bp">+</span> l)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  simp [hk, hl, mul_add, add_sym]
+<span class="kd">end</span></span></pre><p>Just as we can prove statements about the natural numbers, we can also
+reason about computer programs written in Lean, because these, too, are
+no different from any other definitions. This enables us to specify
+properties of computer programs, prove that the programs meet their
+specifications, and run the code with confidence that the results mean
+what we think they mean.</p>
+<p>The use of <tt class="docutils literal">simp</tt> in the proof above points to another aspect of Lean,
+namely, that it can serve as a gateway to the use of automated
+reasoning. Terms in dependent type theory can be very verbose, and
+formal proofs can be especially long. One of Lean’s strengths is that it
+can help you construct these terms, and hide the details from you. We
+have already seen hints of this: in the examples above, Lean inferred
+the fact that the natural numbers form an instance of a semiring in
+order to make use of the theorem <tt class="docutils literal">mul_add</tt>, it found a procedure for
+comparing two natural numbers when we applied <tt class="docutils literal">insertion_sort</tt> with
+the less-than ordering, and it did some work behind the scenes (though
+in this case, not much) when transforming the recursive specification of
+addition on the natural numbers to a formal definition. But a central
+goal of the Lean project is to develop powerful automation that will
+assist in the verification of programs and the construction of proofs as
+well.</p>
+<p>It is the tactic framework that serves as a gateway to the use of
+automation. Lean provides means of implementing automated reasoning
+procedures in such a way that they produce formal proofs that their
+results are correct. This imposes an extra burden on the implementation,
+but it comes with benefits as well: automated procedures can make full
+use of the Lean library and API, and the formal justifications they
+produce provide a strong guarantee that the results are indeed correct.</p>
+<p>Which brings us to yet another aspect of Lean, namely, its role as a
+<em>metaprogramming language</em>. Many of Lean’s internal data structures and
+procedures are exposed and available within the language of Lean itself,
+via a monadic interface. We refer to the use of these procedures as
+“metaprogramming” because they take us outside the formal framework: the
+access points to the API are declared as constants, and the formal
+framework knows nothing about them, other than their type. Lean keeps
+track of which objects in the environment are part of the trusted kernel
+and which make use of this special API, and requires us to annotate the
+latter definitions with the special keyword <tt class="docutils literal">meta</tt>. The virtual
+machine, however, handles calls to the API appropriately. This makes it
+possible to write Lean tactics in Lean itself.</p>
+<p>For example, the procedure <tt class="docutils literal">contra_aux</tt> searches through two lists of
+expressions, assumed to be hypotheses available in the context of a
+tactic proof, in search of a pair of the form <tt class="docutils literal">h₁ : p</tt> and
+<tt class="docutils literal">h₂ : ¬ p</tt>. When it finds such a pair, it uses it to produce a proof
+of the resulting theorem. The procedure <tt class="docutils literal">contra</tt> then applies
+<tt class="docutils literal">contra_aux</tt> to the hypotheses in the local context.</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kn">open</span> expr tactic
+
+<span class="kn">private</span> <span class="kd">meta</span> <span class="kd">def</span> contra_aux : list expr <span class="bp">→</span> list expr <span class="bp">→</span> tactic unit
+<span class="bp">|</span> []         hs := failed
+<span class="bp">|</span> (h₁ :: rs) hs :=
+  <span class="k">do</span> t₀ <span class="bp">←</span> infer_type h₁,
+     t  <span class="bp">←</span> whnf t₀,
+     (<span class="k">do</span> a <span class="bp">←</span> match_not t,
+         h₂ <span class="bp">←</span> find_same_type a hs,
+         tgt <span class="bp">←</span> target,
+         pr <span class="bp">←</span> mk_app <span class="bp">`</span>absurd [tgt, h₂, h₁],
+         exact pr)
+     <span class="bp">&lt;|&gt;</span> contra_aux rs hs
+
+<span class="kd">meta</span> <span class="kd">def</span> contra : tactic unit :=
+<span class="k">do</span> ctx <span class="bp">←</span> local_context,
+   contra_aux ctx ctx</span></pre><p>Having defined this procedure, we can then use it to prove theorems:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">example</span> (p q r : <span class="kt">Prop</span>) (h₁ : p <span class="bp">∧</span> q) (h₂ : q <span class="bp">→</span> r) (h₃ : <span class="bp">¬</span> (p <span class="bp">∧</span> q)) : r :=
+  <span class="kd">by</span> contra</span></pre><p>The results of such a tactic are always checked by the Lean kernel, so
+they can be trusted, even if the code itself is buggy. If the kernel
+fails to type check the resulting term, it raises an error, and the
+resulting theorem is not added to the environment.</p>
+<p>Substantial tactics can be written in such a way, even, as noted above,
+a full-blown resolution theorem prover. Indeed, many of Lean’s core
+tactics <em>are</em> implemented in Lean itself. The code from <tt class="docutils literal">contra</tt> above
+is, in fact, part of the <tt class="docutils literal">contradiction</tt> tactic that is part of Lean’s
+standard library. Thus Lean offers a language for expressing not just
+mathematical knowledge, construed as a body of definitions and theorems,
+but also other kinds of mathematical expertise, namely the algorithms,
+procedures, and heuristics that are part and parcel of mathematical
+understanding.</p>
+</div>
+<div class="section" id="where-to-go-from-here">
+<h2>1.2 Where To Go From Here</h2>
+<p>We have surveyed a number of ways that Lean can be used, namely, as</p>
+<ul class="simple">
+<li>a specification language</li>
+<li>a programming language</li>
+<li>an assertion language</li>
+<li>a proof language</li>
+<li>a gateway to using automation with fully verified results, and</li>
+<li>a metaprogramming language.</li>
+</ul>
+<p>Subsequent chapters provide a compendium of examples for you to play
+with and enjoy. These chapters are fairly short on explanation, however,
+and are not meant to serve as definitive references. If you are
+motivated to continue using Lean in earnest, we recommend continuing,
+from here, to either of the following more expansive introductions:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://leanprover.github.io/theorem_proving_in_lean">Theorem Proving in
+Lean</a></li>
+<li><a class="reference external" href="https://leanprover.github.io/programming_in_lean/">Programming in
+Lean</a></li>
+</ul>
+<p>The first focuses on the use of Lean as a theorem prover, whereas the
+second focuses on aspects of Lean related to programming and
+metaprogramming.</p>
+</div>
+</div>
+</div>
+</div>
+</div></body>
+</html>
