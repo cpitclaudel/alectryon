@@ -559,11 +559,11 @@ class AlectryonPostTransform(OneTimeTransform):
         formats = set(self.document.transformer.components['writer'].supported)
         style = _docutils_config(self.document, "pygments_style")
         if 'html' in formats:
-            highlighter = make_highlighter("html", style)
+            highlighter = make_highlighter("html", "coq", style)
             return "html", html.HtmlGenerator(
                 highlighter, _gensym_stem(self.document), HTML_MINIFICATION)
         if {'latex', 'xelatex', 'lualatex'} & formats:
-            highlighter = make_highlighter("latex", style)
+            highlighter = make_highlighter("latex", "coq", style)
             return "latex", latex.LatexGenerator(highlighter)
         raise NotImplementedError("Unknown output format")
 
@@ -587,7 +587,7 @@ class AlectryonPostTransform(OneTimeTransform):
 
     def _apply(self, **_kwargs):
         fmt, generator = self.init_generator()
-        with added_tokens(alectryon_state(self.document).config.tokens):
+        with added_tokens(alectryon_state(self.document).config.tokens, lang="coq"):
             for node in self.document.traverse(alectryon_pending_io):
                 self.replace_one_io(node, fmt, generator)
             for node in self.document.traverse(alectryon_pending_quote):

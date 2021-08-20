@@ -99,7 +99,7 @@ And that movie can be exported to LaTeX or HTML:
 
    >>> from alectryon.html import HtmlGenerator
    >>> from alectryon.pygments import make_highlighter
-   >>> for dom in HtmlGenerator(make_highlighter("html")).gen(annotated):
+   >>> for dom in HtmlGenerator(make_highlighter("html", "coq")).gen(annotated):
    ...     print(dom)
    <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="chk0"><span class="kn">Check</span> <span class="mi">1</span>.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="mi">1</span>
         : nat</blockquote></div></div></small></span></pre>
@@ -107,7 +107,7 @@ And that movie can be exported to LaTeX or HTML:
 
    >>> from alectryon.latex import LatexGenerator
    >>> from alectryon.pygments import make_highlighter
-   >>> for ltx in LatexGenerator(make_highlighter("latex")).gen(annotated):
+   >>> for ltx in LatexGenerator(make_highlighter("latex", "coq")).gen(annotated):
    ...     print(ltx)
    \begin{alectryon}
      % Generator: Alectryon

@@ -176,17 +176,18 @@ def apply_transforms(annotated):
     for fragments in annotated:
         yield default_transform(fragments)
 
-def gen_html_snippets(annotated, fname, html_minification, pygments_style):
+def gen_html_snippets(annotated, fname, input_language,
+                      html_minification, pygments_style):
     from .html import HtmlGenerator
     from .pygments import make_highlighter
     fname = _scrub_fname(fname)
-    highlighter = make_highlighter("html", pygments_style)
+    highlighter = make_highlighter("html", input_language, pygments_style)
     return HtmlGenerator(highlighter, fname, html_minification).gen(annotated)
 
-def gen_latex_snippets(annotated, pygments_style):
+def gen_latex_snippets(annotated, input_language, pygments_style):
     from .latex import LatexGenerator
     from .pygments import make_highlighter
-    highlighter = make_highlighter("latex", pygments_style)
+    highlighter = make_highlighter("latex", input_language, pygments_style)
     return LatexGenerator(highlighter).gen(annotated)
 
 COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
@@ -223,14 +224,15 @@ def _gen_coqdoc_html(coqdoc_fragments):
         raise AssertionError()
     return docs
 
-def _gen_html_snippets_with_coqdoc(annotated, fname, html_minification, pygments_style):
+def _gen_html_snippets_with_coqdoc(annotated, fname, html_minification,
+                                   input_language, pygments_style):
     from dominate.util import raw
     from .html import HtmlGenerator
     from .pygments import make_highlighter
     from .transforms import isolate_coqdoc, default_transform, CoqdocFragment
 
     fname = _scrub_fname(fname)
-    highlighter = make_highlighter("html", pygments_style)
+    highlighter = make_highlighter("html", input_language, pygments_style)
     writer = HtmlGenerator(highlighter, fname, html_minification)
 
     parts = [part for fragments in annotated
@@ -248,11 +250,11 @@ def _gen_html_snippets_with_coqdoc(annotated, fname, html_minification, pygments
             yield writer.gen_fragments(fragments)
 
 def gen_html_snippets_with_coqdoc(annotated, html_classes, fname,
-                                  html_minification, pygments_style):
+                                  html_minification, input_language, pygments_style):
     html_classes.append("coqdoc")
     # ‘return’ instead of ‘yield from’ to update html_classes eagerly
-    return _gen_html_snippets_with_coqdoc(annotated, fname,
-                                          html_minification, pygments_style)
+    return _gen_html_snippets_with_coqdoc(
+        annotated, fname, html_minification, input_language, pygments_style)
 
 def copy_assets(state, assets: List[Tuple[str, Union[str, core.Asset]]],
                 copy_fn, output_directory, ctx={}):
@@ -730,6 +732,7 @@ def build_context(fpath, args, frontend, backend):
     ctx = {**vars(args),
            "fpath": fpath, "fname": fname, "input_is_stdin": input_is_stdin,
            "frontend": frontend, "backend": backend, "dialect": dialect,
+           "input_language": "coq",
            "assets": [], "html_classes": [], "exit_code": ExitCode(0)}
     ctx["ctx"] = ctx
 

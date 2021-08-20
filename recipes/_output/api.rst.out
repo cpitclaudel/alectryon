@@ -119,7 +119,7 @@ Trying:
 Expecting nothing
 ok
 Trying:
-    for dom in HtmlGenerator(make_highlighter("html")).gen(annotated):
+    for dom in HtmlGenerator(make_highlighter("html", "coq")).gen(annotated):
         print(dom)
 Expecting:
     <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="chk0"><span class="kn">Check</span> <span class="mi">1</span>.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="mi">1</span>
@@ -135,7 +135,7 @@ Trying:
 Expecting nothing
 ok
 Trying:
-    for ltx in LatexGenerator(make_highlighter("latex")).gen(annotated):
+    for ltx in LatexGenerator(make_highlighter("latex", "coq")).gen(annotated):
         print(ltx)
 Expecting:
     \begin{alectryon}
