@@ -22,8 +22,10 @@ dist:
 upload: dist
 	$(PYTHON) -m twine upload dist/*
 
+lint-changes:
+	etc/lint_changes.py CHANGES.rst
+
 lint:
-	etc/lint_changes.sh CHANGES.rst
 	pylint --rcfile=setup.cfg alectryon
 	mypy alectryon/
 	pyright --project .
