@@ -26,9 +26,10 @@ from contextlib import contextmanager
 
 import pygments
 import pygments.styles
+import pygments.formatters
 from pygments.token import Error, STANDARD_TYPES, Name, Operator
 from pygments.filters import Filter, TokenMergeFilter, NameHighlightFilter
-from pygments.formatters import HtmlFormatter, LatexFormatter # pylint: disable=no-name-in-module
+from pygments.formatter import Formatter
 
 from dominate.util import raw as dom_raw
 
@@ -108,7 +109,15 @@ def _get_style(name):
         return AlectryonStyle
     return validate_style(name)
 
-def get_formatter(fmt, style=None):
+class HtmlFormatter(pygments.formatters.HtmlFormatter): # pylint: disable=no-member
+    def get_linenos_style_defs(self):
+        return [l for l in super().get_linenos_style_defs()
+                if not l.startswith("pre {")]
+
+class LatexFormatter(pygments.formatters.LatexFormatter): # pylint: disable=no-member
+    pass
+
+def get_formatter(fmt, style=None) -> Formatter:
     style = _get_style(style)
     if fmt == "html":
         return HtmlFormatter(nobackground=True, nowrap=True, style=style)
