@@ -11,8 +11,8 @@ sys.path.insert(0, root)
 from alectryon.pygments import get_formatter
 
 def css():
-    pth = realpath(join(root, 'assets/tango_subtle.css'))
-    min_pth = realpath(join(root, 'assets/tango_subtle.min.css'))
+    pth = realpath(join(root, 'alectryon/assets/tango_subtle.css'))
+    min_pth = realpath(join(root, 'alectryon/assets/tango_subtle.min.css'))
     with open(pth, mode='w') as cssf:
         cssf.write(get_formatter("html").get_style_defs('.highlight'))
     print("Saved as {}".format(pth))
@@ -20,7 +20,7 @@ def css():
     print("Minified as {}".format(min_pth))
 
 def ltx():
-    pth = realpath(join(root, 'assets/tango_subtle.sty'))
+    pth = realpath(join(root, 'alectryon/assets/tango_subtle.sty'))
     with open(pth, mode='w') as ltxf:
         ltxf.write(get_formatter("latex").get_style_defs())
     print("Saved as {}".format(pth))
