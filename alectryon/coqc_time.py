@@ -18,20 +18,20 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Union
-
 import tempfile
 import re
-from collections import deque, namedtuple
 from pathlib import Path
 
-from .core import CLIDriver, Sentence, Text
+from .core import CLIDriver, Document, Positioned, Sentence
 from .serapi import CoqIdents
 
-Positioned = namedtuple("Positioned", "item beg end")
-
-class Separator(str):
-    pass
+class UTF8Adapter:
+    def __init__(self, s):
+        self.data = s.encode("utf-8")
+    def __getitem__(self, index):
+        return self.data.__getitem__(index).decode("utf-8")
+    def __len__(self):
+        return len(self.data)
 
 class CoqcTime(CLIDriver):
     BIN = "coqc"
@@ -48,7 +48,7 @@ class CoqcTime(CLIDriver):
     COQ_TIME_RE = re.compile(r"^Chars (?P<beg>[0-9]+) - (?P<end>[0-9]+) ",
                              re.MULTILINE)
 
-    def coqc_time(self, doc_bytes):
+    def _find_sentences(self, doc_bytes):
         topfile = CoqIdents.topfile_of_fpath(self.fpath)
         with tempfile.TemporaryDirectory(prefix="alectryon_coq-time") as wd:
             source = Path(wd) / topfile
@@ -59,70 +59,20 @@ class CoqcTime(CLIDriver):
                     MSG = "coqc exited with code {}:\n{}"
                     raise ValueError(MSG.format(coqc.returncode, stderr))
         for m in self.COQ_TIME_RE.finditer(stdout):
-            yield int(m.group("beg")), int(m.group("end"))
+            beg, end = int(m.group("beg")), int(m.group("end"))
+            contents = doc_bytes[beg:end].decode("utf-8")
+            yield Positioned(beg, end, Sentence(contents, [], []))
 
-    def partition_sentences(self, document):
-        bs = document.encode("utf-8")
-        prev_end = 0
-        for beg, end in self.coqc_time(bs):
-            if prev_end < beg:
-                yield Text(bs[prev_end:beg].decode("utf-8"))
-            yield Sentence(bs[beg:end].decode("utf-8"), messages=[], goals=[])
-            prev_end = end
-        if prev_end < len(bs):
-            yield Text(bs[prev_end:len(bs)].decode("utf-8"))
+    def partition(self, contents):
+        bs = UTF8Adapter(contents)
+        return Document.intersperse_text_fragments(bs, self._find_sentences(bs.data))
 
-    @staticmethod
-    def with_boundaries(items: Union[Sentence, Text, str]):
-        beg = 0
-        for item in items:
-            s = getattr(item, "contents", item)
-            end = beg + len(s)
-            yield Positioned(item, beg, end)
-            beg = end
-
-    @staticmethod
-    def split_fragment(fr, cutoff):
-        before = fr.contents[:cutoff]
-        after = fr.contents[cutoff:]
-        if isinstance(fr, Text):
-            fr0 = Text(before)
-        else:
-            assert isinstance(fr, Sentence)
-            fr0 = Sentence(before, messages=[], goals=[])
-        return fr0, fr._replace(contents=after)
-
-    CHUNK_SEPARATOR = Separator("\n")
-
-    @classmethod
-    def recover_chunks(cls, chunks, fragments):
-        fragments = deque(cls.with_boundaries(fragments))
-        for chunk in iter(cls.with_boundaries(chunks)):
-            chunk_fragments = []
-            if fragments:
-                assert fragments[0].beg >= chunk.beg
-            while fragments and fragments[0].end <= chunk.end:
-                chunk_fragments.append(fragments.popleft().item)
-            if fragments and fragments[0].beg < chunk.end and fragments[0].end > chunk.end:
-                cutoff = chunk.end - fragments[0].end
-                before, after = cls.split_fragment(fragments[0].item, cutoff)
-                fragments[0] = fragments[0]._replace(item=after, beg=chunk.end)
-                chunk_fragments.append(before)
-            assert chunk.item == "".join(c.contents for c in chunk_fragments)
-            if not isinstance(chunk.item, Separator):
-                yield chunk_fragments
-        assert not fragments, fragments
-
-    @staticmethod
-    def intersperse(items, separator):
-        interspersed = [separator] * (2 * len(items) - 1)
-        interspersed[::2] = items
-        return interspersed
+    CHUNK_SEPARATOR = "\n"
 
     def annotate(self, chunks):
-        with_separator = self.intersperse(chunks, self.CHUNK_SEPARATOR)
-        document = "".join(with_separator)
-        return list(self.recover_chunks(with_separator, self.partition_sentences(document)))
+        document = Document(chunks, self.CHUNK_SEPARATOR)
+        fragments = self.partition(document.contents)
+        return list(document.recover_chunks(fragments))
 
 def annotate(chunks, args=(), fpath="-", binpath=None):
     r"""Use ``coqc -time`` to fragment multiple chunks of Coq code.

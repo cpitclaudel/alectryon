@@ -18,9 +18,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Dict, DefaultDict, Optional, Tuple, NamedTuple, NoReturn
+from typing import Any, Dict, DefaultDict, Optional, Tuple, Union, NamedTuple, NoReturn
 
-from collections import namedtuple, defaultdict
+from collections import deque, namedtuple, defaultdict
 from contextlib import contextmanager
 from importlib import import_module
 from pathlib import Path
@@ -216,6 +216,79 @@ class PosView(View):
     def translate_span(self, beg, end):
         return Range(self.translate_offset(beg),
                      self.translate_offset(end))
+
+class Separator(str):
+    pass
+
+Positioned = namedtuple("Positioned", "beg end e")
+
+class Document:
+    """A utility class to handle conversions to and from a list of chunks.
+
+    This is useful to recover chunk boundaries for provers that concatenate all
+    chunks before processing them.
+    """
+    def __init__(self, chunks, chunk_separator):
+        self.with_separator = self.intersperse(chunks, Separator(chunk_separator))
+        self.contents = "".join(self.with_separator)
+
+    def recover_chunks(self, fragments):
+        return self._recover_chunks(self.with_separator, fragments)
+
+    @staticmethod
+    def intersperse(items, separator):
+        interspersed = [separator] * (2 * len(items) - 1)
+        interspersed[::2] = items
+        return interspersed
+
+    @staticmethod
+    def intersperse_text_fragments(text, positioned_sentences):
+        pos = 0
+        for st in positioned_sentences:
+            if pos < st.beg:
+                yield Positioned(pos, st.beg, Text(text[pos:st.beg]))
+            yield st
+            pos = st.end
+        if pos < len(text):
+            yield Positioned(pos, len(text), Text(text[pos:len(text)]))
+
+    @staticmethod
+    def with_boundaries(items: Union[Sentence, Text, str]):
+        end = 0
+        for item in items:
+            contents = getattr(item, "contents", item)
+            beg, end = end, end + len(contents)
+            yield Positioned(beg, end, contents)
+
+    @staticmethod
+    def split_fragment(fr, cutoff):
+        before = fr.contents[:cutoff]
+        after = fr.contents[cutoff:]
+        if isinstance(fr, Text):
+            fr0 = Text(before)
+        else:
+            assert isinstance(fr, Sentence)
+            fr0 = Sentence(before, messages=[], goals=[])
+        return fr0, fr._replace(contents=after)
+
+    @classmethod
+    def _recover_chunks(cls, chunks, positioned_fragments):
+        fragments = deque(positioned_fragments)
+        for chunk in cls.with_boundaries(chunks):
+            chunk_fragments = []
+            if fragments:
+                assert fragments[0].beg >= chunk.beg
+            while fragments and fragments[0].end <= chunk.end:
+                chunk_fragments.append(fragments.popleft().e)
+            if fragments and fragments[0].beg < chunk.end and fragments[0].end > chunk.end:
+                cutoff = chunk.end - fragments[0].end
+                before, after = cls.split_fragment(fragments[0].e, cutoff)
+                fragments[0] = fragments[0]._replace(beg=chunk.end, e=after)
+                chunk_fragments.append(before)
+            assert chunk.e == "".join(c.contents for c in chunk_fragments)
+            if not isinstance(chunk.e, Separator):
+                yield chunk_fragments
+        assert not fragments
 
 class Notification(NamedTuple):
     obj: Any
