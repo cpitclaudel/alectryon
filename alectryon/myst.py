@@ -32,16 +32,15 @@ from typing import Type
 import docutils.parsers
 
 try:
-    from myst_parser.sphinx_parser import MystParser
+    from myst_parser.docutils_ import Parser as MystParser
 
+    # https://github.com/executablebooks/MyST-Parser/issues/347
+    # https://github.com/executablebooks/MyST-Parser/pull/419
     class RealParser(MystParser):
         def get_transforms(self):
             from .docutils import ActivateMathJaxTransform
             return super().get_transforms() + [ActivateMathJaxTransform]
 
-        # https://github.com/executablebooks/MyST-Parser/issues/347
-        def parse(self, inputstring, document, renderer="docutils") -> None:
-            return super().parse(inputstring, document, renderer)
     Parser: Type[docutils.parsers.Parser] = RealParser
 
 except ImportError as err:
