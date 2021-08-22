@@ -752,9 +752,11 @@ def coq_code_role(role, rawtext, text, lineno, inliner,
 
 coq_code_role.name = "coq" # type: ignore
 
+import re
 ghref_cache = {}
+ghref_scrape_re = re.compile("<a(.*?hotkey=.y.*?)>Permalink</a>",re.IGNORECASE)
+ghref_scrape_href_re = re.compile('href=([\'"])(.*?)\\1',re.IGNORECASE)
 def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
-    import re
     src = options.get('src',None)
     if src is None:
         msg = inliner.reporter.error("{}: no src option".format(role), line=lineno)
@@ -763,10 +765,7 @@ def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
     if len(components) != 4:
         msg = inliner.reporter.error("{}: src should be 4 space separated strings".format(role), line=lineno)
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
-    org = components[0]
-    repo = components[1]
-    branch = components[2]
-    path = components[3]
+    org, repo, branch, path = components
     uri = "https://github.com/{}/{}/blob/{}/{}".format(org,repo,branch,path)
     roles.set_classes(options)
     options.setdefault("classes", []).append("ghref")
@@ -780,10 +779,12 @@ def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
         except:
             msg = inliner.reporter.error("{}: could not download: {}".format(role,uri), line=lineno)
             return [inliner.problematic(rawtext, rawtext, msg)], [msg]
-        scrape = re.compile("<a(.*?hotkey=.y.*?)>Permalink</a>",re.IGNORECASE)
-        link = scrape.search(html).group(1)
-        href = re.compile('href=([\'"])(.*?)\\1',re.IGNORECASE)
-        puri = href.search(link).group(2)
+        try:
+            link = ghref_scrape_re.search(html).group(1)
+            puri = ghref_scrape_href_re.search(link).group(2)
+        except:
+            msg = inliner.reporter.error("{}: could not scrape for permalink: {}".format(role,uri), line=lineno)
+            return [inliner.problematic(rawtext, rawtext, msg)], [msg]
         puri = "https://github.com" + puri
         rawuri = puri.replace('/blob/','/raw/')
         try:
