@@ -795,8 +795,12 @@ def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
             return [inliner.problematic(rawtext, rawtext, msg)], [msg]
         ghref_cache[uri]=(code,rawuri,puri)
         uri=puri
-    mangler = options.get('mangle','name')
-    name=eval(mangler,{},{ "name": text})
+    mangler = options.get('replace',None)
+    mangler_with = options.get('replace_with','')
+    if mangler is None:
+        name=text
+    else:
+        name = re.sub(mangler,mangler_with,text)
     pattern = options.get('pattern','')
     from string import Template
     pattern = Template(pattern).safe_substitute(name=name)
@@ -806,7 +810,7 @@ def ghref_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
             uri = uri + '#L' + str(num)
             break
     else:
-        msg = inliner.reporter.error("{}: {} not found in {}".format(role,text,rawuri), line=lineno)
+        msg = inliner.reporter.error("{}: {} not found in {} using pattern {}".format(role,text,rawuri,pattern), line=lineno)
         return [inliner.problematic(rawtext, rawtext, msg)], [msg]
     node = nodes.reference(rawtext, text, refuri=uri, **options)
     set_line(node, lineno, inliner.reporter)
@@ -820,10 +824,12 @@ ghref_role.options = {
     # this is replaced by the text in :ghref:`text`. Eg
     #   :pattern: ^def $name
     "pattern": directives.unchanged,
-    # optionally mangle the name beforesubstituting it in the regexp. It is
-    # a python expression evaluated in a context containing name. Eg
-    #   :mangle: name.replace('this','that')
-    "mangle": directives.unchanged
+    # optionally mangle the name before substituting it in the regexp using
+    # re.sub. Eg
+    #   :replace: this
+    #   :replace_with: that
+    "replace": directives.unchanged,
+    "replace_with": directives.unchanged
 }
 
 COQ_ID_RE = re.compile(r"^(?P<title>.*?)(?:\s*<(?P<target>.*)>)?$")
