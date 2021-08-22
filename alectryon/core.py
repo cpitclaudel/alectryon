@@ -217,9 +217,6 @@ class PosView(View):
         return Range(self.translate_offset(beg),
                      self.translate_offset(end))
 
-class Separator(str):
-    pass
-
 Positioned = namedtuple("Positioned", "beg end e")
 
 class Document:
@@ -229,17 +226,13 @@ class Document:
     chunks before processing them.
     """
     def __init__(self, chunks, chunk_separator):
-        self.with_separator = self.intersperse(chunks, Separator(chunk_separator))
+        self.with_separator = [c + chunk_separator for c in chunks]
         self.contents = "".join(self.with_separator)
+        self.separator = chunk_separator
 
     def recover_chunks(self, fragments):
-        return self._recover_chunks(self.with_separator, fragments)
-
-    @staticmethod
-    def intersperse(items, separator):
-        interspersed = [separator] * (2 * len(items) - 1)
-        interspersed[::2] = items
-        return interspersed
+        grouped = self._recover_chunks(self.with_separator, fragments)
+        return self.strip_separators(grouped, self.separator)
 
     @staticmethod
     def intersperse_text_fragments(text, positioned_sentences):
@@ -286,9 +279,27 @@ class Document:
                 fragments[0] = fragments[0]._replace(beg=chunk.end, e=after)
                 chunk_fragments.append(before)
             assert chunk.e == "".join(c.contents for c in chunk_fragments)
-            if not isinstance(chunk.e, Separator):
-                yield chunk_fragments
+            yield chunk_fragments
         assert not fragments
+
+    @classmethod
+    def strip_separators(cls, grouped, separator):
+        r"""Remove separator at end of each fragment in `grouped`.
+        >>> list(Document.strip_separators([[Text("!"), Text("(* … *)\n")]], "\n"))
+        [[Text(contents='!'), Text(contents='(* … *)')]]
+        >>> list(Document.strip_separators([[Text("A"), Text("\n")]], "\n"))
+        [[Text(contents='A')]]
+        >>> list(Document.strip_separators([[Text("\n")]], "\n"))
+        [[]]
+        """
+        for fragments in grouped:
+            if fragments:
+                assert fragments[-1].contents.endswith(separator)
+                contents = fragments[-1].contents[:-len(separator)]
+                fragments[-1] = fragments[-1]._replace(contents=contents)
+                if isinstance(fragments[-1], Text) and not contents:
+                    fragments.pop()
+            yield fragments
 
 class Notification(NamedTuple):
     obj: Any

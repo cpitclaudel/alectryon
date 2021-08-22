@@ -2,6 +2,8 @@ topfile_of_fpath (alectryon.coq.CoqIdents)
 Doctest: alectryon.coq.CoqIdents.topfile_of_fpath ... ok
 annotate (alectryon.coqc_time)
 Doctest: alectryon.coqc_time.annotate ... ok
+strip_separators (alectryon.core.Document)
+Doctest: alectryon.core.Document.strip_separators ... ok
 translate_offset (alectryon.core.PosView)
 Doctest: alectryon.core.PosView.translate_offset ... ok
 DeduplicatingSerializer (alectryon.json)
@@ -48,6 +50,6 @@ partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 24 tests
+Ran 25 tests
 
 OK
