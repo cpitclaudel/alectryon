@@ -1065,6 +1065,10 @@ def make_HtmlTranslator(base):
 HtmlTranslator = make_HtmlTranslator(html4css1.HTMLTranslator)
 Html5Translator = make_HtmlTranslator(html5_polyglot.HTMLTranslator)
 
+def opt_validate_style(setting, value, option_parser,
+                       config_parser=None, config_section=None):
+    return validate_style(value)
+
 # WISH: Either remove these settings and expose global constants (like
 # HTML_MINIFICATION), or add missing settings here.
 ALECTRYON_SETTINGS = (
@@ -1076,7 +1080,7 @@ ALECTRYON_SETTINGS = (
     ("Choose a Pygments style by name",
      ["--pygments-style"],
      {'default': None, 'dest': "pygments_style",
-      'validator': validate_style}),
+      'validator': opt_validate_style}),
     ("Omit Alectryon's explanatory header",
      ["--no-header"],
      {'default': True, 'action': 'store_false',
