@@ -483,7 +483,7 @@ def infer_frontend(fpath):
     return infer_mode(fpath, "input", "--frontend", FRONTENDS_BY_EXTENSION)
 
 def infer_backend(frontend, out_fpath):
-    if out_fpath:
+    if out_fpath and out_fpath != "-":
         return infer_mode(out_fpath, "output", "--backend", BACKENDS_BY_EXTENSION)
     return DEFAULT_BACKENDS[frontend]
 

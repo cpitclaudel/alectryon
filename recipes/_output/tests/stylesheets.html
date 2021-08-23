@@ -24,15 +24,13 @@
 <p>To compile:</p>
 <pre class="literal-block">
 $ DOCUTILSCONFIG=tests/stylesheets.docutils.conf \
-    alectryon stylesheets.v \
-    --pygments-style emacs --backend webpage -o - \
+    alectryon stylesheets.v --pygments-style emacs -o - \
     | sed -r '/^ *&lt;style type=&quot;text.css&quot;&gt;/,/^ *&lt;.style&gt;/ { /^ *&lt;style |&lt;.style&gt;|Alectryon/b; d}' \
     &gt; stylesheets.html
   # reST → HTML; produces ‘stylesheets.html’
 
 $ DOCUTILSCONFIG=tests/stylesheets.docutils.conf \
-    alectryon stylesheets.v \
-    --pygments-style emacs --backend latex -o - \
+    alectryon stylesheets.v --pygments-style emacs --backend latex -o - \
     | sed -r '/^% embedded stylesheet/,/^\\makeatother/ { /^\\makeat|Alectryon/b; d}' \
     &gt; stylesheets.part.tex
   # reST → LaTeX; produces ‘stylesheets.part.tex’

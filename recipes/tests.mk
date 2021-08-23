@@ -69,7 +69,7 @@ _output/tests/screenshot.html: tests/screenshot.v
 # reST → HTML
 _output/tests/stylesheets.html: tests/stylesheets.v
 	DOCUTILSCONFIG=tests/stylesheets.docutils.conf \
-       $(alectryon) $< --pygments-style emacs --backend webpage -o - | sed -r '/^ *<style type="text.css">/,/^ *<.style>/ { /^ *<style |<.style>|Alectryon/b; d}' > $@
+       $(alectryon) $< --pygments-style emacs -o - | sed -r '/^ *<style type="text.css">/,/^ *<.style>/ { /^ *<style |<.style>|Alectryon/b; d}' > $@
 # reST → LaTeX
 _output/tests/stylesheets.part.tex: tests/stylesheets.v
 	DOCUTILSCONFIG=tests/stylesheets.docutils.conf \

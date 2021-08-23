@@ -52,15 +52,13 @@ To compile:
 \begin{quote}
 \begin{alltt}
 $ DOCUTILSCONFIG=tests/stylesheets.docutils.conf \textbackslash{}
-    alectryon stylesheets.v \textbackslash{}
-    -{}-pygments-style emacs -{}-backend webpage -o - \textbackslash{}
+    alectryon stylesheets.v -{}-pygments-style emacs -o - \textbackslash{}
     | sed -r '/^ *<style type="text.css">/,/^ *<.style>/ \{ /^ *<style |<.style>|Alectryon/b; d\}' \textbackslash{}
     > stylesheets.html
   # reST → HTML; produces ‘stylesheets.html’
 
 $ DOCUTILSCONFIG=tests/stylesheets.docutils.conf \textbackslash{}
-    alectryon stylesheets.v \textbackslash{}
-    -{}-pygments-style emacs -{}-backend latex -o - \textbackslash{}
+    alectryon stylesheets.v -{}-pygments-style emacs -{}-backend latex -o - \textbackslash{}
     | sed -r '/^% embedded stylesheet/,/^\textbackslash{}\textbackslash{}makeatother/ \{ /^\textbackslash{}\textbackslash{}makeat|Alectryon/b; d\}' \textbackslash{}
     > stylesheets.part.tex
   # reST → LaTeX; produces ‘stylesheets.part.tex’
