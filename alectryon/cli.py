@@ -255,7 +255,7 @@ def gen_html_snippets_with_coqdoc(annotated, html_classes, fname,
                                           html_minification, pygments_style)
 
 def copy_assets(state, assets: List[Tuple[str, Union[str, core.Asset]]],
-                copy_fn, output_directory, ctx):
+                copy_fn, output_directory, ctx={}):
     if copy_fn is None:
         return state
 
