@@ -14,7 +14,8 @@ export PYTHONPATH:=$(realpath ../):$(PYTHONPATH)
 
 ALECTRYON_OPTS ?=
 
-alectryon = $(PYTHON) ../alectryon.py --copy-assets hardlink --output-directory $(out_dir) --no-version-numbers $(ALECTRYON_OPTS)
+alectryon_opts = --copy-assets hardlink --output-directory $(out_dir) --no-version-numbers $(ALECTRYON_OPTS)
+alectryon = $(PYTHON) ../alectryon.py $(alectryon_opts)
 
 targets :=
 

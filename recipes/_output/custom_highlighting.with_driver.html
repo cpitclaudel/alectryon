@@ -50,23 +50,23 @@ $ python alectryon_custom_driver.py custom_highlighting.v -o custom_highlighting
 <p>The following demonstrates three examples: highlighting C code within strings, highlighting Markdown within comments, and highlighting a custom mini-language within <tt class="docutils literal"><span class="pre">calc:()</span></tt> delimiters:</p>
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Coq.Strings.String.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Open Scope</span> string_scope.</span></span></pre><p>The Pygments lexer in <tt class="docutils literal">custom_lexer.py</tt> is set up to highlight text within <tt class="docutils literal"><span class="pre">C:{{…}}</span></tt> blocks as C code:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">c_program</span> := <span class="s2">&quot;C:{{</span>
-<span class="s2">  #include &lt;stdio.h&gt;</span>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">c_program</span> := <span class="s2">&quot;</span><span class="k">C</span>:{{
+  <span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
 
-<span class="s2">  int main(int argc, char** argv) {</span>
-<span class="s2">    for (int i = 0; i &lt; argc; i++) {</span>
-<span class="s2">      while (*argv[i])</span>
-<span class="s2">        putchar(*argv[i]++);</span>
-<span class="s2">      putchar(&#39;\n&#39;);</span>
-<span class="s2">    }</span>
-<span class="s2">    return 0;</span>
-<span class="s2">  }</span>
-<span class="s2">}}&quot;</span>.</span></span></pre><p>Additionally, the lexer recognizes Coq comments and highlights them as Markdown:</p>
+  <span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> argc<span class="p">,</span> <span class="kt">char</span>** argv<span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> i = <span class="mi">0</span><span class="p">;</span> i &lt; argc<span class="p">;</span> i++<span class="p">)</span> <span class="p">{</span>
+      <span class="k">while</span> <span class="p">(</span>*argv<span class="p">[</span>i<span class="p">])</span>
+        putchar<span class="p">(</span>*argv<span class="p">[</span>i<span class="p">]</span>++<span class="p">);</span>
+      putchar<span class="p">(</span><span class="sc">&#39;\n&#39;</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+}}<span class="s2">&quot;</span>.</span></span></pre><p>Additionally, the lexer recognizes Coq comments and highlights them as Markdown:</p>
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Fixpoint</span> <span class="nf">dmap</span> {<span class="nv">A</span> <span class="nv">B</span>} (<span class="nv">l</span>: list A) (<span class="nv">f</span>: <span class="kr">forall</span> <span class="nv">a</span>: A, List.In a l -&gt; B) :=
-  <span class="c">(* Apply function `f` to each element of list `l`.</span>
+  <span class="c">(* Apply function </span><span class="sb">`f`</span><span class="c"> to each element of list </span><span class="sb">`l`</span><span class="c">.</span>
 
-<span class="c">     Note the **order of arguments**: `f` comes second because its</span>
-<span class="c">     *type* depends on `l`.  This allows callers to pass a partial</span>
+<span class="c">     Note the </span><span class="gs">**order of arguments**</span><span class="c">: </span><span class="sb">`f`</span><span class="c"> comes second because its</span>
+<span class="c">     </span><span class="ge">*type*</span><span class="c"> depends on </span><span class="sb">`l`</span><span class="c">.  This allows callers to pass a partial</span>
 <span class="c">     function whose domain is only those elements found in the list. *)</span>
   <span class="kr">match</span> l <span class="kr">return</span> (<span class="kr">forall</span> <span class="nv">a</span>: A, List.In a l -&gt; B) -&gt; list B <span class="kr">with</span>
   | nil =&gt; <span class="kr">fun</span> <span class="nv">_</span> =&gt; nil
@@ -84,7 +84,7 @@ $ python alectryon_custom_driver.py custom_highlighting.v -o custom_highlighting
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;&#39;calc:&#39; arg&quot;</span> := arg (<span class="kn">at level</span> <span class="mi">0</span>, arg <span class="kn">custom</span> calc).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">miniprog</span> <span class="nv">lvl</span> <span class="nv">pb</span> <span class="nv">dc</span> <span class="nv">rll</span> :=
-  calc:(<span class="mi">3</span> add (rll add <span class="mi">1</span> add pb) sub dc mul <span class="mi">4</span> div lvl).</span></span></pre><p>Check out <tt class="docutils literal">alectryon_custom_driver.py</tt> for all the details.</p>
+  <span class="k">calc</span>:(<span class="m">3</span> <span class="k">add</span> (<span class="nv">rll</span> <span class="k">add</span> <span class="m">1</span> <span class="k">add</span> <span class="nv">pb</span>) <span class="k">sub</span> <span class="nv">dc</span> <span class="k">mul</span> <span class="m">4</span> <span class="k">div</span> <span class="nv">lvl</span>).</span></span></pre><p>Check out <tt class="docutils literal">alectryon_custom_driver.py</tt> for all the details.</p>
 </div>
 </div>
 </div></body>

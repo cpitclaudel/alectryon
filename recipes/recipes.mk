@@ -5,6 +5,10 @@
 _output/:
 	mkdir -p $@
 
+# Custom driver
+_output/alectryon_custom_driver.out: alectryon_custom_driver.py | _output/
+	$(PYTHON) $< --version | grep -o Alectryon > $@
+
 # Direct API usage
 _output/api.out: api.py | _output/
 	$(PYTHON) $< > $@
@@ -21,13 +25,12 @@ _output/caching.html: caching.v
 _output/coqdoc.html: coqdoc.v
 	$(alectryon) $< --frontend coqdoc
 
-# Custom driver
-_output/custom_driver.out: custom_driver.py | _output/
-	$(PYTHON) $< --version | grep -o Alectryon > $@
-
 # Coq → HTML
 _output/custom_highlighting.html: custom_highlighting.v
 	$(alectryon) $<
+# Custom driver
+_output/custom_highlighting.with_driver.html: custom_highlighting.v | _output/
+	$(PYTHON) alectryon_custom_driver.py $(alectryon_opts) $< -o $@
 
 # JSON → JSON
 _output/fragments.io.json: fragments.json
@@ -89,6 +92,6 @@ _output/references.html: references.rst
 _output/references.xe.tex: references.rst
 	DOCUTILSCONFIG=references.docutils.conf $(alectryon) $< -o $@ --latex-dialect xelatex
 
-_output/api.out _output/api.rst.out _output/caching.html _output/coqdoc.html _output/custom_driver.out _output/custom_highlighting.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html _output/references.html _output/references.xe.tex: out_dir := _output
+_output/alectryon_custom_driver.out _output/api.out _output/api.rst.out _output/caching.html _output/coqdoc.html _output/custom_highlighting.html _output/custom_highlighting.with_driver.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html _output/references.html _output/references.xe.tex: out_dir := _output
 
-targets += _output/api.out _output/api.rst.out _output/caching.html _output/coqdoc.html _output/custom_driver.out _output/custom_highlighting.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html _output/references.html _output/references.xe.tex
+targets += _output/alectryon_custom_driver.out _output/api.out _output/api.rst.out _output/caching.html _output/coqdoc.html _output/custom_highlighting.html _output/custom_highlighting.with_driver.html _output/fragments.io.json _output/fragments.snippets.html _output/fragments.snippets.tex _output/literate_MyST.html _output/literate_coq.html _output/literate_coq.tex _output/literate_coq.v.rst _output/literate_reST.html _output/literate_reST.tex _output/literate_reST.v _output/mathjax.html _output/minification.html _output/minimal.html _output/minimal.no-alectryon.html _output/plain.v.html _output/references.html _output/references.xe.tex

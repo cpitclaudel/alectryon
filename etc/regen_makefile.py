@@ -27,6 +27,8 @@ RULE_TEMPLATE = """\
 def escape(s):
     return s.replace("$", "$$").replace("#", "##")
 
+CUSTOM_DRIVER_RE = re.compile(r"\b(alectryon_[a-z_]+[.]py)\b")
+
 def gen_rule(fpath, outdir, params):
     params = { k: escape(v) for (k, v) in params.items() }
 
@@ -38,6 +40,8 @@ def gen_rule(fpath, outdir, params):
         .replace("python ", "$(PYTHON) ") \
         .replace(params["out"], "$@") \
         .replace(fpath.name, "$<")
+
+    params["cmd"] = CUSTOM_DRIVER_RE.sub(r"\1 $(alectryon_opts)", params["cmd"])
 
     params["out"] = str(outdir / params["out"])
 

@@ -193,7 +193,7 @@ Include the following code in your configuration file to setup Alectryon's ``doc
 
 This snippet registers a ``.. coq::`` directive, which feeds its contents to Alectryon and displays the resulting responses and goals interleaved with the input and a ``:coq:`` role for highlighting inline Coq code.  It also replaces the default Pygments highlighter for Coq with Alectryon's improved one, and sets `:coq:` as the default role.  See |help(docutils)|_ for more information.
 
-To ensure that Coq blocks render properly, you'll need to tell your blogging platform to include ``alectryon.css``.  Using a git submodule or vendoring a copy of Alectryon is an easy way to ensure that this stylesheet is accessible to your blogging software.  Alternatively, you can use ``alectryon.html.copy_assets``.  Assets are stored in ``alectryon.html.ASSETS.PATH``; their names are in ``alectryon.html.ASSETS.CSS`` and ``alectryon.html.ASSETS.JS``.
+To ensure that Coq blocks render properly, you'll need to tell your blogging platform to include ``alectryon.css``.  Using a git submodule or vendoring a copy of Alectryon is an easy way to ensure that this stylesheet is accessible to your blogging software.  Alternatively, you can use ``alectryon.cli.copy_assets``.  Assets are stored in ``alectryon.html.ASSETS.PATH``; their names are in ``alectryon.html.ASSETS.CSS`` and ``alectryon.html.ASSETS.JS``.
 
 By default, Alectryon's docutils module will raise warnings for lines over 72 characters.  You can change the threshold or silence the warnings by adjusting ``alectryon.docutils.LONG_LINE_THRESHOLD``.  With `Pelican <https://github.com/getpelican/pelican>`_, use the following snippet to make warnings non-fatal:
 
@@ -439,6 +439,21 @@ From Python, set ``alectryon.docutils.CACHE_DIRECTORY`` to enable caching.  For 
 
    import alectryon.docutils
    alectryon.docutils.CACHE_DIRECTORY = "content"
+
+With a custom driver
+--------------------
+
+For advanced usage, or to customize Alectryon's command-line interface, you can use a custom driver.  Create a new Python file, and add the following to it:
+
+.. code-block:: python
+
+   from alectryon import cli
+   … Any extension code here
+   cli.main()
+
+Extensions might include, registering additional docutils directives or roles with ``docutils.directives.register_directive`` and ``docutils.roles.register_canonical_role``, adding custom syntax highlighting for project-specific tokens using ``alectryon.pygments.add_tokens``, or even tweaking the operation of the Coq lexer in ``alectryon.pygments_lexer``, or monkey-patching parts of Alectryon's ``docutils`` module.
+
+See `<recipes/alectryon_custom_driver.py>`__ for a concrete example.
 
 Tips
 ====
