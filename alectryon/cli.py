@@ -737,7 +737,10 @@ def build_context(fpath, args, frontend, backend):
         if input_is_stdin:
             ctx["output_directory"] = "."
         else:
-            ctx["output_directory"] = os.path.dirname(os.path.abspath(fpath))
+            refpath = fpath if args.output in (None, "-") else args.output
+            ctx["output_directory"] = os.path.dirname(os.path.abspath(refpath))
+
+    os.makedirs(os.path.abspath(ctx["output_directory"]), exist_ok=True)
 
     if args.output is None and input_is_stdin:
         ctx["output"] = "-"
@@ -759,9 +762,6 @@ def process_pipelines(args):
 
     if args.expect_unexpected:
         core.SerAPI.EXPECT_UNEXPECTED = True
-
-    if args.output_directory:
-        os.makedirs(os.path.realpath(args.output_directory), exist_ok=True)
 
     for fpath, frontend, backend, pipeline in args.pipelines:
         state, ctx = None, build_context(fpath, args, frontend, backend)
