@@ -350,8 +350,8 @@ def strip_extension(fname):
             return fname[:-len(ext)]
     return fname
 
-def write_output(ext, contents, fname, input_is_stdin, output, output_directory):
-    if output == "-" or (output is None and input_is_stdin):
+def write_output(ext, contents, fname, output, output_directory):
+    if output == "-":
         sys.stdout.write(contents)
     else:
         if not output:
@@ -361,8 +361,8 @@ def write_output(ext, contents, fname, input_is_stdin, output, output_directory)
             f.write(contents)
 
 def write_file(ext):
-    return lambda contents, fname, input_is_stdin, output, output_directory: \
-        write_output(ext, contents, fname, input_is_stdin, output, output_directory)
+    return lambda contents, fname, output, output_directory: \
+        write_output(ext, contents, fname, output, output_directory)
 
 # No ‘apply_transforms’ in JSON pipelines: (we save the prover output without
 # modifications).
@@ -738,6 +738,9 @@ def build_context(fpath, args, frontend, backend):
             ctx["output_directory"] = "."
         else:
             ctx["output_directory"] = os.path.dirname(os.path.abspath(fpath))
+
+    if args.output is None and input_is_stdin:
+        ctx["output"] = "-"
 
     return ctx
 
