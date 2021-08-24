@@ -356,6 +356,7 @@ def write_output(ext, contents, fname, input_is_stdin, output, output_directory)
     else:
         if not output:
             output = os.path.join(output_directory, strip_extension(fname) + ext)
+        os.makedirs(os.path.dirname(os.path.abspath(output)), exist_ok=True)
         with open(output, mode="w", encoding="utf-8") as f:
             f.write(contents)
 
