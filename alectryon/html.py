@@ -265,11 +265,13 @@ class HtmlGenerator(Backend):
             self.gen_ids(ids)
             return block
 
-    def gen_inline(self, obj, ids=(), classes=()):
+    def gen_part(self, obj, inline: bool, ids=(), classes=()):
         """Serialize a single `obj` to HTML."""
-        with self._gen_block(tags.samp, ids, ("alectryon-inline", "highlight", *classes)) as samp:
+        tag = tags.samp if inline else tags.pre
+        classname = "alectryon-inline" if inline else "alectryon-block"
+        with self._gen_block(tag, ids, (classname, "highlight", *classes)) as part:
             self._gen_any(obj)
-            return samp
+            return part
 
     def gen_fragments(self, fragments, ids=(), classes=()):
         """Serialize a list of `fragments` to HTML."""

@@ -568,19 +568,22 @@ class AlectryonPostTransform(OneTimeTransform):
         raise NotImplementedError("Unknown output format")
 
     @staticmethod
-    def replace_one_io(node, fmt, generator):
-        fragments, contents = node.details["fragments"], node.details["contents"]
+    def replace_one(node, fmt, rawtext, gen, *args, **kwargs):
         ids = node.attributes.get("ids", ())
         classes = node.attributes.pop("classes", ()) # visit_raw adds a <div> if it finds classes
-        dom = generator.gen_fragments(fragments, ids=ids, classes=classes)
-        node.replace_self(nodes.raw(contents, dom.render(pretty=False), format=fmt))
+        dom = gen(*args, ids=ids, classes=classes, **kwargs)
+        node.replace_self(nodes.raw(rawtext, dom.render(pretty=False), format=fmt))
 
-    @staticmethod
-    def replace_one_quote(node, fmt, generator):
+    @classmethod
+    def replace_one_io(cls, node, fmt, generator):
+        fragments, contents = node.details["fragments"], node.details["contents"]
+        cls.replace_one(node, fmt, contents, generator.gen_fragments, fragments)
+
+    @classmethod
+    def replace_one_quote(cls, node, fmt, generator):
         target = transforms.strip_ids_and_flags(deepcopy(node.details["target"]))
-        dom = generator.gen_inline(target)
-        raw = nodes.raw(node.details["path"], dom.render(pretty=False), format=fmt)
-        node.replace_self(raw)
+        cls.replace_one(node, fmt, node.details["path"], generator.gen_part,
+                        target, inline=node.details["inline"])
 
     def _apply(self, **_kwargs):
         fmt, generator = self.init_generator()
@@ -933,11 +936,13 @@ def _marker_ref_role(role, rawtext, text, lineno, inliner, options, content):
 
     path = _parse_mref_target(kind, target, options.pop("prefix", {}))
     cs = options.pop("counter-style", None) or DEFAULT_COUNTER_STYLE
+    inline = options.pop("inline", True)
     details = {"title": title,
                "target": target,
                "path": path,
                "counter-style": cs,
-               "kind": kind}
+               "kind": kind,
+               "inline": inline}
 
     roles.set_classes(options)
     node = alectryon_pending_mref(AlectryonMrefTransform, details, rawtext, **options)

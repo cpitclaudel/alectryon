@@ -297,10 +297,12 @@ class LatexGenerator(Backend):
         for marker in markers:
             macros.mrefmarker(Raw(marker))
 
-    def gen_inline(self, obj, classes=()): # pylint: disable=unused-argument
+    def gen_part(self, obj, inline: bool, ids=(), classes=()): # pylint: disable=unused-argument
         """Serialize a single `obj` to LaTeX."""
         # FIXME: classes.
-        with macros.alectryonInline() as env:
+        wrapper = macros.alectryonInline if inline else environments.alectryon
+        with wrapper() as env:
+            self.gen_ids(ids)
             self._gen_any(obj)
             return env
 
