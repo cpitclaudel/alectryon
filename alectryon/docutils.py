@@ -81,8 +81,9 @@ import docutils.utils
 import docutils.writers
 from docutils import nodes
 
-from docutils.parsers.rst import directives, roles, Directive # type: ignore
+from docutils.parsers.rst import directives, roles, states, Directive # type: ignore
 from docutils.parsers.rst.directives.body import Sidebar # type: ignore
+from docutils.parsers.rst.directives.misc import Role # type: ignore
 from docutils.readers.standalone import Reader as StandaloneReader
 from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
@@ -732,6 +733,74 @@ class ExperimentalExerciseDirective(Sidebar):
             title.children.insert(0, nodes.Text("Exercise: "))
         return [node]
 
+def directive_without_arguments(directive):
+    """Create a fake directive sharing `directive`'s options to """
+    return type("Converted", (directive,),
+                dict(has_content=False,
+                     required_arguments=0,
+                     optional_arguments=0))
+
+# Derived from docutils.directives.misc.Role (public domain)
+# LATER: Move to upstream
+class DirectiveDirective(Directive):
+    """Define an alias of a directive."""
+
+    name = "directive"
+    has_content = True
+
+    def run(self):
+        if self.content_offset > self.lineno or not self.content:
+            raise self.error('"%s" directive requires arguments on the first '
+                             'line.' % self.name)
+        args = self.content[0]
+        match = Role.argument_pattern.match(args)
+        if not match or not match.group(3):
+            raise self.error('"%s" directive arguments not valid role names: '
+                             '"%s".' % (self.name, args))
+        new_name, base_name = match.group(1), match.group(3)
+        messages = []
+
+        base, messages = directives.directive(
+            base_name, self.state_machine.language, self.state_machine.document)
+        if base is None:
+            error = self.state.reporter.error(
+                'Unknown directive "%s".' % base_name,
+                nodes.literal_block(self.block_text, self.block_text),
+                line=self.lineno)
+            return messages + [error]
+
+        try:
+            converted = directive_without_arguments(base)
+            (_arguments, options, _content, _content_offset) = (
+                self.state.parse_directive_block(
+                self.content[1:], self.content_offset, converted,
+                option_presets={}))
+        except states.MarkupError as detail:
+            error = self.state_machine.reporter.error(
+                'Error in "%s" directive:\n%s.' % (self.name, detail),
+                nodes.literal_block(self.block_text, self.block_text),
+                line=self.lineno)
+            return messages + [error]
+        if 'class' not in options:
+            try:
+                options['class'] = directives.class_option(new_name)
+            except ValueError as detail:
+                error = self.state_machine.reporter.error(
+                    u'Invalid argument for "%s" directive:\n%s.'
+                    % (self.name, detail), nodes.literal_block(
+                    self.block_text, self.block_text), line=self.lineno)
+                return messages + [error]
+
+        # FIXME convert `base` if it's a function instead of a class
+        class CustomDirective(base):
+            def run(self):
+                self.options = {**options, **self.options} # pylint: disable=attribute-defined-outside-init
+                return super().run()
+
+        # FIXME this leaks across documents
+        directives.register_directive(new_name, CustomDirective)
+        return messages
+
 # Roles
 # -----
 
@@ -1256,7 +1325,8 @@ TRANSFORMS = [ActivateMathJaxTransform,
               AlectryonPostTransform]
 DIRECTIVES = [CoqDirective,
               AlectryonToggleDirective,
-              ExperimentalExerciseDirective]
+              ExperimentalExerciseDirective,
+              DirectiveDirective]
 ROLES = [alectryon_bubble,
          coq_code_role,
          coq_id_role,
