@@ -130,6 +130,19 @@ Newlines in quoted objects are removed, and line breaks are allowed:
 
     .. [#f1] The second sentence is :mquote:`.s(Goal).in`.  Later on we'll see a message: :mquote:`.io#pr.s(Check).msg(implicit binder)`.
 
+To preserve newlines, use the ``.. mquote::`` directive instead:
+
+    .. mquote:: .s(Goal).in
+    .. mquote:: .io#pr.s(Check).msg(implicit binder)
+
+There, too, you may want to define aliases:
+
+    .. directive:: mq:pr(mquote)
+       :prefix: .io#pr.s(induction 1).g#4
+
+    .. mq:pr:: .h{Permutation l l'}
+    .. mq:pr:: .h{Permutation l' l''}
+
 Customizing proof rendering (**experimental**)
 ==============================================
 

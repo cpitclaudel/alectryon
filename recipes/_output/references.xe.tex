@@ -705,6 +705,37 @@ The second sentence is \alectryonInline{\PY{k+kn}{Goal}~\PY{k+kr}{forall}~\PY{o}
 }
 \end{quote}
 
+To preserve newlines, use the \texttt{.. mquote::} directive instead:
+
+\begin{quote}
+\begin{alectryon}
+  \PY{k+kn}{Goal}~\PY{k+kr}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{o}{@}\PY{n}{P}~\PY{n}{A}~\PY{n}{B}\PY{o}{),}\nl
+  ~~\PY{k+kr}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)}~\PY{k+kr}{in}\nl
+  ~~\PY{k+kr}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k+kr}{in}\nl
+  ~~\PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}\nl
+  ~~~~~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}\PY{o}{.}
+\end{alectryon}
+
+\begin{alectryon}
+  \begin{message}
+    \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k+kr}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\nl
+    \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{]}
+  \end{message}
+\end{alectryon}
+\end{quote}
+
+There, too, you may want to define aliases:
+
+\begin{quote}
+\begin{alectryon}
+  \hyp{H}{\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}}
+\end{alectryon}
+
+\begin{alectryon}
+  \hyp{H0}{\PY{n}{Permutation}~\PY{n}{l\PYZsq{}}~\PY{n}{l\PYZsq{}\PYZsq{}}}
+\end{alectryon}
+\end{quote}
+
 
 \section{Customizing proof rendering (\textbf{experimental})%
   \label{customizing-proof-rendering-experimental}%

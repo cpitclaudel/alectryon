@@ -149,6 +149,17 @@ The two permutation hypotheses are <samp class="alectryon-inline highlight mq-pr
 </tbody>
 </table>
 </blockquote>
+<p>To preserve newlines, use the <tt class="docutils literal">.. mquote::</tt> directive instead:</p>
+<blockquote>
+<pre class="alectryon-block highlight"><!-- Generator: Alectryon --><span class="kn">Goal</span> <span class="kr">forall</span> {<span class="nv">A</span> <span class="nv">B</span>} (<span class="nv">p</span>: @P A B),
+  <span class="kr">let</span> <span class="nv">a_first</span> := p.(p_first) <span class="kr">in</span>
+  <span class="kr">let</span> <span class="nv">b_second</span> := p.(p_second) <span class="kr">in</span>
+  {| p_first := a_first;
+     p_second := b_second |} = p.</pre><pre class="alectryon-block highlight"><!-- Generator: Alectryon -->Ignoring implicit <span class="kn">binder</span> declaration <span class="kr">in</span> unexpected position.
+[unexpected-implicit-declaration,syntax]</pre></blockquote>
+<p>There, too, you may want to define aliases:</p>
+<blockquote>
+<pre class="alectryon-block highlight mq-pr"><!-- Generator: Alectryon --><span><var>H</var><span class="hyp-type"><b>: </b><span>Permutation l l&#39;</span></span></span></pre><pre class="alectryon-block highlight mq-pr"><!-- Generator: Alectryon --><span><var>H0</var><span class="hyp-type"><b>: </b><span>Permutation l&#39; l&#39;&#39;</span></span></span></pre></blockquote>
 </div>
 <div class="section" id="customizing-proof-rendering-experimental">
 <h1>Customizing proof rendering (<strong>experimental</strong>)</h1>
