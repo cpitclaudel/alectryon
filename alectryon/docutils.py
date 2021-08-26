@@ -924,7 +924,7 @@ def _parse_mref_target(kind, target, prefix):
 
     return path
 
-def _marker_ref_role(role, rawtext, text, lineno, inliner, options, content):
+def _marker_ref(rawtext, text, lineno, document, reporter, options):
     kind = options.pop("kind", "ref")
 
     title, target = _parse_ref(text)
@@ -946,15 +946,16 @@ def _marker_ref_role(role, rawtext, text, lineno, inliner, options, content):
 
     roles.set_classes(options)
     node = alectryon_pending_mref(AlectryonMrefTransform, details, rawtext, **options)
-    set_line(node, lineno, inliner.reporter)
-    inliner.document.note_pending(node)
-    return [node], []
+    set_line(node, lineno, reporter)
+    document.note_pending(node)
+    return node
 
 def marker_ref_role(role, rawtext, text, lineno, inliner,
                     options: Dict[str, Any]={}, content=[]):
     try:
-        return _marker_ref_role(
-            role, rawtext, text, lineno, inliner, options, content)
+        node = _marker_ref(
+            rawtext, text, lineno, inliner.document, inliner.reporter, options)
+        return [node], []
     except ValueError as e:
         return _role_error(inliner, rawtext, str(e), lineno)
 
@@ -981,13 +982,34 @@ marker_ref_role.options = { # type: ignore
 
 def marker_quote_role(role, rawtext, text, lineno, inliner,
                       options: Dict[str, Any]={}, content=[]):
-    options.setdefault("kind", "quote")
+    options = {**options, "kind": "quote"}
     return marker_ref_role(role, rawtext, text, lineno, inliner, options, content)
 
 marker_quote_role.name = "mquote" # type: ignore
 marker_quote_role.options = { # type: ignore
     'prefix': _opt_mref_prefix
 }
+
+class MQuoteDirective(Directive):
+    has_content = False
+    required_arguments = 1
+    optional_arguments = 0
+    final_argument_whitespace = True
+
+    name = marker_quote_role.name
+    option_spec = {**marker_quote_role.options,
+                   'class': directives.class_option}
+
+    def run(self):
+        rawtext, _, _ = self.block_text.partition('\n')
+        document = self.state_machine.document
+        text = self.arguments[0]
+        options = {**self.options, "kind": "quote", "inline": False}
+        try:
+            node = _marker_ref(rawtext, text, self.lineno, document, self.state_machine, options)
+            return [node]
+        except ValueError as e:
+            raise self.error(str(e))
 
 # Error printer
 # -------------
@@ -1330,6 +1352,7 @@ TRANSFORMS = [ActivateMathJaxTransform,
               AlectryonPostTransform]
 DIRECTIVES = [CoqDirective,
               AlectryonToggleDirective,
+              MQuoteDirective,
               ExperimentalExerciseDirective,
               DirectiveDirective]
 ROLES = [alectryon_bubble,
