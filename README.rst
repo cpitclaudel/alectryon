@@ -248,6 +248,7 @@ The ``.. coq::`` directive takes a list of space-separated flags to control the 
   - ``hyps``: Include hypotheses (``no-hyps``: hide them)
   - ``out``: Include goals and messages (``no-out``: hide them)
   - ``all``: Include input, goals, and messages (``none``: hide them)
+  - ``fails``: Command is expected to fail; strip the `Fail` keyword from the input and remove the *The command has indeed failed with message:* prefix in the output.
 
 The default is ``all fold``, meaning that all output is available, and starts folded.  The exact semantics depend on the polarity of the first inclusion option encountered: ``x y z`` means the same as ``none x y z``, i.e. include ``x``, ``y``, ``z``, and nothing else; ``no-x no-y`` means ``all no-x no-y``, i.e. include everything except ``x`` and ``y``.
 
@@ -257,10 +258,10 @@ These annotations can also be added to individual Coq sentences (⚠ *sentences*
 
    .. coq::
 
-      Require Coq.Arith. (* .none *)      ← Executed but hidden
-      Goal True. (* .unfold *)            ← Goal unfolded
-        Fail exact 1. (* .in .messages *) ← Goal omitted
-        Fail fail. (* .messages *)        ← Error message shown, input hidden
+      Require Coq.Arith. (* .none *)             ← Executed but hidden
+      Goal True. (* .unfold *)                   ← Goal unfolded
+        Fail exact 1. (* .in .messages .fails *) ← Goal omitted
+        Fail fail. (* .messages .fails *)        ← Error message shown, input hidden
 
 More precise inclusion/exclusion is possible using the `marker-placement mini-language <marker-language_>`__ described below.  For example:
 
