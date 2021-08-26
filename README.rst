@@ -399,9 +399,13 @@ More details and examples are given in `<recipes/references.rst>`__.
 Quoted references to goal fragments
 ***********************************
 
-The `:mquote:` role is similar to `:mref:`, but it inserts a copy of the target instead of a link to it.  Targets may only be hypotheses, goal conclusions, or goal or hypothesis names.
+The ``:mquote:`` role is similar to ``:mref:``, but it inserts a copy of the target instead of a link to it.  Targets may only be hypotheses, goal conclusions, or goal or hypothesis names.
 
 For example, using :literal:`:mquote:\`.s(Induction).h#IHm.type\`` in the example above would print the type of ``IHm``, ``∀ n: ℕ, m + n = n + m`` whereas :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m).name\`` would produce only the name of the corresponding hypothesis, ``IHm``.
+
+A ``.. mquote:`` directive is also available.  It places the quoted elements in a block and preserves indentation and newlines, unlike the ``:mquote:`` role (whose output appears inline).
+
+More details and examples are given in `<recipes/references.rst>`__.
 
 Links to Coq identifiers
 ************************
