@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-import sys
-from os.path import join, dirname
-
 """
 This is an example of a custom driver: it exposes the same interface as
 Alectryon's usual CLI, but it sets the internal parameter pp_margin of SerAPI
@@ -13,6 +10,9 @@ command is just a sanity test::
    $ python alectryon_custom_driver.py --version | grep -o Alectryon > alectryon_custom_driver.out
        # Custom driver; produces ‘alectryon_custom_driver.out’
 """
+
+import sys
+from os.path import join, dirname
 
 ## Set up the Python path (not needed if installing from Pip)
 
