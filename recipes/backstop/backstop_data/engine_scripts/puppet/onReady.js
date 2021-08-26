@@ -21,4 +21,9 @@ module.exports = async (page, scenario, vp) => {
     await page.evaluate(async () => {
         window.MathJax && await MathJax.startup.promise;
     });
+
+    // Wait for PDF rendering
+    await page.evaluate(async () => {
+        window.pdfPromise && await pdfPromise;
+    });
 };

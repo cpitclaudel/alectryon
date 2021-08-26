@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+  <head>
+    <title>PDF</title>
+    <style type="text/css">
+      canvas {
+          border: thin solid black;
+          direction: ltr;
+          display: block;
+          margin: 1em;
+      }
+    </style>
+    <script src="pdf.js/build/pdf.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.js/build/pdf.worker.js';
+
+      async function render(url) {
+          const doc = await pdfjsLib.getDocument(url).promise;
+          const body = document.getElementsByTagName('body')[0];
+
+          for (var num = 1; num <= doc.numPages; num++) {
+              var canvas = document.createElement("canvas");
+              body.appendChild(canvas);
+
+              const page = await doc.getPage(num);
+              const viewport = page.getViewport({ scale: 1.5 });
+
+              canvas.height = viewport.height;
+              canvas.width = viewport.width;
+
+              await page.render({
+                  canvasContext: canvas.getContext('2d'),
+                  viewport: viewport
+              });
+          }
+
+          // Sleep :'( Without this parts of the PDF are sometimes missing.
+          // This is either a bug in the code above or in pdf.js.
+          await new Promise(r => setTimeout(r, 10));
+      }
+
+      window.pdfPromise = render(location.hash.slice(1));
+    </script>
+  </head>
+  <body>
+  </body>
+</html>
