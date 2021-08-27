@@ -77,7 +77,6 @@ def _enrich(nt):
 Goals = namedtuple("Goals", "goals")
 Messages = namedtuple("Messages", "messages")
 
-class Code(str): pass
 class Names(list): pass
 RichHypothesis = _enrich(Hypothesis)
 RichGoal = _enrich(Goal)
@@ -117,8 +116,6 @@ class Backend: # pylint: disable=no-member
             self.gen_message(obj)
         elif isinstance(obj, RichCode):
             self.highlight(obj.contents)
-        elif isinstance(obj, Code):
-            self.highlight(obj)
         elif isinstance(obj, Names):
             self.gen_names(obj)
         elif isinstance(obj, str):
