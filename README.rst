@@ -332,6 +332,8 @@ The full architecture of a path is shown below for reference:
           .in
             The input part of the sentence.
 
+          .msg
+            Any message
           .msg(*str*)                 ex: .msg(**Closed under global context**)
             Any message whose text includes *str*.
           .msg{*pattern*}             ex: .msg{**\*[\*syntax\*]\***}

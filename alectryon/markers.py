@@ -54,8 +54,9 @@ class FnMatcher(str, Matcher):
 class NameMatcher(FnMatcher):
     pass
 
-class TopMatcher(Matcher):
+class TopMatcher(str, Matcher):
     def match(self, _):
+        assert self == ""
         return True
 
 def find_contents(objs, needle):
@@ -133,7 +134,7 @@ def set_leaf(path):
 QUERY_KINDS = {
     "io":   ("name",),
     "s":    ("plain", "fnmatch"),
-    "msg":  ("plain", "fnmatch"),
+    "msg":  ("nil", "plain", "fnmatch"),
     "g":    ("plain", "fnmatch", "name"),
     "h":    ("plain", "fnmatch", "name"),
     "in":   ("nil",),
@@ -166,7 +167,7 @@ MARKER_PATH_SEGMENT = re.compile(
     re.VERBOSE)
 
 QUERY_MATCHERS = {
-    'nil': ExactMatcher,
+    'nil': TopMatcher,
     'name': NameMatcher,
     'plain': PlainMatcher,
     'fnmatch': FnMatcher
