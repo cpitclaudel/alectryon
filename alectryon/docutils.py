@@ -1004,8 +1004,8 @@ class MQuoteDirective(Directive):
     optional_arguments = 0
     final_argument_whitespace = True
 
-    name = marker_quote_role.name
-    option_spec = {**marker_quote_role.options,
+    name = marker_quote_role.name # type: ignore
+    option_spec = {**marker_quote_role.options, # type: ignore
                    'class': directives.class_option}
 
     def run(self):
