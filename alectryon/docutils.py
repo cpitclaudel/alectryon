@@ -355,9 +355,6 @@ class AlectryonTransform(OneTimeTransform):
         directive_annots = pending.details["directive_annots"]
         fragments = self.set_fragment_annots(fragments, directive_annots)
         fragments = transforms.default_transform(fragments, delay_errors=True)
-        if transforms.all_hidden(fragments, directive_annots):
-            pending.parent.remove(pending)
-            return
         self.check_for_long_lines(pending, fragments)
         details = {**pending.details, "fragments": fragments}
         io = alectryon_pending_io(AlectryonPostTransform, details)
@@ -577,7 +574,10 @@ class AlectryonPostTransform(OneTimeTransform):
     @classmethod
     def replace_one_io(cls, node, fmt, generator):
         fragments, contents = node.details["fragments"], node.details["contents"]
-        cls.replace_one(node, fmt, contents, generator.gen_fragments, fragments)
+        if transforms.all_hidden(fragments, node.details["directive_annots"]):
+            node.parent.remove(node) # Remove ``.. coq:: none`` blocks
+        else:
+            cls.replace_one(node, fmt, contents, generator.gen_fragments, fragments)
 
     @classmethod
     def replace_one_quote(cls, node, fmt, generator):
