@@ -17,11 +17,13 @@
 <div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="custom-highlighting">
 <h1 class="title">Custom highlighting</h1>
 
-<p>This file shows how to highlight custom keywords, like custom tactic names.  To compile it, use:</p>
+<p>This file shows how to customize syntax highlighting in Alectryon.  To compile it, use:</p>
 <pre class="literal-block">
 alectryon custom_highlighting.v # Coq → HTML, produces ‘custom_highlighting.html’
 </pre>
-<p>Currently Alectryon recognizes the following token kinds:</p>
+<div class="section" id="adding-extra-keywords-tactics-etc">
+<h1>Adding extra keywords, tactics, etc.</h1>
+<p>Use the “docinfo” section at the beginning of a document to add custom highlighting patterns, as shown above.  Currently, Alectryon recognizes the following token kinds:</p>
 <ul class="simple">
 <li><tt class="docutils literal">cmd</tt>: top-level commands: <code class="highlight coq"><span class="kn">About</span></code>, <code class="highlight coq"><span class="kn">Locate Ltac</span></code>, …</li>
 <li><tt class="docutils literal"><span class="pre">gallina-constants</span></tt>: <code class="highlight coq"><span class="kt">Prop</span></code>, <code class="highlight coq"><span class="kt">Set</span></code>, <code class="highlight coq"><span class="kt">True</span></code>, …</li>
@@ -40,7 +42,26 @@ alectryon custom_highlighting.v # Coq → HTML, produces ‘custom_highlighting.
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="custom-highlighting-v-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk1"><span class="nb">unfold</span> ge.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">forall</span> <span class="nv">x</span> : nat, x = <span class="mi">1</span> -&gt; <span class="mi">0</span> &lt;= x</div></blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="custom-highlighting-v-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk2"><span class="nb">app</span> le_S <span class="nb">but_first</span> <span class="nb">intros</span> ? -&gt;.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="mi">0</span> &lt;= <span class="mi">0</span></div></blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">must_eauto</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><div class="section" id="using-a-custom-driver-for-advanced-highlighting">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre></div>
+<div class="section" id="using-a-different-lexer">
+<h1>Using a different lexer</h1>
+<p>You can use the marker-placement mini-language to select a message and set its <tt class="docutils literal">lang</tt> property:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Extraction Language Haskell</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="custom-highlighting-v-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk3"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="nf">add</span> <span class="ow">::</span> <span class="kt">Nat</span> <span class="ow">-&gt;</span> <span class="kt">Nat</span> <span class="ow">-&gt;</span> <span class="kt">Nat</span>
+<span class="nf">add</span> n m <span class="ow">=</span>
+  <span class="kr">case</span> n <span class="kr">of</span> <span class="p">{</span>
+   <span class="kt">O</span> <span class="ow">-&gt;</span> m<span class="p">;</span>
+   <span class="kt">S</span> p <span class="ow">-&gt;</span> <span class="kt">S</span> <span class="p">(</span>add p m<span class="p">)}</span>
+
+</blockquote></div></div></small></span></pre><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Extraction Language Scheme</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="custom-highlighting-v-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk4"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="p">(</span><span class="k">define </span><span class="nv">add</span> <span class="p">(</span><span class="nf">lambdas</span> <span class="p">(</span><span class="nf">n</span> <span class="nv">m</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">match</span> <span class="nv">n</span>
+     <span class="p">((</span><span class="nf">O</span><span class="p">)</span> <span class="nv">m</span><span class="p">)</span>
+     <span class="p">((</span><span class="nf">S</span> <span class="nv">p</span><span class="p">)</span> `<span class="p">(</span><span class="nf">S</span> ,<span class="p">(</span><span class="nf">@</span> <span class="nv">add</span> <span class="nv">p</span> <span class="nv">m</span><span class="p">))))))</span>
+
+</blockquote></div></div></small></span></pre><p>You can read more about the marker-placement mini-language in <tt class="docutils literal">recipes/references.rst</tt>.</p>
+</div>
+<div class="section" id="using-a-custom-driver-for-advanced-highlighting">
 <h1>Using a custom driver for advanced highlighting</h1>
 <p>More advanced custom highlighting is possible using a custom driver, as demonstrated in <tt class="docutils literal">alectryon_custom_driver.py</tt>.  To compile this part of the file with full highlighting, use:</p>
 <pre class="literal-block">

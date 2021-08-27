@@ -591,6 +591,67 @@ The second batch of commands perform reduction with a custom strategy: \hyperref
 Each inline reference is a link to the corresponding code fragment.
 
 
+\section{Setting properties%
+  \label{setting-properties}%
+}
+
+Objects located using the marker-placement mini-language can be tagged with arbitrary properties by appending a \texttt{{[}key{]}=val} annotation to the placement expression.  For example:
+
+\begin{quote}
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Check}~\PY{n}{nat}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{messages}
+        \begin{message}
+          \PY{n}{nat}\nl
+          ~~~~~\PY{o}{:}~\PY{k+kt}{Set}
+        \end{message}
+      \end{messages}
+    \end{output}
+  \end{sentence}
+\end{alectryon}
+\end{quote}
+
+These properties can then be used within custom transforms.  Out of the box, Alectryon only recognizes the \texttt{{[}lang{]}} annotation; if it is found, the corresponding code is highlighted using the Pygments lexer for that language.
+
+\begin{quote}
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Extraction~Language~Haskell}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Extraction}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{messages}
+        \begin{message}
+          \PY{n+nf}{add}~\PY{o+ow}{::}~\PY{k+kt}{Nat}~\PY{o+ow}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{Nat}~\PY{o+ow}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{Nat}\nl
+          \PY{n+nf}{add}~\PY{n}{n}~\PY{n}{m}~\PY{o+ow}{=}\nl
+          ~~\PY{k+kr}{case}~\PY{n}{n}~\PY{k+kr}{of}~\PY{p}{\PYZob{}}\nl
+          ~~~\PY{k+kt}{O}~\PY{o+ow}{\PYZhy{}\PYZgt{}}~\PY{n}{m}\PY{p}{;}\nl
+          ~~~\PY{k+kt}{S}~\PY{n}{p}~\PY{o+ow}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{S}~\PY{p}{(}\PY{n}{add}~\PY{n}{p}~\PY{n}{m}\PY{p}{)\PYZcb{}}\nl
+          \nl
+        \end{message}
+      \end{messages}
+    \end{output}
+  \end{sentence}
+\end{alectryon}
+\end{quote}
+
+
 \section{Inserting textual references%
   \label{inserting-textual-references}%
 }
@@ -733,6 +794,20 @@ There, too, you may want to define aliases:
 
 \begin{alectryon}
   \hyp{H0}{\PY{n}{Permutation}~\PY{n}{l\PYZsq{}}~\PY{n}{l\PYZsq{}\PYZsq{}}}
+\end{alectryon}
+\end{quote}
+
+Finally, you may chose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by \texttt{Extraction}:
+
+\begin{quote}
+\begin{alectryon}
+  \begin{message}
+    \PY{p}{(}\PY{k}{define~}\PY{n+nv}{add}~\PY{p}{(}\PY{n+nf}{lambdas}~\PY{p}{(}\PY{n+nf}{n}~\PY{n+nv}{m}\PY{p}{)}\nl
+    ~~\PY{p}{(}\PY{n+nf}{match}~\PY{n+nv}{n}\nl
+    ~~~~~\PY{p}{((}\PY{n+nf}{O}\PY{p}{)}~\PY{n+nv}{m}\PY{p}{)}\nl
+    ~~~~~\PY{p}{((}\PY{n+nf}{S}~\PY{n+nv}{p}\PY{p}{)}~\PY{o}{`}\PY{p}{(}\PY{n+nf}{S}~\PY{o}{,}\PY{p}{(}\PY{n+nf}{@}~\PY{n+nv}{add}~\PY{n+nv}{p}~\PY{n+nv}{m}\PY{p}{))))))}\nl
+    \nl
+  \end{message}
 \end{alectryon}
 \end{quote}
 

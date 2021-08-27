@@ -6,11 +6,14 @@
 :alectryon/pygments/tacn: app but_first
 :alectryon/pygments/tacn-solve: must_eauto
 
-This file shows how to highlight custom keywords, like custom tactic names.  To compile it, use::
+This file shows how to customize syntax highlighting in Alectryon.  To compile it, use::
 
    alectryon custom_highlighting.v # Coq → HTML, produces ‘custom_highlighting.html’
 
-Currently Alectryon recognizes the following token kinds:
+Adding extra keywords, tactics, etc.
+------------------------------------
+
+Use the “docinfo” section at the beginning of a document to add custom highlighting patterns, as shown above.  Currently, Alectryon recognizes the following token kinds:
 
 - ``cmd``: top-level commands: `About`, `Locate Ltac`, …
 - ``gallina-constants``: `Prop`, `Set`, `True`, …
@@ -33,6 +36,24 @@ Goal forall x, x = 1 -> x >= 0.
 Qed.
 
 (*|
+Using a different lexer
+-----------------------
+
+You can use the marker-placement mini-language to select a message and set its ``lang`` property:
+
+.. coq:: unfold
+
+   Require Import Extraction. (* .none *)
+   Extraction Language Haskell.
+   Extraction Nat.add. (* .msg[lang]=haskell *)
+
+.. coq:: unfold .s(Nat.add).msg[lang]=scheme
+
+   Extraction Language Scheme.
+   Extraction Nat.add.
+
+You can read more about the marker-placement mini-language in ``recipes/references.rst``.
+
 Using a custom driver for advanced highlighting
 -----------------------------------------------
 

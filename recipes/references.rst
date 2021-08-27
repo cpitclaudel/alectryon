@@ -91,6 +91,23 @@ Here is how it looks:
 
 Each inline reference is a link to the corresponding code fragment.
 
+Setting properties
+==================
+
+Objects located using the marker-placement mini-language can be tagged with arbitrary properties by appending a ``[key]=val`` annotation to the placement expression.  For example:
+
+    .. coq::
+
+       Check nat. (* .in[foo]=bar *)
+
+These properties can then be used within custom transforms.  Out of the box, Alectryon only recognizes the ``[lang]`` annotation; if it is found, the corresponding code is highlighted using the Pygments lexer for that language.
+
+    .. coq::
+
+       Require Import Extraction. (* .none *)
+       Extraction Language Haskell.
+       Extraction Nat.add. (* .unfold .msg[lang]=haskell *)
+
 Inserting textual references
 ============================
 
@@ -142,6 +159,17 @@ There, too, you may want to define aliases:
 
     .. mq:pr:: .h{Permutation l l'}
     .. mq:pr:: .h{Permutation l' l''}
+
+Finally, you may chose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by ``Extraction``:
+
+    .. coq:: none
+       :name: scheme
+
+       Extraction Language Scheme.
+       Extraction Nat.add.
+
+    .. mquote:: .io#scheme.s(Extraction Nat.add).msg(add)
+       :language: scheme
 
 Customizing proof rendering (**experimental**)
 ==============================================
