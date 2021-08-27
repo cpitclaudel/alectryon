@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Iterator, List, Tuple, Union, NamedTuple
+from typing import Any, Dict, DefaultDict, Iterator, List, Tuple, Union, NamedTuple
 
 from collections import namedtuple, defaultdict
 from contextlib import contextmanager
@@ -89,9 +89,13 @@ def b16(i):
     return hex(i)[len("0x"):]
 
 class Gensym():
+    # Having a global table of counters ensures that creating multiple Gensym
+    # instances in the same session doesn't cause collisions
+    GENSYM_COUNTERS: Dict[str, DefaultDict[str, int]] = {}
+
     def __init__(self, stem):
         self.stem = stem
-        self.counters = defaultdict(lambda: -1)
+        self.counters = self.GENSYM_COUNTERS.setdefault(stem, defaultdict(lambda: -1))
 
     def __call__(self, prefix):
         self.counters[prefix] += 1
