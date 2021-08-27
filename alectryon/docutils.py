@@ -91,7 +91,7 @@ from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 from . import core, transforms, html, latex, markers
 from .core import Gensym, SerAPI, Position, PosStr
 from .pygments import make_highlighter, added_tokens, validate_style, \
-    resolve_token, replace_builtin_coq_lexer
+    get_lexer, resolve_token, replace_builtin_coq_lexer
 
 # reST extensions
 # ===============
@@ -581,9 +581,11 @@ class AlectryonPostTransform(OneTimeTransform):
 
     @classmethod
     def replace_one_quote(cls, node, fmt, generator):
-        target = transforms.strip_ids_and_props(deepcopy(node.details["target"]), {"enabled"})
-        cls.replace_one(node, fmt, node.details["path"], generator.gen_part,
-                        target, inline=node.details["inline"])
+        target = deepcopy(node.details["target"])
+        target = transforms.strip_ids_and_props(target, {"enabled"})
+        with generator.highlighter.override(lang=node.details["language"]):
+            cls.replace_one(node, fmt, node.details["path"], generator.gen_part,
+                            target, inline=node.details["inline"])
 
     def _apply(self, **_kwargs):
         fmt, generator = self.init_generator()
@@ -937,12 +939,14 @@ def _marker_ref(rawtext, text, lineno, document, reporter, options):
     path = _parse_mref_target(kind, target, options.pop("prefix", {}))
     cs = options.pop("counter-style", None) or DEFAULT_COUNTER_STYLE
     inline = options.pop("inline", True)
+    language = options.pop("language", "coq")
     details = {"title": title,
                "target": target,
                "path": path,
                "counter-style": cs,
                "kind": kind,
-               "inline": inline}
+               "inline": inline,
+               "language": language}
 
     roles.set_classes(options)
     node = alectryon_pending_mref(AlectryonMrefTransform, details, rawtext, **options)
@@ -985,9 +989,13 @@ def marker_quote_role(role, rawtext, text, lineno, inliner,
     options = {**options, "kind": "quote"}
     return marker_ref_role(role, rawtext, text, lineno, inliner, options, content)
 
+def _opt_mquote_lexer(arg):
+    return get_lexer(arg) and arg
+
 marker_quote_role.name = "mquote" # type: ignore
 marker_quote_role.options = { # type: ignore
-    'prefix': _opt_mref_prefix
+    'prefix': _opt_mref_prefix,
+    'language': _opt_mquote_lexer,
 }
 
 class MQuoteDirective(Directive):
