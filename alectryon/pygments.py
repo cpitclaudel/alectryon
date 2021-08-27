@@ -30,7 +30,7 @@ from functools import lru_cache
 import pygments
 import pygments.styles
 import pygments.formatters
-from pygments.token import Error, STANDARD_TYPES, Name, Operator
+from pygments.token import Error, STANDARD_TYPES, Name, Operator, Text
 from pygments.filters import Filter, TokenMergeFilter, NameHighlightFilter
 from pygments.formatter import Formatter
 from pygments.lexers import get_lexer_by_name # pylint: disable=no-name-in-module
@@ -58,6 +58,7 @@ def get_lexer(lang):
         lexer.add_filter(WarnOnErrorTokenFilter())
     else:
         lexer = get_lexer_by_name(lang, ensurenl=False)
+        lexer.add_filter(StripErrorsTokenFilter())
     lexer.add_filter(TokenMergeFilter())
     return lexer
 
@@ -234,6 +235,15 @@ class WarnOnErrorTokenFilter(Filter):
                        "!! Alectryon's lexer isn't perfect: please send us an example.\n"
                        "!! Context:\n{}")
                 warnings.warn(MSG.format(val, indent(context, ' ' * 8)))
+            yield typ, val
+
+class StripErrorsTokenFilter(Filter):
+    """Change ``Error`` tokens to ``Text`` ones."""
+
+    def filter(self, _lexer, stream):
+        for typ, val in stream:
+            if typ is Error:
+                typ = Text
             yield typ, val
 
 def replace_builtin_coq_lexer():
