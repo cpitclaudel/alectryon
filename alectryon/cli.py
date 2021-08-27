@@ -257,7 +257,7 @@ def gen_html_snippets_with_coqdoc(annotated, html_classes, fname,
         annotated, fname, html_minification, input_language, pygments_style)
 
 def copy_assets(state, assets: List[Tuple[str, Union[str, core.Asset]]],
-                copy_fn, output_directory, ctx={}):
+                copy_fn, output_directory, ctx=None):
     if copy_fn is None:
         return state
 
@@ -267,7 +267,7 @@ def copy_assets(state, assets: List[Tuple[str, Union[str, core.Asset]]],
 
         if isinstance(asset, core.Asset):
             with open(dst, mode="w") as f:
-                f.write(asset.gen(ctx))
+                f.write(asset.gen(ctx or {}))
             continue
 
         if copy_fn is not shutil.copyfile:
