@@ -224,12 +224,11 @@ class BaseCache:
     def put(self, chunks, annotated, generator):
         raise NotImplementedError
 
-    # LATER: pass a SerAPI instance instead of update_fn and generator
-    def update(self, chunks, update_fn, generator):
+    def update(self, chunks, driver):
         annotated = self.get(chunks)
         if annotated is None:
-            annotated = update_fn(chunks)
-            self.put(chunks, annotated, generator)
+            annotated = driver.annotate(chunks)
+            self.put(chunks, annotated, driver.version_info())
         return annotated
 
 class FileCache(BaseCache):

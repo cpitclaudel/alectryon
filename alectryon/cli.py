@@ -67,7 +67,7 @@ def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
     driver_cls = core.resolve_driver(input_language, driver_name)
     driver = driver_cls(driver_args, fpath=fpath)
     cache = Cache(cache_directory, fpath, driver.metadata, cache_compression)
-    annotated = cache.update(chunks, driver.annotate, driver.version_info())
+    annotated = cache.update(chunks, driver)
     assert isinstance(driver.observer, StderrObserver)
     exit_code.val = int(driver.observer.exit_code >= 3)
     return annotated

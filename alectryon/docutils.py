@@ -363,7 +363,7 @@ class AlectryonTransform(OneTimeTransform):
         driver = driver_cls(driver_args, fpath=docpath)
         driver.observer = DocutilsObserver(self.document)
         cache = Cache(CACHE_DIRECTORY, docpath, driver.metadata, CACHE_COMPRESSION)
-        annotated = cache.update(chunks, driver.annotate, driver.version_info())
+        annotated = cache.update(chunks, driver)
         return cache.generator, annotated
 
     def annotate(self, pending_nodes):
