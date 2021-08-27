@@ -193,11 +193,6 @@ def highlight_latex(code, lang,
 
 HIGHLIGHTERS = {"html": highlight_html, "latex": highlight_latex}
 
-def make_highlighter(fmt, lang, style=None):
-    highlighter = HIGHLIGHTERS[fmt]
-    return lambda s, *args, **kwargs: \
-        highlighter(s, *args, **{"style": style, "lang": lang, **kwargs}) # type: ignore
-
 @contextmanager
 def munged_dict(d, updates):
     saved = d.copy()
@@ -206,6 +201,23 @@ def munged_dict(d, updates):
         yield
     finally:
         d.update(saved)
+
+class Highlighter: # LATER: dataclass
+    def __init__(self, fmt, lang, style=None):
+        self.kwargs = {"lang": lang, "style": style}
+        self.highlighter = HIGHLIGHTERS[fmt]
+
+    def __call__(self, code, **kwargs):
+        return self.highlighter(code, **{**self.kwargs, **kwargs})
+
+    @contextmanager
+    def override(self, **kwargs):
+        assert set(kwargs.keys()) <= {"lang", "style"}
+        with munged_dict(self.kwargs, kwargs):
+            yield
+
+def make_highlighter(fmt, lang, style=None):
+    return Highlighter(fmt, lang, style)
 
 class WarnOnErrorTokenFilter(Filter):
     """Print a warning when the lexer generates an error token."""

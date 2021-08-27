@@ -485,7 +485,7 @@ class AlectryonMrefTransform(OneTimeTransform):
                 # Unfold to ensure visibility (but only if search succeeded)
                 if sentence.annots.unfold is None:
                     sentence.annots.unfold = True
-                goal.flags.setdefault("unfold", True)
+                goal.props.setdefault("unfold", True)
                 if "type" in path:
                     return hyp.type
                 if "body" in path:
@@ -581,7 +581,7 @@ class AlectryonPostTransform(OneTimeTransform):
 
     @classmethod
     def replace_one_quote(cls, node, fmt, generator):
-        target = transforms.strip_ids_and_flags(deepcopy(node.details["target"]))
+        target = transforms.strip_ids_and_props(deepcopy(node.details["target"]), {"enabled"})
         cls.replace_one(node, fmt, node.details["path"], generator.gen_part,
                         target, inline=node.details["inline"])
 

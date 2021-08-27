@@ -32,14 +32,14 @@ from .core import Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
     Goals, Messages, RichSentence
 
-PathAnnot = namedtuple("PathAnnot", "enabled path")
+PathAnnot = namedtuple("PathAnnot", "path key val")
 
 class IOAnnots:
     def __init__(self):
         self.filters = None
         self.unfold = None
         self.fails = None
-        self.paths = []
+        self.props = []
 
     NO = re.compile("no-")
     RE = re.compile("(?P<io>[-a-z]+)")
@@ -77,8 +77,8 @@ class IOAnnots:
                     raise ValueError("Unknown flag `{}`.".format(flag))
                 self.filters[flag] = not negated
 
-    def update_paths(self, polarity, path):
-        self.paths.append(PathAnnot(polarity != "-", path))
+    def update_props(self, path, key, val):
+        self.props.append(PathAnnot(path, key, val))
 
     @property
     def hidden(self):
@@ -93,8 +93,8 @@ class IOAnnots:
         return self.filters[key] if self.filters else True
 
     def __repr__(self):
-        return "IOAnnots(unfold={}, fails={}, filters={}, paths={})".format(
-            self.unfold, self.fails, self.filters, self.paths)
+        return "IOAnnots(unfold={}, fails={}, filters={}, props={})".format(
+            self.unfold, self.fails, self.filters, self.props)
 
 def _enrich_goal(g):
     return RichGoal(g.name,
@@ -115,7 +115,11 @@ def enrich_sentences(fragments):
             yield fr
 
 ISOLATED = r"(?:\s|\A){}(?=\s|\Z)"
-POLARIZED_PATH_SEGMENT = r"(?P<polarity>[-+]?)(?P<path>(?:{})+)".format(
+POLARIZED_PATH_SEGMENT = r"""
+  (?P<polarity>[-+]?)
+  (?P<path>(?:{})+)
+  (?:\[(?P<key>[a-z]+)\]=(?P<value>[A-Za-z0-9_]+))?
+""".format(
     markers.MARKER_PATH_SEGMENT.pattern)
 
 ONE_IO_FLAG = r"(?:{}|{})".format(
@@ -151,11 +155,13 @@ def _parse_path(path):
 
 def _update_io_flags(annots, flags_str, regex):
     for mannot in regex.finditer(flags_str):
-        io, path, polarity = mannot.group("io", "path", "polarity")
+        io, path, polarity, key, val = mannot.group("io", "path", "polarity", "key", "value")
         if io:
             annots.update(io)
         else:
-            annots.update_paths(polarity, _parse_path(path))
+            if not key:
+                key, val = "enabled", polarity != "-"
+            annots.update_props(_parse_path(path), key, val)
 
 def read_io_flags(annots, flags_str):
     _update_io_flags(annots, flags_str, ONE_IO_FLAG_RE)
@@ -218,7 +224,7 @@ def _find_marked(sentence, path):
     else:
         yield sentence
 
-def _find_flagged(sentence):
+def _find_hidden_by_annots(sentence):
     annots = sentence.annots
     if not annots["in"]:
         yield sentence.input
@@ -233,23 +239,24 @@ def _find_flagged(sentence):
             yield m
 
 def process_io_annots(fragments):
-    """Convert IO annotations to "enabled" flags."""
+    """Convert IO annotations to pre-object properties."""
     for fr in fragments:
         if isinstance(fr, RichSentence):
-            for (enabled, path) in fr.annots.paths:
+            for (path, key, val) in fr.annots.props:
                 for obj in _find_marked(fr, path):
-                    obj.flags["enabled"] = enabled
-            for obj in _find_flagged(fr):
-                obj.flags["enabled"] = False
+                    obj.props[key] = val
+
+            for obj in _find_hidden_by_annots(fr):
+                obj.props["enabled"] = False
 
             for g in fragment_goals(fr):
                 if not any(_enabled(h) for h in g.hypotheses) and not _enabled(g.conclusion):
-                    g.flags["enabled"] = False
+                    g.props["enabled"] = False
 
             any_output = any(_enabled(o) for os in fr.outputs for o in _output_objects(os))
 
             if not _enabled(fr.input) and not any_output:
-                fr.flags["enabled"] = False
+                fr.props["enabled"] = False
 
             if not fr.annots.unfold and not _enabled(fr.input) and any_output:
                 MSG = "Cannot show output of {!r} without .in or .unfold."
@@ -257,7 +264,7 @@ def process_io_annots(fragments):
         yield fr
 
 def _enabled(o):
-    return o.flags.get("enabled", True)
+    return o.props.get("enabled", True)
 
 def _commit_enabled(objs):
     objs[:] = [o for o in objs if _enabled(o)]
@@ -322,12 +329,13 @@ def _sub_objects(obj):
         return ()
     assert False
 
-def strip_ids_and_flags(obj):
+def strip_ids_and_props(obj, props):
     if isinstance(obj, Enriched):
         obj.ids.clear() # type: ignore
-        obj.flags.clear() # type: ignore
+        for p in props:
+            obj.props.pop(p, None) # type: ignore
         for obj_ in _sub_objects(obj):
-            strip_ids_and_flags(obj_)
+            strip_ids_and_props(obj_, props)
     return obj
 
 LEADING_BLANKS_RE = re.compile(r'\A([ \t]*(?:\n|\Z))?(.*?)([ \t]*)\Z',

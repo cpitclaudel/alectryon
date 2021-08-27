@@ -18,7 +18,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from contextlib import contextmanager
 from functools import wraps
 from os import path
 import pickle
@@ -27,7 +26,7 @@ from dominate import tags
 from dominate.util import text as txt
 
 from . import transforms, GENERATOR
-from .core import b16, Gensym, Backend, Text, RichSentence, Goals, Messages, Asset
+from .core import b16, nullctx, Gensym, Backend, Text, RichSentence, Goals, Messages, Asset
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
 
@@ -90,13 +89,9 @@ def deduplicate(selector):
         return _fn
     return _deduplicate
 
-@contextmanager
-def nullctx():
-    yield
-
 class HtmlGenerator(Backend):
     def __init__(self, highlighter, gensym_stem="", minify=False):
-        self.highlighter = highlighter
+        super().__init__(highlighter)
         self.gensym = None if minify else Gensym(gensym_stem + "-" if gensym_stem else "")
         self.minify, self.backrefs = minify, ({} if minify else None)
 
@@ -110,9 +105,9 @@ class HtmlGenerator(Backend):
     def highlight(self, s):
         return self.highlighter(s)
 
-    def gen_code(self, dom, code, **kwargs):
-        with dom(self.highlight(code.contents), **kwargs):
-            self.gen_mrefs(code)
+    def gen_code(self, code):
+        self.highlight_enriched(code)
+        self.gen_mrefs(code)
 
     @staticmethod
     def gen_names(names):
@@ -126,10 +121,12 @@ class HtmlGenerator(Backend):
                 if hyp.body:
                     with tags.span(cls="hyp-body"):
                         tags.b(":= ")
-                        self.gen_code(tags.span, hyp.body)
+                        with tags.span():
+                            self.gen_code(hyp.body)
                 with tags.span(cls="hyp-type"):
                     tags.b(": ")
-                    self.gen_code(tags.span, hyp.type)
+                    with tags.span():
+                        self.gen_code(hyp.type)
             self.gen_mrefs(hyp)
 
     @deduplicate(".goal-hyps")
@@ -141,7 +138,8 @@ class HtmlGenerator(Backend):
 
     @deduplicate(".goal-conclusion")
     def gen_ccl(self, conclusion):
-        self.gen_code(tags.div, conclusion, cls="goal-conclusion")
+        with tags.div(cls="goal-conclusion"):
+            self.gen_code(conclusion)
 
     @deduplicate(".alectryon-goal")
     def gen_goal(self, goal, toggle=None): # pylint: disable=arguments-differ
@@ -176,7 +174,7 @@ class HtmlGenerator(Backend):
         with tags.div(cls='alectryon-extra-goals'):
             for goal in goals:
                 toggle = goal.hypotheses and \
-                    self.gen_checkbox(goal.flags.get("unfold"),
+                    self.gen_checkbox(goal.props.get("unfold"),
                                       "alectryon-extra-goal-toggle")
                 self.gen_goal(goal, toggle=toggle)
 
@@ -190,13 +188,12 @@ class HtmlGenerator(Backend):
 
     def gen_input(self, fr, toggle):
         cls = "alectryon-input" + (" alectryon-failed" if fr.annots.fails else "")
-        with self.gen_clickable(toggle, cls, self.highlight(fr.input.contents)):
+        with self.gen_clickable(toggle, cls, self.highlight_enriched(fr.input)):
             self.gen_mrefs(fr)
             self.gen_mrefs(fr.input)
 
     def gen_message(self, message):
-        self.highlight(message.contents)
-        self.gen_mrefs(message)
+        self.gen_code(message)
 
     @deduplicate(".alectryon-output")
     def gen_output(self, fr):

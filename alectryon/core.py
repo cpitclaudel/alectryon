@@ -21,6 +21,7 @@
 from typing import Any, Iterator, List, Tuple, Union, NamedTuple
 
 from collections import namedtuple, defaultdict
+from contextlib import contextmanager
 from shlex import quote
 from shutil import which
 from subprocess import Popen, PIPE, check_output
@@ -62,14 +63,14 @@ class Enriched():
     def __new__(cls, *args, **kwargs):
         if len(args) < len(getattr(super(), "_fields", ())):
             # Don't repeat fields given by position (it breaks pickle & deepcopy)
-            kwargs = {"ids": [], "markers": [], "flags": {}, **kwargs}
+            kwargs = {"ids": [], "markers": [], "props": {}, **kwargs}
         return super().__new__(cls, *args, **kwargs)
 
 def _enrich(nt):
     # LATER: Use dataclass + multiple inheritance; change `ids` and `markers` to
     # mutable `id` and `marker` fields.
     name = "Rich" + nt.__name__
-    fields = nt._fields + ("ids", "markers", "flags")
+    fields = nt._fields + ("ids", "markers", "props")
     # Using ``type`` this way ensures compatibility with pickling
     return type(name, (Enriched, namedtuple(name, fields)),
                 {"__slots__": ()})
@@ -96,14 +97,27 @@ class Gensym():
         self.counters[prefix] += 1
         return self.stem + prefix + b16(self.counters[prefix])
 
-class Backend: # pylint: disable=no-member
+@contextmanager
+def nullctx():
+    yield
+
+class Backend:
+    def __init__(self, highlighter):
+        self.highlighter = highlighter
+
     def gen_sentence(self, s): raise NotImplementedError()
     def gen_hyp(self, hyp): raise NotImplementedError()
     def gen_goal(self, goal): raise NotImplementedError()
     def gen_message(self, message): raise NotImplementedError()
     def highlight(self, s): raise NotImplementedError()
     def gen_names(self, names): raise NotImplementedError()
+    def gen_code(self, code): raise NotImplementedError()
     def gen_txt(self, s): raise NotImplementedError()
+
+    def highlight_enriched(self, obj):
+        lang = obj.props.get("lang")
+        with self.highlighter.override(lang=lang) if lang else nullctx():
+            return self.highlight(obj.contents)
 
     def _gen_any(self, obj):
         if isinstance(obj, (Text, RichSentence)):
@@ -115,7 +129,7 @@ class Backend: # pylint: disable=no-member
         elif isinstance(obj, RichMessage):
             self.gen_message(obj)
         elif isinstance(obj, RichCode):
-            self.highlight(obj.contents)
+            self.gen_code(obj)
         elif isinstance(obj, Names):
             self.gen_names(obj)
         elif isinstance(obj, str):

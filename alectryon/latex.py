@@ -182,14 +182,11 @@ class Macros:
 macros = Macros()
 
 class LatexGenerator(Backend):
-    def __init__(self, highlighter):
-        self.highlighter = highlighter
-
     def highlight(self, s):
         return [Raw(self.highlighter(s, prefix="", suffix=""), verbatim=True)]
 
     def gen_code(self, code):
-        with Concat(*self.highlight(code.contents)) as block:
+        with Concat(*self.highlight_enriched(code)) as block:
             self.gen_mrefs(code)
             return block
 
