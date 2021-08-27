@@ -5,9 +5,9 @@
 Unreleased
 ==========
 
-- A new ``mquote`` directive complements the ``mquote`` role by allowing authors to quote parts of a proof as a block (the ``mquote`` role generates inline text). [b38de96]
+- A new ``mquote`` directive complements the ``mquote`` role by allowing authors to quote parts of a proof as a block (the ``mquote`` role generates inline text). [e0c9eda5]
 
-- Alectryon now accepts a ``--pygments-style`` flag to chose which Pygments code-highlighting style to use.  It also honors the Sphinx configuration option ``pygments_style``. [GH-58] [63539ed]
+- Alectryon now accepts a ``--pygments-style`` flag to chose which Pygments code-highlighting style to use.  It also honors the Sphinx configuration option ``pygments_style``. [GH-58] [63539edd]
 
 - Alectryon now exists with an informative error code (``10`` + the level of the most severe Docutils error). [GH-57] [dffde22c]
 
