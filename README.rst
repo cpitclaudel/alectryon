@@ -276,7 +276,12 @@ More precise inclusion/exclusion is possible using the `marker-placement mini-la
 ``-.g#* .g#1 .g#3 .g{False}``
   Show only goals 1, 3, and any goal whose conclusion is ``False``.
 
-**This feature is experimental**; the syntax might change.
+Finally, you can use a ``[lang]=…`` annotation to chose which Pygments lexer to use to render part of a goal:
+
+``.msg[lang]=haskell``
+  Highlight the bodies of all messages produced by this sentence using the Haskell lexer.
+
+**These last two features are experimental**; the syntax might change.
 
 .. _marker-language:
 
@@ -365,18 +370,20 @@ The full architecture of a path is shown below for reference:
 Plain search patterns (delimited by ``(…)``) are matched literally, anywhere in the term.  Other patterns (``{…}`` patterns and ``#…`` names) use ``fnmatch``-style `matching <https://docs.python.org/3/library/fnmatch.html>`__ (``?`` matches any character; ``*`` matches any sequence of characters; and ``[]`` matches a range of characters), and must match the whole term.  Hence:
 
 - To match hypothesis ``H1`` but not ``H10`` nor ``IH1``, use ``.h#H1``.
-- To match hypotheses of type nat, but not of type ``list nat`` or ``nat -> nat``, use ``.h{nat}``
+- To match hypotheses of type ``nat``, but not of type ``list nat`` or ``nat -> nat``, use ``.h{nat}``
 - To match hypotheses whole type or body includes ``Permutation`` anywhere, use ``.h(Permutation)`` or ``.h{*Permutation*}``.
 - Etc.
 
 As long as the search term does not contain special characters (``*?[]``), a plain search (``(…)``) is the same as an fnmatch-style search with wildcards on both sides (``{*…*}``).
+
+Finally, you can attach  can attach arbitrary ``key``-``value`` to subparts of a goal matched using the marker-placement mini-language by appending ``[key]=value`` after the path.  This is useful with custom transforms and with the ``[lang]=…`` setting to customize highlighting for a given sentence or message.
 
 **This feature is experimental**; the syntax might change.
 
 Extra roles and directives
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For convenience, alectryon includes a few extra roles and directives:
+For convenience, Alectryon includes a few extra roles and directives:
 
 Markers and marker references
 *****************************
@@ -405,7 +412,7 @@ The ``:mquote:`` role is similar to ``:mref:``, but it inserts a copy of the tar
 
 For example, using :literal:`:mquote:\`.s(Induction).h#IHm.type\`` in the example above would print the type of ``IHm``, ``∀ n: ℕ, m + n = n + m`` whereas :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m).name\`` would produce only the name of the corresponding hypothesis, ``IHm``.
 
-A ``.. mquote:`` directive is also available.  It places the quoted elements in a block and preserves indentation and newlines, unlike the ``:mquote:`` role (whose output appears inline).
+An ``.. mquote:`` directive is also available.  It places the quoted elements in a block and preserves indentation and newlines, unlike the ``:mquote:`` role (whose output appears inline).
 
 More details and examples are given in `<recipes/references.rst>`__.
 
