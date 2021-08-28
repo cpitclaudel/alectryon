@@ -153,8 +153,8 @@ def _parse_path(path):
 
     return path
 
-def _update_io_flags(annots, flags_str, regex):
-    for mannot in regex.finditer(flags_str):
+def _update_io_annots(annots, annots_str, regex):
+    for mannot in regex.finditer(annots_str):
         io, path, polarity, key, val = mannot.group("io", "path", "polarity", "key", "value")
         if io:
             annots.update(io)
@@ -164,12 +164,12 @@ def _update_io_flags(annots, flags_str, regex):
             annots.update_props(_parse_path(path), key, val)
 
 def read_io_flags(annots, flags_str):
-    _update_io_flags(annots, flags_str, ONE_IO_FLAG_RE)
+    _update_io_annots(annots, flags_str, ONE_IO_FLAG_RE)
     return ONE_IO_FLAG_RE.sub("", flags_str)
 
 def _read_io_comments(annots, contents):
     for m in IO_COMMENT_RE.finditer(contents):
-        _update_io_flags(annots, m.group(0), ONE_IO_ANNOT_RE)
+        _update_io_annots(annots, m.group(0), ONE_IO_ANNOT_RE)
     return IO_COMMENT_RE.sub("", contents)
 
 def _contents(obj):
