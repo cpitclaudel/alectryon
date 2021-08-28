@@ -542,7 +542,8 @@ def coalesce_text(fragments):
         if isinstance(last, Text) and isinstance(fr, Text):
             last._replace(contents=last.contents + fr.contents)
         else:
-            yield last
+            if last:
+                yield last
             last = fr
     if last:
         yield last
