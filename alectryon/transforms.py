@@ -167,6 +167,21 @@ def read_io_flags(annots, flags_str):
     _update_io_annots(annots, flags_str, ONE_IO_FLAG_RE)
     return ONE_IO_FLAG_RE.sub("", flags_str)
 
+def read_all_io_flags(s):
+    """Like ``read_io_flags``, but raise if `s` has other contents."""
+    annots = IOAnnots()
+    leftover = read_io_flags(annots, s).strip()
+    if leftover:
+        raise ValueError("Unrecognized directive flags: {}".format(leftover))
+    return annots
+
+def inherit_io_annots(fragments, annots):
+    """Apply `annots` to each fragment in `fragments`."""
+    for fr in enrich_sentences(fragments):
+        if hasattr(fr, 'annots'):
+            fr.annots.inherit(annots)
+        yield fr
+
 def _read_io_comments(annots, contents):
     for m in IO_COMMENT_RE.finditer(contents):
         _update_io_annots(annots, m.group(0), ONE_IO_ANNOT_RE)

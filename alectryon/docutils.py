@@ -316,14 +316,6 @@ class AlectryonTransform(OneTimeTransform):
     SERTOP_ARGS = ()
     """Arguments to pass to SerAPI, in SerAPI format."""
 
-    @staticmethod
-    def set_fragment_annots(fragments, annots):
-        """Apply relevant annotations to all unannotated fragments."""
-        for fr in transforms.enrich_sentences(fragments):
-            if hasattr(fr, 'annots'):
-                fr.annots.inherit(annots)
-            yield fr
-
     def check_for_long_lines(self, node, fragments):
         if LONG_LINE_THRESHOLD is None:
             return
@@ -353,7 +345,7 @@ class AlectryonTransform(OneTimeTransform):
 
     def replace_node(self, pending, fragments):
         directive_annots = pending.details["directive_annots"]
-        fragments = self.set_fragment_annots(fragments, directive_annots)
+        fragments = transforms.inherit_io_annots(fragments, directive_annots)
         fragments = transforms.default_transform(fragments, delay_errors=True)
         self.check_for_long_lines(pending, fragments)
         details = {**pending.details, "fragments": fragments}
@@ -668,14 +660,10 @@ class CoqDirective(Directive):
         return [err]
 
     def _annots_of_arguments(self):
-        annots = transforms.IOAnnots()
         try:
-            leftover = transforms.read_io_flags(annots, " ".join(self.arguments)).strip()
-            if leftover:
-                raise ValueError("Unrecognized directive flags: {}".format(leftover))
+            return transforms.read_all_io_flags(" ".join(self.arguments)), []
         except ValueError as e:
-            return annots, self._error(str(e))
-        return annots, []
+            return transforms.IOAnnots(), self._error(str(e))
 
     def run(self):
         self.assert_has_content()
