@@ -19,10 +19,12 @@
 
 <p>To compile:</p>
 <pre class="literal-block">
-alectryon --stdin-filename corner_cases.rst --frontend rst -o corner_cases.html - &lt; corner_cases.rst
-  # Coq → HTML; produces ‘corner_cases.html’
-alectryon corner_cases.rst -o corner_cases.xe.tex --latex-dialect xelatex
-  # Coq → LaTeX; produces ‘corner_cases.xe.tex’
+alectryon --stdin-filename corner_cases.rst --frontend rst \
+  -o corner_cases.html - &lt; corner_cases.rst
+    # Coq → HTML; produces ‘corner_cases.html’
+alectryon corner_cases.rst -o corner_cases.xe.tex \
+  --latex-dialect xelatex
+    # Coq → LaTeX; produces ‘corner_cases.xe.tex’
 </pre>
 <div class="section" id="goal-names">
 <h1>Goal names</h1>
@@ -36,6 +38,9 @@ alectryon corner_cases.rst -o corner_cases.xe.tex --latex-dialect xelatex
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">a</span> := <span class="mi">1</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk4"><span class="kn">Check</span> corner_cases.a.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">a
      : nat</blockquote></div></div></small></span></pre></div>
+<div class="section" id="blanks-at-beginning-of-snippet">
+<h1>Blanks at beginning of snippet</h1>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk5" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk5"><span class="kn">Goal</span> <span class="kt">True</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small></span></pre><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="corner-cases-rst-chk6" style="display: none" type="checkbox"><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> I.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre></div>
 </div>
 </div></body>
 </html>

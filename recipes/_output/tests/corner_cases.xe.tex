@@ -46,10 +46,12 @@ To compile:
 
 \begin{quote}
 \begin{alltt}
-alectryon --stdin-filename corner_cases.rst --frontend rst -o corner_cases.html - < corner_cases.rst
-  # Coq → HTML; produces ‘corner_cases.html’
-alectryon corner_cases.rst -o corner_cases.xe.tex --latex-dialect xelatex
-  # Coq → LaTeX; produces ‘corner_cases.xe.tex’
+alectryon --stdin-filename corner_cases.rst --frontend rst \textbackslash{}
+  -o corner_cases.html - < corner_cases.rst
+    # Coq → HTML; produces ‘corner_cases.html’
+alectryon corner_cases.rst -o corner_cases.xe.tex \textbackslash{}
+  --latex-dialect xelatex
+    # Coq → LaTeX; produces ‘corner_cases.xe.tex’
 \end{alltt}
 \end{quote}
 
@@ -179,6 +181,67 @@ alectryon corner_cases.rst -o corner_cases.xe.tex --latex-dialect xelatex
         \end{message}
       \end{messages}
     \end{output}
+  \end{sentence}
+\end{alectryon}
+
+
+\section{Blanks at beginning of snippet%
+  \label{blanks-at-beginning-of-snippet}%
+}
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Goal}~\PY{k+kt}{True}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+\end{alectryon}
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{exact}~\PY{n}{I}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Qed}\PY{o}{.}
+    \end{input}
   \end{sentence}
 \end{alectryon}
 

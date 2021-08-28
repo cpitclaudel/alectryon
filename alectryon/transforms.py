@@ -366,6 +366,8 @@ def group_whitespace_with_code(fragments):
                 if idx > 0:
                     assert not isinstance(grouped[idx - 1], Text)
                     grouped[idx - 1].suffixes.append(before)
+                elif not rest: # blank text at very beginning
+                    after = before + after
                 else:
                     rest = before + rest
 

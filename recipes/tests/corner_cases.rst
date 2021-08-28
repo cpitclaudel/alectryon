@@ -4,10 +4,12 @@
 
 To compile::
 
-   alectryon --stdin-filename corner_cases.rst --frontend rst -o corner_cases.html - < corner_cases.rst
-     # Coq → HTML; produces ‘corner_cases.html’
-   alectryon corner_cases.rst -o corner_cases.xe.tex --latex-dialect xelatex
-     # Coq → LaTeX; produces ‘corner_cases.xe.tex’
+   alectryon --stdin-filename corner_cases.rst --frontend rst \
+     -o corner_cases.html - < corner_cases.rst
+       # Coq → HTML; produces ‘corner_cases.html’
+   alectryon corner_cases.rst -o corner_cases.xe.tex \
+     --latex-dialect xelatex
+       # Coq → LaTeX; produces ‘corner_cases.xe.tex’
 
 Goal names
 ==========
@@ -27,3 +29,14 @@ Self-reference
 
    Definition a := 1.
    Check corner_cases.a.
+
+Blanks at beginning of snippet
+==============================
+
+.. coq::
+
+   Goal True.
+
+.. coq::
+
+       - (* .out .unfold *) exact I. Qed.
