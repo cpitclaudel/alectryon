@@ -551,11 +551,24 @@ def strip_text(fragments):
     return fragments
 
 def coalesce_text(fragments):
-    """Coalesce consecutive ``Text`` objects in `fragments`."""
+    r"""Coalesce consecutive ``Text`` objects in `fragments`.
+
+    >>> list(coalesce_text([
+    ...    Sentence(contents='apply Lt.le_lt_trans.', messages=[], goals=[]),
+    ...    Text(contents=' \n       (* ... *) '),
+    ...    Text(contents=' \n '),
+    ...    Sentence(contents='Qed.', messages=[], goals=[]),
+    ...    Text(contents=' \n ')
+    ... ]))
+    [Sentence(contents='apply Lt.le_lt_trans.', messages=[], goals=[]),
+     Text(contents=' \n       (* ... *)  \n '),
+     Sentence(contents='Qed.', messages=[], goals=[]),
+     Text(contents=' \n ')]
+    """
     last = None
     for fr in fragments:
         if isinstance(last, Text) and isinstance(fr, Text):
-            last._replace(contents=last.contents + fr.contents)
+            last = last._replace(contents=last.contents + fr.contents)
         else:
             if last:
                 yield last

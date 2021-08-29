@@ -14,8 +14,10 @@ add_tokens (alectryon.pygments)
 Doctest: alectryon.pygments.add_tokens ... ok
 highlight_html (alectryon.pygments)
 Doctest: alectryon.pygments.highlight_html ... ok
+coalesce_text (alectryon.transforms)
+Doctest: alectryon.transforms.coalesce_text ... ok
 
 ----------------------------------------------------------------------
-Ran 8 tests
+Ran 9 tests
 
 OK
