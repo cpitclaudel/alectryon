@@ -48,7 +48,7 @@ def resolve_token(kind):
 
 CUSTOM_LEXER_ALIASES: Dict[str, str] = {}
 
-@lru_cache
+@lru_cache(maxsize=None)
 def get_lexer(lang):
     lang = CUSTOM_LEXER_ALIASES.get(lang, lang)
     # LATER: Upstream Coq lexer, remove this branch
@@ -137,7 +137,7 @@ class HtmlFormatter(pygments.formatters.HtmlFormatter): # pylint: disable=no-mem
 class LatexFormatter(pygments.formatters.LatexFormatter): # pylint: disable=no-member
     pass
 
-@lru_cache
+@lru_cache(maxsize=None)
 def get_formatter(fmt, style=None) -> Formatter:
     style = _get_style(style)
     if fmt == "html":
