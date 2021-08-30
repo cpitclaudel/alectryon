@@ -18,6 +18,7 @@ alectryon_opts = --copy-assets hardlink --output-directory $(out_dir) --no-versi
 alectryon = $(PYTHON) ../alectryon.py $(alectryon_opts)
 
 targets :=
+other :=
 
 %/:
 	mkdir -p $@
@@ -30,7 +31,7 @@ _output/.version-info: | _output/
 	@echo "Sphinx: $(shell $(PYTHON) -c 'import sphinx; print(sphinx.__version__)')" >> $@
 
 ifeq (, $(COVERAGE))
-targets += _output/.version-info
+other += _output/.version-info
 endif
 
 ########################
@@ -87,18 +88,20 @@ _output/latex.aux/%.lua.pdf: _output/%.lua.tex | $$(dir $$@)
 _output/latex.aux/%.pdf: _output/%.tex | $$(dir $$@)
 	texfot --tee=/dev/null --no-stderr latexmk -cd -pdf -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
 
-targets += $(patsubst %.tex,%.pdf,$(filter-out %.snippets.tex %.part.tex,$(filter %.tex,$(targets))))
+other += $(patsubst %.tex,%.pdf,$(filter-out %.snippets.tex %.part.tex,$(filter %.tex,$(targets))))
 
 ###############
 # Entry point #
 ###############
 
-all: $(targets)
+alectryon: $(targets)
+
+all: $(targets) $(other)
 
 coverage:
 	mkdir -p coverage
 	+$(MAKE) clean
-	+$(MAKE) COVERAGE=1
+	+$(MAKE) COVERAGE=1 alectryon
 	cd coverage && coverage combine && coverage html
 .PHONY: coverage
 
