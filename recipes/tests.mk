@@ -110,6 +110,11 @@ _output/tests/fatal.v.out: tests/fatal.v
 	$(alectryon) $< --frontend coq -o - > /dev/null 2> $@; echo "exit: $$?" >> $@
 tests_targets += _output/tests/fatal.v.out
 
+# Plain Coq → HTML + errors
+_output/tests/fatal_transform.v.out: tests/fatal_transform.v
+	$(alectryon) $< --frontend coq -o - > /dev/null 2> $@; echo "exit: $$?" >> $@
+tests_targets += _output/tests/fatal_transform.v.out
+
 # Coq+reST → LaTeX
 _output/tests/latex_formatting.tex: tests/latex_formatting.v
 	$(alectryon) $< --backend latex

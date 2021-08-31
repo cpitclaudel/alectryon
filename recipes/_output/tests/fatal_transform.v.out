@@ -1,0 +1,3 @@
+Exiting early due to an error; use --traceback to diagnose:
+  No match found for `.g#4` in `Goal True.`
+exit: 1
