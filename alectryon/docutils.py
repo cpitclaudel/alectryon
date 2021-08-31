@@ -642,11 +642,18 @@ def recompute_contents(directive, real_indentation):
     return body_indentation, contents
 
 class AlectryonDirective(Directive): # pylint: disable=abstract-method
-    def _error(self, msg):
+    def _error(self, msg, line=None):
+        line = self.lineno if line is None else line
         msg = 'Error in "{}" directive:\n{}'.format(self.name, msg)
         literal = nodes.literal_block(self.block_text, self.block_text)
         err = self.state_machine.reporter.error(msg, literal, line=self.lineno)
         return [err]
+
+    def _try(self, fn, *args, default=None):
+        try:
+            return fn(*args), []
+        except ValueError as e:
+            return default, self._error(str(e))
 
 class CoqDirective(AlectryonDirective):
     """Highlight and annotate a Coq snippet."""
@@ -665,17 +672,15 @@ class CoqDirective(AlectryonDirective):
     def header(self):
         return "`{}`".format(self.block_text.partition('\n')[0])
 
-    def _annots_of_arguments(self):
-        try:
-            return transforms.read_all_io_flags(" ".join(self.arguments)), []
-        except ValueError as e:
-            return transforms.IOAnnots(), self._error(str(e))
-
     def run(self):
         self.assert_has_content()
 
         document = self.state_machine.document
-        annots, errors = self._annots_of_arguments()
+
+        annotstr = " ".join(self.arguments)
+        annots, errors = self._try(
+            transforms.read_all_io_flags, annotstr, default=transforms.IOAnnots())
+
         indent, contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
         source, line = self.state_machine.get_source_and_line(self.content_offset + 1)
 
@@ -929,8 +934,9 @@ def _marker_ref(rawtext, text, lineno, document, reporter, options):
     if target is None:
         title, target = None, title
 
-    if kind == "quote" and title:
-        raise ValueError("Title syntax (``… <…>``) not supported with ``:mquote:``.")
+    if kind != "ref" and title:
+        MSG = "Title syntax (``… <…>``) not supported with ``:m{}:``."
+        raise ValueError(MSG.format(kind))
 
     path = _parse_mref_target(kind, target, options.pop("prefix", {}))
     cs = options.pop("counter-style", None) or DEFAULT_COUNTER_STYLE
@@ -1009,13 +1015,10 @@ class MQuoteDirective(AlectryonDirective):
         sm = self.state_machine
         text = self.arguments[0]
         options = {**self.options, "kind": "quote", "inline": False}
-        try:
-            node = _marker_ref(rawtext, text, self.lineno, sm.document, sm, options)
-            return [node]
-        except ValueError as e:
-            return self._error(str(e))
+        node, errors = self._try(_marker_ref, rawtext, text, self.lineno, sm.document, sm, options)
+        return ([node] if node else []) + errors
 
-class MAssertDirective(Directive):
+class MAssertDirective(AlectryonDirective):
     has_content = True
     required_arguments = 0
     optional_arguments = 1
@@ -1024,17 +1027,25 @@ class MAssertDirective(Directive):
     name = "massert"
     option_spec: Dict[str, Any] = {}
 
+    @staticmethod
+    def _gen_ref(sm, linum, refstr, options):
+        refstr = refstr.strip()
+        if not refstr:
+            return None
+        rawtext = "assertion `{}`".format(refstr)
+        return _marker_ref(rawtext, refstr, linum, sm.document, sm, {**options})
+
     def run(self):
-        prefix = markers.parse_path(self.arguments[0] if self.arguments else "")
         sm = self.state_machine
+        prefix, refs = self._try(markers.parse_path, self.arguments[0] if self.arguments else "")
         options = {**self.options, "kind": "assert", "prefix": prefix}
-        try:
-            start = self.content_offset + 1
-            return [_marker_ref("assertion `{}`".format(ref), ref,
-                                linum, sm.document, sm, {**options})
-                    for linum, ref in enumerate(self.content, start=start) if ref]
-        except ValueError as e:
-            return self._error(str(e))
+
+        for linum, refstr in enumerate(self.content, start=self.content_offset + 1):
+            ref, errs = self._try(self._gen_ref, sm, linum, refstr, options)
+            refs.append(ref)
+            refs.extend(errs)
+
+        return [r for r in refs if r is not None]
 
 # Error printer
 # -------------
