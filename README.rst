@@ -396,7 +396,7 @@ By default markers refer to the most recent ``.. coq::`` block, but other blocks
 
 Markers can be customized by setting the ``:counter-style:`` option on a custom role derived from ``:mref:``; for example, to use Devanagari numerals:
 
-.. code-block::
+.. code-block:: rst
 
    .. role:: dref(mref)
       :counter-style: ० १ २ ३ ४ ५ ६ ७ ८ ९
@@ -413,6 +413,13 @@ The ``:mquote:`` role is similar to ``:mref:``, but it inserts a copy of the tar
 For example, using :literal:`:mquote:\`.s(Induction).h#IHm.type\`` in the example above would print the type of ``IHm``, ``∀ n: ℕ, m + n = n + m`` whereas :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m).name\`` would produce only the name of the corresponding hypothesis, ``IHm``.
 
 An ``.. mquote:`` directive is also available.  It places the quoted elements in a block and preserves indentation and newlines, unlike the ``:mquote:`` role (whose output appears inline).
+
+More details and examples are given in `<recipes/references.rst>`__.
+
+Output assertions
+*****************
+
+Sometimes it is desirable to check that the prover produced the right output, without displaying that output to the user.  In these cases, Alectryon's marker-placement mini-language can serve as a poor lad's unit test.  The ``massert`` directive takes one argument (a path prefix), and checks that each line of its body is a valid reference to part of a previous goal.
 
 More details and examples are given in `<recipes/references.rst>`__.
 

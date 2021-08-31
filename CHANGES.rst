@@ -7,6 +7,8 @@ Unreleased
 
 - A new extension of the marker-placement mini-language allows authors to attach properties to parts of a proof; for example, ``.. coq:: .s(Extraction).msg[lang]=haskell`` highlights all messages produced by ``Extraction`` commands using the Haskell lexer instead of the usual Coq lexer. [409fa6c3]
 
+- A new ``massert`` directive silently provides a simple form of unit-testing by silently checking a collection of marker-placement references, thus confirming that the prover's output matches user-provided search patterns. [bc2d8a42] [GH-63]
+
 - A new ``mquote`` directive complements the ``mquote`` role by allowing authors to quote parts of a proof as a block (the ``mquote`` role generates inline text). [e0c9eda5]
 
 - Alectryon now accepts a ``--pygments-style`` flag to chose which Pygments code-highlighting style to use.  It also honors the Sphinx configuration option ``pygments_style``. [GH-58] [63539edd]
