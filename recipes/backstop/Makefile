@@ -3,7 +3,7 @@ export BACKSTOP_DIR ?= ../_output/
 test: recipes pdf.js/build/pdf.js
 	./backstop.sh test
 
-approve: recipes pdf.js/build/pdf.js
+approve:
 	./backstop.sh approve
 
 reference: recipes pdf.js/build/pdf.js
