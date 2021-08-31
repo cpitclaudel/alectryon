@@ -34,10 +34,12 @@ dedent (alectryon.transforms)
 Doctest: alectryon.transforms.dedent ... ok
 group_hypotheses (alectryon.transforms)
 Doctest: alectryon.transforms.group_hypotheses ... ok
+group_whitespace_with_code (alectryon.transforms)
+Doctest: alectryon.transforms.group_whitespace_with_code ... ok
 partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 19 tests
+Ran 20 tests
 
 OK

@@ -381,7 +381,7 @@ def isolate_blanks(txt):
     return LEADING_BLANKS_RE.match(txt).groups()
 
 def group_whitespace_with_code(fragments):
-    """Attach spaces to neighboring sentences.
+    r"""Attach spaces to neighboring sentences.
 
     This pass gathers all spaces following a sentence, up to the first
     (included) newline, and embeds them in the sentence itself (this ensures
@@ -391,6 +391,13 @@ def group_whitespace_with_code(fragments):
 
     This pass assumes that consecutive ``Text`` fragments have been
     coalesced.
+
+    >>> from .core import Sentence as S, Text as T
+    >>> group_whitespace_with_code([T(" \n 1 "), S("S", [], []), T(" \n 2 ")])
+    ... # doctest: +ELLIPSIS
+    [Text(contents=' \n 1'),
+     RichSentence(...contents='S'..., ...prefixes=[' '], suffixes=[' \n']...),
+     Text(contents=' 2 ')]
     """
     grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
