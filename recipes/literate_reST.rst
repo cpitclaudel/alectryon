@@ -10,11 +10,18 @@ Alectryon supports literate programs and documents (combinations of code and pro
 
    alectryon literate_reST.rst
        # reST+Coq → HTML;  produces ‘literate_reST.html’
-   $ DOCUTILSCONFIG=literate_reST.docutils.conf alectryon \
+   $ DOCUTILSCONFIG=literate.docutils.conf alectryon \
      literate_reST.rst --backend latex
        # reST+Coq → LaTeX; produces ‘literate_reST.tex’
    alectryon literate_reST.rst --backend coq
        # reST+Coq → Coq;   produces ‘literate_reST.v’
+
+   $ cd ..; python -m alectryon.literate \
+       recipes/literate_reST.rst > recipes/literate_reST.min.v
+     # Minimal reST → Coq; produces ‘literate_reST.min.v’
+   $ cd ..; python -m alectryon.literate --rst2coq - \
+       < recipes/literate_reST.rst > recipes/literate_reST.min.stdin.v
+     # Minimal reST → Coq; produces ‘literate_reST.min.stdin.v’
 
 ----
 

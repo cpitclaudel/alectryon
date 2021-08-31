@@ -10,10 +10,8 @@
 \usepackage{textcomp} % text symbol macros
 
 %%% Custom LaTeX preamble
-% PDF Standard Fonts
-\usepackage{mathptmx} % Times
-\usepackage[scaled=.90]{helvet}
-\usepackage{courier}
+
+\usepackage[margin=1in]{geometry}
 
 %%% User specified packages and stylesheets
 \usepackage{alectryon}
@@ -72,11 +70,19 @@ Alectryon supports literate programs and documents (combinations of code and pro
 \begin{quote}
 \begin{alltt}
 alectryon literate_coq.v
-  # Coq+reST → HTML;  produces ‘literate_coq.html’
-alectryon literate_coq.v -{}-backend latex
-  # Coq+reST → LaTeX; produces ‘literate_coq.tex’
+    # Coq+reST → HTML;  produces ‘literate_coq.html’
+$ DOCUTILSCONFIG=literate.docutils.conf alectryon \textbackslash{}
+  literate_coq.v -{}-backend latex
+    # Coq+reST → LaTeX; produces ‘literate_coq.tex’
 alectryon literate_coq.v -{}-backend rst
-  # Coq+reST → reST;  produces ‘literate_coq.v.rst’
+    # Coq+reST → reST;  produces ‘literate_coq.v.rst’
+
+$ cd ..; python -m alectryon.literate \textbackslash{}
+    recipes/literate_coq.v > recipes/literate_coq.min.rst
+  # Minimal Coq → reST; produces ‘literate_coq.min.rst’
+$ cd ..; python -m alectryon.literate -{}-coq2rst - \textbackslash{}
+    < recipes/literate_coq.v > recipes/literate_coq.min.stdin.rst
+  # Minimal Coq → reST; produces ‘literate_coq.min.stdin.rst’
 \end{alltt}
 \end{quote}
 
@@ -1144,6 +1150,8 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
     \end{input}
   \end{sentence}
 \end{alectryon}
+
+\setlength{\emergencystretch}{4em}
 
 Alectryon defined a \texttt{:coqid:} role to link to definitions in Coqdoc-generated documentation; for example:
 

@@ -6,11 +6,19 @@
 Alectryon supports literate programs and documents (combinations of code and prose) written in Coq and reStructuredText.  Here is an example, written in Coq.  It can be converted to reST, HTML, or LaTeX using the following commands::
 
    alectryon literate_coq.v
-     # Coq+reST → HTML;  produces ‘literate_coq.html’
-   alectryon literate_coq.v --backend latex
-     # Coq+reST → LaTeX; produces ‘literate_coq.tex’
+       # Coq+reST → HTML;  produces ‘literate_coq.html’
+   $ DOCUTILSCONFIG=literate.docutils.conf alectryon \
+     literate_coq.v --backend latex
+       # Coq+reST → LaTeX; produces ‘literate_coq.tex’
    alectryon literate_coq.v --backend rst
-     # Coq+reST → reST;  produces ‘literate_coq.v.rst’
+       # Coq+reST → reST;  produces ‘literate_coq.v.rst’
+
+   $ cd ..; python -m alectryon.literate \
+       recipes/literate_coq.v > recipes/literate_coq.min.rst
+     # Minimal Coq → reST; produces ‘literate_coq.min.rst’
+   $ cd ..; python -m alectryon.literate --coq2rst - \
+       < recipes/literate_coq.v > recipes/literate_coq.min.stdin.rst
+     # Minimal Coq → reST; produces ‘literate_coq.min.stdin.rst’
 
 -----
 
@@ -118,6 +126,10 @@ Proof. (* .fold *)
 Qed.
 
 (*|
+.. raw:: latex
+
+   \setlength{\emergencystretch}{4em}
+
 Alectryon defined a ``:coqid:`` role to link to definitions in Coqdoc-generated documentation; for example:
 
     Note that the standard library already contains a :coqid:`boolean <Coq.Init.Nat.even>` :coqid:`predicate <Coq.Init.Nat#even>` for `even` (called :coqid:`Coq.Init.Nat.even`, or :coqid:`Coq.Init.Nat#even` for short), as well as an :coqid:`inductive one <Coq.Arith.PeanoNat#Nat.Even>` (called :coqid:`Coq.Arith.PeanoNat#Nat.Even` in module :coqid:`Coq.Arith.PeanoNat#`).

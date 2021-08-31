@@ -20,11 +20,19 @@
 <p>Alectryon supports literate programs and documents (combinations of code and prose) written in Coq and reStructuredText.  Here is an example, written in Coq.  It can be converted to reST, HTML, or LaTeX using the following commands:</p>
 <pre class="literal-block">
 alectryon literate_coq.v
-  # Coq+reST → HTML;  produces ‘literate_coq.html’
-alectryon literate_coq.v --backend latex
-  # Coq+reST → LaTeX; produces ‘literate_coq.tex’
+    # Coq+reST → HTML;  produces ‘literate_coq.html’
+$ DOCUTILSCONFIG=literate.docutils.conf alectryon \
+  literate_coq.v --backend latex
+    # Coq+reST → LaTeX; produces ‘literate_coq.tex’
 alectryon literate_coq.v --backend rst
-  # Coq+reST → reST;  produces ‘literate_coq.v.rst’
+    # Coq+reST → reST;  produces ‘literate_coq.v.rst’
+
+$ cd ..; python -m alectryon.literate \
+    recipes/literate_coq.v &gt; recipes/literate_coq.min.rst
+  # Minimal Coq → reST; produces ‘literate_coq.min.rst’
+$ cd ..; python -m alectryon.literate --coq2rst - \
+    &lt; recipes/literate_coq.v &gt; recipes/literate_coq.min.stdin.rst
+  # Minimal Coq → reST; produces ‘literate_coq.min.stdin.rst’
 </pre>
 <hr class="docutils" />
 <p>Here's an <em>inductive specification</em> of evenness:</p>

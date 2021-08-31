@@ -21,11 +21,18 @@
 <pre class="literal-block">
 alectryon literate_reST.rst
     # reST+Coq → HTML;  produces ‘literate_reST.html’
-$ DOCUTILSCONFIG=literate_reST.docutils.conf alectryon \
+$ DOCUTILSCONFIG=literate.docutils.conf alectryon \
   literate_reST.rst --backend latex
     # reST+Coq → LaTeX; produces ‘literate_reST.tex’
 alectryon literate_reST.rst --backend coq
     # reST+Coq → Coq;   produces ‘literate_reST.v’
+
+$ cd ..; python -m alectryon.literate \
+    recipes/literate_reST.rst &gt; recipes/literate_reST.min.v
+  # Minimal reST → Coq; produces ‘literate_reST.min.v’
+$ cd ..; python -m alectryon.literate --rst2coq - \
+    &lt; recipes/literate_reST.rst &gt; recipes/literate_reST.min.stdin.v
+  # Minimal reST → Coq; produces ‘literate_reST.min.stdin.v’
 </pre>
 <hr class="docutils" />
 <p>Coq fragments are introduced with <tt class="docutils literal">.. coq::</tt>:</p>

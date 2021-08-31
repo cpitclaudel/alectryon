@@ -65,12 +65,20 @@ _output/literate_coq.html: literate_coq.v
 recipes_targets += _output/literate_coq.html
 # Coq+reST → LaTeX
 _output/literate_coq.tex: literate_coq.v
-	$(alectryon) $< --backend latex
+	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex
 recipes_targets += _output/literate_coq.tex
 # Coq+reST → reST
 _output/literate_coq.v.rst: literate_coq.v
 	$(alectryon) $< --backend rst
 recipes_targets += _output/literate_coq.v.rst
+# Minimal Coq → reST
+_output/literate_coq.min.rst: literate_coq.v | _output/
+	cd ..; $(PYTHON) -m alectryon.literate recipes/$< > recipes/$@
+recipes_targets += _output/literate_coq.min.rst
+# Minimal Coq → reST
+_output/literate_coq.min.stdin.rst: literate_coq.v | _output/
+	cd ..; $(PYTHON) -m alectryon.literate --coq2rst - < recipes/$< > recipes/$@
+recipes_targets += _output/literate_coq.min.stdin.rst
 
 # reST+Coq → HTML
 _output/literate_reST.html: literate_reST.rst
@@ -78,12 +86,20 @@ _output/literate_reST.html: literate_reST.rst
 recipes_targets += _output/literate_reST.html
 # reST+Coq → LaTeX
 _output/literate_reST.tex: literate_reST.rst
-	DOCUTILSCONFIG=literate_reST.docutils.conf $(alectryon) $< --backend latex
+	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex
 recipes_targets += _output/literate_reST.tex
 # reST+Coq → Coq
 _output/literate_reST.v: literate_reST.rst
 	$(alectryon) $< --backend coq
 recipes_targets += _output/literate_reST.v
+# Minimal reST → Coq
+_output/literate_reST.min.v: literate_reST.rst | _output/
+	cd ..; $(PYTHON) -m alectryon.literate recipes/$< > recipes/$@
+recipes_targets += _output/literate_reST.min.v
+# Minimal reST → Coq
+_output/literate_reST.min.stdin.v: literate_reST.rst | _output/
+	cd ..; $(PYTHON) -m alectryon.literate --rst2coq - < recipes/$< > recipes/$@
+recipes_targets += _output/literate_reST.min.stdin.v
 
 # reST → HTML
 _output/mathjax.html: mathjax.rst

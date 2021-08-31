@@ -70,8 +70,8 @@ targets += $({prefix}_targets)\
 EXCLUDED_SOURCES = {
     "docutils.conf",
     "references.docutils.conf",
-    "literate_reST.docutils.conf",
-    "stylesheets.docutils.conf"
+    "literate.docutils.conf",
+    "stylesheets.docutils.conf",
 }
 
 def main():
