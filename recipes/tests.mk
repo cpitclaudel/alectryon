@@ -7,6 +7,11 @@ _output/tests/:
 
 tests_targets :=
 
+# CLIs
+_output/tests/alternative_clis.out: tests/alternative_clis.py | _output/tests/
+	$(PYTHON) $< > $@
+tests_targets += _output/tests/alternative_clis.out
+
 # reST → HTML
 _output/tests/auto_toggle.html: tests/auto_toggle.rst
 	$(alectryon) $<
