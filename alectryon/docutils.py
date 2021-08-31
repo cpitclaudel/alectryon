@@ -998,14 +998,14 @@ class MQuoteDirective(Directive):
 
     def run(self):
         rawtext, _, _ = self.block_text.partition('\n')
-        document = self.state_machine.document
+        sm = self.state_machine
         text = self.arguments[0]
         options = {**self.options, "kind": "quote", "inline": False}
         try:
-            node = _marker_ref(rawtext, text, self.lineno, document, self.state_machine, options)
+            node = _marker_ref(rawtext, text, self.lineno, sm.document, sm, options)
             return [node]
         except ValueError as e:
-            raise self.error(str(e))
+            return self._error(str(e))
 
 # Error printer
 # -------------
