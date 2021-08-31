@@ -26,7 +26,6 @@ import re
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
-from itertools import zip_longest
 from os import path, makedirs, unlink
 
 from . import core
@@ -189,19 +188,6 @@ def deprecated(fn, old_name):
 
 json_of_annotated = deprecated(PlainSerializer.encode, "json_of_annotated")
 annotated_of_json = deprecated(PlainSerializer.decode, "annotated_of_json")
-
-def validate_inputs(annotated, reference):
-    if isinstance(annotated, list):
-        if not isinstance(reference, list):
-            print(f"Mismatch: {annotated} {reference}")
-            return False
-        return all(validate_inputs(*p) for p in zip_longest(annotated, reference))
-    # pylint: disable=isinstance-second-argument-not-valid-type
-    if isinstance(annotated, TYPES): # type: ignore
-        if annotated.contents != reference:
-            print(f"Mismatch: {annotated.contents} {reference}")
-        return annotated.contents == reference
-    return False
 
 class BaseCache:
     generator: Optional[GeneratorInfo]

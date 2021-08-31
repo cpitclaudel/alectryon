@@ -39,10 +39,6 @@ class Matcher():
     def match(self, other):
         raise NotImplementedError()
 
-class ExactMatcher(str, Matcher):
-    def match(self, other):
-        return self == other
-
 class PlainMatcher(str, Matcher):
     def match(self, other):
         return self in other
