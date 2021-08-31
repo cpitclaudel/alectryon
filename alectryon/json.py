@@ -57,6 +57,17 @@ ALIASES_OF_TYPE = {
 TYPES = tuple(TYPE_OF_ALIASES.values())
 
 class PlainSerializer:
+    """Convert arrays and dictionaries of namedtuples to and from JSON.
+
+    >>> from .core import Text as T
+    >>> obj = {'a': [[1, T('A')], [1, T('A')], {'c': 3}], 'b': {'c': 3}}
+    >>> enc = PlainSerializer.encode(obj); enc
+    {'a': [[1, {'_type': 'text', 'contents': 'A'}],
+           [1, {'_type': 'text', 'contents': 'A'}],
+           {'c': 3}], 'b': {'c': 3}}
+    >>> dec = PlainSerializer.decode(enc); dec
+    {'a': [[1, Text(contents='A')], [1, Text(contents='A')], {'c': 3}], 'b': {'c': 3}}
+    """
     @staticmethod
     def encode(obj) -> Any:
         if isinstance(obj, list):
@@ -90,6 +101,13 @@ class DeduplicatingSerializer:
     Specifically, deduplication works by replacing repeated objects with a
     special dictionary ``{"&": N}``, where ``N`` is an index into the list of
     all objects encoded up to that point.
+
+    >>> from .core import Text as T
+    >>> obj = {'a': [[1, T('A')], [1, T('A')], {'c': 3}], 'b': {'c': 3}}
+    >>> enc = DeduplicatingSerializer.encode(obj); enc
+    {'a': [[1, {'&': 'text', '_': ['A']}], [1, {'*': 0}], {'c': 3}], 'b': {'c': 3}}
+    >>> dec = DeduplicatingSerializer.decode(enc); dec
+    {'a': [[1, Text(contents='A')], [1, Text(contents='A')], {'c': 3}], 'b': {'c': 3}}
     """
     @staticmethod
     def encode(obj):
@@ -131,7 +149,15 @@ class DeduplicatingSerializer:
         return decode(js)
 
 class FullyDeduplicatingSerializer:
-    """Like `DeduplicatingSerializer`, but also deduplicate basic types."""
+    """Like `DeduplicatingSerializer`, but also deduplicate basic types.
+
+    >>> from .core import Text as T
+    >>> obj = {'a': [[1, T('A')], [1, T('A')], {'c': 3}], 'b': {'c': 3}}
+    >>> enc = FullyDeduplicatingSerializer.encode(obj); enc
+    {'a': [[1, {'&': 'text', '_': ['A']}], {'*': 3}, {'c': 3}], 'b': {'*': 5}}
+    >>> dec = FullyDeduplicatingSerializer.decode(enc); dec
+    {'a': [[1, Text(contents='A')], [1, Text(contents='A')], {'c': 3}], 'b': {'c': 3}}
+    """
     @staticmethod
     def encode(obj):
         obj_table = {}

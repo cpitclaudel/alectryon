@@ -2,6 +2,12 @@ translate_offset (alectryon.core.PosView)
 Doctest: alectryon.core.PosView.translate_offset ... ok
 annotate (alectryon.core)
 Doctest: alectryon.core.annotate ... ok
+DeduplicatingSerializer (alectryon.json)
+Doctest: alectryon.json.DeduplicatingSerializer ... ok
+FullyDeduplicatingSerializer (alectryon.json)
+Doctest: alectryon.json.FullyDeduplicatingSerializer ... ok
+PlainSerializer (alectryon.json)
+Doctest: alectryon.json.PlainSerializer ... ok
 coq2rst (alectryon.literate)
 Doctest: alectryon.literate.coq2rst ... ok
 coq_partition (alectryon.literate)
@@ -18,6 +24,6 @@ coalesce_text (alectryon.transforms)
 Doctest: alectryon.transforms.coalesce_text ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests
+Ran 12 tests
 
 OK
