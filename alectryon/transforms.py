@@ -334,23 +334,43 @@ def commit_io_annotations(fragments, discard_folded=False):
         yield fr
 
 def _sub_objects(obj):
+    """Return an iterable of objects contained within obj."""
     if isinstance(obj, RichSentence):
-        return obj.outputs
-    if isinstance(obj, RichGoal):
-        return (obj.conclusion, *obj.hypotheses)
-    if isinstance(obj, RichHypothesis):
-        return obj.body, obj.type
-    if isinstance(obj, (RichMessage, RichCode)):
-        return ()
-    assert False
+        yield from obj.outputs
+    elif isinstance(obj, RichGoal):
+        yield obj.conclusion
+        yield from obj.hypotheses
+    elif isinstance(obj, RichHypothesis):
+        yield obj.body
+        yield obj.type
+    elif isinstance(obj, Messages):
+        yield from obj.messages
+    elif isinstance(obj, Goals):
+        yield from obj.goals
+
+def _all_sub_objects(obj):
+    """Return an iterable of objects contained within obj.
+
+    >>> from . import core as c
+    >>> s = c.Sentence("s",
+    ...   [c.Message("m")],
+    ...   [c.Goal("n", "c", [c.Hypothesis(["h"], None, "t")])])
+    >>> list(_all_sub_objects(next(enrich_sentences([s])))) # doctest: +ELLIPSIS
+    [RichSentence...,
+       Messages..., RichMessage...,
+       Goals..., RichGoal...,
+         RichCode..., RichHypothesis..., RichCode...]
+    """
+    yield obj
+    for obj_ in _sub_objects(obj):
+        yield from _all_sub_objects(obj_)
 
 def strip_ids_and_props(obj, props):
-    if isinstance(obj, Enriched):
-        obj.ids.clear() # type: ignore
-        for p in props:
-            obj.props.pop(p, None) # type: ignore
-        for obj_ in _sub_objects(obj):
-            strip_ids_and_props(obj_, props)
+    for so in _all_sub_objects(obj):
+        if isinstance(so, Enriched):
+            so.ids.clear() # type: ignore
+            for p in props:
+                so.props.pop(p, None) # type: ignore
     return obj
 
 LEADING_BLANKS_RE = re.compile(r'\A([ \t]*(?:\n|\Z))?(.*?)([ \t]*)\Z',
