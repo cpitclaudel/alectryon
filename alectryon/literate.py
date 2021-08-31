@@ -86,9 +86,6 @@ class Line(namedtuple("Line", "num parts")):
         s = "".join(str(p) for p in self.parts)
         return s if not s.isspace() else ""
 
-    def __radd__(self, s):
-        self.parts.append(s)
-
     def isspace(self):
         return all(p.isspace() for p in self.parts)
 
