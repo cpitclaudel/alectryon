@@ -35,11 +35,11 @@ from .core import Sentence, Text, Names, Enriched, \
 PathAnnot = namedtuple("PathAnnot", "path key val")
 
 class IOAnnots:
-    def __init__(self):
-        self.filters = None
-        self.unfold = None
-        self.fails = None
-        self.props = []
+    def __init__(self, unfold=None, fails=None, filters=None, props=()):
+        self.filters = filters
+        self.unfold = unfold
+        self.fails = fails
+        self.props = list(props)
 
     NO = re.compile("no-")
     RE = re.compile("(?P<io>[-a-z]+)")
