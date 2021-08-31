@@ -3,10 +3,14 @@ test_errors (__main__.core) ... ok
 test_errors (__main__.docutils) ... ok
 test_errors (__main__.json) ... ok
 test_warnings (__main__.json) ... ok
+test_errors (__main__.literate) ... ok
+test_features (__main__.literate) ... ok
+test_errors (__main__.pygments) ... ok
+test_warnings (__main__.pygments) ... ok
 test_warnings (__main__.serapi) ... ok
 test_errors (__main__.sexp) ... ok
 
 ----------------------------------------------------------------------
-Ran 7 tests
+Ran 11 tests
 
 OK

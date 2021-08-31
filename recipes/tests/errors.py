@@ -84,6 +84,23 @@ class serapi(unittest.TestCase):
             self.assertEqual(api.observer.exit_code, 2)
             self.assertRegex(err.getvalue(), "Orphaned message")
 
+class pygments(unittest.TestCase):
+    def test_warnings(self):
+        from pygments import token
+        from alectryon.pygments import WarnOnErrorTokenFilter
+
+        with self.assertWarnsRegex(Warning, "Unexpected token"):
+            _ = list(WarnOnErrorTokenFilter().filter(None, [(token.Error, "err")]))
+
+    def test_errors(self):
+        from alectryon.pygments import validate_style, get_formatter
+
+        with self.assertRaisesRegex(ValueError, "Unknown.*style"):
+            _ = validate_style("\0")
+        with self.assertRaisesRegex(ValueError, "Unknown.*format"):
+            _ = get_formatter("\0")
+
+
 class sexp(unittest.TestCase):
     def test_errors(self):
         from alectryon.sexp import load, ParseError
@@ -93,6 +110,24 @@ class sexp(unittest.TestCase):
 
         with self.assertRaisesRegex(ParseError, "Unterminated"):
             _ = load(b'("s)')
+
+class literate(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from alectryon.literate import StringView, Line
+        self.ln = Line(num=12, parts = ["    ", "line"])
+        self.sa, self.sx = StringView("aaabbbccc"), StringView("xyz")
+
+    def test_errors(self):
+        with self.assertRaisesRegex(ValueError, "concatenate"):
+            _ = self.sa + self.sx
+
+        with self.assertRaisesRegex(ValueError, "concatenate"):
+            _ = self.sa + self.sa
+
+    def test_features(self):
+        self.assertEqual(self.sa[3:6][0], "b")
+        self.assertEqual(str(self.ln.dedent(2)), "  line")
 
 if __name__ == '__main__':
     sys.stderr = sys.stdout

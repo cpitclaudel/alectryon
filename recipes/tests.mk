@@ -97,7 +97,7 @@ tests_targets += _output/tests/errors.txt
 
 # Errors and warnings
 _output/tests/errors.sh.out: tests/errors.sh
-	ALECTRYON="$(alectryon) " bash $< 2>&1 | sed '/^usage\|^ \{10,\}/d' > $@
+	PYTHON="$(PYTHON) " ALECTRYON="$(alectryon) " bash $< 2>&1 | sed '/^usage\|^ \{10,\}/d' > $@
 tests_targets += _output/tests/errors.sh.out
 
 # Plain Coq → HTML + errors
