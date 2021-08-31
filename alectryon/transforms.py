@@ -513,22 +513,31 @@ def find_long_lines(fragments, threshold):
 COQ_CHUNK_DELIMITER = re.compile(r"(?:[ \t]*\n){2,}")
 
 def partition_fragments(fragments, delim=COQ_CHUNK_DELIMITER):
-    """Partition a list of `fragments` into chunks.
+    r"""Partition a list of `fragments` into chunks.
 
     The result is a list of chunks, each containing multiple fragments.  This
     can be useful as a pre-processing step for .v files.  `delim` is a regular
     expression matching the delimiter (by default, two blank lines).
+
+    >>> partition_fragments([Text("Goal True."), Text("  \n\n"), Text("split.")])
+    [[Text(contents='Goal True.')], [Text(contents='split.')]]
+    >>> partition_fragments([Text("Goal True."), Text(" (*x*) \n\n "), Text("split.")])
+    [[Text(contents='Goal True.'), Text(contents=' (*x*)')],
+     [Text(contents=' '), Text(contents='split.')]]
     """
     partitioned = [[]]
     for fr in fragments:
         if isinstance(fr, Text):
-            m = delim.match(fr.contents)
+            m = delim.search(fr.contents)
             if m:
+                before, after = fr.contents[:m.start()], fr.contents[m.end():]
+                if before:
+                    partitioned[-1].append(Text(before))
                 if partitioned[-1]:
                     partitioned.append([])
-                fr = fr._replace(contents=fr.contents[m.end():])
-                if not fr.contents:
+                if not after:
                     continue
+                fr = fr._replace(contents=after)
         partitioned[-1].append(fr)
     return partitioned
 
