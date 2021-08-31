@@ -1130,7 +1130,8 @@ class RSTCoqParser(docutils.parsers.rst.Parser): # type: ignore
             self.statemachine.run(lines, document, inliner=self.inliner)
         except ParsingError as e:
             self.report_parsing_error(e)
-        roles._roles.pop('', None) # Reset the default role
+        finally:
+            roles._roles.pop('', None) # Reset the default role
         self.finish_parse()
 
 # Writer

@@ -5,12 +5,13 @@ test_errors (__main__.json) ... ok
 test_warnings (__main__.json) ... ok
 test_errors (__main__.literate) ... ok
 test_features (__main__.literate) ... ok
+test_failed_import (__main__.myst) ... ok
 test_errors (__main__.pygments) ... ok
 test_warnings (__main__.pygments) ... ok
 test_warnings (__main__.serapi) ... ok
 test_errors (__main__.sexp) ... ok
 
 ----------------------------------------------------------------------
-Ran 11 tests
+Ran 12 tests
 
 OK

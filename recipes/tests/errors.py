@@ -12,6 +12,7 @@ import contextlib
 import io
 import sys
 import unittest
+import unittest.mock
 import tempfile
 
 import warnings
@@ -53,7 +54,8 @@ class cli(unittest.TestCase):
 
 class docutils(unittest.TestCase):
     def test_errors(self):
-        from alectryon.docutils import CounterStyle, get_pipeline
+        from alectryon.docutils import CounterStyle, get_pipeline, RSTCoqParser
+        from docutils.utils import new_document, SystemMessage
 
         with self.assertRaisesRegex(ValueError, "Invalid"):
             _ = CounterStyle.of_str("0")
@@ -66,6 +68,10 @@ class docutils(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "dialect"):
             _ = get_pipeline("coq+rst", "latex", "!dialect")
+
+        with redirected_std():
+            with self.assertRaisesRegex(SystemMessage, "SEVERE"):
+                RSTCoqParser().parse("(*", new_document("<string>"))
 
 class core(unittest.TestCase):
     def test_errors(self):
@@ -83,6 +89,9 @@ class serapi(unittest.TestCase):
             api._warn_orphaned(View(b"chunk"), PrettyPrinted(0, "pp"))
             self.assertEqual(api.observer.exit_code, 2)
             self.assertRegex(err.getvalue(), "Orphaned message")
+
+        with self.assertRaisesRegex(ValueError, "not found"):
+            SerAPI.resolve_sertop(sertop_bin="\0")
 
 class pygments(unittest.TestCase):
     def test_warnings(self):
@@ -128,6 +137,24 @@ class literate(unittest.TestCase):
     def test_features(self):
         self.assertEqual(self.sa[3:6][0], "b")
         self.assertEqual(str(self.ln.dedent(2)), "  line")
+
+class myst(unittest.TestCase):
+    def test_failed_import(self):
+        __import = __import__
+        def fake_import(arg, *args):
+            if isinstance(arg, str) and "myst_parser" in arg:
+                raise ImportError
+            return __import(arg, *args)
+
+        with unittest.mock.patch("builtins.__import__", new=fake_import):
+            from alectryon.myst import Parser, FallbackParser
+            from docutils.utils import new_document, SystemMessage
+
+            self.assertEqual(Parser, FallbackParser)
+
+            with redirected_std():
+                with self.assertRaisesRegex(SystemMessage, "SEVERE"):
+                    Parser().parse("*xyz*", new_document("<string>"))
 
 if __name__ == '__main__':
     sys.stderr = sys.stdout
