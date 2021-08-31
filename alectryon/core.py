@@ -600,7 +600,7 @@ class SerAPI():
         # during _add, so we delay message processing until the very end.
         for message in messages:
             fragment = fragments_by_id.get(message.sid)
-            if fragment is None:
+            if fragment is None: # pragma: no cover
                 self._warn_orphaned(chunk, message)
             else:
                 fragment.messages.append(Message(message.pp))
