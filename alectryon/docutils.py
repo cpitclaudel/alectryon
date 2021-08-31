@@ -726,8 +726,10 @@ class ExperimentalExerciseDirective(Sidebar, AlectryonDirective):
 
     def run(self):
         [node] = super().run()
-        node['difficulty'] = self.options['difficulty']
-        node['optional'] = self.options['optional']
+        node['difficulty'] = difficulty = self.options.get('difficulty')
+        node['optional'] = self.options.get('optional', False)
+        if not difficulty:
+            return self._error("Missing required option ':difficulty:'")
         for title in node.traverse(nodes.title):
             title.children.insert(0, nodes.Text("Exercise: "))
         return [node]
