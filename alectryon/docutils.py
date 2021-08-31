@@ -82,7 +82,7 @@ import docutils.writers
 from docutils import nodes
 
 from docutils.parsers.rst import directives, roles, states, Directive # type: ignore
-from docutils.parsers.rst.directives.body import Sidebar # type: ignore
+from docutils.parsers.rst.directives.body import Topic # type: ignore
 from docutils.parsers.rst.directives.misc import Role # type: ignore
 from docutils.readers.standalone import Reader as StandaloneReader
 from docutils.transforms import Transform
@@ -719,13 +719,12 @@ class AlectryonToggleDirective(Directive):
         return [pending]
 
 # This is just a small example
-class ExperimentalExerciseDirective(Sidebar, AlectryonDirective):
+class ExperimentalExerciseDirective(Topic, AlectryonDirective):
     """Introduce an exercise."""
     name = "exercise"
 
-    node_class = nodes.sidebar
     required_arguments = 1
-    option_spec = {**Sidebar.option_spec,
+    option_spec = {**Topic.option_spec,
                    "difficulty": directives.nonnegative_int,
                    "optional": directives.flag}
 
