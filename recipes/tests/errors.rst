@@ -11,12 +11,6 @@ The ``lint`` backend in Alectryon runs the compiler and reports errors on ``stde
    alectryon errors.rst --copy-assets none --backend webpage -o /dev/null 2> errors.txt; echo "exit: $?" >> errors.txt
      # reST → HTML + errors; produces ‘errors.txt’
 
-.. coq::
-
-   Goal True.
-     exact I. (* A very long line *) (* whose contents are split *) (* across *) (* multiple *) (* comments *)
-   Qed.
-
 Markup
 ======
 
@@ -46,9 +40,13 @@ Bad syntax:
   - :mref:`.io{*}.g`
   - :mref:`.s[a-z]`
   - :mref:`.s(abc)[a-z]`
+  - .. massert:: <.s(Goal)>
 
 Bad targets (static):
   - :mref:`.s(Goal).g#0.name`
+
+Missing sentence:
+  - :mref:`.g#0.in`
 
 Incompatible selectors:
   - :mref:`.s(Goal).in.ccl`
@@ -56,9 +54,15 @@ Incompatible selectors:
 Unquotable:
   - :mquote:`.s(Goal)`
   - :mquote:`.s(Goal).g#1`
+  - .. mquote:: .s(Goal)
+  - .. mquote:: .s(Goal).g#1
 
 Quote and title
   - :mquote:`test <.s(Goal)>`
+  - .. mquote:: test <.s(Goal)>
+  - .. massert::
+
+       test <.s(Goal)>
 
 Bad prefix:
   .. role:: mq2(mquote)
@@ -66,15 +70,45 @@ Bad prefix:
   .. role:: mq2(mquote)
      :prefix: .s.i
 
+No block to reference (dynamic):
+  - :mref:`.s(Goal True)`
+
+.. coq::
+
+   Goal True.
+     pose proof 1 as n.
+     exact I. (* A very long line *) (* whose contents are split *) (* across *) (* multiple *) (* comments *)
+   Qed.
+
 Bad targets (dynamic):
   - :mref:`.io#nope.s(123)`
   - :mref:`.s(Goal).g#25`
+  - :mref:`.s(pose proof).h#n.body`
+
+Bad assertions (dynamic):
+  .. massert:: .s(Goal True)
+
+     .g{*not found*}
+
+     .msg
+
+Directives
+==========
+
+.. exercise:: Title
+
+   (Missing :difficulty: flag.)
 
 Flags
-=====
+-----
 
 Unknown directive flags
   .. coq:: unknown
+
+     Check nat.
+
+Leftover flags
+  .. coq:: unfold out .xyz
 
      Check nat.
 
