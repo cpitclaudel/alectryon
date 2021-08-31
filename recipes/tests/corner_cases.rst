@@ -40,3 +40,18 @@ Blanks at beginning of snippet
 .. coq::
 
        - (* .out .unfold *) exact I. Qed.
+
+Blanks around sentences
+=======================
+
+Bubble: :alectryon-bubble:`-`
+
+.. alectryon-toggle::
+
+References
+==========
+
+:mref:`.s(pose).h#a.body`, :mref:`.s(pose).h#a.type`, :mref:`.s(pose).h#a`.
+
+.. role:: mq(mref)
+   :kind: quote

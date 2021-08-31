@@ -23,6 +23,33 @@
 \usepackage{pygments}
 
 %%% Fallback definitions for Docutils-specific commands
+
+% class handling for environments (block-level elements)
+% \begin{DUclass}{spam} tries \DUCLASSspam and
+% \end{DUclass}{spam} tries \endDUCLASSspam
+\ifx\DUclass\undefined % poor man's "provideenvironment"
+ \newenvironment{DUclass}[1]%
+  {\def\DocutilsClassFunctionName{DUCLASS#1}% arg cannot be used in end-part of environment.
+     \csname \DocutilsClassFunctionName \endcsname}%
+  {\csname end\DocutilsClassFunctionName \endcsname}%
+\fi
+
+% inline markup (custom roles)
+% \DUrole{#1}{#2} tries \DUrole#1{#2}
+\providecommand*{\DUrole}[2]{%
+  \ifcsname DUrole#1\endcsname%
+    \csname DUrole#1\endcsname{#2}%
+  \else
+    % backwards compatibility: try \docutilsrole#1{#2}
+    \ifcsname docutilsrole#1\endcsname%
+      \PackageWarningNoLine{docutils}{Command prefix "docutilsrole" is
+         deprecated, \MessageBreak use `\protect\DUrole #1`}
+      \csname docutilsrole#1\endcsname{#2}%
+    \else%
+      #2%
+    \fi%
+  \fi%
+}
 % hyperlinks:
 \ifthenelse{\isundefined{\hypersetup}}{
   \usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
@@ -244,5 +271,291 @@ alectryon corner_cases.rst -o corner_cases.xe.tex \textbackslash{}
     \end{input}
   \end{sentence}
 \end{alectryon}
+
+
+\section{Blanks around sentences%
+  \label{blanks-around-sentences}%
+}
+
+Bubble: \DUrole{alectryon-bubble}{}
+
+\begin{DUclass}{alectryon-container}
+
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{txt}
+    \PY{c}{(*~xyz~*)}
+  \end{txt}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~\PY{k+kn}{Goal}~\PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{o}{\PYZhy{}}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kp}{idtac}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{n+nb}{pose}~\PY{o}{(}\PY{n}{a}~\PY{o}{:=}~\PY{l+m+mi}{1}\PY{o}{).}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}
+            \hyp[\anchor{corner-cases-rst-s-pose-h-a-body-0}\PY{l+m+mi}{1}\mrefmarker{1}]{a}{\anchor{corner-cases-rst-s-pose-h-a-0}\anchor{corner-cases-rst-s-pose-h-a-type-0}\PY{n}{nat}\mrefmarker{2}\mrefmarker{3}}
+          \end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{txt}
+    ~~~~\PY{c}{(*~xyz~*)}
+  \end{txt}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~\PY{n+nb}{split}\PY{o}{.}~~\PY{c}{(*~xyz~*)}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}
+            \hyp[\PY{l+m+mi}{1}]{a}{\PY{n}{nat}}
+          \end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+        \sep
+        \begin{extragoals}
+          \begin{goal}
+            \begin{hyps}
+              \hyp[\PY{l+m+mi}{1}]{a}{\PY{n}{nat}}
+            \end{hyps}
+            \sep
+            \infrule{}
+            \sep
+            \begin{conclusion}
+              \PY{k+kt}{True}
+            \end{conclusion}
+          \end{goal}
+        \end{extragoals}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{o}{+}~\PY{c}{(*~xyz~*)}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}
+            \hyp[\PY{l+m+mi}{1}]{a}{\PY{n}{nat}}
+          \end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kp}{idtac}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}
+            \hyp[\PY{l+m+mi}{1}]{a}{\PY{n}{nat}}
+          \end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~~~\PY{k+kp}{idtac}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}
+            \hyp[\PY{l+m+mi}{1}]{a}{\PY{n}{nat}}
+          \end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{txt}
+    ~\PY{c}{(*~x}\nl
+    \PY{c}{~~~~~~yz~*)}\nl
+  \end{txt}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~~~\PY{n+nb}{split}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~~~\PY{o}{+}~\PY{c}{(*~xyz~*)}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}
+            \hyp[\PY{l+m+mi}{1}]{a}{\PY{n}{nat}}
+          \end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{\PYZob{}}~\PY{c}{(*~xyz~*)}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}
+            \hyp[\PY{l+m+mi}{1}]{a}{\PY{n}{nat}}
+          \end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb}{split}\PY{o}{.}~
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{o}{\PYZcb{}}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Qed}\PY{o}{.}~\PY{c}{(*~xyz~*)}
+    \end{input}
+  \end{sentence}
+\end{alectryon}
+\end{DUclass}
+
+
+\section{References%
+  \label{references}%
+}
+
+\hyperref[corner-cases-rst-s-pose-h-a-body-0]{1}, \hyperref[corner-cases-rst-s-pose-h-a-type-0]{2}, \hyperref[corner-cases-rst-s-pose-h-a-0]{3}.
 
 \end{document}
