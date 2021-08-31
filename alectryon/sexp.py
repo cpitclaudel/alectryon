@@ -12,6 +12,9 @@ STRING_UNQUOTE_RE = re.compile(rb'\\[\\"rnbft]')
 STRING_QUOTE_TBL = {raw[0]: b"\\" + quoted for raw, quoted in STRING_QUOTES}
 STRING_UNQUOTE_TBL = {quoted[0]: raw for raw, quoted in STRING_QUOTES}
 
+class ParseError(ValueError):
+    pass
+
 def unescape_1(m):
     return STRING_UNQUOTE_TBL[m.string[m.start() + 1]]
 
@@ -32,8 +35,7 @@ def tokenize_str(view, start, str_special=STR_SPECIAL):
     while True:
         m = str_special.search(view, pos)
         if m is None:
-            MSG = "Unterminated string: {!r}@{}."
-            raise ValueError(MSG.format(view, start))
+            raise ParseError("Unterminated string: {!r}@{}.".format(view, start))
         if view[m.start()] == ESCAPE:
             pos = m.end() + 1
         else:
@@ -73,14 +75,11 @@ def parse(tokens):
             top.append(tok)
     return top[0]
 
-class ParseError(Exception):
-    pass
-
 def load(bs):
     try:
         return parse(tokenize(bs))
     except IndexError as e:
-        raise ParseError() from e
+        raise ParseError("Unbalanced input") from e
 
 def unparse(sexp, buf):
     stack = [sexp]

@@ -61,6 +61,11 @@ _output/tests/doctests.out: tests/doctests.py | _output/tests/
 	$(PYTHON) $< | sed 's/\(tests\) in [0-9.]\+s$$/\1/g' > $@
 tests_targets += _output/tests/doctests.out
 
+# Errors and warnings
+_output/tests/errors.py.out: tests/errors.py | _output/tests/
+	$(PYTHON) $< | sed 's/\(tests\) in [0-9.]\+s$$/\1/g' > $@
+tests_targets += _output/tests/errors.py.out
+
 # reST → JSON errors
 _output/tests/errors.lint.json: tests/errors.rst
 	$(alectryon) $< --backend lint; echo "exit: $$?" >> $@
@@ -69,6 +74,21 @@ tests_targets += _output/tests/errors.lint.json
 _output/tests/errors.txt: tests/errors.rst
 	$(alectryon) $< --copy-assets none --backend webpage -o /dev/null 2> $@; echo "exit: $$?" >> $@
 tests_targets += _output/tests/errors.txt
+
+# Errors and warnings
+_output/tests/errors.sh.out: tests/errors.sh
+	ALECTRYON="$(alectryon) " bash $< 2>&1 | sed '/^usage\|^ \{10,\}/d' > $@
+tests_targets += _output/tests/errors.sh.out
+
+# Plain Coq → HTML + errors
+_output/tests/excepthook.v.out: tests/excepthook.v
+	$(alectryon) not_found.v --frontend coq --traceback -o - 2>&1 | sed 's/File ".\+\?", line [0-9]\+/File …, line …/g' | sed '/^    /d' | sed '/^ *$$/d' | uniq | cat > $@
+tests_targets += _output/tests/excepthook.v.out
+
+# Plain Coq → HTML + errors
+_output/tests/fatal.v.out: tests/fatal.v
+	$(alectryon) $< --frontend coq -o - > /dev/null 2> $@; echo "exit: $$?" >> $@
+tests_targets += _output/tests/fatal.v.out
 
 # Coq+reST → LaTeX
 _output/tests/latex_formatting.tex: tests/latex_formatting.v
@@ -113,6 +133,12 @@ tests_targets += _output/tests/stylesheets.part.tex
 _output/tests/syntax_highlighting.html: tests/syntax_highlighting.v
 	$(alectryon) $<
 tests_targets += _output/tests/syntax_highlighting.html
+
+# Coq → reST
+_output/tests/unterminated.v.out: tests/unterminated.v
+	$(alectryon) $< --backend rst > $@ 2>&1;\
+        echo "exit: $$?" >> $@
+tests_targets += _output/tests/unterminated.v.out
 
 $(tests_targets): out_dir := _output/tests
 targets += $(tests_targets)

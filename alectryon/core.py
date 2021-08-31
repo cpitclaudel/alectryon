@@ -25,10 +25,10 @@ from contextlib import contextmanager
 from shlex import quote
 from shutil import which
 from subprocess import Popen, PIPE, check_output
-from sys import stderr
 from pathlib import Path
 import textwrap
 import re
+import sys
 import unicodedata
 
 from . import sexp as sx
@@ -234,7 +234,6 @@ class Observer:
 
 class StderrObserver(Observer):
     def __init__(self):
-        self.notifications = []
         self.exit_code = 0
 
     def _notify(self, n: Notification):
@@ -242,7 +241,7 @@ class StderrObserver(Observer):
         header = n.location.as_header() if n.location else "!!"
         message = n.message.rstrip().replace("\n", "\n   ")
         level_name = {2: "WARNING", 3: "ERROR"}.get(n.level, "??")
-        stderr.write("{} ({}/{}) {}\n".format(header, level_name, n.level, message))
+        sys.stderr.write("{} ({}/{}) {}\n".format(header, level_name, n.level, message))
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
@@ -368,7 +367,7 @@ class SerAPI():
         cmd = [self.resolve_sertop(self.sertop_bin), *self.args]
         debug(" ".join(quote(s) for s in cmd), '# ')
         # pylint: disable=consider-using-with
-        self.sertop = Popen(cmd, stdin=PIPE, stderr=stderr, stdout=PIPE)
+        self.sertop = Popen(cmd, stdin=PIPE, stderr=sys.stderr, stdout=PIPE)
 
     def next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceding it."""
@@ -571,6 +570,12 @@ class SerAPI():
         goals: List[Goal] = list(self._collect_messages((Goal,), chunk, sid))
         yield from (self._pprint_goal(g, sid) for g in goals)
 
+    def _warn_orphaned(self, chunk, message):
+        err = "Orphaned message for sid {}:".format(message.sid)
+        err += "\n" + indent(message.pp, " >  ")
+        err_range = SerAPI._range_of_span((0, len(chunk)), chunk)
+        self.observer.notify(chunk.s, err, err_range, level=2)
+
     def run(self, chunk):
         """Send a `chunk` to sertop.
 
@@ -596,10 +601,7 @@ class SerAPI():
         for message in messages:
             fragment = fragments_by_id.get(message.sid)
             if fragment is None:
-                err = "Orphaned message for sid {}:".format(message.sid)
-                err += "\n" + indent(message.pp, " >  ")
-                err_range = SerAPI._range_of_span((0, len(chunk)), chunk)
-                self.observer.notify(chunk.s, err, err_range, level=2)
+                self._warn_orphaned(chunk, message)
             else:
                 fragment.messages.append(Message(message.pp))
         return fragments

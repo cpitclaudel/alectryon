@@ -1,0 +1,23 @@
+$ALECTRYON xyz.unsupported; echo $?
+Exiting early due to an error; use --traceback to diagnose:
+  input: Not sure what to do with 'xyz.unsupported'.
+  Try passing --frontend?
+1
+$ALECTRYON xyz.v -o xyz.unsupported; echo $?
+Exiting early due to an error; use --traceback to diagnose:
+  output: Not sure what to do with 'xyz.unsupported'.
+  Try passing --backend?
+1
+$ALECTRYON xyz.json -o xyz.rst; echo $?
+Exiting early due to an error; use --traceback to diagnose:
+  argument --backend: Frontend 'json' does not support backend 'rst': expecting one of 'json', 'snippets-html', 'snippets-latex'
+1
+$ALECTRYON a.json b.json -o c.json; echo $?
+alectryon.py: error: argument --output: Not valid with multiple inputs
+2
+$ALECTRYON a.json --stdin-filename b.json; echo $?
+alectryon.py: error: argument --stdin-filename: input must be '-'
+2
+$ALECTRYON a.json --mark-point not_an_int ⊙; echo $?
+alectryon.py: error: argument --mark-point: Expecting a number, not 'not_an_int'
+2

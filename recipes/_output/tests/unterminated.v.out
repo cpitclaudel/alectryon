@@ -1,0 +1,3 @@
+Exiting early due to an error; use --traceback to diagnose:
+  tests/unterminated.v: 10:4: Unterminated string (looking for STRING_ESCAPE or STRING_DELIM)
+exit: 1

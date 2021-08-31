@@ -1,0 +1,8 @@
+tests/fatal.v:(9:6)-(9:15): (ERROR/3) Coq raised an exception:
+     > The reference not_found was not found in the current environment.
+   The offending chunk is delimited by >>>…<<< below:
+     >            # Plain Coq → HTML + errors; produces ‘fatal.v.out’ **)
+     >
+     > Goal >>>not_found<<< = 1.
+   Results past this point may be unreliable.
+exit: 1

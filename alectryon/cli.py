@@ -212,17 +212,20 @@ def _run_coqdoc(coq_snippets, coqdoc_bin=None):
     finally:
         rmtree(dpath)
 
+def _gen_coqdoc_html_assert(docs, coqdoc_comments):
+    if len(docs) != len(coqdoc_comments):
+        from pprint import pprint
+        print("Coqdoc mismatch:", file=sys.stderr)
+        pprint(list(zip(coqdoc_comments, docs)))
+        raise AssertionError()
+
 def _gen_coqdoc_html(coqdoc_fragments):
     from bs4 import BeautifulSoup
     coqdoc_output = _run_coqdoc(fr.contents for fr in coqdoc_fragments)
     soup = BeautifulSoup(coqdoc_output, "html.parser")
     docs = soup.find_all(class_='doc')
     coqdoc_comments = [c for c in coqdoc_fragments if not c.special]
-    if len(docs) != len(coqdoc_comments):
-        from pprint import pprint
-        print("Coqdoc mismatch:", file=sys.stderr)
-        pprint(list(zip(coqdoc_comments, docs)))
-        raise AssertionError()
+    _gen_coqdoc_html_assert(docs, coqdoc_comments)
     return docs
 
 def _gen_html_snippets_with_coqdoc(annotated, fname, html_minification,
