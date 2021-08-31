@@ -8,7 +8,7 @@ CMD_RE = re.compile(r"""
     (?:^[ ]+(?=alectryon)|To[ ]compile:|[$])[ ]*(?P<cmd>[^\s]+)[ ]+
     (?P<args>(?:.|\\\n)*?) # Allow escaped newlines in arguments
     \s+[#][ ]+ # Allows newline before "#"
-    (?P<comment>.+?)[;,][ ]+produces[ ]+
+    (?P<comment>.+?)[;,][\n ]+produces[ ]+
     ‘(?P<out>.+?)’
 """, re.VERBOSE | re.MULTILINE)
 
