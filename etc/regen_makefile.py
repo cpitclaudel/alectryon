@@ -21,7 +21,8 @@ def parse_rules(path: str):
 RULE_TEMPLATE = """\
 # {comment}
 {out}: {fpath}{dir_deps}
-	{cmd}\
+	{cmd}
+{prefix}_targets += {out}\
 """
 
 def escape(s):
@@ -29,7 +30,7 @@ def escape(s):
 
 CUSTOM_DRIVER_RE = re.compile(r"\b(alectryon_[a-z_]+[.]py)\b")
 
-def gen_rule(fpath, outdir, params):
+def gen_rule(fpath, prefix, outdir, params):
     params = { k: escape(v) for (k, v) in params.items() }
 
     # Remove escaped newlines
@@ -48,7 +49,7 @@ def gen_rule(fpath, outdir, params):
     needs_outdir = "$(alectryon)" not in params["cmd"]
     params["dir_deps"] = " | {}/".format(outdir) if needs_outdir else ""
 
-    return params["out"], RULE_TEMPLATE.format(fpath=fpath, **params)
+    return params["out"], RULE_TEMPLATE.format(fpath=fpath, prefix=prefix, **params)
 
 HEADER = """\
 # -*- makefile -*-
@@ -57,12 +58,13 @@ HEADER = """\
 
 {outdir}/:
 	mkdir -p $@
+
+{prefix}_targets :=
 """
 
 FOOTER = """\
-{all_targets}: out_dir := {outdir}
-
-targets += {all_targets}\
+$({prefix}_targets): out_dir := {outdir}
+targets += $({prefix}_targets)\
 """
 
 EXCLUDED_SOURCES = {
@@ -73,16 +75,17 @@ EXCLUDED_SOURCES = {
 }
 
 def main():
-    outdir = Path(sys.argv[1])
-    print(HEADER.format(outdir=outdir))
+    prefix = sys.argv[1]
+    outdir = Path(sys.argv[2])
+    print(HEADER.format(prefix=prefix, outdir=outdir))
 
     all_targets = []
-    for fname in sorted(sys.argv[2:]):
+    for fname in sorted(sys.argv[3:]):
         src, targets = Path(fname), []
         if src.name in EXCLUDED_SOURCES:
             continue
         for params in parse_rules(src):
-            dst, rule = gen_rule(src, outdir, params)
+            dst, rule = gen_rule(src, prefix, outdir, params)
             targets.append(dst)
             print(rule)
         if targets:
@@ -91,7 +94,7 @@ def main():
         else:
             print("Not sure how to compile {}".format(fname), file=sys.stderr)
 
-    print(FOOTER.format(all_targets=" ".join(all_targets), outdir=outdir))
+    print(FOOTER.format(prefix=prefix, outdir=outdir))
 
 if __name__ == '__main__':
     main()

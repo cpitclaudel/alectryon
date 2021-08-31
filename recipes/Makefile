@@ -39,10 +39,10 @@ endif
 ########################
 
 recipes.mk: ../etc/regen_makefile.py $(filter-out %.mk,$(wildcard *.*))
-	./$< _output $(filter-out $<,$^) > $@
+	./$< recipes _output $(filter-out $<,$^) > $@
 
 tests.mk: ../etc/regen_makefile.py $(filter-out %.mk,$(wildcard tests/*.*))
-	./$< _output/tests/ $(filter-out $<,$^) > $@
+	./$< tests _output/tests/ $(filter-out $<,$^) > $@
 
 include recipes.mk tests.mk
 
