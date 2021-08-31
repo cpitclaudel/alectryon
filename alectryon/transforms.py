@@ -32,7 +32,7 @@ from .core import Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
     Goals, Messages, RichSentence
 
-PathAnnot = namedtuple("PathAnnot", "path key val")
+PathAnnot = namedtuple("PathAnnot", "raw path key val required")
 
 class IOAnnots:
     def __init__(self, unfold=None, fails=None, filters=None, props=()):
@@ -77,8 +77,8 @@ class IOAnnots:
                     raise ValueError("Unknown flag `{}`.".format(flag))
                 self.filters[flag] = not negated
 
-    def update_props(self, path, key, val):
-        self.props.append(PathAnnot(path, key, val))
+    def update_props(self, raw, path, key, val, required):
+        self.props.append(PathAnnot(raw, path, key, val, required))
 
     @property
     def hidden(self):
@@ -153,7 +153,7 @@ def _parse_path(path):
 
     return path
 
-def _update_io_annots(annots, annots_str, regex):
+def _update_io_annots(annots, annots_str, regex, required):
     for mannot in regex.finditer(annots_str):
         io, path, polarity, key, val = mannot.group("io", "path", "polarity", "key", "value")
         if io:
@@ -161,16 +161,16 @@ def _update_io_annots(annots, annots_str, regex):
         else:
             if not key:
                 key, val = "enabled", polarity != "-"
-            annots.update_props(_parse_path(path), key, val)
+            annots.update_props(path, _parse_path(path), key, val, required)
 
-def read_io_flags(annots, flags_str):
-    _update_io_annots(annots, flags_str, ONE_IO_FLAG_RE)
+def read_io_flags(annots, flags_str, required):
+    _update_io_annots(annots, flags_str, ONE_IO_FLAG_RE, required)
     return ONE_IO_FLAG_RE.sub("", flags_str)
 
-def read_all_io_flags(s):
+def read_all_io_flags(s, required):
     """Like ``read_io_flags``, but raise if `s` has other contents."""
     annots = IOAnnots()
-    leftover = read_io_flags(annots, s).strip()
+    leftover = read_io_flags(annots, s, required).strip()
     if leftover:
         raise ValueError("Unrecognized directive flags: {}".format(leftover))
     return annots
@@ -184,7 +184,7 @@ def inherit_io_annots(fragments, annots):
 
 def _read_io_comments(annots, contents):
     for m in IO_COMMENT_RE.finditer(contents):
-        _update_io_annots(annots, m.group(0), ONE_IO_ANNOT_RE)
+        _update_io_annots(annots, m.group(0), ONE_IO_ANNOT_RE, required=True)
     return IO_COMMENT_RE.sub("", contents)
 
 def _contents(obj):
@@ -257,9 +257,13 @@ def process_io_annots(fragments):
     """Convert IO annotations to pre-object properties."""
     for fr in fragments:
         if isinstance(fr, RichSentence):
-            for (path, key, val) in fr.annots.props:
+            for (raw, path, key, val, reqd) in fr.annots.props:
                 for obj in _find_marked(fr, path):
                     obj.props[key] = val
+                    reqd = False
+                if reqd:
+                    MSG = "No match found for `{}` in `{}`"
+                    yield ValueError(MSG.format(raw, fr.input.contents))
 
             for obj in _find_hidden_by_annots(fr):
                 obj.props["enabled"] = False

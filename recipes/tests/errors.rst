@@ -127,8 +127,10 @@ Inapplicable targets (dynamic)
   .. coq::
 
      Check nat. (* .io#abc *)
-     Check nat. (* .g#1.ccl .in .g#1.name *)
-     Check nat. (* .g#1.h{*}.body .g#1.h{*}.type .g#1.h{*}.name *)
+     Check nat. (* .g#1 *)
+     Goal True. (* .g#1.ccl .in .g#1.name *)
+       idtac. (* .g#1.h{*}.body .g#1.h{*}.type .g#1.h{*}.name *)
+     Abort. (* .msg{*} *)
 
 Inconsistent flags
   .. coq:: unfold out

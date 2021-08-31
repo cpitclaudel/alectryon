@@ -678,8 +678,8 @@ class CoqDirective(AlectryonDirective):
         document = self.state_machine.document
 
         annotstr = " ".join(self.arguments)
-        annots, errors = self._try(
-            transforms.read_all_io_flags, annotstr, default=transforms.IOAnnots())
+        annots, errors = self._try(transforms.read_all_io_flags,
+                                   annotstr, False, default=transforms.IOAnnots())
 
         indent, contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
         source, line = self.state_machine.get_source_and_line(self.content_offset + 1)

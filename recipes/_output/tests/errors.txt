@@ -85,12 +85,12 @@ Missing search pattern for key ``.s`` in expression ``.s.g``. (maybe an invalid 
    Check nat.
 
 tests/errors.rst:5: (ERROR/3) In `:alectryon/pygments/xyz:`: Unknown token kind: xyz
-tests/errors.rst:143: (ERROR/3) Coq raised an exception:
+tests/errors.rst:145: (ERROR/3) Coq raised an exception:
   > Syntax error: '.' expected after [vernac:syntax_command] (in [vernac_aux]).
 The offending chunk is delimited by >>>…<<< below:
   > Notation "'🆄🄽🅘ⓒ⒪𝖉∈' α ⊕ ⤋ β" := α >>>++<<< β. (* Bytes vs. str *)
 Results past this point may be unreliable.
-tests/errors.rst:148: (ERROR/3) Coq raised an exception:
+tests/errors.rst:150: (ERROR/3) Coq raised an exception:
   > The term "true" has type "bool" which should be Set, Prop or Type.
 The offending chunk is delimited by >>>…<<< below:
   > Definition a
@@ -105,7 +105,9 @@ tests/errors.rst:127: (ERROR/3) In `.. coq::`:
    ``.io`` not supported in visibility annotations
    ``name`` not supported in visibility annotations.
    ``body`` not supported in visibility annotations.
-tests/errors.rst:134: (ERROR/3) In `.. coq:: unfold out`: Cannot show output of 'Check nat.' without .in or .unfold.
+   No match found for `.g#1` in `Check nat.`
+   No match found for `.msg{*}` in `Abort.`
+tests/errors.rst:136: (ERROR/3) In `.. coq:: unfold out`: Cannot show output of 'Check nat.' without .in or .unfold.
 tests/errors.rst:74: (ERROR/3) In :mref:`.s(Goal True)`: Not sure which code block this refers to; add ``.io#…`` to disambiguate.
 tests/errors.rst:84: (ERROR/3) In :mref:`.io#nope.s(123)`: Reference to unknown Alectryon block.
 tests/errors.rst:85: (ERROR/3) In :mref:`.s(Goal).g#25`: No goal matches '25'.
