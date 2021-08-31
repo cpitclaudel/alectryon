@@ -230,7 +230,12 @@ class Observer:
         self._notify(Notification(obj, message, location, level))
 
 class StderrObserver(Observer):
+    def __init__(self):
+        self.notifications = []
+        self.exit_code = 0
+
     def _notify(self, n: Notification):
+        self.exit_code = max(self.exit_code, n.level)
         header = n.location.as_header() if n.location else "!!"
         message = n.message.rstrip().replace("\n", "\n   ")
         level_name = {2: "WARNING", 3: "ERROR"}.get(n.level, "??")

@@ -60,13 +60,17 @@ def rst_to_coq(coq, fpath, point, marker):
     from .literate import rst2coq_marked
     return _catch_parsing_errors(fpath, rst2coq_marked, coq, point, marker)
 
-def annotate_chunks(chunks, fpath, cache_directory, cache_compression, sertop_args):
-    from .core import SerAPI
+def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
+                    sertop_args, exit_code):
+    from .core import SerAPI, StderrObserver
     from .json import Cache
     api = SerAPI(sertop_args, fpath=fpath)
     metadata = {"sertop_args": sertop_args}
     cache = Cache(cache_directory, fpath, metadata, cache_compression)
-    return cache.update(chunks, api.annotate, SerAPI.version_info())
+    annotated = cache.update(chunks, api.annotate, SerAPI.version_info())
+    assert isinstance(api.observer, StderrObserver)
+    exit_code.val = int(api.observer.exit_code >= 3)
+    return annotated
 
 def register_docutils(v, ctx):
     from . import docutils
