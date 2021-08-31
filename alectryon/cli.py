@@ -530,6 +530,9 @@ def post_process_arguments(parser, args):
     # argparse applies ‘type’ before ‘choices’, so we do the conversion here
     args.copy_fn = COPY_FUNCTIONS[args.copy_fn]
 
+    if args.long_line_threshold < 0:
+        args.long_line_threshold = None
+
     args.point, args.marker = args.mark_point
     if args.point is not None:
         try:
