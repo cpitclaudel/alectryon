@@ -24,7 +24,7 @@ def run(cmd, args, stdin):
 def main():
     COQ_INPUT = "Check nat."
     REST_INPUT = literate.coq2rst(COQ_INPUT)
-    run(cli.rstcoq2html, ["--no-header"], COQ_INPUT)
+    run(cli.rstcoq2html, ["--no-header", "--pygments-style=emacs"], COQ_INPUT)
     run(cli.coqrst2html, ["--no-header"], REST_INPUT)
     run(cli.rstcoq2latex, [], COQ_INPUT)
     run(cli.coqrst2latex, [], REST_INPUT)
