@@ -7,6 +7,11 @@ _output/tests/:
 
 tests_targets :=
 
+# reST → HTML
+_output/tests/auto_toggle.html: tests/auto_toggle.rst
+	$(alectryon) $<
+tests_targets += _output/tests/auto_toggle.html
+
 # Coq → HTML (cached)
 _output/tests/cached.html: tests/cached.v
 	$(alectryon) $< --cache-directory tests/
