@@ -5,8 +5,16 @@
 
 To compile::
 
-   $ alectryon literate.v --backend rst --mark-point 522 ⊙
+   $ alectryon literate.v --backend rst --mark-point 908 ⊙
        # Coq → reST; produces ‘literate.v.rst’
+
+   $ alectryon literate.v --backend rst -o - --mark-point 42000 "F"IN | \
+       nl | grep "F"IN > literate.marked-end.rst
+         # Coq → reST; produces ‘literate.marked-end.rst’
+
+   $ alectryon --frontend coq --backend rst /dev/null -o - --mark-point 42000 "F"IN | \
+       nl | grep "F"IN > literate.marked-empty.rst
+         # Coq → reST; produces ‘literate.marked-empty.rst’
 
 .. coq::
 |*)

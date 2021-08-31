@@ -77,8 +77,16 @@ tests_targets += _output/tests/literate.v
 
 # Coq → reST
 _output/tests/literate.v.rst: tests/literate.v
-	$(alectryon) $< --backend rst --mark-point 522 ⊙
+	$(alectryon) $< --backend rst --mark-point 908 ⊙
 tests_targets += _output/tests/literate.v.rst
+# Coq → reST
+_output/tests/literate.marked-end.rst: tests/literate.v
+	$(alectryon) $< --backend rst -o - --mark-point 42000 "F"IN | nl | grep "F"IN > $@
+tests_targets += _output/tests/literate.marked-end.rst
+# Coq → reST
+_output/tests/literate.marked-empty.rst: tests/literate.v
+	$(alectryon) --frontend coq --backend rst /dev/null -o - --mark-point 42000 "F"IN | nl | grep "F"IN > $@
+tests_targets += _output/tests/literate.marked-empty.rst
 
 # Coq → HTML
 _output/tests/screenshot.html: tests/screenshot.v
