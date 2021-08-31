@@ -7,6 +7,11 @@ _output/tests/:
 
 tests_targets :=
 
+# Coq → HTML (cached)
+_output/tests/cached.html: tests/cached.v
+	$(alectryon) $< --cache-directory tests/
+tests_targets += _output/tests/cached.html
+
 # Coq → HTML
 _output/tests/corner_cases.html: tests/corner_cases.rst
 	$(alectryon) --stdin-filename $< --frontend rst -o $@ - < $<

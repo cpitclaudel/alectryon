@@ -1,0 +1,28 @@
+{
+  "generator": [
+    "Coq+SerAPI",
+    "8.12.0+0.12.0"
+  ],
+  "metadata": {
+    "sertop_args": [],
+    "cache_version": "1"
+  },
+  "chunks": [
+    "Check 1."
+  ],
+  "annotated": [
+    [
+      {
+        "_type": "sentence",
+        "contents": "Check 1.",
+        "messages": [
+          {
+            "_type": "message",
+            "contents": "1\n     : nat"
+          }
+        ],
+        "goals": []
+      }
+    ]
+  ]
+}

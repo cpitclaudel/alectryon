@@ -72,6 +72,7 @@ EXCLUDED_SOURCES = {
     "references.docutils.conf",
     "literate.docutils.conf",
     "stylesheets.docutils.conf",
+    "cached.v.cache",
 }
 
 def main():
