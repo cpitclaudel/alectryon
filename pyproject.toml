@@ -9,3 +9,16 @@ reportWildcardImportFromLibrary = false
 
 [tool.mypy]
 ignore_missing_imports = true
+
+[tool.coverage.run]
+# branch = True
+
+[tool.coverage.report]
+  exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "assert False",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "raise UnexpectedError",
+  ]

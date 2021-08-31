@@ -36,6 +36,9 @@ from . import sexp as sx
 DEBUG = False
 TRACEBACK = False
 
+class UnexpectedError(ValueError):
+    pass
+
 def indent(text, prefix):
     if prefix.isspace():
         return textwrap.indent(text, prefix)
@@ -370,15 +373,15 @@ class SerAPI():
     def next_sexp(self):
         """Wait for the next sertop prompt, and return the output preceding it."""
         response = self.sertop.stdout.readline()
-        if not response:
+        if not response: # pragma: no cover
             # https://github.com/ejgallego/coq-serapi/issues/212
             MSG = "SerTop printed an empty line.  Last response: {!r}."
-            raise ValueError(MSG.format(self.last_response))
+            raise UnexpectedError(MSG.format(self.last_response))
         debug(response, '<< ')
         self.last_response = response
         try:
             return sx.load(response)
-        except sx.ParseError:
+        except sx.ParseError: # pragma: no cover
             return response
 
     def _send(self, sexp):
@@ -432,7 +435,7 @@ class SerAPI():
             sids = opt_sids[0] if opt_sids else None
             yield ApiExn(sids, exndata[b'str'], loc)
         else:
-            raise ValueError("Unexpected answer: {}".format(sexp))
+            raise UnexpectedError("Unexpected answer: {}".format(sexp))
 
     @staticmethod
     def _deserialize_feedback(sexp):
@@ -447,7 +450,7 @@ class SerAPI():
                      b'Processed', b'AddedAxiom'):
             pass
         else:
-            raise ValueError("Unexpected feedback: {}".format(sexp))
+            raise UnexpectedError("Unexpected feedback: {}".format(sexp))
 
     def _deserialize_response(self, sexp):
         tag = sexp_hd(sexp)
@@ -455,9 +458,8 @@ class SerAPI():
             yield from SerAPI._deserialize_answer(sexp[2])
         elif tag == b'Feedback':
             yield from SerAPI._deserialize_feedback(sexp[1])
-        elif not self.EXPECT_UNEXPECTED:
-            MSG = "Unexpected response: {}".format(self.last_response)
-            raise ValueError(MSG)
+        elif not self.EXPECT_UNEXPECTED: # pragma: no cover
+            raise UnexpectedError("Unexpected response: {}".format(self.last_response))
 
     @staticmethod
     def highlight_substring(chunk, beg, end):
@@ -521,7 +523,7 @@ class SerAPI():
         if strings:
             assert len(strings) == 1
             return PrettyPrinted(sid, strings[0].string)
-        raise ValueError("No string found in Print answer")
+        raise UnexpectedError("No string found in Print answer")
 
     def _pprint_message(self, msg: ApiMessage):
         return self._pprint(msg.msg, msg.sid, b'CoqPp', **self.pp_args)

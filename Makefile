@@ -10,6 +10,7 @@ coverage:
 develop:
 	(which opam || { echo "OPAM not found; please install it"; exit 1; })
 	eval $$(opam env); opam install coq-serapi
+	pip install coverage[toml]
 	@# Local install; should be ‘pip install -e .[full]’ but see https://github.com/pypa/pip/issues/7953
 	$(PYTHON) -c 'import setuptools, site, sys; site.ENABLE_USER_SITE = 1; sys.argv[1:] = ["develop", "--user"]; setuptools.setup()'
 

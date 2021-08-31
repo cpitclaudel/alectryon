@@ -3,6 +3,7 @@ default: all
 export PYTHON ?= python3 -Wd # -X tracemalloc
 export SPHINXBUILD ?= $(PYTHON) "$(shell which sphinx-build)"
 export COVERAGE_FILE := $(abspath coverage/.coverage)
+export COVERAGE_RCFILE := $(abspath ../pyproject.toml)
 
 COVERAGE ?=
 ifneq (, $(COVERAGE))

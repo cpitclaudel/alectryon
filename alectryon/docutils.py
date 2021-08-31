@@ -748,7 +748,7 @@ def directive_without_arguments(directive):
 
 # Derived from docutils.directives.misc.Role (public domain)
 # LATER: Move to upstream
-class DirectiveDirective(Directive):
+class DirectiveDirective(Directive): # pragma: no cover
     """Define an alias of a directive."""
 
     name = "directive"
