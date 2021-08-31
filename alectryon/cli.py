@@ -520,7 +520,7 @@ def post_process_arguments(parser, args):
     if args.stdin_filename and "-" not in args.input:
         parser.error("argument --stdin-filename: input must be '-'")
 
-    for dirpath in args.coq_args_I:
+    for (dirpath,) in args.coq_args_I:
         args.sertop_args.extend(("-I", dirpath))
     for pair in args.coq_args_R:
         args.sertop_args.extend(("-R", ",".join(pair)))
