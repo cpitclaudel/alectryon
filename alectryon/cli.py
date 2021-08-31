@@ -163,7 +163,7 @@ def _docutils_cmdline(description, frontend, backend):
 
     dialect = _resolve_dialect(backend, "html4", "pdflatex")
     pipeline = get_pipeline(frontend, backend, dialect)
-    publish_cmdline(
+    return publish_cmdline(
         parser=pipeline.parser(), writer=pipeline.writer(),
         settings_overrides={'stylesheet_path': None},
         description="{} {}".format(description, default_description))
@@ -789,17 +789,21 @@ def main():
 # ================
 
 def rstcoq2html():
+    """Docutils entry point for Coq → HTML conversion."""
     DESCRIPTION = 'Build an HTML document from an Alectryon Coq file.'
-    _docutils_cmdline(DESCRIPTION, "coq+rst", "webpage")
+    return _docutils_cmdline(DESCRIPTION, "coq+rst", "webpage")
 
 def coqrst2html():
+    """Docutils entry point for reST → HTML conversion."""
     DESCRIPTION = 'Build an HTML document from an Alectryon reStructuredText file.'
-    _docutils_cmdline(DESCRIPTION, "rst", "webpage")
+    return _docutils_cmdline(DESCRIPTION, "rst", "webpage")
 
 def rstcoq2latex():
+    """Docutils entry point for Coq → LaTeX conversion."""
     DESCRIPTION = 'Build a LaTeX document from an Alectryon Coq file.'
-    _docutils_cmdline(DESCRIPTION, "coq+rst", "latex")
+    return _docutils_cmdline(DESCRIPTION, "coq+rst", "latex")
 
 def coqrst2latex():
+    """Docutils entry point for reST → LaTeX conversion."""
     DESCRIPTION = 'Build a LaTeX document from an Alectryon reStructuredText file.'
-    _docutils_cmdline(DESCRIPTION, "rst", "latex")
+    return _docutils_cmdline(DESCRIPTION, "rst", "latex")
