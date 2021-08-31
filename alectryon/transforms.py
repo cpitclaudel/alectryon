@@ -303,7 +303,7 @@ def _output_objects(o):
         return o.messages
     assert False
 
-def commit_io_annotations(fragments, discard_folded=False):
+def commit_io_annotations(fragments):
     """Use I/O annotations to filter `fragments`.
 
     Hidden outputs of each `RichSentence` in `fragments` are discarded.
@@ -327,10 +327,7 @@ def commit_io_annotations(fragments, discard_folded=False):
             if not _enabled(fr.input):
                 fr = fr._replace(input=None)
 
-            if discard_folded and not fr.annots.unfold:
-                fr.outputs.clear()
-            else:
-                fr.outputs[:] = [o for o in fr.outputs if _output_objects(o)]
+            fr.outputs[:] = [o for o in fr.outputs if _output_objects(o)]
         yield fr
 
 def _sub_objects(obj):
@@ -464,8 +461,8 @@ def attach_comments_to_code(fragments, predicate=lambda _: True):
             for part in coq_partition(fr.contents):
                 if "\n" in part.v:
                     break
-                if isinstance(part, Code) and not part.v.isspace():
-                    break
+                if isinstance(part, Code):
+                    assert part.v.isspace()
                 prefix += part.v
                 if isinstance(part, Comment):
                     best = prefix
