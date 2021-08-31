@@ -30,6 +30,7 @@ Invoke with ``python3 -m alectryon.minimal --help``.
 
 from typing import Dict, Any
 
+from docutils import nodes
 from docutils.parsers.rst import directives, roles, Directive # type: ignore
 import docutils.parsers.rst.directives.body # type: ignore # pylint: disable=unused-import
 
@@ -44,12 +45,22 @@ class CoqDirective(directives.body.CodeBlock):
         return super().run()
 
 class NoOp(Directive):
+    has_content = True
     def run(self):
-        pass
+        return []
+
+class Id(Directive):
+    has_content = True
+    def run(self):
+        return [nodes.literal("".join(self.content))]
 
 # Treat .. coq:: as a regular code block and ignore .. alectryon-toggle::
 DIRECTIVES = {"coq": CoqDirective,
-              "alectryon-toggle": NoOp}
+              "alectryon-toggle": NoOp,
+              "exercise": Id,
+              "directive": NoOp,
+              "massert": NoOp,
+              "mquote": Id}
 
 ## Map :coq: to plain literals
 
@@ -60,11 +71,21 @@ def coq_code_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
 def no_op(role, rawtext, text, lineno, inliner, options={}, content=[]):
     return roles.generic_custom_role(
         role, rawtext, text, lineno, inliner, options, content)
-no_op.options = {'url': directives.unchanged} # type: ignore
+no_op.options = { # type: ignore
+    'url': directives.unchanged,
+    'counter-style': directives.unchanged,
+    'prefix': directives.unchanged,
+    'kind': directives.unchanged,
+    'language': directives.unchanged,
+}
 
-ROLES = {"coqid": no_op,
-         "coq": coq_code_role,
-         "alectryon-bubble": no_op}
+ROLES = {
+    "coqid": no_op,
+    "coq": coq_code_role,
+    "alectryon-bubble": no_op,
+    "mref": no_op,
+    "mquote": no_op,
+}
 
 def docutils_setup():
     for name, directive in DIRECTIVES.items():
@@ -73,6 +94,15 @@ def docutils_setup():
         roles.register_canonical_role(name, role)
 
 def cli():
+    """Run a minimal Alectryon that skips special roles and directives.
+
+    >>> from . import docutils as ref
+    >>> sorted(set(d.name for d in ref.DIRECTIVES) ^ set(DIRECTIVES))
+    []
+    >>> sorted(set(r.name for r in ref.ROLES) - set(ROLES))
+    []
+    """
+
     import locale
     locale.setlocale(locale.LC_ALL, '')
     from docutils.core import publish_cmdline, default_description

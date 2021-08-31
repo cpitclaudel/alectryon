@@ -9,6 +9,34 @@ Coq files can always be compiled without Alectryon.  reST files are tricker, sin
    $ cd ..; python -m alectryon.minimal recipes/minimal.rst recipes/minimal.no-alectryon.html
    # Minimal reST → HTML; produces ‘minimal.no-alectryon.html’
 
-.. coq::
+Directives
+==========
 
-   Print nat. (* .unfold *)
+Coq code:
+  .. coq::
+
+     Print nat. (* .unfold *)
+
+.. alectryon-toggle::
+
+Quotes:
+  .. mquote:: .s(Print).in
+
+Assertions:
+  .. massert::
+
+     .s(Print).msg{*nat*}
+
+.. exercise:: Title
+   :difficulty: 1
+
+   Body
+
+Roles
+=====
+
+- :alectryon-bubble:`-`
+- :coq:`fun x => x + 1`
+- :coqid:`Coq.Even.even`
+- :mref:`.s(Print).msg{*nat*}`
+- :mquote:`.s(Print).msg{*nat*}`
