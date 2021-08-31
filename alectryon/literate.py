@@ -80,6 +80,10 @@ class StringView:
 
 class Line(namedtuple("Line", "num parts")):
     def __len__(self):
+        """Compute the number of characters in `self`.
+        >>> len(Line(0, ("a", "bc", "def")))
+        6
+        """
         return sum(len(p) for p in self.parts)
 
     def __str__(self):
@@ -341,6 +345,37 @@ Lit = namedtuple("Lit", "lines directive_lines indent")
 CodeBlock = namedtuple("CodeBlock", "lines indent")
 
 def _last_coq_directive(lines):
+    r"""Scan backwards across `lines` to find the beginning of the Coq directive.
+
+    >>> _, ls = number_lines(StringView('''\
+    ... Text.
+    ... .. coq:: unfold
+    ...    :name: nm
+    ... '''), 6)
+    >>> _last_coq_directive(ls) # doctest: +ELLIPSIS
+    (...[Line(num=6, parts=['Text.'])]...,
+        <re.Match ...'.. coq:: unfold'>,
+     ...[Line(num=7, parts=['.. coq:: unfold']),
+         Line(num=8, parts=['   :name: nm']),
+         Line(num=9, parts=[''])]...)
+
+    >>> _, ls = number_lines(StringView('''\
+    ... Text.
+    ...    .. coq:: unfold
+    ...    Text.
+    ... '''), 6)
+    >>> _last_coq_directive(ls) # doctest: +ELLIPSIS
+    (...[Line(num=6, parts=['Text.']),
+         Line(num=7, parts=['   .. coq:: unfold']),
+         Line(num=8, parts=['   Text.']),
+         Line(num=9, parts=[''])]...)
+
+    >>> _, ls = number_lines(StringView('Text.\n   Text.'), 6)
+    >>> _last_coq_directive(ls) # doctest: +ELLIPSIS
+    (...[Line(num=6, parts=['Text.']),
+         Line(num=7, parts=['   Text.'])]...)
+
+    """
     directive = deque()
     expected_coq_indent = float("+inf")
     while lines:
@@ -351,12 +386,13 @@ def _last_coq_directive(lines):
         if m:
             if indent <= expected_coq_indent:
                 return lines, m, directive
-            break
+            break # pragma: no cover # coverage.py bug
         if not line.isspace():
             expected_coq_indent = min(expected_coq_indent, indent - 3)
             if expected_coq_indent < 0:
                 break # No need to keep looping
-    return lines + directive, None, None
+    lines.extend(directive)
+    return lines, None, None
 
 def lit(lines, indent):
     strip_deque(lines)
