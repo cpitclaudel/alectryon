@@ -113,6 +113,11 @@ _output/tests/literate.marked-empty.rst: tests/literate.v
 	$(alectryon) --frontend coq --backend rst /dev/null -o - --mark-point 42000 "F"IN | nl | grep "F"IN > $@
 tests_targets += _output/tests/literate.marked-empty.rst
 
+# reST → HTML
+_output/tests/misc.html: tests/misc.rst
+	$(alectryon) $<
+tests_targets += _output/tests/misc.html
+
 # Coq → HTML
 _output/tests/screenshot.html: tests/screenshot.v
 	$(alectryon) $<
