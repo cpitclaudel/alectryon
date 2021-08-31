@@ -924,4 +924,63 @@ References can also be used to customize the display of goals and hypotheses.  I
 \end{alectryon}
 \end{quote}
 
+
+\section{Asserting properties of the output%
+  \label{asserting-properties-of-the-output}%
+}
+
+A constant concern when displaying proof states to readers is that what is displayed to the user may go stale.  Alectryon mitigates the issue by automatically collecting proof states, but simply recording the prover's output doesn't fully solve the issue.  That is because the output of a command may change in an unexpected way, without raising an error.  For example, we may have written, with an early version of Coq:
+
+\begin{quote}
+\begin{alectryon}
+  \anchor{plus}
+  \sep
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Print}~\PY{n}{plus}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{messages}
+        \begin{message}
+          \PY{k+kn}{Notation}~\PY{n+nf}{plus}~\PY{o}{:=}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}
+        \end{message}
+      \end{messages}
+    \end{output}
+  \end{sentence}
+\end{alectryon}
+\end{quote}
+
+To show the recursive definition of addition.   But as Coq's standard library got reorganized, the definition of \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{plus}}}}} changed to being an alias for \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{Nat}\DUrole{o}{.}\DUrole{n}{add}}}}}, making the output of \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{kn}{Print} \DUrole{n}{plus}}}}} uninteresting.  In general, the recommended way to prevent this issue is by recording and versioning the prover's output using Alectryon caching facility (\texttt{--cache-directory}).  For small checks, however, Alectryon provides the \texttt{massert} directive, which checks that all references in its body resolve to a part of Coq's output.  For example, the following checks that \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{plus}}}}} is indeed an alias and \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{Nat}\DUrole{o}{.}\DUrole{n}{add}}}}} a \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{kn}{Fixpoint}}}}}.
+
+\begin{quote}
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Print}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{messages}
+        \begin{message}
+          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{=}~\nl
+          \PY{k+kr}{fix}~\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{\PYZob{}}\PY{k+kr}{struct}~\PY{n}{n}\PY{o}{\PYZcb{}}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{:=}\nl
+          ~~\PY{k+kr}{match}~\PY{n}{n}~\PY{k+kr}{with}\nl
+          ~~\PY{o}{|}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}~\PY{n}{m}\nl
+          ~~\PY{o}{|}~\PY{n}{S}~\PY{n}{p}~\PY{o}{=\PYZgt{}}~\PY{n}{S}~\PY{o}{(}\PY{n}{add}~\PY{n}{p}~\PY{n}{m}\PY{o}{)}\nl
+          ~~\PY{k+kr}{end}\nl
+          ~~~~~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\nl
+          \nl
+          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{\PYZus{}}~\PY{n}{\PYZus{}}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}
+        \end{message}
+      \end{messages}
+    \end{output}
+  \end{sentence}
+\end{alectryon}
+\end{quote}
+
 \end{document}

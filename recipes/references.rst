@@ -188,3 +188,24 @@ References can also be used to customize the display of goals and hypotheses.  I
            (* .unfold -.g#* .g#2 .g#4 .g#4.h{list A} *)
          all: simpl in *; tauto.
        Qed.
+
+Asserting properties of the output
+==================================
+
+A constant concern when displaying proof states to readers is that what is displayed to the user may go stale.  Alectryon mitigates the issue by automatically collecting proof states, but simply recording the prover's output doesn't fully solve the issue.  That is because the output of a command may change in an unexpected way, without raising an error.  For example, we may have written, with an early version of Coq:
+
+    .. coq::
+       :name: plus
+
+       Print plus.
+
+To show the recursive definition of addition.   But as Coq's standard library got reorganized, the definition of `plus` changed to being an alias for `Nat.add`, making the output of `Print plus` uninteresting.  In general, the recommended way to prevent this issue is by recording and versioning the prover's output using Alectryon caching facility (``--cache-directory``).  For small checks, however, Alectryon provides the ``massert`` directive, which checks that all references in its body resolve to a part of Coq's output.  For example, the following checks that `plus` is indeed an alias and `Nat.add` a `Fixpoint`.
+
+    .. coq::
+
+       Print Nat.add.
+
+    .. massert::
+
+       .io#plus.s(Print).msg{*Notation*}
+       .s(Print).msg{*Nat.add*=*fix add*}

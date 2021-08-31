@@ -199,6 +199,23 @@ The two permutation hypotheses are <samp class="alectryon-inline highlight mq-pr
 </span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kp">all</span>: <span class="nb">simpl</span> <span class="kr">in</span> *; <span class="bp">tauto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre></blockquote>
 </div>
+<div class="section" id="asserting-properties-of-the-output">
+<h1>Asserting properties of the output</h1>
+<p>A constant concern when displaying proof states to readers is that what is displayed to the user may go stale.  Alectryon mitigates the issue by automatically collecting proof states, but simply recording the prover's output doesn't fully solve the issue.  That is because the output of a command may change in an unexpected way, without raising an error.  For example, we may have written, with an early version of Coq:</p>
+<blockquote>
+<pre class="alectryon-io highlight" id="plus"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="references-rst-chk1b" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chk1b"><span class="kn">Print</span> plus.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kn">Notation</span> <span class="nf">plus</span> := Nat.add</blockquote></div></div></small></span></pre></blockquote>
+<p>To show the recursive definition of addition.   But as Coq's standard library got reorganized, the definition of <code class="highlight coq"><span class="n">plus</span></code> changed to being an alias for <code class="highlight coq"><span class="n">Nat</span><span class="o">.</span><span class="n">add</span></code>, making the output of <code class="highlight coq"><span class="kn">Print</span> <span class="n">plus</span></code> uninteresting.  In general, the recommended way to prevent this issue is by recording and versioning the prover's output using Alectryon caching facility (<tt class="docutils literal"><span class="pre">--cache-directory</span></tt>).  For small checks, however, Alectryon provides the <tt class="docutils literal">massert</tt> directive, which checks that all references in its body resolve to a part of Coq's output.  For example, the following checks that <code class="highlight coq"><span class="n">plus</span></code> is indeed an alias and <code class="highlight coq"><span class="n">Nat</span><span class="o">.</span><span class="n">add</span></code> a <code class="highlight coq"><span class="kn">Fixpoint</span></code>.</p>
+<blockquote>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="references-rst-chk1c" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chk1c"><span class="kn">Print</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">Nat.add = 
+<span class="kr">fix</span> add (n m : nat) {<span class="kr">struct</span> n} : nat :=
+  <span class="kr">match</span> n <span class="kr">with</span>
+  | <span class="mi">0</span> =&gt; m
+  | S p =&gt; S (add p m)
+  <span class="kr">end</span>
+     : nat -&gt; nat -&gt; nat
+
+<span class="kn">Arguments</span> Nat.add (_ _)%nat_scope</blockquote></div></div></small></span></pre></blockquote>
+</div>
 </div>
 </div></body>
 </html>

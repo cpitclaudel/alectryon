@@ -519,10 +519,15 @@ class AlectryonMrefTransform(OneTimeTransform):
             repl = self.format_one_ref(target, node)
         elif kind == "quote":
             repl = self.format_one_quote(target, node)
+        elif kind == "assert":
+            repl = None
         else:
             assert False
 
-        node.replace_self(repl)
+        if repl:
+            node.replace_self(repl)
+        else:
+            node.parent.remove(node)
 
     def _apply(self, **_kwargs):
         ios = {id: node
@@ -636,7 +641,14 @@ def recompute_contents(directive, real_indentation):
     contents = "\n".join(ln[body_indentation:] for ln in body_lines)
     return body_indentation, contents
 
-class CoqDirective(Directive):
+class AlectryonDirective(Directive): # pylint: disable=abstract-method
+    def _error(self, msg):
+        msg = 'Error in "{}" directive:\n{}'.format(self.name, msg)
+        literal = nodes.literal_block(self.block_text, self.block_text)
+        err = self.state_machine.reporter.error(msg, literal, line=self.lineno)
+        return [err]
+
+class CoqDirective(AlectryonDirective):
     """Highlight and annotate a Coq snippet."""
     name = "coq"
 
@@ -652,12 +664,6 @@ class CoqDirective(Directive):
     @property
     def header(self):
         return "`{}`".format(self.block_text.partition('\n')[0])
-
-    def _error(self, msg):
-        msg = 'Error in "{}" directive:\n{}'.format(self.name, msg)
-        literal = nodes.literal_block(self.block_text, self.block_text)
-        err = self.state_machine.reporter.error(msg, literal, line=self.lineno)
-        return [err]
 
     def _annots_of_arguments(self):
         try:
@@ -708,7 +714,7 @@ class AlectryonToggleDirective(Directive):
         return [pending]
 
 # This is just a small example
-class ExperimentalExerciseDirective(Sidebar):
+class ExperimentalExerciseDirective(Sidebar, AlectryonDirective):
     """Introduce an exercise."""
     name = "exercise"
 
@@ -986,7 +992,7 @@ marker_quote_role.options = { # type: ignore
     'language': _opt_mquote_lexer,
 }
 
-class MQuoteDirective(Directive):
+class MQuoteDirective(AlectryonDirective):
     has_content = False
     required_arguments = 1
     optional_arguments = 0
@@ -1004,6 +1010,27 @@ class MQuoteDirective(Directive):
         try:
             node = _marker_ref(rawtext, text, self.lineno, sm.document, sm, options)
             return [node]
+        except ValueError as e:
+            return self._error(str(e))
+
+class MAssertDirective(Directive):
+    has_content = True
+    required_arguments = 0
+    optional_arguments = 1
+    final_argument_whitespace = True
+
+    name = "massert"
+    option_spec: Dict[str, Any] = {}
+
+    def run(self):
+        prefix = markers.parse_path(self.arguments[0] if self.arguments else "")
+        sm = self.state_machine
+        options = {**self.options, "kind": "assert", "prefix": prefix}
+        try:
+            start = self.content_offset + 1
+            return [_marker_ref("assertion `{}`".format(ref), ref,
+                                linum, sm.document, sm, {**options})
+                    for linum, ref in enumerate(self.content, start=start) if ref]
         except ValueError as e:
             return self._error(str(e))
 
@@ -1349,6 +1376,7 @@ TRANSFORMS = [ActivateMathJaxTransform,
 DIRECTIVES = [CoqDirective,
               AlectryonToggleDirective,
               MQuoteDirective,
+              MAssertDirective,
               ExperimentalExerciseDirective,
               DirectiveDirective]
 ROLES = [alectryon_bubble,
