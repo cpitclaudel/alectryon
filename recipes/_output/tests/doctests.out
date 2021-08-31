@@ -26,12 +26,18 @@ highlight_html (alectryon.pygments)
 Doctest: alectryon.pygments.highlight_html ... ok
 _all_sub_objects (alectryon.transforms)
 Doctest: alectryon.transforms._all_sub_objects ... ok
+attach_comments_to_code (alectryon.transforms)
+Doctest: alectryon.transforms.attach_comments_to_code ... ok
 coalesce_text (alectryon.transforms)
 Doctest: alectryon.transforms.coalesce_text ... ok
+dedent (alectryon.transforms)
+Doctest: alectryon.transforms.dedent ... ok
+group_hypotheses (alectryon.transforms)
+Doctest: alectryon.transforms.group_hypotheses ... ok
 partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 16 tests
+Ran 19 tests
 
 OK

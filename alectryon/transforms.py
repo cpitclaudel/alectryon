@@ -437,6 +437,15 @@ def attach_comments_to_code(fragments, predicate=lambda _: True):
 
     Only sentences for which `predicate` returns ``True`` are considered (to
     restrict the behavior to just bullets, pass ``is_bullet``.
+
+    >>> from .core import Sentence as S, Text as T
+    >>> frs = [S("-", [], []), T(" (* … *) "), S("cbn.", [], []), T("(* … *)")]
+    >>> attach_comments_to_code(frs) # doctest: +ELLIPSIS
+    [RichSentence(...contents='- (* … *)'...), Text(contents=' '),
+     RichSentence(...contents='cbn.(* … *)'...)]
+    >>> attach_comments_to_code(frs, predicate=is_bullet) # doctest: +ELLIPSIS
+    [RichSentence(...contents='- (* … *)'...), Text(contents=' '),
+     RichSentence(...contents='cbn.'...), Text(contents='(* … *)')]
     """
     from .literate import coq_partition, StringView, Code, Comment
     grouped = list(enrich_sentences(fragments))
@@ -480,6 +489,13 @@ def fragment_messages(fr):
         yield from gs
 
 def group_hypotheses(fragments):
+    """Merge consecutive hypotheses with the same name.
+
+    >>> from .core import Sentence as S, Goal as G, Hypothesis as H
+    >>> group_hypotheses([S("", [], [G("", "", [H([n], None, 'nat') for n in 'abc'])])])
+    ... # doctest: +ELLIPSIS
+    [...hypotheses=[Hypothesis(names=['a', 'b', 'c'], body=None, type='nat')]...]
+    """
     for fr in fragments:
         for g in fragment_goals(fr):
             hyps = []
@@ -506,6 +522,12 @@ def strip_failures(fragments):
         yield fr
 
 def dedent(fragments):
+    r"""Dedent messages.
+
+    >>> from .core import Sentence as S, Message as M
+    >>> list(dedent([S("", [M("  1\n    : nat")], [])])) # doctest: +ELLIPSIS
+    [...messages=[Message(contents='1\n  : nat')]...]
+    """
     for fr in fragments:
         for msgs in fragment_message_sets(fr):
             for idx, r in enumerate(msgs):

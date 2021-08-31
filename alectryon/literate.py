@@ -74,7 +74,7 @@ class StringView:
             v = v[:-len(e.group())]
         return v
 
-    BLANKS = re.compile(r"\s+\Z")
+    BLANKS = re.compile(r"\s*\Z")
     def isspace(self):
         return bool(self.match(StringView.BLANKS))
 
@@ -119,13 +119,10 @@ def replace(line, pairs):
         line = line.replace(src, dst)
     return line
 
-def blank(line):
-    return (not line) or line.isspace()
-
 def strip_block(lines, beg, end):
-    while beg < len(lines) and blank(lines[beg]):
+    while beg < len(lines) and lines[beg].isspace():
         beg += 1
-    while end > beg and blank(lines[end - 1]):
+    while end > beg and lines[end - 1].isspace():
         end -= 1
     return (beg, end)
 
