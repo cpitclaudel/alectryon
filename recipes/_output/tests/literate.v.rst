@@ -82,3 +82,9 @@ Strings can be tricky too:
 
    Definition a := "a""b""c\n\n\n".
    Print a.
+
+And so can deeply nested comments:
+
+.. coq::
+
+   (* (*! (** (*|*) **) !*) *)

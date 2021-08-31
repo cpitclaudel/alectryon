@@ -90,3 +90,9 @@ Open Scope string_scope.
 
 Definition a := "a""b""c\n\n\n".
 Print a.
+
+(*|
+And so can deeply nested comments:
+|*)
+
+(* (*! (** (*|*) **) !*) *)
