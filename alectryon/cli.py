@@ -39,11 +39,8 @@ def read_plain(_, fpath, input_is_stdin):
         return f.read()
 
 def read_json(_, fpath, input_is_stdin):
-    from .json import load
-    if input_is_stdin:
-        return load(sys.stdin)
-    with open(fpath, encoding="utf-8") as f:
-        return load(f)
+    from .json import loads
+    return loads(read_plain(None, fpath, input_is_stdin))
 
 def parse_coq_plain(contents, fpath):
     return [core.PosStr(contents, core.Position(fpath, 1, 1), 0)]

@@ -35,9 +35,9 @@ COMMENTS_RE = re.compile(r"^\s*//.*$", re.MULTILINE)
 def uncomment(s):
     return COMMENTS_RE.sub("", s)
 
-def load(fp, **kwargs):
-    """Load a JSON document from `fp`, ignoring // comments."""
-    return json.loads(uncomment(fp.read()), **kwargs)
+def loads(s, **kwargs):
+    """Load a JSON document from string `s`, ignoring // comments."""
+    return json.loads(uncomment(s), **kwargs)
 
 TYPE_OF_ALIASES = {
     "text": core.Text,
