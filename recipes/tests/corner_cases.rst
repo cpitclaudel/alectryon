@@ -48,6 +48,19 @@ Bubble: :alectryon-bubble:`-`
 
 .. alectryon-toggle::
 
+.. coq::
+
+   (* xyz *) Goal True /\ True.
+     - idtac.
+       pose (a := 1).
+       (* xyz *) split.  (* xyz *)
+       + (* xyz *) idtac.
+         idtac. (* x
+         yz *)
+         split.
+       + (* xyz *) { (* xyz *) split. }
+   Qed. (* xyz *)
+
 References
 ==========
 
