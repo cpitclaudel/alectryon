@@ -16,6 +16,8 @@ rst2coq (alectryon.literate)
 Doctest: alectryon.literate.rst2coq ... ok
 rst_partition (alectryon.literate)
 Doctest: alectryon.literate.rst_partition ... ok
+StripErrorsTokenFilter (alectryon.pygments)
+Doctest: alectryon.pygments.StripErrorsTokenFilter ... ok
 add_tokens (alectryon.pygments)
 Doctest: alectryon.pygments.add_tokens ... ok
 highlight_html (alectryon.pygments)
@@ -28,6 +30,6 @@ partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 14 tests
+Ran 15 tests
 
 OK

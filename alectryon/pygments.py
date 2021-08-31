@@ -238,7 +238,12 @@ class WarnOnErrorTokenFilter(Filter):
             yield typ, val
 
 class StripErrorsTokenFilter(Filter):
-    """Change ``Error`` tokens to ``Text`` ones."""
+    """Change ``Error`` tokens to ``Text`` ones.
+
+    >>> f = StripErrorsTokenFilter()
+    >>> list(f.filter(None, [(Error, "err")]))
+    [(Token.Text, 'err')]
+    """
 
     def filter(self, _lexer, stream):
         for typ, val in stream:
