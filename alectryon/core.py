@@ -351,7 +351,7 @@ class SerAPI():
             return "Top"
         stem = (self.sub_chars(stem[0], self.COQ_IDENT_START) +
                 self.sub_chars(stem[1:], self.COQ_IDENT_PART))
-        return self.fpath.with_name(stem + self.fpath.suffix)
+        return stem + self.fpath.suffix
 
     @staticmethod
     def resolve_sertop(sertop_bin):
