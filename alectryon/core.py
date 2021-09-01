@@ -112,7 +112,7 @@ class Backend:
     def __init__(self, highlighter):
         self.highlighter = highlighter
 
-    def gen_sentence(self, s): raise NotImplementedError()
+    def gen_fragment(self, s): raise NotImplementedError()
     def gen_hyp(self, hyp): raise NotImplementedError()
     def gen_goal(self, goal): raise NotImplementedError()
     def gen_message(self, message): raise NotImplementedError()
@@ -128,7 +128,7 @@ class Backend:
 
     def _gen_any(self, obj):
         if isinstance(obj, (Text, RichSentence)):
-            self.gen_sentence(obj)
+            self.gen_fragment(obj)
         elif isinstance(obj, RichHypothesis):
             self.gen_hyp(obj)
         elif isinstance(obj, RichGoal):
