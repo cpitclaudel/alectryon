@@ -26,7 +26,7 @@ import re
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
-from os import path, makedirs, unlink
+from os import path, makedirs, unlink, fspath
 
 from . import core
 from .core import GeneratorInfo
@@ -244,11 +244,12 @@ class FileCache(BaseCache):
     def __init__(self, cache_root: str, doc_path: str,
                  metadata: Dict[str, Any], cache_compression):
         self.serializer = PlainSerializer
-        self.cache_root = path.realpath(cache_root)
+        self.cache_root = path.realpath(fspath(cache_root))
         self.wanted_compression = cache_compression or "none"
         if self.wanted_compression not in self.KNOWN_COMPRESSIONS:
             raise ValueError("Unsupported cache compression: {}".format(cache_compression))
 
+        doc_path = fspath(doc_path)
         doc_root = path.commonpath((self.cache_root, path.realpath(doc_path)))
         self.cache_rel_file = path.relpath(doc_path, doc_root) + ".cache"
         self.cache_file = path.join(cache_root, self.cache_rel_file)
