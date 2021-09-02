@@ -150,16 +150,16 @@ tests_targets += _output/tests/misc.html
 
 # Coq → HTML
 _output/tests/plain_cli.noext.html: tests/plain_cli.rst | _output/tests/
-	bash -c '$(PYTHON) -m "alectryon" --copy-assets none --frontend coq --backend webpage <(echo "Check nat.") -o - > $@'
+	$(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage <(echo "Check nat.") -o - > $@
 tests_targets += _output/tests/plain_cli.noext.html
 # Coq → HTML
 _output/tests/plain_cli.tmp.html: tests/plain_cli.rst | _output/tests/
 	TMP=$$(mktemp); \
-     $(PYTHON) -m "alectryon" --copy-assets none --frontend coq --backend webpage $$TMP && cp $$TMP $@
+     $(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage $$TMP && cp $$TMP $@
 tests_targets += _output/tests/plain_cli.tmp.html
 # Coq → HTML
 _output/tests/plain_cli.stdin.html: tests/plain_cli.rst | _output/tests/
-	echo "Check nat." | $(PYTHON) -m "alectryon" --copy-assets none --frontend coq --backend webpage - > $@
+	echo "Check nat." | $(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage - > $@
 tests_targets += _output/tests/plain_cli.stdin.html
 
 # Coq → HTML
