@@ -83,7 +83,7 @@ tests_targets += _output/tests/doctests.out
 
 # Errors and warnings
 _output/tests/errors.py.out: tests/errors.py | _output/tests/
-	$(PYTHON) $< | sed 's/\(tests\) in [0-9.]\+s$$/\1/g' > $@
+	$(PYTHON) $< | sed 's/\(tests\?\) in [0-9.]\+s$$/\1/g' > $@
 tests_targets += _output/tests/errors.py.out
 
 # reST → JSON errors
@@ -102,7 +102,7 @@ tests_targets += _output/tests/errors.sh.out
 
 # Plain Coq → HTML + errors
 _output/tests/excepthook.v.out: tests/excepthook.v
-	$(alectryon) not_found.v --frontend coq --traceback -o - 2>&1 | sed 's/File ".\+\?", line [0-9]\+/File …, line …/g' | sed '/^    /d' | sed '/^ *$$/d' | uniq | cat > $@
+	$(alectryon) not_found.v --frontend coq --traceback -o - 2>&1 | sed 's/File ".\+\?", line [0-9]\+/File …, line …/g' | sed '/^    /d' | sed '/^ *$$/d' | uniq | cat > $@; ! test $$? -eq 0
 tests_targets += _output/tests/excepthook.v.out
 
 # Plain Coq → HTML + errors
@@ -182,6 +182,11 @@ tests_targets += _output/tests/stylesheets.part.tex
 _output/tests/syntax_highlighting.html: tests/syntax_highlighting.v
 	$(alectryon) $<
 tests_targets += _output/tests/syntax_highlighting.html
+
+# Unit tests
+_output/tests/unit.py.out: tests/unit.py | _output/tests/
+	$(PYTHON) $< | sed 's/\(tests\?\) in [0-9.]\+s$$/\1/g' > $@
+tests_targets += _output/tests/unit.py.out
 
 # Coq → reST
 _output/tests/unterminated.v.out: tests/unterminated.v

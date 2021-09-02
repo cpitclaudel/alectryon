@@ -3,6 +3,7 @@
 import sys
 import re
 from pathlib import Path
+from fnmatch import fnmatch
 
 CMD_RE = re.compile(r"""
     (?:^[ ]+(?=alectryon)|To[ ]compile:|[$])[ ]*(?P<cmd>[^\s]+)[ ]+
@@ -68,11 +69,9 @@ targets += $({prefix}_targets)\
 """
 
 EXCLUDED_SOURCES = {
-    "docutils.conf",
-    "references.docutils.conf",
-    "literate.docutils.conf",
-    "stylesheets.docutils.conf",
-    "cached.v.cache",
+    "*docutils.conf",
+    "*.v.cache",
+    "flycheck_*.py"
 }
 
 def main():
@@ -83,7 +82,7 @@ def main():
     all_targets = []
     for fname in sorted(sys.argv[3:]):
         src, targets = Path(fname), []
-        if src.name in EXCLUDED_SOURCES:
+        if any(fnmatch(src.name, pattern) for pattern in EXCLUDED_SOURCES):
             continue
         for params in parse_rules(src):
             dst, rule = gen_rule(src, prefix, outdir, params)

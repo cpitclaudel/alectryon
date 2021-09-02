@@ -5,7 +5,7 @@ the command line.
 
 To run::
 
-  $ python errors.py | sed 's/\(tests\) in [0-9.]\+s$/\1/g' > errors.py.out
+  $ python errors.py | sed 's/\(tests\?\) in [0-9.]\+s$/\1/g' > errors.py.out
       # Errors and warnings; produces ‘errors.py.out’
 """
 

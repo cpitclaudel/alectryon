@@ -427,8 +427,8 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
                 self.repl.wait()
 
     def reset(self):
-        """Start or restart this proper instance."""
-        self.repl = self.start(stderr=sys.stderr)
+        """Start or restart this prover instance."""
+        self.repl = self.start(stderr=None)
 
 DRIVERS_BY_LANGUAGE = {
     "coq": {
