@@ -1,4 +1,5 @@
-r"""
+r"""Errors unit tests
+
 This file tests errors raised on paths that are not easily reachable from
 the command line.
 

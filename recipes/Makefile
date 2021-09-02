@@ -1,5 +1,7 @@
 default: all
 
+SHELL := bash -o pipefail
+
 export PYTHON ?= python3 -Wd # -X tracemalloc
 export SPHINXBUILD ?= $(PYTHON) "$(shell which sphinx-build)"
 export COVERAGE_FILE := $(abspath coverage/.coverage)
