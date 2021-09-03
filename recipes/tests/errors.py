@@ -74,6 +74,21 @@ class docutils(unittest.TestCase):
             with self.assertRaisesRegex(SystemMessage, "SEVERE"):
                 RSTCoqParser().parse("(*", new_document("<string>"))
 
+class coqc_time(unittest.TestCase):
+    def test_warnings_and_errors(self):
+        from alectryon.core import Text
+        from alectryon.coqc_time import CoqcTime
+
+        with self.assertRaisesRegex(ValueError, "not found"):
+            CoqcTime.resolve_driver(binpath="\0")
+
+        api = CoqcTime()
+        with redirected_std() as (_, err):
+            annot = api.annotate(["Goal True."])
+            self.assertEqual(annot, [[Text(contents='Goal True.')]])
+            self.assertEqual(api.observer.exit_code, 3)
+            self.assertRegex(err.getvalue(), "There are pending proofs")
+
 class core(unittest.TestCase):
     def test_errors(self):
         from alectryon.core import Backend
@@ -82,18 +97,18 @@ class core(unittest.TestCase):
             Backend(None)._gen_any(object())
 
 class serapi(unittest.TestCase):
-    def test_warnings(self):
+    def test_warnings_and_errors(self):
         from alectryon.core import View
         from alectryon.serapi import SerAPI, PrettyPrinted
+
+        with self.assertRaisesRegex(ValueError, "not found"):
+            SerAPI.resolve_driver(binpath="\0")
 
         api = SerAPI()
         with redirected_std() as (_, err):
             api._warn_orphaned(View(b"chunk"), PrettyPrinted(0, "pp"))
             self.assertEqual(api.observer.exit_code, 2)
             self.assertRegex(err.getvalue(), "Orphaned message")
-
-        with self.assertRaisesRegex(ValueError, "not found"):
-            SerAPI.resolve_driver(binpath="\0")
 
 class pygments(unittest.TestCase):
     def test_warnings(self):

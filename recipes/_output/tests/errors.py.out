@@ -1,4 +1,5 @@
 test_errors (__main__.cli) ... ok
+test_warnings_and_errors (__main__.coqc_time) ... ok
 test_errors (__main__.core) ... ok
 test_errors (__main__.docutils) ... ok
 test_errors (__main__.json) ... ok
@@ -8,10 +9,10 @@ test_features (__main__.literate) ... ok
 test_failed_import (__main__.myst) ... ok
 test_errors (__main__.pygments) ... ok
 test_warnings (__main__.pygments) ... ok
-test_warnings (__main__.serapi) ... ok
+test_warnings_and_errors (__main__.serapi) ... ok
 test_errors (__main__.sexp) ... ok
 
 ----------------------------------------------------------------------
-Ran 12 tests
+Ran 13 tests
 
 OK
