@@ -22,7 +22,28 @@ def redirected_std():
     with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
         yield (out, err)
 
-class Json(unittest.TestCase):
+class core(unittest.TestCase):
+    def test_backend_gen(self):
+        from alectryon.core import Backend, Text, RichGoal, RichSentence
+
+        class PrintingBackend(Backend): # pylint: disable=abstract-method
+            def __init__(self, *args):
+                super().__init__(*args)
+                self.out = None
+            def gen_fragment(self, _):
+                self.out = "fr!"
+            def gen_goal(self, _):
+                self.out = "goal!"
+
+        backend = PrintingBackend(None)
+        backend._gen_any(Text("txt"))
+        self.assertEqual(backend.out, "fr!")
+        backend._gen_any(RichGoal("nm", "goal", []))
+        self.assertEqual(backend.out, "goal!")
+        backend._gen_any(RichSentence("i", "o", None, [], []))
+        self.assertEqual(backend.out, "fr!")
+
+class json(unittest.TestCase):
     @staticmethod
     def cache(chunks, driver, root, docpath, lang, compression):
         from alectryon.json import CacheSet

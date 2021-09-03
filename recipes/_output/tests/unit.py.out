@@ -1,6 +1,7 @@
-test_validation (__main__.Json) ... ok
+test_backend_gen (__main__.core) ... ok
+test_validation (__main__.json) ... ok
 
 ----------------------------------------------------------------------
-Ran 1 test
+Ran 2 tests
 
 OK
