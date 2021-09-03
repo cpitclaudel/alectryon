@@ -55,7 +55,8 @@ class cli(unittest.TestCase):
 
 class docutils(unittest.TestCase):
     def test_errors(self):
-        from alectryon.docutils import CounterStyle, get_pipeline, RSTCoqParser
+        from alectryon.docutils import CounterStyle, get_pipeline, \
+            RSTCoqParser, set_default_role
         from docutils.utils import new_document, SystemMessage
 
         with self.assertRaisesRegex(ValueError, "Invalid"):
@@ -69,6 +70,9 @@ class docutils(unittest.TestCase):
 
         with self.assertRaisesRegex(ValueError, "dialect"):
             _ = get_pipeline("coq+rst", "latex", "!dialect")
+
+        with self.assertRaisesRegex(ValueError, "Unsupported language"):
+            _ = set_default_role("\0")
 
         with redirected_std():
             with self.assertRaisesRegex(SystemMessage, "SEVERE"):
@@ -91,10 +95,17 @@ class coqc_time(unittest.TestCase):
 
 class core(unittest.TestCase):
     def test_errors(self):
-        from alectryon.core import Backend
+        from alectryon.core import Backend, resolve_driver
 
-        with self.assertRaisesRegex(TypeError, "Unexpected"):
+        with self.assertRaisesRegex(TypeError, r"\AUnexpected object type"):
             Backend(None)._gen_any(object())
+
+        with self.assertRaisesRegex(ValueError, r"\AUnknown language"):
+            resolve_driver("\0", "\0")
+
+        with self.assertRaisesRegex(ValueError, r"\AUnknown driver"):
+            resolve_driver("coq", "\0")
+
 
 class serapi(unittest.TestCase):
     def test_warnings_and_errors(self):
