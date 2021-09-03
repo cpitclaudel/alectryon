@@ -29,3 +29,7 @@ lint:
 	pylint --rcfile=setup.cfg alectryon
 	mypy alectryon/
 	pyright --project .
+
+FORCE:
+recipes/%: FORCE
+	+$(MAKE) -C recipes --always-make "$*"
