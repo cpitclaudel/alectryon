@@ -5,23 +5,23 @@
   "&coq": {
     "generator": [
       "Coq+SerAPI",
-      "8.12.0+0.12.0"
+      "8.13.0+0.13.0"
     ],
     "metadata": {
       "sertop_args": []
     },
     "chunks": [
-      "Compute ((fun (n: nat) (opt: option nat) (eq: opt = Some n) => n)\n           _ (Some 3) eq_refl)."
+      "Check 1."
     ],
     "annotated": [
       [
         {
           "_type": "sentence",
-          "contents": "Compute ((fun (n: nat) (opt: option nat) (eq: opt = Some n) => n)\n           _ (Some 3) eq_refl).",
+          "contents": "Check 1.",
           "messages": [
             {
               "_type": "message",
-              "contents": "     = 3\n     : nat"
+              "contents": "1\n     : nat"
             }
           ],
           "goals": []

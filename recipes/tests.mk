@@ -18,9 +18,14 @@ _output/tests/auto_toggle.html: tests/auto_toggle.rst
 tests_targets += _output/tests/auto_toggle.html
 
 # Coq → HTML (cached)
-_output/tests/cached.html: tests/cached.v
+_output/tests/cache_v1.html: tests/cache_v1.v
 	$(alectryon) $< --cache-directory tests/
-tests_targets += _output/tests/cached.html
+tests_targets += _output/tests/cache_v1.html
+
+# Coq → HTML (cached)
+_output/tests/cache_v2.html: tests/cache_v2.v
+	$(alectryon) $< --cache-directory tests/
+tests_targets += _output/tests/cache_v2.html
 
 # reST + assertions
 _output/tests/cli_flags.txt: tests/cli_flags.rst

@@ -24,10 +24,10 @@ def redirected_std():
 
 class Json(unittest.TestCase):
     @staticmethod
-    def cache(chunks, driver, root, docpath, metadata, compression):
-        from alectryon.json import FileCache
-        cache = FileCache(root, docpath, metadata, compression)
-        cache.update(chunks, driver)
+    def cache(chunks, driver, root, docpath, lang, compression):
+        from alectryon.json import CacheSet
+        with CacheSet(root, docpath, compression) as caches:
+            return caches[lang].update(chunks, driver)
 
     def test_validation(self):
         from alectryon.serapi import SerAPI
@@ -38,21 +38,20 @@ class Json(unittest.TestCase):
             driver = SerAPI(fpath=docpath)
 
             chunks = ["Goal True."]
-            metadata = {}
-            self.cache(chunks, driver, cache_root, docpath, {}, "none")
+            self.cache(chunks, driver, cache_root, docpath, "coq", "none")
 
             with redirected_std() as (out, _):
-                metadata = driver.metadata
-                self.cache(chunks, driver, cache_root, docpath, metadata, "none")
+                driver.user_args = ("--disallow-sprop",)
+                self.cache(chunks, driver, cache_root, docpath, "coq", "none")
                 self.assertRegex(out.getvalue().strip(), r"\AOutdated metadata.*\Z")
 
             with redirected_std() as (out, _):
                 chunks = ["Goal False."]
-                self.cache(chunks, driver, cache_root, docpath, metadata, "none")
+                self.cache(chunks, driver, cache_root, docpath, "coq", "none")
                 self.assertRegex(out.getvalue().strip(), r"\AOutdated contents.*\Z")
 
             with redirected_std() as (out, _):
-                self.cache(chunks, driver, cache_root, docpath, metadata, "xz")
+                self.cache(chunks, driver, cache_root, docpath, "coq", "xz")
                 self.assertRegex(out.getvalue().strip(), r"\ARecompression requested.*\Z")
 
 if __name__ == '__main__':

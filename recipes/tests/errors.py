@@ -34,9 +34,9 @@ class json(unittest.TestCase):
             _ = annotated_of_json([])
 
     def test_errors(self):
-        from alectryon.json import FileCache
-        with self.assertRaisesRegex(ValueError, "Unsupported"):
-            _ = FileCache("/", "/", {}, "!!")
+        from alectryon.json import CacheSet
+        with self.assertRaisesRegex(ValueError, "Unsupported cache compression"):
+            _ = CacheSet("/", "/", "!!")
 
 class cli(unittest.TestCase):
     def test_errors(self):

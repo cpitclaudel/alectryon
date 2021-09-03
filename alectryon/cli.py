@@ -63,14 +63,14 @@ def rst_to_coq(coq, fpath, point, marker):
 def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
                     input_language, driver_name, driver_args, exit_code):
     from .core import StderrObserver
-    from .json import Cache
+    from .json import CacheSet
     driver_cls = core.resolve_driver(input_language, driver_name)
     driver = driver_cls(driver_args, fpath=fpath)
-    cache = Cache(cache_directory, fpath, driver.metadata, cache_compression)
-    annotated = cache.update(chunks, driver)
-    assert isinstance(driver.observer, StderrObserver)
-    exit_code.val = int(driver.observer.exit_code >= 3)
-    return annotated
+    with CacheSet(cache_directory, fpath, cache_compression) as caches:
+        annotated = caches[input_language].update(chunks, driver)
+        assert isinstance(driver.observer, StderrObserver)
+        exit_code.val = int(driver.observer.exit_code >= 3)
+        return annotated
 
 def register_docutils(v, ctx):
     from . import docutils
@@ -319,7 +319,7 @@ def dump_html_standalone(snippets, fname, webpage_style,
     root = doc.body.add(tags.article(cls=cls))
     if include_banner:
         driver = core.resolve_driver(input_language, driver_name)
-        root.add(raw(gen_banner(driver.version_info(), include_vernums)))
+        root.add(raw(gen_banner([driver.version_info()], include_vernums)))
     for snippet in snippets:
         root.add(snippet)
 

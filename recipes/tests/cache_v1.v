@@ -5,8 +5,8 @@
 
 This file checks that reading from a cache works.  To compile::
 
-   alectryon cached.v --cache-directory tests/
-     # Coq → HTML (cached); produces ‘cached.html’
+   alectryon cache_v1.v --cache-directory tests/
+     # Coq → HTML (cached); produces ‘cache_v1.html’
 
 .. coq::
 |*)

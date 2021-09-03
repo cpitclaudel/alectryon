@@ -167,7 +167,7 @@ def _try(document, fn, node, *args, **kwargs):
 # LATER: dataclass
 class AlectryonState:
     def __init__(self, document):
-        self.generator: Optional[core.GeneratorInfo] = None
+        self.generators: List[core.GeneratorInfo] = []
         self.root_language: Optional[str] = None
         self.transforms_executed = set()
         self.embedded_assets = []
@@ -281,6 +281,10 @@ class Config:
         assert driver_name == driver_cls.ID
         return driver_cls, driver_args
 
+    def init_driver(self, lang):
+        cls, args = self.driver_info(lang)
+        return cls(args, fpath=self.document['source'])
+
 class OneTimeTransform(Transform):
     def _apply(self):
         raise NotImplementedError()
@@ -336,12 +340,18 @@ class DocutilsObserver(core.Observer):
         self.document.reporter.system_message(
             n.level, n.message, line=beg.line, column=beg.col, **kwargs)
 
+def by_lang(pending_nodes):
+    partitioned = {}
+    for node in pending_nodes:
+        partitioned.setdefault(node.details["lang"], []).append(node)
+    return dict(sorted(partitioned.items()))
+
 class AlectryonTransform(OneTimeTransform):
     default_priority = 800
     auto_toggle = True
 
     SERTOP_ARGS = ()
-    """Arguments to pass to SerAPI, in SerAPI format (deprecated)."""
+    """DEPRECATED; use DRIVER_ARGS["sertop"] instead."""
 
     LANGUAGE_DRIVERS: Dict[str, str] = {"coq": "sertop"}
     DRIVER_ARGS: Dict[str, Iterable[str]] = {"sertop": (), "coqc_time": ()}
@@ -357,37 +367,35 @@ class AlectryonTransform(OneTimeTransform):
             # remove the node created by ``Reporter.system_message``:
             self.document.transform_messages.remove(w)
 
-    def annotate_cached(self, chunks, driver_cls, driver_args):
-        from .json import Cache
-        docpath = self.document['source']
-        driver = driver_cls(driver_args, fpath=docpath)
+    def annotate(self, pending_nodes, lang, cache):
+        driver = alectryon_state(self.document).config.init_driver(lang)
         driver.observer = DocutilsObserver(self.document)
-        cache = Cache(CACHE_DIRECTORY, docpath, driver.metadata, CACHE_COMPRESSION)
+        chunks = [pending.details["contents"] for pending in pending_nodes]
         annotated = cache.update(chunks, driver)
         return cache.generator, annotated
 
-    def annotate(self, pending_nodes):
-        config = alectryon_state(self.document).config
-        chunks = [pending.details["contents"] for pending in pending_nodes]
-        driver_cls, driver_args = config.driver_info("coq")
-        return self.annotate_cached(chunks, driver_cls, driver_args)
-
-    def replace_node(self, pending, fragments):
+    def replace_node(self, pending, fragments, lang):
         directive_annots = pending.details["directive_annots"]
+
         fragments = transforms.inherit_io_annots(fragments, directive_annots)
-        fragments = transforms.default_transform(fragments, lang="coq", delay_errors=True)
+        fragments = transforms.default_transform(fragments, lang=lang, delay_errors=True)
         self.check_for_long_lines(pending, fragments)
+
         details = {**pending.details, "fragments": fragments}
         io = alectryon_pending_io(AlectryonPostTransform, details)
         self.document.note_pending(io)
         pending.replace_self(io)
 
-    def apply_coq(self):
-        pending_nodes = list(self.document.traverse(alectryon_pending))
-        generator, annotated = self.annotate(pending_nodes)
-        alectryon_state(self.document).generator = generator
-        for node, fragments in zip(pending_nodes, annotated):
-            self._try(self.replace_node, node, fragments)
+    def apply_drivers(self):
+        from .json import CacheSet
+        state = alectryon_state(self.document)
+        all_pending = self.document.traverse(alectryon_pending)
+        with CacheSet(CACHE_DIRECTORY, self.document['source'], CACHE_COMPRESSION) as caches:
+            for lang, pending_nodes in by_lang(all_pending).items():
+                generator, annotated = self.annotate(pending_nodes, lang, caches[lang])
+                state.generators.append(generator)
+                for node, fragments in zip(pending_nodes, annotated):
+                    self._try(self.replace_node, node, fragments, lang)
 
     @staticmethod
     def split_around(node):
@@ -416,7 +424,7 @@ class AlectryonTransform(OneTimeTransform):
                 self.insert_toggle_after(di, toggle(0), True)
 
     def _apply(self):
-        self.apply_coq()
+        self.apply_drivers()
         self.apply_toggle()
 
 class CounterStyle(namedtuple("CounterStyle", "start digits")):
@@ -475,8 +483,8 @@ class AlectryonMrefTransform(OneTimeTransform):
         if not target:
             raise ValueError("Target is null")
 
-    @classmethod
-    def _find_mref_target(cls, path, ios, last_io):
+    @staticmethod
+    def _find_mref_io(path, ios, last_io):
         io_name = path["io"]
         io = ios.get(io_name) if io_name else last_io
         if io is None:
@@ -484,7 +492,10 @@ class AlectryonMrefTransform(OneTimeTransform):
                 raise ValueError("Reference to unknown Alectryon block.")
             raise ValueError("Not sure which code block this refers to; "
                              "add ``.io#…`` to disambiguate.")
+        return io
 
+    @classmethod
+    def _find_mref_target(cls, path, io):
         fragments = io.details["fragments"]
         # LATER: Add a way to name sentences to make them easier to select
         sentences = (fr for fr in fragments if isinstance(fr, core.RichSentence))
@@ -532,22 +543,23 @@ class AlectryonMrefTransform(OneTimeTransform):
                                classes=["alectryon-mref"], refid=refid)
 
     @staticmethod
-    def format_one_quote(target, node):
+    def format_one_quote(io, target, node):
         if isinstance(target, core.RichSentence):
             target = target.input
-        details = {**node.details, "target": target}
+        details = {**node.details, "lang": io.details["lang"], "target": target}
         return alectryon_pending_quote(
             AlectryonPostTransform, details, node.rawsource)
 
     def replace_one_mref(self, node, ios, last_io):
         kind, path = node.details["kind"], node.details["path"]
-        target = self._find_mref_target(path, ios, last_io)
+        io = self._find_mref_io(path, ios, last_io)
+        target = self._find_mref_target(path, io)
         self._validate_target(target)
 
         if kind == "ref":
             repl = self.format_one_ref(target, node)
         elif kind == "quote":
-            repl = self.format_one_quote(target, node)
+            repl = self.format_one_quote(io, target, node)
         elif kind == "assert":
             repl = None
         else:
@@ -582,11 +594,11 @@ class AlectryonPostTransform(OneTimeTransform):
         formats = set(self.document.transformer.components['writer'].supported)
         style = _docutils_config(self.document, "pygments_style")
         if 'html' in formats:
-            highlighter = make_highlighter("html", "coq", style)
+            highlighter = make_highlighter("html", None, style)
             return "html", html.HtmlGenerator(
                 highlighter, _gensym_stem(self.document), HTML_MINIFICATION)
         if {'latex', 'xelatex', 'lualatex'} & formats:
-            highlighter = make_highlighter("latex", "coq", style)
+            highlighter = make_highlighter("latex", None, style)
             return "latex", latex.LatexGenerator(highlighter)
         raise NotImplementedError("Unknown output format")
 
@@ -613,14 +625,25 @@ class AlectryonPostTransform(OneTimeTransform):
             cls.replace_one(node, fmt, node.details["path"], generator.gen_part,
                             target, inline=node.details["inline"])
 
-    def _apply(self, **_kwargs):
-        fmt, generator = self.init_generator()
-        with added_tokens(alectryon_state(self.document).config.tokens_by_lang["coq"], lang="coq"):
-            for node in self.document.traverse(alectryon_pending_io):
-                self.replace_one_io(node, fmt, generator)
-            for node in self.document.traverse(alectryon_pending_quote):
-                self.replace_one_quote(node, fmt, generator)
+    @classmethod
+    def replace_io_or_quote(cls, node, fmt, generator):
+        if isinstance(node, alectryon_pending_io):
+            cls.replace_one_io(node, fmt, generator)
+        elif isinstance(node, alectryon_pending_quote):
+            cls.replace_one_quote(node, fmt, generator)
+        else:
+            assert False
 
+    def _apply(self, **_kwargs):
+        io_or_quote = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_quote))
+        all_pending = self.document.traverse(io_or_quote)
+        fmt, generator = self.init_generator() # Init once so gensym is shared
+        for lang, pending_nodes in by_lang(all_pending).items():
+            config = alectryon_state(self.document).config
+            with generator.highlighter.override(lang=lang):
+                with added_tokens(config.tokens_by_lang[lang], lang):
+                    for node in pending_nodes:
+                        self.replace_io_or_quote(node, fmt, generator)
 
 # Directives
 # ----------
@@ -684,10 +707,8 @@ class AlectryonDirective(Directive): # pylint: disable=abstract-method
         except ValueError as e:
             return default, self._error(str(e))
 
-class CoqDirective(AlectryonDirective):
+class ProverDirective(AlectryonDirective):
     """Highlight and annotate a Coq snippet."""
-    name = "coq"
-
     required_arguments = 0
     optional_arguments = 1
     final_argument_whitespace = True
@@ -722,7 +743,7 @@ class CoqDirective(AlectryonDirective):
         contents = PosStr(contents, pos, indent)
 
         roles.set_classes(self.options)
-        details = {"directive_annots": annots, "contents": contents}
+        details = {"lang": self.name, "directive_annots": annots, "contents": contents}
         pending = alectryon_pending(AlectryonTransform, details=details,
                                     rawsource=self.header, **self.options)
 
@@ -731,6 +752,10 @@ class CoqDirective(AlectryonDirective):
         document.note_pending(pending)
 
         return [pending] + errors
+
+class CoqDirective(ProverDirective):
+    """Highlight and annotate a Coq snippet."""
+    name = "coq"
 
 class AlectryonToggleDirective(Directive):
     """Display a checkbox allowing readers to show all output at once."""
@@ -846,14 +871,17 @@ def alectryon_bubble(role, rawtext, text, lineno, inliner,
 
 alectryon_bubble.name = "alectryon-bubble" # type: ignore
 
-def coq_code_role(role, rawtext, text, lineno, inliner,
+def mk_code_role(lang):
+    def code_role(role, rawtext, text, lineno, inliner,
                   options: Dict[str, Any]={}, content=[]):
-    options = {**options, "language": "coq"}
-    roles.set_classes(options)
-    options.setdefault("classes", []).append("highlight")
-    return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
+        options = {**options, "language": lang}
+        roles.set_classes(options)
+        options.setdefault("classes", []).append("highlight")
+        return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
+    code_role.name = lang
+    return code_role
 
-coq_code_role.name = "coq" # type: ignore
+coq_code_role = mk_code_role("coq")
 
 COQ_ID_RE = re.compile(r"^(?P<title>.*?)(?:\s*<(?P<target>.*)>)?$")
 COQ_IDENT_DB_URLS = [
@@ -1216,9 +1244,9 @@ def make_HtmlTranslator(base):
             self.body_prefix.append('<div class="{}">'.format(cls))
 
             if self.settings.alectryon_banner:
-                generator = alectryon_state(document).generator
+                generators = alectryon_state(document).generators
                 include_vernums = document.settings.alectryon_vernums
-                self.body_prefix.append(html.gen_banner(generator, include_vernums))
+                self.body_prefix.append(html.gen_banner(generators, include_vernums))
 
             self.body_suffix.insert(0, '</div>')
     return Translator
@@ -1434,17 +1462,21 @@ def register():
     for role in ROLES:
         roles.register_canonical_role(role.name, role)
 
-def set_default_role():
-    """Set the default role (the one used with single backticks) to :coq:."""
-    roles.register_canonical_role(coq_code_role.name, coq_code_role)
-    roles.DEFAULT_INTERPRETED_ROLE = coq_code_role.name # type: ignore
+def set_default_role(lang="coq"):
+    """Set the default role (the one used with single backticks) to :``lang``:."""
+    for role in ROLES:
+        if role.name == lang:
+            roles.register_canonical_role(coq_code_role.name, coq_code_role)
+            roles.DEFAULT_INTERPRETED_ROLE = coq_code_role.name # type: ignore
+            return
+    raise ValueError("Unsupported language: {}".format(lang))
 
-def setup():
-    """Prepare docutils for writing Coq documents with Alectryon.
+def setup(lang="coq"):
+    """Prepare docutils for writing documents with Alectryon.
 
     This includes registering Alectryon's role and directives, loading an
-    improved Coq highlighter, and setting the default role to ``:coq:``.
+    improved Coq highlighter, and setting the default role to ``:lang:``.
     """
     register()
-    set_default_role()
+    set_default_role(lang)
     replace_builtin_coq_lexer()

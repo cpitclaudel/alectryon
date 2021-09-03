@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 import json
 import pickle
@@ -29,7 +29,6 @@ from importlib import import_module
 from os import path, makedirs, unlink, fspath
 
 from . import core
-from .core import GeneratorInfo
 
 COMMENTS_RE = re.compile(r"^\s*//.*$", re.MULTILINE)
 def uncomment(s):
@@ -215,24 +214,92 @@ def deprecated(fn, old_name):
 json_of_annotated = deprecated(PlainSerializer.encode, "json_of_annotated")
 annotated_of_json = deprecated(PlainSerializer.decode, "annotated_of_json")
 
-class BaseCache:
-    generator: Optional[GeneratorInfo]
+def validate_metadata(metadata, reference, cache_file):
+    if metadata != reference:
+        MSG = "Outdated metadata in {} ({} != {})"
+        print(MSG.format(cache_file, metadata, reference))
+        return False
+    return True
 
-    def get(self, chunks):
-        raise NotImplementedError
+def validate_data(data, reference, cache_file):
+    if data != reference:
+        MSG = "Outdated contents in {}: recomputing"
+        print(MSG.format(cache_file))
+        return False
+    return True
 
-    def put(self, chunks, annotated, generator):
-        raise NotImplementedError
+class Cache:
+    def __init__(self, data, cache_file):
+        self.data = data
+        self.cache_file = cache_file
+        self.serializer = PlainSerializer
+
+    @staticmethod
+    def normalize(obj: Any) -> Any:
+        if isinstance(obj, (list, tuple)):
+            return [Cache.normalize(o) for o in obj]
+        if isinstance(obj, dict):
+            return {k: Cache.normalize(v) for (k, v) in obj.items()}
+        return obj
+
+    def _validate(self, chunks, metadata):
+        # Not that we validate "metadata" but not "generator".  This is to prevent
+        # Coq upgrades from invalidating caches.  It's easy to force invalidation
+        # by hand (delete the caches), whereas automatic invalidation on Coq
+        # upgrades would make it a pain to keep a collection of examples (say, a
+        # blog) with dependencies on different libraries and Coq versions.
+        return (self.data is not None
+           and validate_metadata(self.data["metadata"], metadata, self.cache_file)
+           and validate_data(self.data.get("chunks"), chunks, self.cache_file))
+
+    def get(self, chunks, metadata):
+        if not self._validate(self.normalize(chunks), self.normalize(metadata)):
+            return None
+        return self.serializer.decode(self.data.get("annotated"))
+
+    @property
+    def generator(self):
+        return core.GeneratorInfo(*self.data.get("generator", ("Coq+SerAPI", "??")))
+
+    def put(self, chunks, metadata, annotated, generator):
+        self.data = {"generator": self.normalize(generator),
+                     "metadata": self.normalize(metadata),
+                     "chunks": list(chunks),
+                     "annotated": self.serializer.encode(annotated)}
 
     def update(self, chunks, driver):
-        annotated = self.get(chunks)
+        annotated = self.get(chunks, driver.metadata)
         if annotated is None:
             annotated = driver.annotate(chunks)
-            self.put(chunks, annotated, driver.version_info())
+            self.put(chunks, driver.metadata, annotated, driver.version_info())
         return annotated
 
-class FileCache(BaseCache):
-    CACHE_VERSION = "1"
+class BaseCacheSet:
+    def __enter__(self):
+        raise NotImplementedError()
+    def __exit__(self, *_exn):
+        raise NotImplementedError()
+    def __getitem__(self, lang):
+        raise NotImplementedError()
+
+class TrivialCacheSet(BaseCacheSet):
+    def __init__(self, *_args):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *_exn):
+        return False
+
+    def __getitem__(self, lang):
+        return Cache(None, None)
+
+class FileCacheSet(BaseCacheSet):
+    CACHE_VERSION = "2"
+
+    LANG_PREFIX = "&"
+    METADATA = {"cache_version": CACHE_VERSION}
 
     KNOWN_COMPRESSIONS = {
         "none": ("builtins", ""),
@@ -240,70 +307,85 @@ class FileCache(BaseCache):
         "xz": ("lzma", ".xz"),
     }
 
-    def __init__(self, cache_root: str, doc_path: str,
-                 metadata: Dict[str, Any], cache_compression):
-        self.serializer = PlainSerializer
+    def __init__(self, cache_root: str, doc_path: str, cache_compression):
         self.cache_root = path.realpath(fspath(cache_root))
         self.wanted_compression = cache_compression or "none"
         if self.wanted_compression not in self.KNOWN_COMPRESSIONS:
             raise ValueError("Unsupported cache compression: {}".format(cache_compression))
 
-        doc_path = fspath(doc_path)
-        doc_root = path.commonpath((self.cache_root, path.realpath(doc_path)))
+        doc_path = path.realpath(fspath(doc_path))
+        doc_root = path.commonpath((self.cache_root, doc_path))
         self.cache_rel_file = path.relpath(doc_path, doc_root) + ".cache"
         self.cache_file = path.join(cache_root, self.cache_rel_file)
         self.cache_dir = path.dirname(self.cache_file)
         makedirs(self.cache_dir, exist_ok=True)
 
-        self.metadata = self.normalize(metadata)
-        self.metadata["cache_version"] = self.CACHE_VERSION
+        self.ondisk_compression, self.js = self._read()
+        self.caches = self._read_caches() if self._validate() else {}
 
-        self.ondisk_compression, self.data = self._read()
+    def __enter__(self):
+        return self
 
-    @staticmethod
-    def normalize(obj: Any) -> Any:
-        if isinstance(obj, (list, tuple)):
-            return [FileCache.normalize(o) for o in obj]
-        if isinstance(obj, dict):
-            return {k: FileCache.normalize(v) for (k, v) in obj.items()}
-        return obj
+    def __exit__(self, *_exn):
+        self._write()
+        return False
+
+    @classmethod
+    def _upgrade(cls, contents):
+        """Upgrade old cache contents to the latest cache version.
+
+        (Breaking compatibility with old caches is undesirable, because such
+        caches may have been created with old versions of Coq or old source code
+        and may not be easy to rebuild, so we prefer to have an upgrade path).
+        """
+        metadata = contents.get("metadata", {})
+        version = metadata.get("cache_version")
+        if version == "1":
+            metadata.pop("cache_version", None)
+            return {"metadata": cls.METADATA,
+                    **{cls.LANG_PREFIX + "coq":
+                       {"generator": contents.pop("generator"),
+                        "metadata": contents.pop("metadata"),
+                        **contents}}}
+        return contents
+
+    def _read_caches(self):
+        assert self.js is not None
+        return {key[len(self.LANG_PREFIX):]: Cache(data, self.cache_rel_file)
+                for key, data in sorted(self.js.items())
+                if key.startswith(self.LANG_PREFIX)}
 
     def _open(self, compression, mode):
         mod, ext = self.KNOWN_COMPRESSIONS[compression]
         return import_module(mod).open(self.cache_file + ext, mode=mode) # type: ignore
 
-    def _validate(self, reference):
-        if self.data is None:
-            return False
-        metadata = self.data.get("metadata")
-        if self.metadata != metadata:
-            MSG = "Outdated metadata in {} ({} != {}): recomputing annotations"
-            print(MSG.format(self.cache_rel_file, self.metadata, metadata))
-            return False
-        reference = self.normalize(reference)
-        if reference is not None and reference != self.data.get("chunks"):
-            MSG = "Outdated contents in {}: recomputing"
-            print(MSG.format(self.cache_rel_file))
-            return False
-        return True
-
     def _read(self):
         for compression in self.KNOWN_COMPRESSIONS:
             try:
                 with self._open(compression, mode="rt") as cache:
-                    return compression, self.normalize(json.load(cache))
+                    return compression, self._upgrade(loads(cache.read()))
             except FileNotFoundError:
                 pass
         return None, None
 
-    def get(self, chunks):
-        if not self._validate(chunks):
-            return None
-        return self.serializer.decode(self.data.get("annotated"))
+    def _validate(self):
+        return self.js and validate_metadata(self.js["metadata"], self.METADATA,
+                                           self.cache_rel_file)
 
-    @property
-    def generator(self):
-        return core.GeneratorInfo(*self.data.get("generator", ("Coq+SerAPI", "??")))
+    def __getitem__(self, lang):
+        if lang not in self.caches:
+            self.caches[lang] = Cache(None, self.cache_rel_file)
+        return self.caches[lang]
+
+    def _check_recompression(self):
+        needed = self.ondisk_compression != self.wanted_compression
+        if needed:
+            MSG = "Recompression requested for {} " \
+                "(was {}, now {}): rewriting cache file"
+            print(MSG.format(self.cache_rel_file,
+                             self.ondisk_compression,
+                             self.wanted_compression))
+        return needed
 
     def _delete_old_caches(self):
         for _mod, ext in self.KNOWN_COMPRESSIONS.values():
@@ -312,37 +394,19 @@ class FileCache(BaseCache):
             except FileNotFoundError:
                 pass
 
-    def _write(self):
+    def _force_write(self, js):
         self._delete_old_caches()
         with self._open(self.wanted_compression, mode="wt") as cache:
-            json.dump(self.data, cache, indent=2)
-        self.ondisk_compression = self.wanted_compression
+            json.dump(js, cache, indent=2)
+        self.js, self.ondisk_compression = js, self.wanted_compression
 
-    def put(self, chunks, annotated, generator):
-        self.data = {"generator": generator,
-                     "metadata": self.metadata,
-                     "chunks": list(chunks),
-                     "annotated": self.serializer.encode(annotated)}
-        self._write()
+    def _write(self):
+        js = { "metadata": self.METADATA,
+               **{ self.LANG_PREFIX + lang: c.data
+                   for (lang, c) in sorted(self.caches.items()) } }
+        if js != self.js or self._check_recompression():
+            self._force_write(js)
 
-    def update(self, *args, **kwargs):
-        annotated = super().update(*args, **kwargs)
-        if self.ondisk_compression != self.wanted_compression:
-            MSG = "Recompression requested for {} (was {}, now {}): rewriting cache file"
-            print(MSG.format(self.cache_rel_file, self.ondisk_compression, self.wanted_compression))
-            self._write()
-        return annotated
-
-class DummyCache(BaseCache):
-    def __init__(self, *_args):
-        self.generator = None
-
-    def get(self, *_args): # pylint: disable=no-self-use
-        return None
-
-    def put(self, _chunks, _annotated, generator):
-        self.generator = generator
-
-def Cache(cache_root, doc_path, metadata, cache_compression) -> BaseCache:
-    cls = FileCache if cache_root is not None else DummyCache
-    return cls(cache_root, doc_path, metadata, cache_compression)
+def CacheSet(cache_root, doc_path, cache_compression) -> BaseCacheSet:
+    cls = FileCacheSet if cache_root is not None else TrivialCacheSet
+    return cls(cache_root, doc_path, cache_compression)

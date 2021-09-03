@@ -36,12 +36,12 @@ import docutils.parsers.rst.directives.body # type: ignore # pylint: disable=unu
 
 ## Directives
 
-class CoqDirective(directives.body.CodeBlock):
+class ProverDirective(directives.body.CodeBlock):
     final_argument_whitespace = True
     option_spec: Dict[str, Any] = {}
 
     def run(self):
-        self.arguments = ["coq"] # Ignore arguments
+        self.arguments = [self.name] # Ignore arguments
         return super().run()
 
 class NoOp(Directive):
@@ -55,7 +55,7 @@ class Id(Directive):
         return [nodes.literal("".join(self.content))]
 
 # Treat .. coq:: as a regular code block and ignore .. alectryon-toggle::
-DIRECTIVES = {"coq": CoqDirective,
+DIRECTIVES = {"coq": ProverDirective,
               "alectryon-toggle": NoOp,
               "exercise": Id,
               "directive": NoOp,
@@ -64,9 +64,13 @@ DIRECTIVES = {"coq": CoqDirective,
 
 ## Map :coq: to plain literals
 
-def coq_code_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
-    options = {**options.copy(), "language": "coq", "classes": "highlight"}
-    return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
+def custom_code_role(lang):
+    def _code_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+        options = {**options, "language": lang, "classes": "highlight"}
+        return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
+    return _code_role
+
+coq_code_role = custom_code_role("coq")
 
 def no_op(role, rawtext, text, lineno, inliner, options={}, content=[]):
     return roles.generic_custom_role(
