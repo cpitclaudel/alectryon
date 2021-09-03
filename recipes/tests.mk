@@ -194,6 +194,11 @@ _output/tests/unit.py.out: tests/unit.py | _output/tests/
 tests_targets += _output/tests/unit.py.out
 
 # Coq → reST
+_output/tests/unterminated.rst.out: tests/unterminated.rst
+	$(alectryon) $< --coq-driver sertop_noexec > $@ 2>&1; echo "exit: $$?" >> $@
+tests_targets += _output/tests/unterminated.rst.out
+
+# Coq → reST
 _output/tests/unterminated.v.out: tests/unterminated.v
 	$(alectryon) $< --backend rst > $@ 2>&1;\
         echo "exit: $$?" >> $@
