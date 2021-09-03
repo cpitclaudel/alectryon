@@ -262,6 +262,14 @@ class Document:
 
     @staticmethod
     def split_fragment(fr, cutoff):
+        """Split `fr` at position `cutoff`.
+
+        >>> Document.split_fragment(Text("abcxyz"), 3)
+        (Text(contents='abc'), Text(contents='xyz'))
+        >>> Document.split_fragment(Sentence("abcxyz", [Message("out")], []), 3)
+        (Sentence(contents='abc', messages=[], goals=[]),
+         Sentence(contents='xyz', messages=[Message(contents='out')], goals=[]))
+        """
         before = fr.contents[:cutoff]
         after = fr.contents[cutoff:]
         if isinstance(fr, Text):
