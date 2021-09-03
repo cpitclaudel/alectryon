@@ -20,6 +20,7 @@
 
 import re
 import unicodedata
+from pathlib import Path
 
 Pattern = type(re.compile("")) # LATER (3.7+): re.Pattern
 
@@ -60,19 +61,24 @@ class CoqIdents:
     def sub_chars(cls, chars, allowed):
         return "".join(c if cls.valid_char(c, allowed) else "_" for c in chars)
 
+    SUFFIXES = re.compile(r"(?:[.](?:v|rst))+\Z")
+
     @classmethod
-    def topfile_of_fpath(cls, fpath) -> str:
+    def topfile_of_fpath(cls, fpath: Path) -> str:
         """Normalize `fpath` to make its ``name`` a valid Coq identifier.
 
-        >>> from pathlib import Path
         >>> str(CoqIdents.topfile_of_fpath(Path("dir+ex/f:𝖴🄽𝓘ⓒ𝕆Ⓓ𝙴.v")))
         'f_𝖴_𝓘_𝕆_𝙴.v'
+        >>> str(CoqIdents.topfile_of_fpath(Path("/tmp/abc.def.v.rst")))
+        'abc_def.v'
+        >>> str(CoqIdents.topfile_of_fpath(Path("/tmp/abc.def.rst.v")))
+        'abc_def.v'
         >>> str(CoqIdents.topfile_of_fpath(Path("-")))
         'Top.v'
         """
-        stem = fpath.stem
-        if stem in ("-", ""):
+        if fpath.name in ("-", ""):
             return "Top.v"
+        stem = cls.SUFFIXES.sub("", fpath.name)
         stem = (cls.sub_chars(stem[0], cls.COQ_IDENT_START) +
                 cls.sub_chars(stem[1:], cls.COQ_IDENT_PART))
-        return stem + fpath.suffix
+        return stem + ".v"

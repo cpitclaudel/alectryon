@@ -32,6 +32,11 @@ _output/tests/cli_flags.txt: tests/cli_flags.rst
 	$(alectryon) $< -o - >/dev/null --debug --traceback --expect-unexpected --long-line-threshold=-1 -I . -R ../recipes/ custom_flag_recipes -Q ../alectryon/ custom_flag_alectryon_tests; echo "exit: $$?" > $@
 tests_targets += _output/tests/cli_flags.txt
 
+# ReST → HTML
+_output/tests/coqc_time_error.out: tests/coqc_time_error.rst
+	$(alectryon) --coq-driver=coqc_time $< > $@ 2>&1; echo "exit: $$?" >> $@
+tests_targets += _output/tests/coqc_time_error.out
+
 # Coq → HTML
 _output/tests/corner_cases.html: tests/corner_cases.rst
 	$(alectryon) --stdin-filename $< --frontend rst -o $@ - < $<

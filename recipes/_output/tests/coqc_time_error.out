@@ -1,0 +1,4 @@
+tests/coqc_time_error.rst:14: (ERROR/3) coqc exited with code 1:
+   Error: There are pending proofs: Unnamed_thm.
+
+exit: 13
