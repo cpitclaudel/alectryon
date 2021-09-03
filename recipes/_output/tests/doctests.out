@@ -1,3 +1,5 @@
+README.rst
+Doctest: README.rst ... ok
 topfile_of_fpath (alectryon.coq.CoqIdents)
 Doctest: alectryon.coq.CoqIdents.topfile_of_fpath ... ok
 annotate (alectryon.coqc_time)
@@ -52,6 +54,6 @@ partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 26 tests
+Ran 27 tests
 
 OK
