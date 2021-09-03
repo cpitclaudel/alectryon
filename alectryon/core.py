@@ -151,6 +151,12 @@ class Asset(str):
         self.gen = gen
 
 class Position(namedtuple("Position", "fpath line col")):
+    @property
+    def beg(self):
+        return self
+    @property
+    def end(self):
+        return None
     def as_header(self):
         return "{}:{}:{}:".format(self.fpath or "<unknown>", self.line, self.col)
 
@@ -226,7 +232,8 @@ class Document:
     chunks before processing them.
     """
     def __init__(self, chunks, chunk_separator):
-        self.with_separator = [c + chunk_separator for c in chunks]
+        self.chunks = list(chunks)
+        self.with_separator = [c + chunk_separator for c in self.chunks]
         self.contents = "".join(self.with_separator)
         self.separator = chunk_separator
 

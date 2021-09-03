@@ -332,9 +332,9 @@ class DocutilsObserver(core.Observer):
 
     def _notify(self, n: core.Notification):
         beg, end = n.location.beg, n.location.end
+        kwargs = dict(end_line=end.line, end_column=end.col) if end else {}
         self.document.reporter.system_message(
-            n.level, n.message, line=beg.line, column=beg.col,
-            end_line=end.line, end_column=end.col)
+            n.level, n.message, line=beg.line, column=beg.col, **kwargs)
 
 class AlectryonTransform(OneTimeTransform):
     default_priority = 800
