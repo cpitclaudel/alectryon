@@ -20,19 +20,19 @@
     [
         {
             "_type": "text",
-            "contents": "(* $ alectryon fragments.json # JSON \u2192 JSON; produces \u2018fragments.io.json\u2019 *)"
+            "contents": "(* $ alectryon fragments.v.json # JSON \u2192 JSON; produces \u2018fragments.v.io.json\u2019 *)"
         }
     ],
     [
         {
             "_type": "text",
-            "contents": "(* $ alectryon fragments.json --backend snippets-html # JSON \u2192 HTML; produces \u2018fragments.snippets.html\u2019 *)"
+            "contents": "(* $ alectryon fragments.v.json --backend snippets-html # JSON \u2192 HTML; produces \u2018fragments.snippets.html\u2019 *)"
         }
     ],
     [
         {
             "_type": "text",
-            "contents": "(* $ alectryon fragments.json --backend snippets-latex # JSON \u2192 LaTeX; produces \u2018fragments.snippets.tex\u2019 *)"
+            "contents": "(* $ alectryon fragments.v.json --backend snippets-latex # JSON \u2192 LaTeX; produces \u2018fragments.snippets.tex\u2019 *)"
         }
     ],
     [

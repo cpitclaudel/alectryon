@@ -10,7 +10,7 @@ $PYTHON -m alectryon.literate -; echo $?
 $PYTHON -m alectryon.literate xyz.unsupported; echo $?
 $ALECTRYON xyz.unsupported; echo $?
 $ALECTRYON xyz.v -o xyz.unsupported; echo $?
-$ALECTRYON xyz.json -o xyz.rst; echo $?
-$ALECTRYON a.json b.json -o c.json; echo $?
-$ALECTRYON a.json --stdin-filename b.json; echo $?
-$ALECTRYON a.json --mark-point not_an_int ⊙; echo $?
+$ALECTRYON xyz.v.json -o xyz.rst; echo $?
+$ALECTRYON a.v.json b.v.json -o c.v.json; echo $?
+$ALECTRYON a.v.json --stdin-filename b.v.json; echo $?
+$ALECTRYON a.v.json --mark-point not_an_int ⊙; echo $?

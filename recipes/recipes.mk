@@ -55,15 +55,15 @@ _output/custom_highlighting.with_driver.html: custom_highlighting.v | _output/
 recipes_targets += _output/custom_highlighting.with_driver.html
 
 # JSON → JSON
-_output/fragments.io.json: fragments.json
+_output/fragments.v.io.json: fragments.v.json
 	$(alectryon) $<
-recipes_targets += _output/fragments.io.json
+recipes_targets += _output/fragments.v.io.json
 # JSON → HTML
-_output/fragments.snippets.html: fragments.json
+_output/fragments.snippets.html: fragments.v.json
 	$(alectryon) $< --backend snippets-html
 recipes_targets += _output/fragments.snippets.html
 # JSON → LaTeX
-_output/fragments.snippets.tex: fragments.json
+_output/fragments.snippets.tex: fragments.v.json
 	$(alectryon) $< --backend snippets-latex
 recipes_targets += _output/fragments.snippets.tex
 

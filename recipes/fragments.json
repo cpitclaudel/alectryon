@@ -1,8 +1,0 @@
-["(* Alectyron can process individual chunks of Coq Code fed to in in a JSON file. *)",
- "(* The output is a new JSON file in which each sentence has been annotated with Coq's output. *)",
- "(* To compile: *)",
- "(* $ alectryon fragments.json # JSON → JSON; produces ‘fragments.io.json’ *)",
- "(* $ alectryon fragments.json --backend snippets-html # JSON → HTML; produces ‘fragments.snippets.html’ *)",
- "(* $ alectryon fragments.json --backend snippets-latex # JSON → LaTeX; produces ‘fragments.snippets.tex’ *)",
- "Example xyz (H: False): True. (* ... *) exact I. Qed.",
- "Print xyz."]

@@ -24,6 +24,7 @@ import argparse
 import inspect
 import os
 import os.path
+import re
 import shutil
 import sys
 
@@ -42,7 +43,7 @@ def read_json(_, fpath, input_is_stdin):
     from .json import loads
     return loads(read_plain(None, fpath, input_is_stdin))
 
-def parse_coq_plain(contents, fpath):
+def parse_plain(contents, fpath):
     return [core.PosStr(contents, core.Position(fpath, 1, 1), 0)]
 
 def _catch_parsing_errors(fpath, k, *args):
@@ -52,13 +53,19 @@ def _catch_parsing_errors(fpath, k, *args):
     except ParsingError as e:
         raise ValueError("{}: {}".format(fpath, e)) from e
 
-def coq_to_rst(coq, fpath, point, marker):
-    from .literate import coq2rst_marked
-    return _catch_parsing_errors(fpath, coq2rst_marked, coq, point, marker)
+def code_to_rst(code, fpath, point, marker, input_language):
+    if input_language == "coq":
+        from .literate import coq2rst_marked as converter
+    else:
+        assert False
+    return _catch_parsing_errors(fpath, converter, code, point, marker)
 
-def rst_to_coq(coq, fpath, point, marker):
-    from .literate import rst2coq_marked
-    return _catch_parsing_errors(fpath, rst2coq_marked, coq, point, marker)
+def rst_to_code(rst, fpath, point, marker, backend):
+    if backend in ("coq", "coq+rst"):
+        from .literate import rst2coq_marked as converter
+    else:
+        assert False
+    return _catch_parsing_errors(fpath, converter, rst, point, marker)
 
 def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
                     input_language, driver_name, driver_args, exit_code):
@@ -166,7 +173,6 @@ def _docutils_cmdline(description, frontend, backend, dialect):
         description="{} {}".format(description, default_description))
 
 def _scrub_fname(fname):
-    import re
     return re.sub("[^-a-zA-Z0-9]", "-", fname)
 
 def apply_transforms(annotated, input_language):
@@ -325,7 +331,7 @@ def dump_html_standalone(snippets, fname, webpage_style,
 
     return doc.render(pretty=False)
 
-def prepare_json(obj):
+def encode_json(obj):
     from .json import PlainSerializer
     return PlainSerializer.encode(obj)
 
@@ -347,115 +353,128 @@ def dump_latex_snippets(snippets):
         s += "\n%% alectryon-block-end\n"
     return s
 
-def strip_extension(fname):
-    for ext in EXTENSIONS:
-        if fname.endswith(ext):
-            return fname[:-len(ext)]
-    return fname
-
-def write_output(ext, contents, fname, output, output_directory):
+def write_output(ext, contents, fname, output, output_directory, strip_re):
     if output == "-":
         sys.stdout.write(contents)
     else:
         if not output:
-            output = os.path.join(output_directory, strip_extension(fname) + ext)
+            fname = strip_re.sub("", fname)
+            output = os.path.join(output_directory, fname + ext)
         os.makedirs(os.path.dirname(os.path.abspath(output)), exist_ok=True)
         with open(output, mode="w", encoding="utf-8") as f:
             f.write(contents)
 
-def write_file(ext):
+def write_file(ext, strip):
+    strip_re = re.compile("(" + "|".join(re.escape(ext) for ext in strip) + ")*\\Z")
     return lambda contents, fname, output, output_directory: \
-        write_output(ext, contents, fname, output, output_directory)
+        write_output(ext, contents, fname, output,
+                     output_directory, strip_re=strip_re)
 
 # No ‘apply_transforms’ in JSON pipelines: (we save the prover output without
 # modifications).
 PIPELINES = {
-    'json': {
+    'coq.json': {
         'json':
-        (read_json, annotate_chunks,
-         prepare_json, dump_json, write_file(".io.json")),
+        (read_json, annotate_chunks, encode_json, dump_json,
+         write_file(".io.json", strip=(".json",))),
         'snippets-html':
         (read_json, annotate_chunks, apply_transforms, gen_html_snippets,
-         dump_html_snippets, write_file(".snippets.html")),
+         dump_html_snippets, write_file(".snippets.html", strip=(".v", ".json",))),
         'snippets-latex':
         (read_json, annotate_chunks, apply_transforms, gen_latex_snippets,
-         dump_latex_snippets, write_file(".snippets.tex"))
+         dump_latex_snippets, write_file(".snippets.tex", strip=(".v", ".json",)))
     },
     'coq': {
         'null':
-        (read_plain, parse_coq_plain, annotate_chunks),
+        (read_plain, parse_plain, annotate_chunks),
         'webpage':
-        (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
+        (read_plain, parse_plain, annotate_chunks, apply_transforms,
          gen_html_snippets, dump_html_standalone, copy_assets,
-         write_file(".v.html")),
+         write_file(".html", strip=())),
         'snippets-html':
-        (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
-         gen_html_snippets, dump_html_snippets, write_file(".snippets.html")),
+        (read_plain, parse_plain, annotate_chunks, apply_transforms,
+         gen_html_snippets, dump_html_snippets,
+         write_file(".snippets.html", strip=(".v",))),
         'snippets-latex':
-        (read_plain, parse_coq_plain, annotate_chunks, apply_transforms,
-         gen_latex_snippets, dump_latex_snippets, write_file(".snippets.tex")),
+        (read_plain, parse_plain, annotate_chunks, apply_transforms,
+         gen_latex_snippets, dump_latex_snippets,
+         write_file(".snippets.tex", strip=(".v",))),
         'lint':
         (read_plain, register_docutils, gen_docutils,
-         write_file(".lint.json")),
+         write_file(".lint.json", strip=(".v",))),
         'rst':
-        (read_plain, coq_to_rst, write_file(".v.rst")),
+        (read_plain, code_to_rst, write_file(".rst", strip=())),
         'json':
-        (read_plain, parse_coq_plain, annotate_chunks, prepare_json,
-         dump_json, write_file(".io.json"))
+        (read_plain, parse_plain, annotate_chunks, encode_json, dump_json,
+         write_file(".io.json", strip=()))
     },
     'coq+rst': {
         'webpage':
         (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".html")),
+         write_file(".html", strip=(".v", ".rst"))),
         'latex':
         (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".tex")),
+         write_file(".tex", strip=(".v", ".rst"))),
         'lint':
         (read_plain, register_docutils, gen_docutils,
-         write_file(".lint.json")),
+         write_file(".lint.json", strip=(".v", ".rst"))),
         'rst':
-        (read_plain, coq_to_rst, write_file(".v.rst"))
+        (read_plain, code_to_rst, write_file(".v.rst", strip=(".v", ".rst"))),
     },
     'coqdoc': {
-        'webpage': # transforms applied later
-        (read_plain, parse_coq_plain, annotate_chunks,
-         gen_html_snippets_with_coqdoc, dump_html_standalone,
-         copy_assets, write_file(".html")),
+        'webpage':
+        (read_plain, parse_plain, annotate_chunks, # transforms applied later
+         gen_html_snippets_with_coqdoc, dump_html_standalone, copy_assets,
+         write_file(".html", strip=(".v",))),
     },
     'rst': {
         'webpage':
         (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".html")),
+         write_file(".html", strip=(".v", ".rst"))),
         'latex':
         (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".tex")),
+         write_file(".tex", strip=(".v", ".rst"))),
         'lint':
         (read_plain, register_docutils, gen_docutils,
-         write_file(".lint.json")),
+         write_file(".lint.json", strip=(".v", ".rst"))),
         'coq':
-        (read_plain, rst_to_coq, write_file(".v")),
+        (read_plain, rst_to_code,
+         write_file(".v", strip=(".v", ".rst"))),
         'coq+rst':
-        (read_plain, rst_to_coq, write_file(".v"))
+        (read_plain, rst_to_code,
+         write_file(".v", strip=(".v", ".rst")))
     },
     'md': {
         'webpage':
         (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".html")),
+         write_file(".html", strip=(".v", ".md"))),
         'latex':
         (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".tex")),
+         write_file(".tex", strip=(".v", ".md"))),
         'lint':
         (read_plain, register_docutils, gen_docutils,
-         write_file(".lint.json"))
+         write_file(".lint.json", strip=(".v", ".md")))
     }
 }
+
+## Compatibility
+
+def warn_renamed_json_pipeline(v, ctx):
+    print("WARNING: Frontend `json` is ambiguous; use `coq.json` instead.",
+          file=sys.stderr)
+    ctx["frontend"] = 'coq.json'
+    return v
+
+PIPELINES['json'] = {backend: (warn_renamed_json_pipeline, *steps)
+                     for (backend, steps) in PIPELINES['coq.json'].items()}
 
 # CLI
 # ===
 
-EXTENSIONS = ['.v', '.json', '.v.rst', '.rst', '.md']
 FRONTENDS_BY_EXTENSION = [
-    ('.v', 'coq+rst'), ('.json', 'json'), ('.rst', 'rst'), ('.md', 'md')
+    ('.v', 'coq+rst'), ('.v.json', 'coq.json'),
+    ('.rst', 'rst'), ('.md', 'md'),
+    ('.json', 'json'), # LATER: Remove
 ]
 BACKENDS_BY_EXTENSION = [
     ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst'),
@@ -467,19 +486,23 @@ BACKENDS_BY_EXTENSION = [
 ]
 
 DEFAULT_BACKENDS = {
-    'json': 'json',
+    'coq.json': 'json',
     'coq': 'webpage',
     'coqdoc': 'webpage',
     'coq+rst': 'webpage',
     'rst': 'webpage',
     'md': 'webpage',
+
+    'json': 'json', # LATER: Remove
 }
 
-INPUT_LANGUAGE = {
+INPUT_LANGUAGE_BY_FRONTEND = {
     "coq": "coq",
     "coqdoc": "coq",
     "coq+rst": "coq",
-    "json": "coq",
+    "coq.json": "coq",
+
+    "json": "coq", # LATER: Remove
 }
 
 def infer_mode(fpath, kind, arg, table):
@@ -771,8 +794,8 @@ def build_context(fpath, args, frontend, backend):
 
     dialect = args.backend_dialects.get(backend)
 
-    # These may be none (e.g. in reST mode)
-    input_language = INPUT_LANGUAGE.get(frontend)
+    # These may be ``None`` (e.g. in reST mode)
+    input_language = INPUT_LANGUAGE_BY_FRONTEND.get(frontend)
     driver_name = args.language_drivers.get(input_language)
     driver_args = args.driver_args_by_name.get(driver_name, ())
 
