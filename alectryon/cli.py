@@ -477,8 +477,8 @@ FRONTENDS_BY_EXTENSION = [
     ('.json', 'json'), # LATER: Remove
 ]
 BACKENDS_BY_EXTENSION = [
-    ('.v', 'coq'), ('.json', 'json'), ('.rst', 'rst'),
-    ('.lint.json', 'lint'),
+    ('.v', 'coq'), ('.rst', 'rst'),
+    ('.lint.json', 'lint'), ('.json', 'json'),
     ('.snippets.html', 'snippets-html'),
     ('.snippets.tex', 'snippets-latex'),
     ('.v.html', 'webpage'), ('.html', 'webpage'),
