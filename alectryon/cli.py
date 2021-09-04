@@ -374,6 +374,8 @@ def write_file(ext, strip):
 # modifications).
 PIPELINES = {
     'coq.json': {
+        'null':
+        (read_json, annotate_chunks),
         'json':
         (read_json, annotate_chunks, encode_json, dump_json,
          write_file(".io.json", strip=(".json",))),
