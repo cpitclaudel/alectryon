@@ -125,6 +125,11 @@ _output/tests/fatal_transform.v.out: tests/fatal_transform.v
 	$(alectryon) $< --frontend coq -o - > /dev/null 2> $@; echo "exit: $$?" >> $@
 tests_targets += _output/tests/fatal_transform.v.out
 
+# Frontend warnings
+_output/tests/frontend_warnings.json.out: tests/frontend_warnings.json
+	$(alectryon) $< -o - > $@ 2>&1
+tests_targets += _output/tests/frontend_warnings.json.out
+
 # Coq+reST → LaTeX
 _output/tests/latex_formatting.tex: tests/latex_formatting.v
 	$(alectryon) $< --backend latex

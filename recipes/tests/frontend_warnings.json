@@ -1,0 +1,4 @@
+// This file ensures that --frontend json is supported but with a warning::
+//
+//     $ alectryon frontend_warnings.json -o - > frontend_warnings.json.out 2>&1 # Frontend warnings; produces ‘frontend_warnings.json.out’
+["Axiom A: Type."]

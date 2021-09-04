@@ -1,0 +1,11 @@
+WARNING: Frontend `json` is ambiguous; use `coq.json` instead.
+[
+    [
+        {
+            "_type": "sentence",
+            "contents": "Axiom A: Type.",
+            "messages": [],
+            "goals": []
+        }
+    ]
+]
