@@ -21,7 +21,7 @@ Unreleased
 
 - Alectryon now accepts a ``--pygments-style`` flag to chose which Pygments code-highlighting style to use.  It also honors the Sphinx configuration option ``pygments_style``. [GH-58] [63539edd]
 
-- Alectryon now exists with an informative error code (``10`` + the level of the most severe Docutils error). [GH-57] [dffde22c]
+- Alectryon now exits with an informative error code (``10`` + the level of the most severe Docutils error). [GH-57] [dffde22c]
 
 Breaking changes
 ----------------
