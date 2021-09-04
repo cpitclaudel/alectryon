@@ -335,6 +335,10 @@ def encode_json(obj):
     from .json import PlainSerializer
     return PlainSerializer.encode(obj)
 
+def decode_json(obj):
+    from .json import PlainSerializer
+    return PlainSerializer.decode(obj)
+
 def dump_json(js):
     from json import dumps
     return dumps(js, indent=4)
@@ -385,6 +389,22 @@ PIPELINES = {
         'snippets-latex':
         (read_json, annotate_chunks, apply_transforms, gen_latex_snippets,
          dump_latex_snippets, write_file(".snippets.tex", strip=(".v", ".json",)))
+    },
+    'coq.io.json': {
+        'null':
+        (read_json, decode_json),
+        'snippets-html':
+        (read_json, decode_json, apply_transforms,
+         gen_html_snippets, dump_html_snippets,
+         write_file(".snippets.html", strip=(".v", ".io", ".json"))),
+        'snippets-latex':
+        (read_json, decode_json, apply_transforms,
+         gen_latex_snippets, dump_latex_snippets,
+         write_file(".snippets.tex", strip=(".v", ".io", ".json"))),
+        'webpage':
+        (read_json, decode_json, apply_transforms, gen_html_snippets,
+         dump_html_standalone, copy_assets,
+         write_file(".html", strip=(".io", ".json",))),
     },
     'coq': {
         'null':
@@ -474,7 +494,7 @@ PIPELINES['json'] = {backend: (warn_renamed_json_pipeline, *steps)
 # ===
 
 FRONTENDS_BY_EXTENSION = [
-    ('.v', 'coq+rst'), ('.v.json', 'coq.json'),
+    ('.v', 'coq+rst'), ('.v.json', 'coq.json'), ('.v.io.json', 'coq.io.json'),
     ('.rst', 'rst'), ('.md', 'md'),
     ('.json', 'json'), # LATER: Remove
 ]
@@ -489,6 +509,7 @@ BACKENDS_BY_EXTENSION = [
 
 DEFAULT_BACKENDS = {
     'coq.json': 'json',
+    'coq.io.json': 'webpage',
     'coq': 'webpage',
     'coqdoc': 'webpage',
     'coq+rst': 'webpage',
@@ -503,6 +524,7 @@ INPUT_LANGUAGE_BY_FRONTEND = {
     "coqdoc": "coq",
     "coq+rst": "coq",
     "coq.json": "coq",
+    "coq.io.json": "coq",
 
     "json": "coq", # LATER: Remove
 }

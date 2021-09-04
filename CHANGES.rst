@@ -5,6 +5,8 @@
 Unreleased
 ==========
 
+- JSON recordings (produced by ``--backend json``) can now be used as inputs to generate webpages or highlighted snippets.
+
 - Alectryon's cache format has changed to support documents with multiple languages.  Caches created with previous versions of Alectryon can still be read and do not need to be regenerated. [33f4c141]
 
 - Alectryon can now compile Coq documents without running proofs nor recording Coq's output.  This is useful for quick experimentation. [GH-52] [745633c4]

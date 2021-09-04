@@ -1,0 +1,67 @@
+[
+    [
+        {
+            "_type": "text",
+            "contents": "(* To compile:\n     alectryon recording.v --frontend coq --backend json\n       # Coq \u2192 JSON; produces \u2018recording.v.io.json\u2019 *)\n"
+        },
+        {
+            "_type": "sentence",
+            "contents": "Goal True.",
+            "messages": [],
+            "goals": [
+                {
+                    "_type": "goal",
+                    "name": null,
+                    "conclusion": "True",
+                    "hypotheses": []
+                }
+            ]
+        },
+        {
+            "_type": "text",
+            "contents": "\n  "
+        },
+        {
+            "_type": "sentence",
+            "contents": "idtac \"test\".",
+            "messages": [
+                {
+                    "_type": "message",
+                    "contents": "test"
+                }
+            ],
+            "goals": [
+                {
+                    "_type": "goal",
+                    "name": null,
+                    "conclusion": "True",
+                    "hypotheses": []
+                }
+            ]
+        },
+        {
+            "_type": "text",
+            "contents": "\n  "
+        },
+        {
+            "_type": "sentence",
+            "contents": "exact I.",
+            "messages": [],
+            "goals": []
+        },
+        {
+            "_type": "text",
+            "contents": "\n"
+        },
+        {
+            "_type": "sentence",
+            "contents": "Qed.",
+            "messages": [],
+            "goals": []
+        },
+        {
+            "_type": "text",
+            "contents": "\n"
+        }
+    ]
+]

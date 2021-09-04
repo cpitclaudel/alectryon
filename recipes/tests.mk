@@ -177,6 +177,24 @@ _output/tests/plain_cli.stdin.html: tests/plain_cli.rst | _output/tests/
 	echo "Check nat." | $(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage - > $@
 tests_targets += _output/tests/plain_cli.stdin.html
 
+# Coq → JSON
+_output/tests/recording.v.io.json: tests/recording.v
+	$(alectryon) $< --frontend coq --backend json
+tests_targets += _output/tests/recording.v.io.json
+
+# IO → HTML
+_output/tests/recording.v.html: tests/recording.v.io.json
+	$(alectryon) $<
+tests_targets += _output/tests/recording.v.html
+# IO → HTML
+_output/tests/recording.snippets.html: tests/recording.v.io.json
+	$(alectryon) $< --backend snippets-html
+tests_targets += _output/tests/recording.snippets.html
+# IO → LaTeX
+_output/tests/recording.snippets.tex: tests/recording.v.io.json
+	$(alectryon) $< --backend snippets-latex
+tests_targets += _output/tests/recording.snippets.tex
+
 # Coq → HTML
 _output/tests/screenshot.html: tests/screenshot.v
 	$(alectryon) $<
