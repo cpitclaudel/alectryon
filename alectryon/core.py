@@ -28,10 +28,11 @@ from pathlib import Path
 from shlex import quote
 from shutil import which
 from subprocess import PIPE
-import subprocess
-import textwrap
+import os
 import re
+import subprocess
 import sys
+import textwrap
 
 DEBUG = False
 TRACEBACK = False
@@ -112,6 +113,15 @@ class Gensym():
 @contextmanager
 def nullctx():
     yield
+
+@contextmanager
+def cwd(wd: Union[str, os.PathLike]):
+    old_cwd = os.getcwd()
+    os.chdir(wd)
+    try:
+        yield
+    finally:
+        os.chdir(old_cwd)
 
 class Backend:
     def __init__(self, highlighter):
@@ -270,7 +280,7 @@ class Document:
         bol = self.bol_offsets[zline - 1]
         return zline, offset - bol
 
-    def pos2offset(self, line, col) -> int:
+    def pos2offset(self, line: int, col: int) -> int:
         return self.bol_offsets[line - 1] + col
 
     @staticmethod

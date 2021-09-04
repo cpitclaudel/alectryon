@@ -20,10 +20,18 @@
 
 import json
 import re
+import tempfile
+import subprocess
 from collections import deque
+from pathlib import Path
+from typing import Dict, List, Any, Tuple, Set, Iterable
+from itertools import chain
 
-from .core import TextREPLDriver, Positioned, Document, \
-    Hypothesis, Goal, Message, Sentence, Text, debug
+from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, Message, Sentence,\
+    Text, debug, cwd, Position, Range
+
+AstNode = Any
+AstData = List[Dict[str, AstNode]]
 
 class ProtocolError(ValueError):
     pass
@@ -32,14 +40,19 @@ class Lean3(TextREPLDriver):
     BIN = "lean"
     NAME = "Lean3"
 
-    # We need --threads=0 because I didn't find a way to join() on all pending queries
-    REPL_ARGS = ("--server", "--threads=0")
+    # todo: threading
+    REPL_ARGS = ("--server", "--threads=0", "-M 4096", "-T 100000")  # use the same defaults as vscode
 
     ID = "lean3_repl"
     LANGUAGE = "lean3"
 
+    TACTIC_CONTAINERS = ["begin", "{"]
+    TACTIC_NODES = ["tactic", "<|>", ";"]
+    DONT_RECURSE_IN = ["by"] + TACTIC_NODES
+
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
+        self.ast: AstData = []
         self.seq_num = -1
 
     @classmethod
@@ -66,58 +79,62 @@ class Lean3(TextREPLDriver):
 
     def _query(self, command, **kwargs):
         self.seq_num += 1
-        query = { "seq_num": self.seq_num, "command": command,
-                  "file_name": self.fpath.name, **kwargs }
+        query = {"seq_num": self.seq_num, "command": command,
+                 "file_name": self.fpath.name, **kwargs}
         self._write(json.dumps(query, indent=None), "\n")
         response = self._wait()
         debug(response, '<< ')
         return response
 
-    MARKERS_RE = re.compile(r"(?:\b(?:begin|end)\b)|,")
+    def _get_children(self, node: AstNode) -> Set[int]:
+        if node and "children" in node and node["kind"] not in self.DONT_RECURSE_IN:
+            grandkids = (self._get_children(self.ast[idx]) for idx in node["children"])
+            return set(node["children"]).union(*grandkids)
+        return set()
 
-    @classmethod
-    def _find_markers(cls, doc):
-        for m in cls.MARKERS_RE.finditer(doc):
-            yield m.group(), m.span()
+    KIND_ENDER = {'begin': 'end', '{': '}'}
 
-    BOL = re.compile("^", re.MULTILINE)
+    def _get_key_locs(self) -> Iterable[Range]:
+        """
+        Gets the "key locations" in a Lean3 file. Will return their location; if they're a tactic container,
+        it splits these between begin and end.
+        """
+        for node in (self.ast[idx] for idx in set(chain.from_iterable(self._get_children(n) for n in self.ast))):
+            if node:
+                if node["kind"] in self.TACTIC_NODES:
+                    yield Position(self.fpath, node["start"][0], node["start"][1]),\
+                          Position(self.fpath, node["end"][0], node["end"][1])
+                elif node["kind"] in self.TACTIC_CONTAINERS:
+                    yield Position(self.fpath, node["start"][0], node["start"][1]),\
+                          Position(self.fpath, node["start"][0], node["start"][1] + len(node["kind"]))
 
-    # FIXME: handle nested begins
-    # FIXME: handle errors?
-    def _find_sentence_ranges(self, doc: Document):
-        tac_beg = None
-        for (marker, (marker_beg, marker_end)) in self._find_markers(doc.contents):
-            if tac_beg is not None and marker_beg < tac_beg:
-                # print(f"skipping over {doc[marker_beg - 10:marker_end]} "
-                #       f"as {marker_beg} < {tac_beg}")
-                continue # Skip over markers in comments
+                    # the reported end position is where the "d" of the "end" is, for example.
+                    assert 0 <= node["end"][1] - len(self.KIND_ENDER[node["kind"]])
 
-            # Read goal right past end of ``begin``/``end``, but on commas
-            # (commas can be directly followed by text).
-            goal_pos = marker_beg if marker == "," else marker_end
-            line, column = doc.offset2pos(goal_pos)
+                    yield Position(self.fpath, node["end"][0], node["end"][1] - len(self.KIND_ENDER[node["kind"]])),\
+                          Position(self.fpath, node["end"][0], node["end"][1])
 
-            info, _ = self._query("info", line=line, column=column)
-            record = info.get("record", {})
-            widget, state = record.get("widget"), record.get("state")
-            widget_beg = widget and doc.pos2offset(widget["line"], widget["column"])
+    def _get_state_at(self, pos: Position):
+        # LATER: Render using Lean widgets
+        info, _ = self._query("info", line=pos.line, column=pos.col)
+        record = info.get("record", {})
+        return record.get("state")
 
-            # print(f"[→] {marker=}, {marker_beg=}, {tac_beg=}")
-            if marker == "begin":
-                if tac_beg is not None:
-                    continue # FIXME needs a stack of begin/end
-                yield (marker_beg, marker_end, state)
-            elif marker == ",":
-                if widget_beg is None or tac_beg is None or widget_beg <= marker_end:
-                    continue # Skip over commas within terms
-                yield (tac_beg, marker_end, state)
-            elif marker == "end":
-                pass
-            else:
-                assert False
-            tac_beg = widget_beg
+    def _find_sentence_ranges(self, doc: Document) -> Tuple[int, int, Any]:
+        prev = Position(self.fpath, 0, 0)
+        to_yield = None
+        for (start, end) in sorted(self._get_key_locs()):
+            if end <= prev:
+                continue
+            prev = end
+            if to_yield:
+                yield (*to_yield, self._get_state_at(start))
+            to_yield = (doc.pos2offset(start), doc.pos2offset(end))
+        if to_yield:
+            yield (*to_yield, "")
 
     HYP_RE = re.compile(r"(?P<names>.*?)\s*:\s*(?P<type>(?:.*|\n )+)(?:,\n|\Z)")
+
     def _parse_hyps(self, hyps):
         for m in self.HYP_RE.finditer(hyps.strip()):
             names = m.group("names").split()
@@ -125,16 +142,17 @@ class Lean3(TextREPLDriver):
             yield Hypothesis(names, None, typ)
 
     CCL_SEP_RE = re.compile("(?P<hyps>.*?)^⊢(?P<ccl>.*)", re.DOTALL | re.MULTILINE)
+
     def _parse_goals(self, state):
-        if state == "no goals":
+        if not state or state == "no goals":
             return
         goals = state.split("\n\n")
         if len(goals) > 1:
-            goals[0] = goals[0][goals[0].find('\n'):] # Strip "`n` goals"
+            goals[0] = goals[0][goals[0].find('\n'):]  # Strip "`n` goals"
         for goal in goals:
-            m = self.CCL_SEP_RE.match(goal)
+            m = self.CCL_SEP_RE.match(goal)  # note : this does not deal with, e.g. `conv` goals
             yield Goal(None, m.group("ccl").replace("\n  ", "\n").strip(),
-                   list(self._parse_hyps(m.group("hyps"))))
+                       list(self._parse_hyps(m.group("hyps"))))
 
     def _find_sentences(self, doc: Document):
         for beg, end, st in self._find_sentence_ranges(doc):
@@ -146,13 +164,13 @@ class Lean3(TextREPLDriver):
 
     @staticmethod
     def _collect_message_span(msg, doc):
-        return (doc.pos2offset(msg["pos_line"], msg["pos_col"]),
-                doc.pos2offset(msg["end_pos_line"], msg["end_pos_col"]),
+        return (doc.pos2offset(Position(self.fpath, msg["pos_line"], msg["pos_col"])),
+                doc.pos2offset(Position(self.fpath, msg["end_pos_line"], msg["end_pos_col"])),
                 msg)
 
     @staticmethod
     def _collect_message_spans(messages, doc):
-        # FIXME this drops some errors (try ``#compute 1``)
+        # FIXME this drops some errors (try ``#compute 1``) (not a real command, but there's no "end of error")
         return sorted(Lean3._collect_message_span(m, doc) for m in messages
                       if "end_pos_line" in m and "end_pos_col" in m)
 
@@ -168,19 +186,19 @@ class Lean3(TextREPLDriver):
         while messages:
             beg, end, msg = messages[0]
             assert fr_beg <= beg <= end
-            if beg < fr_end: # Message overlaps current fragment
-                end = min(end, fr_end) # Truncate to current fragment
-                if isinstance(fr, Text): # Split current fragment if it's text
+            if beg < fr_end:  # Message overlaps current fragment
+                end = min(end, fr_end)  # Truncate to current fragment
+                if isinstance(fr, Text):  # Split current fragment if it's text
                     if fr_beg < beg:
                         # print(f"prefix: {(fr_beg, beg, Text(fr.contents[:beg - fr_beg]))=}")
                         yield Text(fr.contents[:beg - fr_beg])
                         fr_beg, fr = beg, fr._replace(contents=fr.contents[beg - fr_beg:])
                     if end < fr_end:
                         # print(f"suffix: {(end, fr_end, Text(fr.contents[end - fr_beg:]))=}")
-                        segments.appendleft(Positioned(end, fr_end, Text(fr.contents[end-fr_beg:])))
+                        segments.appendleft(Text(fr.contents[end-fr_beg:]))
                         fr_end, fr = end, fr._replace(contents=fr.contents[:end - fr_beg])
                     fr = Sentence(contents=fr.contents, messages=[], goals=[])
-                fr.messages.append(Message(msg["text"])) # Don't truncate existing sentences
+                fr.messages.append(Message(msg["text"]))  # Don't truncate existing sentences
                 messages.popleft()
             else: # msg starts past fr; move to next fragment
                 yield fr
@@ -190,8 +208,7 @@ class Lean3(TextREPLDriver):
         for _, _, fr in segments:
             yield fr
 
-    def _annotate(self, chunks):
-        document = Document(chunks, "\n")
+    def _annotate(self, document: Document):
         _, messages = self._query("sync", content=document.contents)
         fragments = self._add_messages(self.partition(document), messages, document)
         return list(document.recover_chunks(fragments))
@@ -206,5 +223,22 @@ class Lean3(TextREPLDriver):
          [Sentence(contents='#check nat',
                    messages=[Message(contents='ℕ : Type')], goals=[])]]
         """
+        document = Document(chunks, "\n")
+        with cwd(self.fpath.parent.resolve()):
+            # todo: error checking around AST loading, and if AST is empty at runtime
+            # We use this instead of the `NamedTemporaryFile` API because it works with Windows file locking
+            (fdescriptor, tmpname) = tempfile.mkstemp(suffix=".lean")
+            tmpname = Path(tmpname).resolve()
+            try:
+                with open(fdescriptor, "w") as tmp:
+                    tmp.write(document.contents)
+                # FIXME: Use CLI_ARGS + self.run_cli
+                args = ["lean", "--make", "--ast", *(x for x in self.REPL_ARGS + self.user_args if x != "--server"), str(tmpname)]
+                subprocess.check_call(args)
+                self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
+            finally:
+                tmpname.unlink(missing_ok=True)
+                tmpname.with_suffix(".ast.json").unlink(missing_ok=True)
+                tmpname.with_suffix(".olean").unlink(missing_ok=True)
         with self as api:
-            return api._annotate(chunks)
+            return api._annotate(document)
