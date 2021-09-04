@@ -110,7 +110,7 @@ class Backend:
     def __init__(self, highlighter):
         self.highlighter = highlighter
 
-    def gen_fragment(self, s): raise NotImplementedError()
+    def gen_fragment(self, fr): raise NotImplementedError()
     def gen_hyp(self, hyp): raise NotImplementedError()
     def gen_goal(self, goal): raise NotImplementedError()
     def gen_message(self, message): raise NotImplementedError()
