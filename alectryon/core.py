@@ -511,6 +511,9 @@ DRIVERS_BY_LANGUAGE = {
         "sertop": (".serapi", "SerAPI"),
         "sertop_noexec": (".serapi", "SerAPI_noexec"),
         "coqc_time": (".coqc_time", "CoqcTime"),
+    },
+    "lean3": {
+        "lean3_repl": (".lean3", "Lean3")
     }
 }
 
