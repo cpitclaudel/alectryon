@@ -26,7 +26,7 @@ Unreleased
 Breaking changes
 ----------------
 
-- Multiple APIs have been generalized to allow working with languages other than Coq and drivers other than SerAPI.  In particular, ``docutils.AlectryonTransform.SERTOP_ARGS`` is now ``docutils.AlectryonTransform.DRIVER_ARGS['sertop']`` [735e72b9]; ``transforms.DEFAULT_TRANSFORMS`` is now ``transforms.DEFAULT_TRANSFORMS["coq"]`` [370b8206]; docinfo headers for custom highlighting now use the prefix ``alectryon/pygments/coq/`` instead of ``alectryon/pygments/`` [a58a0449] (backwards-compatible); caches are now partitioned by language [d376077b] (backwards-compatible); ``html.gen_banner`` now takes a list of ``DriverInfo`` instances (renamed from ``GeneratorInfo`` in [2ce6c0a4]) instead of a single one [d376077b]; etc.
+- Multiple APIs have been generalized to allow working with languages other than Coq and drivers other than SerAPI.  In particular, ``docutils.AlectryonTransform.SERTOP_ARGS`` is now ``docutils.AlectryonTransform.DRIVER_ARGS['sertop']`` [735e72b9]; ``transforms.DEFAULT_TRANSFORMS`` is now ``transforms.DEFAULT_TRANSFORMS["coq"]`` [370b8206]; docinfo headers for custom highlighting now use the prefix ``alectryon/pygments/coq/`` instead of ``alectryon/pygments/`` [a58a0449] (backwards-compatible); caches are now partitioned by language [d376077b] (backwards-compatible); ``html.gen_banner`` now takes a list of ``DriverInfo`` instances (renamed from ``GeneratorInfo`` in [2ce6c0a4]) instead of a single one [d376077b]; ``--backend json`` now writes files named ``.v.io.json`` instead of ``.io.json``; and ``--frontend json`` is now ``--frontend coq.json`` [] (backwards-compatible).
 
 - SerAPI-specific parts of the ``core`` module have been moved to a new ``serapi`` module. [851b22a2]
 
