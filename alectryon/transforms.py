@@ -32,7 +32,7 @@ from .core import Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
     Goals, Messages, RichSentence
 
-PathAnnot = namedtuple("PathAnnot", "raw path key val required")
+PathAnnot = namedtuple("PathAnnot", "raw path key val must_match")
 
 class IOAnnots:
     def __init__(self, unfold=None, fails=None, filters=None, props=()):
@@ -77,8 +77,8 @@ class IOAnnots:
                     raise ValueError("Unknown flag `{}`.".format(flag))
                 self.filters[flag] = not negated
 
-    def update_props(self, raw, path, key, val, required):
-        self.props.append(PathAnnot(raw, path, key, val, required))
+    def update_props(self, raw, path, key, val, must_match):
+        self.props.append(PathAnnot(raw, path, key, val, must_match))
 
     @property
     def hidden(self):
@@ -155,7 +155,7 @@ def _parse_path(path):
 
     return path
 
-def _update_io_annots(annots, annots_str, regex, required):
+def _update_io_annots(annots, annots_str, regex, must_match):
     for mannot in regex.finditer(annots_str):
         io, path, polarity, key, val = mannot.group("io", "path", "polarity", "key", "value")
         if io:
@@ -163,16 +163,23 @@ def _update_io_annots(annots, annots_str, regex, required):
         else:
             if not key:
                 key, val = "enabled", polarity != "-"
-            annots.update_props(path, _parse_path(path), key, val, required)
+            annots.update_props(path, _parse_path(path), key, val, must_match)
 
-def read_io_flags(annots, flags_str, required):
-    _update_io_annots(annots, flags_str, ONE_IO_FLAG_RE, required)
+def read_io_flags(annots, flags_str, must_match=False):
+    _update_io_annots(annots, flags_str, ONE_IO_FLAG_RE, must_match)
     return ONE_IO_FLAG_RE.sub("", flags_str)
 
-def read_all_io_flags(s, required):
-    """Like ``read_io_flags``, but raise if `s` has other contents."""
+def read_all_io_flags(s, must_match=False):
+    """Like ``read_io_flags``, but raise if `s` has other contents.
+
+    `must_match` indicates whether an error should be raised for marker-placement
+    paths that don't match.  Typically the flags in the arguments line of a
+    ``.. coq::`` directive don't match all sentences, whereas IO annotations in
+    comments *are* expected to match part the sentence that they apply to
+    (otherwise they're useless).
+    """
     annots = IOAnnots()
-    leftover = read_io_flags(annots, s, required).strip()
+    leftover = read_io_flags(annots, s, must_match).strip()
     if leftover:
         raise ValueError("Unrecognized directive flags: {}".format(leftover))
     return annots
@@ -184,9 +191,9 @@ def inherit_io_annots(fragments, annots):
             fr.annots.inherit(annots)
         yield fr
 
-def _read_io_comments(annots, contents, lang):
+def _read_io_comments(annots, contents, lang, must_match=True):
     for m in IO_COMMENT_RE[lang].finditer(contents):
-        _update_io_annots(annots, m.group(0), ONE_IO_ANNOT_RE, required=True)
+        _update_io_annots(annots, m.group(0), ONE_IO_ANNOT_RE, must_match=must_match)
     return IO_COMMENT_RE[lang].sub("", contents)
 
 def _contents(obj):
