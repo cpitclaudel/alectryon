@@ -41,13 +41,14 @@ from .pygments_lexer import CoqLexer
 from .pygments_style import AlectryonStyle
 
 def resolve_token(kind):
+    # FIXME: add support for Lean
     tokentype = CoqLexer.TOKEN_TYPES.get(kind) if isinstance(kind, str) else kind
     if not tokentype:
         raise ValueError("Unknown token kind: {}".format(kind))
     return tokentype
 
 CUSTOM_LEXERS = {'CoqLexer': CoqLexer}
-CUSTOM_LEXER_ALIASES: Dict[str, str] = {}
+CUSTOM_LEXER_ALIASES: Dict[str, str] = {"lean3": "lean"}
 CUSTOM_LEXERS_BY_ALIAS = {alias: Lx for Lx in CUSTOM_LEXERS.values() for alias in Lx.aliases}
 
 @lru_cache(maxsize=None)
