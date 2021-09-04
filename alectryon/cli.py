@@ -516,6 +516,10 @@ def _language_frontends_by_extension(ext, lang):
     ]
 
 FRONTENDS_BY_EXTENSION = [
+    # FIXME: Add support for lean3+rst Docutils frontend
+    ('.lean', 'lean3'),
+    ('.lean3', 'lean3'),
+
     *(pair
       for lang, exts in EXTENSIONS_BY_LANGUAGE.items() for ext in exts
       for pair in _language_frontends_by_extension(ext, lang)),
