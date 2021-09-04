@@ -49,7 +49,7 @@ def debug(text, prefix):
     if DEBUG:
         print(indent(text.rstrip(), prefix), flush=True)
 
-class GeneratorInfo(namedtuple("GeneratorInfo", "name version")):
+class DriverInfo(namedtuple("DriverInfo", "name version")):
     def fmt(self, include_version_info=True):
         return "{} v{}".format(self.name, self.version) if include_version_info else self.name
 
@@ -369,7 +369,7 @@ class CLIDriver(Driver):
     def version_info(cls, binpath=None):
         assert cls.BIN
         bs = check_output([cls.resolve_driver(binpath or cls.BIN), *cls.VERSION_FLAGS])
-        return GeneratorInfo(cls.NAME, bs.decode('ascii', 'ignore').strip())
+        return DriverInfo(cls.NAME, bs.decode('ascii', 'ignore').strip())
 
     @property
     def metadata(self):

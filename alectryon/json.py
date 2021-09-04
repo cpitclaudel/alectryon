@@ -243,7 +243,7 @@ class Cache:
         return obj
 
     def _validate(self, chunks, metadata):
-        # Not that we validate "metadata" but not "generator".  This is to prevent
+        # Note that we validate "metadata" but not "driver".  This is to prevent
         # Coq upgrades from invalidating caches.  It's easy to force invalidation
         # by hand (delete the caches), whereas automatic invalidation on Coq
         # upgrades would make it a pain to keep a collection of examples (say, a
@@ -258,11 +258,11 @@ class Cache:
         return self.serializer.decode(self.data.get("annotated"))
 
     @property
-    def generator(self):
-        return core.GeneratorInfo(*self.data.get("generator", ("Coq+SerAPI", "??")))
+    def driver_info(self):
+        return core.DriverInfo(*self.data.get("driver", ("Coq+SerAPI", "??")))
 
-    def put(self, chunks, metadata, annotated, generator):
-        self.data = {"generator": self.normalize(generator),
+    def put(self, chunks, metadata, annotated, driver):
+        self.data = {"driver": self.normalize(driver),
                      "metadata": self.normalize(metadata),
                      "chunks": list(chunks),
                      "annotated": self.serializer.encode(annotated)}
@@ -344,7 +344,7 @@ class FileCacheSet(BaseCacheSet):
             metadata.pop("cache_version", None)
             return {"metadata": cls.METADATA,
                     **{cls.LANG_PREFIX + "coq":
-                       {"generator": contents.pop("generator"),
+                       {"driver": contents.pop("generator"),
                         "metadata": contents.pop("metadata"),
                         **contents}}}
         return contents

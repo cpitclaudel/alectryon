@@ -167,7 +167,7 @@ def _try(document, fn, node, *args, **kwargs):
 # LATER: dataclass
 class AlectryonState:
     def __init__(self, document):
-        self.generators: List[core.GeneratorInfo] = []
+        self.drivers_info: List[core.DriverInfo] = []
         self.root_language: Optional[str] = None
         self.transforms_executed = set()
         self.embedded_assets = []
@@ -274,7 +274,7 @@ class Config:
                 yield "-" + arg
                 yield ",".join(vals)
 
-    def driver_info(self, lang):
+    def get_driver_class_and_args(self, lang):
         driver_name = self.language_drivers[lang]
         driver_cls = core.resolve_driver(lang, driver_name)
         driver_args = self.driver_args[driver_name]
@@ -282,7 +282,7 @@ class Config:
         return driver_cls, driver_args
 
     def init_driver(self, lang):
-        cls, args = self.driver_info(lang)
+        cls, args = self.get_driver_class_and_args(lang)
         return cls(args, fpath=self.document['source'])
 
 class OneTimeTransform(Transform):
@@ -372,7 +372,7 @@ class AlectryonTransform(OneTimeTransform):
         driver.observer = DocutilsObserver(self.document)
         chunks = [pending.details["contents"] for pending in pending_nodes]
         annotated = cache.update(chunks, driver)
-        return cache.generator, annotated
+        return cache.driver_info, annotated
 
     def replace_node(self, pending, fragments, lang):
         directive_annots = pending.details["directive_annots"]
@@ -392,8 +392,8 @@ class AlectryonTransform(OneTimeTransform):
         all_pending = self.document.traverse(alectryon_pending)
         with CacheSet(CACHE_DIRECTORY, self.document['source'], CACHE_COMPRESSION) as caches:
             for lang, pending_nodes in by_lang(all_pending).items():
-                generator, annotated = self.annotate(pending_nodes, lang, caches[lang])
-                state.generators.append(generator)
+                driver_info, annotated = self.annotate(pending_nodes, lang, caches[lang])
+                state.drivers_info.append(driver_info)
                 for node, fragments in zip(pending_nodes, annotated):
                     self._try(self.replace_node, node, fragments, lang)
 
@@ -1244,9 +1244,9 @@ def make_HtmlTranslator(base):
             self.body_prefix.append('<div class="{}">'.format(cls))
 
             if self.settings.alectryon_banner:
-                generators = alectryon_state(document).generators
+                drivers_info = alectryon_state(document).drivers_info
                 include_vernums = document.settings.alectryon_vernums
-                self.body_prefix.append(html.gen_banner(generators, include_vernums))
+                self.body_prefix.append(html.gen_banner(drivers_info, include_vernums))
 
             self.body_suffix.insert(0, '</div>')
     return Translator
