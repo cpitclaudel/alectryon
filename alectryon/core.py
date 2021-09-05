@@ -234,8 +234,14 @@ class Document:
     def __init__(self, chunks, chunk_separator):
         self.chunks = list(chunks)
         self.with_separator = [c + chunk_separator for c in self.chunks]
-        self.contents = "".join(self.with_separator)
+        self.contents = chunk_separator[0:0].join(self.with_separator)
         self.separator = chunk_separator
+
+    def __getitem__(self, index):
+        return self.contents.__getitem__(index)
+
+    def __len__(self):
+        return len(self.contents)
 
     def recover_chunks(self, fragments):
         grouped = self._recover_chunks(self.with_separator, fragments)
@@ -246,19 +252,18 @@ class Document:
         pos = 0
         for st in positioned_sentences:
             if pos < st.beg:
-                yield Positioned(pos, st.beg, Text(text[pos:st.beg]))
-            yield st
+                yield Text(text[pos:st.beg])
+            yield st.e
             pos = st.end
         if pos < len(text):
-            yield Positioned(pos, len(text), Text(text[pos:len(text)]))
+            yield Text(text[pos:len(text)])
 
     @staticmethod
     def with_boundaries(items: Union[Sentence, Text, str]):
         end = 0
         for item in items:
-            contents = getattr(item, "contents", item)
-            beg, end = end, end + len(contents)
-            yield Positioned(beg, end, contents)
+            beg, end = end, end + len(getattr(item, "contents", item))
+            yield Positioned(beg, end, item)
 
     @staticmethod
     def split_fragment(fr, cutoff):
@@ -280,8 +285,8 @@ class Document:
         return fr0, fr._replace(contents=after)
 
     @classmethod
-    def _recover_chunks(cls, chunks, positioned_fragments):
-        fragments = deque(positioned_fragments)
+    def _recover_chunks(cls, chunks, fragments):
+        fragments = deque(cls.with_boundaries(fragments))
         for chunk in cls.with_boundaries(chunks):
             chunk_fragments = []
             if fragments:
@@ -293,7 +298,7 @@ class Document:
                 before, after = cls.split_fragment(fragments[0].e, cutoff)
                 fragments[0] = fragments[0]._replace(beg=chunk.end, e=after)
                 chunk_fragments.append(before)
-            assert chunk.e == "".join(c.contents for c in chunk_fragments)
+            assert chunk.e == chunk.e[0:0].join(c.contents for c in chunk_fragments)
             yield chunk_fragments
         assert not fragments
 
@@ -315,6 +320,16 @@ class Document:
                 if isinstance(fragments[-1], Text) and not contents:
                     fragments.pop()
             yield fragments
+
+class EncodedDocument(Document):
+    """Variant of ``Document`` in which positions are byte offsets, not char offsets."""
+    def __init__(self, chunks, chunk_separator, encoding="utf-8"):
+        super().__init__(chunks, chunk_separator)
+        self.encoding = encoding
+        self.contents = self.contents.encode(encoding)
+
+    def __getitem__(self, index):
+        return super().__getitem__(index).decode(self.encoding)
 
 class Notification(NamedTuple):
     obj: Any

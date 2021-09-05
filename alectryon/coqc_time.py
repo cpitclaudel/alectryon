@@ -22,16 +22,8 @@ import tempfile
 import re
 from pathlib import Path
 
-from .core import CLIDriver, Document, Positioned, Position, Sentence, Text, indent
+from .core import CLIDriver, EncodedDocument, Positioned, Position, Sentence, Text, indent
 from .serapi import CoqIdents
-
-class UTF8Adapter:
-    def __init__(self, s):
-        self.data = s.encode("utf-8")
-    def __getitem__(self, index):
-        return self.data.__getitem__(index).decode("utf-8")
-    def __len__(self):
-        return len(self.data)
 
 class CoqcTime(CLIDriver):
     BIN = "coqc"
@@ -48,11 +40,11 @@ class CoqcTime(CLIDriver):
     COQ_TIME_RE = re.compile(r"^Chars (?P<beg>[0-9]+) - (?P<end>[0-9]+) ",
                              re.MULTILINE)
 
-    def _find_sentences(self, doc_bytes):
+    def _find_sentences(self, document):
         topfile = CoqIdents.topfile_of_fpath(self.fpath)
         with tempfile.TemporaryDirectory(prefix="alectryon_coqc-time") as wd:
             source = Path(wd) / topfile
-            source.write_bytes(doc_bytes)
+            source.write_bytes(document.contents)
             with self.start(additional_args=[str(source)]) as coqc:
                 stdout, stderr = (s.decode("utf-8") for s in coqc.communicate())
                 if coqc.returncode != 0:
@@ -60,19 +52,16 @@ class CoqcTime(CLIDriver):
                     raise ValueError(MSG.format(coqc.returncode, indent(stderr, "   ")))
         for m in self.COQ_TIME_RE.finditer(stdout):
             beg, end = int(m.group("beg")), int(m.group("end"))
-            contents = doc_bytes[beg:end].decode("utf-8")
-            yield Positioned(beg, end, Sentence(contents, [], []))
+            yield Positioned(beg, end, Sentence(document[beg:end], [], []))
 
-    def partition(self, contents):
-        bs = UTF8Adapter(contents)
-        return Document.intersperse_text_fragments(bs, self._find_sentences(bs.data))
-
-    CHUNK_SEPARATOR = "\n"
+    def partition(self, document):
+        return EncodedDocument.intersperse_text_fragments(
+            document, self._find_sentences(document))
 
     def annotate(self, chunks):
-        document = Document(chunks, self.CHUNK_SEPARATOR)
+        document = EncodedDocument(chunks, "\n", encoding="utf-8")
         try:
-            fragments = self.partition(document.contents)
+            fragments = self.partition(document)
             return list(document.recover_chunks(fragments))
         except ValueError as e:
             self.observer.notify(None, str(e), Position(self.fpath, 0, 1), level=3)
@@ -81,12 +70,12 @@ class CoqcTime(CLIDriver):
 def annotate(chunks, args=(), fpath="-", binpath=None):
     r"""Use ``coqc -time`` to fragment multiple chunks of Coq code.
 
-    >>> annotate(["Check 1. (* c *) ", "Print nat."])
+    >>> annotate(["Check 1. (* … *) ", "Print nat."])
     [[Sentence(contents='Check 1.', messages=[], goals=[]),
-      Text(contents=' (* c *) ')],
+      Text(contents=' (* … *) ')],
      [Sentence(contents='Print nat.', messages=[], goals=[])]]
-    >>> annotate(["Check (* c *)", "1."])
-    [[Sentence(contents='Check (* c *)', messages=[], goals=[])],
+    >>> annotate(["Check (* … *)", "1."])
+    [[Sentence(contents='Check (* … *)', messages=[], goals=[])],
      [Sentence(contents='1.', messages=[], goals=[])]]
     """
     return CoqcTime(args=args, fpath=fpath, binpath=binpath).annotate(chunks)
