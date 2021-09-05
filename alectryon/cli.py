@@ -374,10 +374,17 @@ def write_file(ext, strip):
         write_output(ext, contents, fname, output,
                      output_directory, strip_re=strip_re)
 
-# No ‘apply_transforms’ in JSON pipelines: (we save the prover output without
-# modifications).
-PIPELINES = {
-    'coq.json': {
+EXTENSIONS_BY_LANGUAGE = {
+    "coq": (".v"),
+}
+
+CODE_LANGUAGES = EXTENSIONS_BY_LANGUAGE.keys()
+CODE_EXTENSIONS = [ext for exts in EXTENSIONS_BY_LANGUAGE.values() for ext in exts]
+
+# No ‘apply_transforms’ in JSON pipelines: we save the prover output without
+# modifications.
+def _add_code_pipelines(pipelines, lang, *exts):
+    pipelines[lang + '.json'] = {
         'null':
         (read_json, annotate_chunks),
         'json':
@@ -385,28 +392,28 @@ PIPELINES = {
          write_file(".io.json", strip=(".json",))),
         'snippets-html':
         (read_json, annotate_chunks, apply_transforms, gen_html_snippets,
-         dump_html_snippets, write_file(".snippets.html", strip=(".v", ".json",))),
+         dump_html_snippets, write_file(".snippets.html", strip=(*exts, ".json",))),
         'snippets-latex':
         (read_json, annotate_chunks, apply_transforms, gen_latex_snippets,
-         dump_latex_snippets, write_file(".snippets.tex", strip=(".v", ".json",)))
-    },
-    'coq.io.json': {
+         dump_latex_snippets, write_file(".snippets.tex", strip=(*exts, ".json",)))
+    }
+    pipelines[lang + '.io.json'] = {
         'null':
         (read_json, decode_json),
         'snippets-html':
         (read_json, decode_json, apply_transforms,
          gen_html_snippets, dump_html_snippets,
-         write_file(".snippets.html", strip=(".v", ".io", ".json"))),
+         write_file(".snippets.html", strip=(*exts, ".io", ".json"))),
         'snippets-latex':
         (read_json, decode_json, apply_transforms,
          gen_latex_snippets, dump_latex_snippets,
-         write_file(".snippets.tex", strip=(".v", ".io", ".json"))),
+         write_file(".snippets.tex", strip=(*exts, ".io", ".json"))),
         'webpage':
         (read_json, decode_json, apply_transforms, gen_html_snippets,
          dump_html_standalone, copy_assets,
          write_file(".html", strip=(".io", ".json",))),
-    },
-    'coq': {
+    }
+    pipelines[lang] = {
         'null':
         (read_plain, parse_plain, annotate_chunks),
         'webpage':
@@ -416,70 +423,60 @@ PIPELINES = {
         'snippets-html':
         (read_plain, parse_plain, annotate_chunks, apply_transforms,
          gen_html_snippets, dump_html_snippets,
-         write_file(".snippets.html", strip=(".v",))),
+         write_file(".snippets.html", strip=exts)),
         'snippets-latex':
         (read_plain, parse_plain, annotate_chunks, apply_transforms,
          gen_latex_snippets, dump_latex_snippets,
-         write_file(".snippets.tex", strip=(".v",))),
+         write_file(".snippets.tex", strip=exts)),
         'lint':
         (read_plain, register_docutils, gen_docutils,
-         write_file(".lint.json", strip=(".v",))),
-        'rst':
-        (read_plain, code_to_rst, write_file(".rst", strip=())),
+         write_file(".lint.json", strip=exts)),
         'json':
         (read_plain, parse_plain, annotate_chunks, encode_json, dump_json,
          write_file(".io.json", strip=()))
-    },
-    'coq+rst': {
+    }
+    pipelines[lang + '+rst'] = {
         'webpage':
         (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".html", strip=(".v", ".rst"))),
+         write_file(".html", strip=(*exts, ".rst"))),
         'latex':
         (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".tex", strip=(".v", ".rst"))),
+         write_file(".tex", strip=(*exts, ".rst"))),
         'lint':
         (read_plain, register_docutils, gen_docutils,
-         write_file(".lint.json", strip=(".v", ".rst"))),
-        'rst':
-        (read_plain, code_to_rst, write_file(".v.rst", strip=(".v", ".rst"))),
-    },
-    'coqdoc': {
+         write_file(".lint.json", strip=(*exts, ".rst"))),
+    }
+
+def _add_coqdoc_pipeline(pipelines):
+    pipelines['coqdoc'] = {
         'webpage':
         (read_plain, parse_plain, annotate_chunks, # transforms applied later
          gen_html_snippets_with_coqdoc, dump_html_standalone, copy_assets,
          write_file(".html", strip=(".v",))),
-    },
-    'rst': {
-        'webpage':
-        (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".html", strip=(".v", ".rst"))),
-        'latex':
-        (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".tex", strip=(".v", ".rst"))),
-        'lint':
-        (read_plain, register_docutils, gen_docutils,
-         write_file(".lint.json", strip=(".v", ".rst"))),
-        'coq':
-        (read_plain, rst_to_code,
-         write_file(".v", strip=(".v", ".rst"))),
-        'coq+rst':
-        (read_plain, rst_to_code,
-         write_file(".v", strip=(".v", ".rst")))
-    },
-    'md': {
-        'webpage':
-        (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".html", strip=(".v", ".md"))),
-        'latex':
-        (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".tex", strip=(".v", ".md"))),
-        'lint':
-        (read_plain, register_docutils, gen_docutils,
-         write_file(".lint.json", strip=(".v", ".md")))
     }
-}
 
-## Compatibility
+def _add_docutils_pipelines(pipelines, lang, *exts):
+    exts = (*CODE_EXTENSIONS, *exts)
+    pipelines[lang] = {
+        'webpage':
+        (read_plain, register_docutils, gen_docutils, copy_assets,
+         write_file(".html", strip=exts)),
+        'latex':
+        (read_plain, register_docutils, gen_docutils, copy_assets,
+         write_file(".tex", strip=exts)),
+        'lint':
+        (read_plain, register_docutils, gen_docutils,
+         write_file(".lint.json", strip=exts))
+    }
+
+def _add_transliteration_pipelines(pipelines):
+    exts = (*CODE_EXTENSIONS, ".rst")
+    pipelines['rst']['coq'] = pipelines['rst']['coq+rst'] = \
+        (read_plain, rst_to_code, write_file(".v", strip=exts))
+    pipelines['coq']['rst'] = \
+        (read_plain, code_to_rst, write_file(".rst", strip=()))
+    pipelines['coq+rst']['rst'] = \
+        (read_plain, code_to_rst, write_file(".v.rst", strip=(*exts, ".rst")))
 
 def warn_renamed_json_pipeline(v, ctx):
     print("WARNING: Frontend `json` is ambiguous; use `coq.json` instead.",
@@ -487,44 +484,85 @@ def warn_renamed_json_pipeline(v, ctx):
     ctx["frontend"] = 'coq.json'
     return v
 
-PIPELINES['json'] = {backend: (warn_renamed_json_pipeline, *steps)
-                     for (backend, steps) in PIPELINES['coq.json'].items()}
+def _add_compatibility_pipelines(pipelines):
+    pipelines['json'] = {
+        backend: (warn_renamed_json_pipeline, *steps)
+        for (backend, steps) in pipelines['coq.json'].items()
+    }
+
+def _add_pipelines(pipelines):
+    for lang, exts in EXTENSIONS_BY_LANGUAGE.items():
+        _add_code_pipelines(pipelines, lang, *exts)
+    _add_coqdoc_pipeline(pipelines)
+    _add_docutils_pipelines(pipelines, "rst", ".rst")
+    _add_docutils_pipelines(pipelines, "md", ".md")
+    _add_transliteration_pipelines(pipelines)
+    _add_compatibility_pipelines(pipelines)
+    return pipelines
+
+# LATER: Reorganize to separate concepts of language and frontend instead of
+# generating (languages * frontend) entries in PIPELINES.
+PIPELINES = _add_pipelines({})
 
 # CLI
 # ===
 
+def _language_frontends_by_extension(ext, lang):
+    return [
+        (ext, lang + '+rst'),
+        (ext + '.json', lang + '.json'),
+        (ext + '.io.json', lang + '.io.json'),
+    ]
+
 FRONTENDS_BY_EXTENSION = [
-    ('.v', 'coq+rst'), ('.v.json', 'coq.json'), ('.v.io.json', 'coq.io.json'),
-    ('.rst', 'rst'), ('.md', 'md'),
+    *(pair
+      for lang, exts in EXTENSIONS_BY_LANGUAGE.items() for ext in exts
+      for pair in _language_frontends_by_extension(ext, lang)),
+
+    ('.rst', 'rst'),
+    ('.md', 'md'),
+
     ('.json', 'json'), # LATER: Remove
 ]
+
 BACKENDS_BY_EXTENSION = [
-    ('.v', 'coq'), ('.rst', 'rst'),
+    *((ext, lang)
+      for (lang, exts) in EXTENSIONS_BY_LANGUAGE.items() for ext in exts),
+    ('.rst', 'rst'),
     ('.lint.json', 'lint'), ('.json', 'json'),
-    ('.snippets.html', 'snippets-html'),
-    ('.snippets.tex', 'snippets-latex'),
-    ('.v.html', 'webpage'), ('.html', 'webpage'),
-    ('.v.tex', 'latex'), ('.tex', 'latex')
+    ('.snippets.html', 'snippets-html'), ('.snippets.tex', 'snippets-latex'),
+    ('.html', 'webpage'), ('.tex', 'latex')
 ]
 
+def _default_language_backends(lang):
+    return {
+        lang: 'webpage',
+        lang + '.json': 'json',
+        lang + '.io.json': 'webpage',
+        lang + '+rst': 'webpage',
+    }
+
 DEFAULT_BACKENDS = {
-    'coq.json': 'json',
-    'coq.io.json': 'webpage',
-    'coq': 'webpage',
+    **{fr: bk
+       for lang in CODE_LANGUAGES
+       for (fr, bk) in _default_language_backends(lang).items()},
+
     'coqdoc': 'webpage',
-    'coq+rst': 'webpage',
     'rst': 'webpage',
     'md': 'webpage',
 
     'json': 'json', # LATER: Remove
 }
 
+def _input_frontends(lang):
+    return [lang, lang + '+rst', lang + '.json', lang + '.io.json']
+
 INPUT_LANGUAGE_BY_FRONTEND = {
-    "coq": "coq",
+    **{fr: lang
+       for lang in CODE_LANGUAGES
+       for fr in _input_frontends(lang)},
+
     "coqdoc": "coq",
-    "coq+rst": "coq",
-    "coq.json": "coq",
-    "coq.io.json": "coq",
 
     "json": "coq", # LATER: Remove
 }
@@ -596,8 +634,10 @@ def post_process_arguments(parser, args):
 
     args.driver_args_by_name = {
         "sertop": args.sertop_args,
+        "sertop_noexec": args.sertop_args,
         "coqc_time": args.coqc_args,
     }
+    assert set(core.ALL_DRIVERS) == args.driver_args_by_name.keys()
 
     # argparse applies ‘type’ before ‘choices’, so we do the conversion here
     args.copy_fn = COPY_FUNCTIONS[args.copy_fn]
