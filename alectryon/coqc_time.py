@@ -22,41 +22,31 @@ import tempfile
 import re
 from pathlib import Path
 
-from .core import CLIDriver, EncodedDocument, Positioned, Position, Sentence, Text, indent
+from .core import CLIDriver, EncodedDocument, Positioned, Position, Sentence, Text
 from .serapi import CoqIdents
 
 class CoqcTime(CLIDriver):
     BIN = "coqc"
     NAME = "Coq+coqc-time"
-    DEFAULT_ARGS = ("-time", "-color", "no", "-quiet", "-q")
+    CLI_ARGS = ("-time", "-color", "no", "-quiet", "-q")
 
     ID = "coqc_time"
     LANGUAGE = "coq"
-
-    @classmethod
-    def driver_not_found(cls, binpath):
-        raise ValueError("`coqc` binary not found (bin={}).".format(binpath))
 
     COQ_TIME_RE = re.compile(r"^Chars (?P<beg>[0-9]+) - (?P<end>[0-9]+) ",
                              re.MULTILINE)
 
     def _find_sentences(self, document):
-        topfile = CoqIdents.topfile_of_fpath(self.fpath)
         with tempfile.TemporaryDirectory(prefix="alectryon_coqc-time") as wd:
-            source = Path(wd) / topfile
+            source = Path(wd) / CoqIdents.topfile_of_fpath(self.fpath)
             source.write_bytes(document.contents)
-            with self.start(additional_args=[str(source)]) as coqc:
-                stdout, stderr = (s.decode("utf-8") for s in coqc.communicate())
-                if coqc.returncode != 0:
-                    MSG = "coqc exited with code {}:\n{}"
-                    raise ValueError(MSG.format(coqc.returncode, indent(stderr, "   ")))
+            stdout = self.run_cli(more_args=[str(source)])
         for m in self.COQ_TIME_RE.finditer(stdout):
             beg, end = int(m.group("beg")), int(m.group("end"))
             yield Positioned(beg, end, Sentence(document[beg:end], [], []))
 
-    def partition(self, document):
-        return EncodedDocument.intersperse_text_fragments(
-            document, self._find_sentences(document))
+    def partition(self, contents):
+        return EncodedDocument.intersperse_text_fragments(contents, self._find_sentences(contents))
 
     def annotate(self, chunks):
         r"""Use ``coqc -time`` to fragment multiple chunks of Coq code.

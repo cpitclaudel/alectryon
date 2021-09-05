@@ -47,7 +47,7 @@ ApiString = namedtuple("ApiString", "string")
 class SerAPI(REPLDriver):
     BIN = "sertop"
     NAME = "Coq+SerAPI"
-    DEFAULT_ARGS = ("--printer=sertop", "--implicit")
+    REPL_ARGS = ("--printer=sertop", "--implicit")
 
     ID = "sertop"
     LANGUAGE = "coq"
@@ -65,7 +65,7 @@ class SerAPI(REPLDriver):
                  pp_args=DEFAULT_PP_ARGS):
         """Prepare to run ``sertop``."""
         super().__init__(args=args, fpath=fpath, binpath=binpath)
-        self.args.append("--topfile={}".format(self.topfile))
+        self.instance_args = ("--topfile={}".format(self.topfile),)
         self.next_qid = 0
         self.pp_args = {**SerAPI.DEFAULT_PP_ARGS, **pp_args}
         self.last_response = None

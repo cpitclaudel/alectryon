@@ -23,10 +23,12 @@ from typing import Any, Dict, DefaultDict, Optional, Tuple, Union, NamedTuple, N
 from collections import deque, namedtuple, defaultdict
 from contextlib import contextmanager
 from importlib import import_module
+from io import TextIOWrapper
 from pathlib import Path
 from shlex import quote
 from shutil import which
-from subprocess import Popen, PIPE, check_output
+from subprocess import PIPE
+import subprocess
 import textwrap
 import re
 import sys
@@ -236,6 +238,7 @@ class Document:
         self.with_separator = [c + chunk_separator for c in self.chunks]
         self.contents = chunk_separator[0:0].join(self.with_separator)
         self.separator = chunk_separator
+        self._bol_offsets = None
 
     def __getitem__(self, index):
         return self.contents.__getitem__(index)
@@ -246,6 +249,23 @@ class Document:
     def recover_chunks(self, fragments):
         grouped = self._recover_chunks(self.with_separator, fragments)
         return self.strip_separators(grouped, self.separator)
+
+    @property
+    def bol_offsets(self):
+        if self._bol_offsets is None:
+            bol = "^" if isinstance(self.contents, str) else b"^"
+            matches = re.finditer(bol, self.contents, re.MULTILINE)
+            self._bol_offsets = [m.start() for m in matches]
+        return self._bol_offsets
+
+    def offset2pos(self, offset):
+        import bisect
+        zline = bisect.bisect_right(self.bol_offsets, offset)
+        bol = self.bol_offsets[zline - 1]
+        return zline, offset - bol
+
+    def pos2offset(self, line, col):
+        return self.bol_offsets[line - 1] + col
 
     @staticmethod
     def intersperse_text_fragments(text, positioned_sentences):
@@ -375,23 +395,24 @@ class Driver():
         """
         raise NotImplementedError()
 
-class CLIDriver(Driver):
+class CLIDriver(Driver): # pylint: disable=abstract-method
     BIN: Optional[str] = None
     NAME: Optional[str] = None
-    DEFAULT_ARGS: Tuple[str, ...] = ()
-    VERSION_FLAGS = ("--version",)
+
+    CLI_ARGS: Tuple[str, ...] = ()
+    VERSION_ARGS = ("--version",)
+
+    CLI_ENCODING = "utf-8"
 
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__()
         self.fpath = Path(fpath)
         self.user_args = args
-        self.args = [*self.user_args, *self.DEFAULT_ARGS]
         self.binpath = binpath or self.BIN
 
     @classmethod
     def version_info(cls, binpath=None):
-        assert cls.BIN
-        bs = check_output([cls.resolve_driver(binpath or cls.BIN), *cls.VERSION_FLAGS])
+        bs = subprocess.check_output([cls.resolve_driver(binpath), *cls.VERSION_ARGS])
         return DriverInfo(cls.NAME, bs.decode('ascii', 'ignore').strip())
 
     @property
@@ -401,25 +422,33 @@ class CLIDriver(Driver):
     @classmethod
     def driver_not_found(cls, binpath) -> NoReturn:
         """Raise an error to indicate that ``binpath`` cannot be found."""
-        raise NotImplementedError()
+        raise ValueError("{} binary not found (bin={}).".format(cls.NAME, binpath))
 
     @classmethod
     def resolve_driver(cls, binpath) -> str:
-        path = which(binpath)
+        assert cls.BIN
+        path = which(binpath or cls.BIN)
         if path is None:
             cls.driver_not_found(binpath)
         return path
 
-    def start(self, stdin=PIPE, stderr=PIPE, stdout=PIPE, additional_args=()):
-        cmd = [self.resolve_driver(self.binpath), *self.args, *additional_args]
-        debug(" ".join(quote(s) for s in cmd), '# ')
-        # pylint: disable=consider-using-with
-        return Popen(cmd, stdin=stdin, stderr=stderr, stdout=stdout)
+    def run_cli(self, more_args=()):
+        cmd = [self.resolve_driver(self.binpath),
+               *self.CLI_ARGS, *self.user_args, *more_args]
+        p = subprocess.run(cmd, capture_output=True, check=False, encoding=self.CLI_ENCODING)
+        if p.returncode != 0:
+            MSG = "Driver {} ({}) exited with code {}:\n{}"
+            raise ValueError(MSG.format(self.NAME, self.binpath,
+                                        p.returncode, indent(p.stderr, "   ")))
+        return p.stdout
 
 class REPLDriver(CLIDriver): # pylint: disable=abstract-method
+    REPL_ARGS: Tuple[str, ...] = ()
+
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args, fpath, binpath)
         self.repl = None
+        self.instance_args: Tuple[str, ...] = ()
 
     def __enter__(self):
         self.reset()
@@ -449,9 +478,16 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
             finally:
                 self.repl.wait()
 
+    def _start(self, stdin=PIPE, stderr=PIPE, stdout=PIPE, more_args=()):
+        cmd = [self.resolve_driver(self.binpath),
+               *self.REPL_ARGS, *self.user_args, *self.instance_args, *more_args]
+        debug(" ".join(quote(s) for s in cmd), '# ')
+        # pylint: disable=consider-using-with
+        return subprocess.Popen(cmd, stdin=stdin, stderr=stderr, stdout=stdout)
+
     def reset(self):
         """Start or restart this prover instance."""
-        self.repl = self.start(stderr=None)
+        self.repl = self._start(stderr=None)
 
 DRIVERS_BY_LANGUAGE = {
     "coq": {
