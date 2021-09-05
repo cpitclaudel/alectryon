@@ -2,8 +2,8 @@ README.rst
 Doctest: README.rst ... ok
 topfile_of_fpath (alectryon.coq.CoqIdents)
 Doctest: alectryon.coq.CoqIdents.topfile_of_fpath ... ok
-annotate (alectryon.coqc_time)
-Doctest: alectryon.coqc_time.annotate ... ok
+annotate (alectryon.coqc_time.CoqcTime)
+Doctest: alectryon.coqc_time.CoqcTime.annotate ... ok
 split_fragment (alectryon.core.Document)
 Doctest: alectryon.core.Document.split_fragment ... ok
 strip_separators (alectryon.core.Document)

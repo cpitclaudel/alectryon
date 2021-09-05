@@ -59,6 +59,16 @@ class CoqcTime(CLIDriver):
             document, self._find_sentences(document))
 
     def annotate(self, chunks):
+        r"""Use ``coqc -time`` to fragment multiple chunks of Coq code.
+
+        >>> CoqcTime().annotate(["Check 1. (* … *) ", "Print nat."])
+        [[Sentence(contents='Check 1.', messages=[], goals=[]),
+          Text(contents=' (* … *) ')],
+         [Sentence(contents='Print nat.', messages=[], goals=[])]]
+        >>> CoqcTime().annotate(["Check (* … *)", "1."])
+        [[Sentence(contents='Check (* … *)', messages=[], goals=[])],
+         [Sentence(contents='1.', messages=[], goals=[])]]
+        """
         document = EncodedDocument(chunks, "\n", encoding="utf-8")
         try:
             fragments = self.partition(document)
@@ -66,16 +76,3 @@ class CoqcTime(CLIDriver):
         except ValueError as e:
             self.observer.notify(None, str(e), Position(self.fpath, 0, 1), level=3)
             return [[Text(c)] for c in chunks]
-
-def annotate(chunks, args=(), fpath="-", binpath=None):
-    r"""Use ``coqc -time`` to fragment multiple chunks of Coq code.
-
-    >>> annotate(["Check 1. (* … *) ", "Print nat."])
-    [[Sentence(contents='Check 1.', messages=[], goals=[]),
-      Text(contents=' (* … *) ')],
-     [Sentence(contents='Print nat.', messages=[], goals=[])]]
-    >>> annotate(["Check (* … *)", "1."])
-    [[Sentence(contents='Check (* … *)', messages=[], goals=[])],
-     [Sentence(contents='1.', messages=[], goals=[])]]
-    """
-    return CoqcTime(args=args, fpath=fpath, binpath=binpath).annotate(chunks)
