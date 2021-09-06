@@ -147,7 +147,7 @@ def get_formatter(fmt, style=None) -> Formatter:
     raise ValueError("Unknown format {}".format(fmt))
 
 def get_stylesheet(fmt, style):
-    return get_formatter(fmt, style).get_style_defs('.highlight')
+    return get_formatter(fmt, style).get_style_defs(('.highlight', '.code')) # type: ignore
 
 def highlight_html(code, lang, style=None):
     """Highlight a string `code` in language `lang`.
