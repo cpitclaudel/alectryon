@@ -46,15 +46,17 @@ def resolve_token(kind):
         raise ValueError("Unknown token kind: {}".format(kind))
     return tokentype
 
+CUSTOM_LEXERS = {'CoqLexer': CoqLexer}
 CUSTOM_LEXER_ALIASES: Dict[str, str] = {}
+CUSTOM_LEXERS_BY_ALIAS = {alias: Lx for Lx in CUSTOM_LEXERS.values() for alias in Lx.aliases}
 
 @lru_cache(maxsize=None)
 def get_lexer(lang):
     lang = CUSTOM_LEXER_ALIASES.get(lang, lang)
     # LATER: Upstream Coq lexer, remove this branch
-    if lang == "coq":
-        lexer = CoqLexer(ensurenl=False)
-        # Coq only, since some lexers report plenty of errors
+    if lang in CUSTOM_LEXERS_BY_ALIAS:
+        lexer = CUSTOM_LEXERS_BY_ALIAS[lang](ensurenl=False)
+        # Custom lexers only, since some lexers report plenty of errors
         lexer.add_filter(WarnOnErrorTokenFilter())
     else:
         lexer = get_lexer_by_name(lang, ensurenl=False)
@@ -261,6 +263,8 @@ def replace_builtin_coq_lexer():
     """ # FIXME replace the formatter too?
     from pygments.lexers import _lexer_cache
     from pygments.lexers._mapping import LEXERS
-    (_mod, name, aliases, ext, mime) = LEXERS['CoqLexer']
-    LEXERS['CoqLexer'] = ("alectryon.pygments_lexer", name, aliases, ext, mime)
-    _lexer_cache.pop(name, None)
+    for nm, Lx in CUSTOM_LEXERS.items():
+        dflt = (None, Lx.name, tuple(Lx.aliases), tuple(Lx.filenames), tuple(Lx.mimetypes))
+        meta = ("alectryon.pygments_lexer", *LEXERS.get(nm, dflt)[1:])
+        LEXERS[nm] = meta
+        _lexer_cache.pop(meta[1], None)
