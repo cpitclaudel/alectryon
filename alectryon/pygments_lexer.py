@@ -34,11 +34,27 @@ Rewritten from the one in pygments.lexers.theorem.
 from pygments.lexer import RegexLexer, default, words, bygroups, include
 from pygments.regexopt import regex_opt, regex_opt_inner
 from pygments.token import \
-    Text, Comment, Operator, Keyword, Name, String, Number
+    Text, Comment, Operator, Keyword, Name, String, Number, Generic
+
+TOKEN_TYPES = {
+    'cmd': Keyword.Namespace,
+    'constants': Keyword.Type,
+    'keywords': Keyword.Reserved,
+    'tac-builtins': Keyword.Pseudo,
+    'tac-keywords': Keyword.Reserved,
+    'tacn': Name.Builtin,
+    'tacn-solve': Name.Builtin.Pseudo,
+    'tacn-unsafe': Name.Exception,
+}
+
+# Compatibility
+TOKEN_TYPES['gallina-constants'] = TOKEN_TYPES['constants']
+TOKEN_TYPES['gallina-keywords'] = TOKEN_TYPES['keywords']
+TOKEN_TYPES['ltac-builtins'] = TOKEN_TYPES['tac-builtins']
+TOKEN_TYPES['ltac-keywords'] = TOKEN_TYPES['tac-keywords']
 
 class CoqLexer(RegexLexer):
-    """
-    For the `Coq <http://coq.inria.fr/>`_ theorem prover.
+    """For the `Coq <http://coq.inria.fr/>`_ theorem prover.
 
     .. versionadded:: 1.5
     """
@@ -330,16 +346,6 @@ class CoqLexer(RegexLexer):
                        'setoid_reflexivity', 'tauto', 'vm_cast_no_check']
     }
 
-    TOKEN_TYPES = {
-        'cmd': Keyword.Namespace,
-        'gallina-constants': Keyword.Type,
-        'gallina-keywords': Keyword.Reserved,
-        'ltac-builtins': Keyword.Pseudo,
-        'ltac-keywords': Keyword.Reserved,
-        'tacn': Name.Builtin,
-        'tacn-solve': Name.Builtin.Pseudo,
-    }
-
     # This is auto-generated from Coq's source code
     identstart = ('A-Z_a-z\xa0ªµºÀ-ÖØ-öø-ˁˆ-ˑˠ-ˤˬˮͰ-ʹͶ-ͷͺ-ͽͿΆΈ-ΊΌΎ-ΡΣ-ϵϷ-ҁҊ-ԯԱ-Ֆ'
                   'ՙա-ևא-תװ-ײؠ-يٮ-ٯٱ-ۓەۥ-ۦۮ-ۯۺ-ۼۿܐܒ-ܯݍ-ޥޱߊ-ߪߴ-ߵߺࠀ-ࠕࠚࠤࠨࡀ-ࡘࢠ-ࢴࢶ'
@@ -529,4 +535,86 @@ class CoqLexer(RegexLexer):
         ],
     }
 
-__all__ = ["CoqLexer"]
+CoqLexer.TOKEN_TYPES = TOKEN_TYPES # Compatibility
+
+# FIXME adapted from sphinx branch of EasyCrypt/easycrypt-doc
+class EasyCryptLexer(RegexLexer):
+    name      = 'EasyCrypt'
+    aliases   = ['easycrypt']
+    filenames = ['*.ec', '*.eca']
+    mimetypes = ['text/x-easycrypt']
+    KEYWORDS  = {
+        'cmd': [
+            'axiom', 'axiomatized', 'lemma', 'realize',
+            'proof', 'qed', 'abort', 'goal', 'end',
+            'import', 'export', 'include', 'local', 'declare',
+            'hint', 'nosmt', 'module', 'of', 'const',
+            'op', 'pred', 'inductive', 'notation', 'abbrev',
+            'require', 'theory', 'abstract', 'section',
+            'type', 'class', 'instance', 'print', 'search', 'as',
+            'Pr', 'clone', 'with', 'rename',
+            'prover', 'timeout', 'why3', 'dump', 'remove', 'Top',
+            'Self',
+            'time', 'undo', 'debug', 'pragma'
+        ],
+        'constants': [
+            'false', 'true'
+        ],
+        'keywords': [
+            'forall', 'exists', 'fun', 'glob', 'let', 'in',
+            'var', 'if', 'then', 'else',
+            'elif', 'while', 'assert', 'return', 'res', 'equiv',
+            'hoare', 'phoare', 'islossless', 'async'
+        ],
+        'tac-builtins': [
+            'try', 'first', 'last', 'do', 'strict', 'expect'
+        ],
+        'tacn': [
+            'beta', 'iota', 'zeta', 'eta', 'logic', 'delta',
+            'simplify', 'congr', 'change', 'split',
+            'left', 'right', 'case', 'pose', 'cut', 'have',
+            'suff', 'elim', 'clear', 'apply', 'rewrite',
+            'rwnormal', 'subst', 'progress', 'trivial', 'auto',
+            'idtac', 'move', 'modpath', 'field',
+            'fieldeq', 'ring', 'ringeq', 'algebra', 'replace',
+            'transitivity', 'symmetry', 'seq', 'wp',
+            'sp', 'sim', 'skip', 'call', 'rcondt', 'rcondf',
+            'swap', 'cfold', 'rnd', 'proc', 'pr_bounded', 'bypr',
+            'byphoare', 'byequiv', 'fel', 'conseq', 'exfalso',
+            'inline', 'alias', 'fission', 'fusion',
+            'unroll', 'splitwhile', 'kill', 'eager'
+        ],
+        'tacn-solve': [
+            'exact', 'assumption', 'smt', 'by',
+            'reflexivity', 'done',
+        ],
+        'tacn-unsafe': [
+            'admit', 'admitted'
+        ],
+    }
+
+    tokens = {
+        'root': [
+            (r'\s+', Text),
+            (r'\(\*', Comment, 'comment'),
+            (r'^(Context|Bound)\s*:', Generic.Strong),
+            (r'^(pre|post)\s*=', Generic.Strong),
+            (r'\A<(type) variable>\Z', bygroups(Name.Variable.Magic)), # Keep “type” only
+            (r'^[(]([0-9?.-]+)[)]', Name.Label),
+            *((regex_opt(words, prefix=r"\b", suffix=r"\b"), TOKEN_TYPES[kind])
+              for (kind, words) in KEYWORDS.items()),
+            (r"'\w(?!\d)[\w']*", Name.Variable.Magic), # Type variables
+            (r"\w(?!\d)[\w']*", Name),
+            (r'\d+', Number.Integer),
+            (r'%\w+', String.Affix),
+            (r".", Text), # One by one to avoid skipping ``'``.
+        ],
+        'comment': [
+            (r'[^(*)]+', Comment),
+            (r'\(\*', Comment, '#push'),
+            (r'\*\)', Comment, '#pop'),
+            (r'[(*)]', Comment),
+        ],
+    }
+
+__all__ = ["CoqLexer", "EasyCryptLexer"]

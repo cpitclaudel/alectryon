@@ -12,6 +12,12 @@ strip_separators (alectryon.core.Document)
 Doctest: alectryon.core.Document.strip_separators ... ok
 translate_offset (alectryon.core.PosView)
 Doctest: alectryon.core.PosView.translate_offset ... ok
+annotate (alectryon.easycrypt.EasyCrypt)
+Doctest: alectryon.easycrypt.EasyCrypt.annotate ... ok
+isolate_comments (alectryon.easycrypt.EasyCrypt)
+Doctest: alectryon.easycrypt.EasyCrypt.isolate_comments ... ok
+reattach_periods (alectryon.easycrypt.EasyCrypt)
+Doctest: alectryon.easycrypt.EasyCrypt.reattach_periods ... ok
 DeduplicatingSerializer (alectryon.json)
 Doctest: alectryon.json.DeduplicatingSerializer ... ok
 FullyDeduplicatingSerializer (alectryon.json)
@@ -56,6 +62,6 @@ partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 28 tests
+Ran 31 tests
 
 OK

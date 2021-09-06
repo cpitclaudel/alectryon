@@ -510,6 +510,9 @@ DRIVERS_BY_LANGUAGE = {
         "sertop": (".serapi", "SerAPI"),
         "sertop_noexec": (".serapi", "SerAPI_noexec"),
         "coqc_time": (".coqc_time", "CoqcTime"),
+    },
+    "easycrypt": {
+        "easycrypt_repl": (".easycrypt", "EasyCrypt")
     }
 }
 

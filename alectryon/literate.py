@@ -40,13 +40,17 @@ class StringView:
         return StringView(self.s, self.beg, other.end)
 
     def __contains__(self, other):
-        return self.s.find(other, self.beg, self.end) >= 0
+        return self.find(other) >= 0
 
     def __str__(self):
         return self.s[self.beg:self.end]
 
     def __repr__(self):
         return repr(str(self))
+
+    def find(self, sub):
+        pos = self.s.find(sub, self.beg, self.end)
+        return -1 if pos == -1 else pos - self.beg
 
     def split(self, sep, nsplits=None):
         beg, chunks = self.beg, []

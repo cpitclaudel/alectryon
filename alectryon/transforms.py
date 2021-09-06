@@ -136,6 +136,7 @@ IO_COMMENT_RE = {
         r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(ONE_IO_ANNOT),
         re.VERBOSE)
 }
+IO_COMMENT_RE["easycrypt"] = IO_COMMENT_RE["coq"]
 assert IO_COMMENT_RE.keys() == ALL_LANGUAGES
 
 def _parse_path(path):
@@ -691,6 +692,14 @@ DEFAULT_TRANSFORMS = {
         process_io_annots,
         strip_coq_failures,
         dedent,
+    ],
+    "easycrypt": [
+        coalesce_text,
+        enrich_sentences,
+        attach_ml_comments_to_code,
+        group_hypotheses,
+        read_ml_io_comments,
+        process_io_annots,
     ],
     # Not included:
     #   group_whitespace_with_code (HTML-specific)

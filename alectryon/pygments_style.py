@@ -100,6 +100,7 @@ class AlectryonStyle(Style):
         Name.Variable.Class:       "#ce5c00",                # class: 'vc'
         Name.Variable.Global:      "underline #ce5c00",      # class: 'vg'
         Name.Variable.Instance:    "#ce5c00",                # class: 'vi'
+        Name.Variable.Magic:       "italic #204a87",         # class: 'vm'
 
         Number:                    "#2e3436",                # class: 'm'
         Number.Float:              "#2e3436",                # class: 'mf'

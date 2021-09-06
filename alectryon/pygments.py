@@ -37,16 +37,20 @@ from pygments.lexers import get_lexer_by_name # pylint: disable=no-name-in-modul
 
 from dominate.util import raw as dom_raw
 
-from .pygments_lexer import CoqLexer
+from .pygments_lexer import TOKEN_TYPES, CoqLexer, EasyCryptLexer
 from .pygments_style import AlectryonStyle
 
 def resolve_token(kind):
-    tokentype = CoqLexer.TOKEN_TYPES.get(kind) if isinstance(kind, str) else kind
+    tokentype = TOKEN_TYPES.get(kind) if isinstance(kind, str) else kind
     if not tokentype:
         raise ValueError("Unknown token kind: {}".format(kind))
     return tokentype
 
-CUSTOM_LEXERS = {'CoqLexer': CoqLexer}
+CUSTOM_LEXERS = {
+    'CoqLexer': CoqLexer,
+    'EasyCryptLexer': EasyCryptLexer
+}
+
 CUSTOM_LEXER_ALIASES: Dict[str, str] = {}
 CUSTOM_LEXERS_BY_ALIAS = {alias: Lx for Lx in CUSTOM_LEXERS.values() for alias in Lx.aliases}
 
@@ -60,7 +64,7 @@ def get_lexer(lang):
         lexer.add_filter(WarnOnErrorTokenFilter())
     else:
         lexer = get_lexer_by_name(lang, ensurenl=False)
-        lexer.add_filter(StripErrorsTokenFilter())
+    lexer.add_filter(StripErrorsTokenFilter())
     lexer.add_filter(TokenMergeFilter())
     return lexer
 

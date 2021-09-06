@@ -54,7 +54,7 @@ class Id(Directive):
     def run(self):
         return [nodes.literal("".join(self.content))]
 
-ALL_LANGUAGES = ["coq"]
+ALL_LANGUAGES = ["coq", "easycrypt"]
 
 # Treat .. coq:: as a regular code block and ignore .. alectryon-toggle::
 DIRECTIVES = {**{lang: ProverDirective for lang in ALL_LANGUAGES},

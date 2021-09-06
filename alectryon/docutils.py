@@ -28,6 +28,10 @@ This file defines directives that format their contents using Alectryon::
 
         Check nat.
 
+    .. easycrypt::
+
+        print type int.
+
 These directives support various arguments to control the appearance of the
 output; check out the README for details.
 
@@ -44,8 +48,8 @@ directive in your document, and you can ommit it entirely by setting
 contents following the checkbox are wrapped in a container with class
 ``alectryon-container``).
 
-Inline highlighting is provided by the ``:coq:`` role.  To replace Pygments'
-default Coq highlighter with Alectryon's everywhere, call
+Inline highlighting is provided by the ``:coq:`` and ``:easycrypt:`` roles.  To
+replace Pygments' default Coq highlighter with Alectryon's everywhere, call
 ``alectryon.pygments.replace_builtin_coq_lexer()``.
 
 If you write lots of inline code snippets, consider calling ``set_default_role``,
