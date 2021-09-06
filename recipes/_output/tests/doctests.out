@@ -1,7 +1,9 @@
 README.rst
 Doctest: README.rst ... ok
-topfile_of_fpath (alectryon.coq.CoqIdents)
-Doctest: alectryon.coq.CoqIdents.topfile_of_fpath ... ok
+make_ident (alectryon.coq.CoqIdents)
+Doctest: alectryon.coq.CoqIdents.make_ident ... ok
+split_fpath (alectryon.coq.CoqIdents)
+Doctest: alectryon.coq.CoqIdents.split_fpath ... ok
 annotate (alectryon.coqc_time.CoqcTime)
 Doctest: alectryon.coqc_time.CoqcTime.annotate ... ok
 split_fragment (alectryon.core.Document)
@@ -54,6 +56,6 @@ partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 27 tests
+Ran 28 tests
 
 OK

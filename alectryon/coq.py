@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Tuple
+
 import re
 import unicodedata
 from pathlib import Path
@@ -61,24 +63,45 @@ class CoqIdents:
     def sub_chars(cls, chars, allowed):
         return "".join(c if cls.valid_char(c, allowed) else "_" for c in chars)
 
-    SUFFIXES = re.compile(r"(?:[.](?:v|rst))+\Z")
+    @classmethod
+    def make_ident(cls, name):
+        """Transform `name` into a valid Coq identifier.
+
+        >>> CoqIdents.make_ident("f:𝖴🄽𝓘ⓒ𝕆Ⓓ𝙴")
+        'f_𝖴_𝓘_𝕆_𝙴'
+        """
+        return (cls.sub_chars(name[0], cls.COQ_IDENT_START) +
+                cls.sub_chars(name[1:], cls.COQ_IDENT_PART))
+
+    COQ_EXTS = (".v",)
+    STRIP = (".rst", ".md")
 
     @classmethod
-    def topfile_of_fpath(cls, fpath: Path) -> str:
-        """Normalize `fpath` to make its ``name`` a valid Coq identifier.
+    def split_fpath(cls, fpath: Path, exts=COQ_EXTS, strip=STRIP) -> Tuple[str, str]:
+        """Normalize `fpath` into a valid Coq identifier.
+        If `fpath` is ``"-"``, return an empty filename.
 
-        >>> str(CoqIdents.topfile_of_fpath(Path("dir+ex/f:𝖴🄽𝓘ⓒ𝕆Ⓓ𝙴.v")))
-        'f_𝖴_𝓘_𝕆_𝙴.v'
-        >>> str(CoqIdents.topfile_of_fpath(Path("/tmp/abc.def.v.rst")))
-        'abc_def.v'
-        >>> str(CoqIdents.topfile_of_fpath(Path("/tmp/abc.def.rst.v")))
-        'abc_def.v'
-        >>> str(CoqIdents.topfile_of_fpath(Path("-")))
-        'Top.v'
+        >>> CoqIdents.split_fpath(Path("dir/abc.def.v.xyz"), strip=(".xyz",))
+        ('abc_def', '.v')
+        >>> CoqIdents.split_fpath(Path("dir/abc.rst.def"))
+        ('abc_def', '')
+        >>> CoqIdents.split_fpath(Path("-"))
+        ('', '')
         """
         if fpath.name in ("-", ""):
-            return "Top.v"
-        stem = cls.SUFFIXES.sub("", fpath.name)
-        stem = (cls.sub_chars(stem[0], cls.COQ_IDENT_START) +
-                cls.sub_chars(stem[1:], cls.COQ_IDENT_PART))
-        return stem + ".v"
+            return "", ""
+        stem, *suffixes = fpath.name.split(".")
+        suffixes = ["." + s for s in suffixes]
+        name = stem + "".join(s for s in suffixes if s not in exts + strip)
+        return cls.make_ident(name), "".join(s for s in suffixes if s in exts)
+
+    @classmethod
+    def topfile_of_fpath(cls, fpath: Path, default="Top", exts=COQ_EXTS, strip=STRIP) -> str:
+        """Normalize `fpath` into a valid Coq file name.
+
+        Extensions found in `exts` are preserved, and `exts[0]` is appended if
+        none is found.  Extensions found in `strip` are removed.  If `fpath` is
+        ``-`` or empty, `default` is used instead.
+        """
+        stem, ext = cls.split_fpath(fpath, exts, strip)
+        return (cls.make_ident(stem) if stem else default) + (ext or exts[0])
