@@ -619,7 +619,8 @@ class AlectryonPostTransform(OneTimeTransform):
     @classmethod
     def replace_one_quote(cls, node, fmt, generator):
         target = deepcopy(node.details["target"])
-        target = transforms.strip_ids_and_props(target, {"enabled"})
+        # LATER don't strip markers when block-quoting a full goal or hypothesis
+        target = transforms.strip_ids_and_props(target, {"enabled", "markers"})
         with generator.highlighter.override(lang=node.details["language"]):
             cls.replace_one(node, fmt, node.details["path"], generator.gen_part,
                             target, inline=node.details["inline"])

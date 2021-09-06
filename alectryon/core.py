@@ -62,18 +62,23 @@ Sentence = namedtuple("Sentence", "contents messages goals")
 Text = namedtuple("Text", "contents")
 
 class Enriched():
-    __slots__ = ()
     def __new__(cls, *args, **kwargs):
         if len(args) < len(getattr(super(), "_fields", ())):
             # Don't repeat fields given by position (it breaks pickle & deepcopy)
-            kwargs = {"ids": [], "markers": [], "props": {}, **kwargs}
+            kwargs = {"props": {}, **kwargs}
         return super().__new__(cls, *args, **kwargs)
+    @property
+    def ids(self):
+        return getattr(self, "props", {}).setdefault("ids", [])
+    @property
+    def markers(self):
+        return getattr(self, "props", {}).setdefault("markers", [])
 
 def _enrich(nt):
     # LATER: Use dataclass + multiple inheritance; change `ids` and `markers` to
     # mutable `id` and `marker` fields.
     name = "Rich" + nt.__name__
-    fields = nt._fields + ("ids", "markers", "props")
+    fields = nt._fields + ("props",)
     # Using ``type`` this way ensures compatibility with pickling
     return type(name, (Enriched, namedtuple(name, fields)),
                 {"__slots__": ()})

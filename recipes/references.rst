@@ -113,7 +113,7 @@ Inserting textual references
 
 Instead of inserting a link to the relevant goal fragment, you can use the ``:mquote:`` role to insert a copy of a goal fragment inline. This only works for an input sentence, the conclusion or name of a goal, and the type, body, or name of a hypothesis:
 
-    The proof above had two cases: :mquote:`.io#setup.s(destruct n).g#1.h(n = 0)` and :mquote:`.io#setup.s(destruct n).g#2.h(n = S)`.
+    The proof above had two cases: :mquote:`.io#setup.s(destruct n).g#1.h(n = 0)` (:mref:`.io#setup.s(destruct n).g#1.h(n = 0)`) and :mquote:`.io#setup.s(destruct n).g#2.h(n = S)` (:mref:`.io#setup.s(destruct n).g#2.h(n = S)`).
     The second goal below is named :mquote:`.io#pr.s(induction 1).g#2.name`.
     The last case of the proof below has two induction hypotheses: :mquote:`.io#pr.s(induction 1).g#4.h#IH*1.type` and :mquote:`.io#pr.s(induction 1).g#4.h#IH*2.type`. The two permutation hypotheses are :mquote:`.io#pr.s(induction 1).g#4.h{Permutation l l'}.name` and :mquote:`.io#pr.s(induction 1).g#4.h{Permutation l' l''}.name`.
 
