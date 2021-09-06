@@ -62,7 +62,7 @@ SOFTWARE.
 .alectryon-block, .alectryon-io,
 .alectryon-toggle-label, .alectryon-banner {
     font-family: 'Iosevka Slab Web', 'Iosevka Web', 'Iosevka Slab', 'Iosevka', 'Fira Code', monospace;
-    font-feature-settings: "XV00" 1; /* Use Coq ligatures when Iosevka is available */
+    font-feature-settings: "COQX" 1 /* Coq ligatures */, "XV00" 1 /* Legacy */, "calt" 1 /* Fallback */;
     line-height: initial;
 }
 
