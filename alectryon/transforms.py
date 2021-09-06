@@ -30,7 +30,7 @@ from collections import namedtuple
 from . import markers
 from .core import Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
-    Goals, Messages, RichSentence
+    Goals, Messages, RichSentence, ALL_LANGUAGES
 
 PathAnnot = namedtuple("PathAnnot", "raw path key val must_match")
 
@@ -136,6 +136,7 @@ IO_COMMENT_RE = {
         r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(ONE_IO_ANNOT),
         re.VERBOSE)
 }
+assert IO_COMMENT_RE.keys() == ALL_LANGUAGES
 
 def _parse_path(path):
     path = markers.parse_path(path)
@@ -225,7 +226,7 @@ def read_io_comments(fragments, lang):
         last_sentence = fr
         yield fr
 
-def read_coq_io_comments(fragments):
+def read_ml_io_comments(fragments):
     return read_io_comments(fragments, lang="coq")
 
 def _find_marked(sentence, path):
@@ -440,7 +441,7 @@ COQ_BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
 def is_coq_bullet(fr):
     return COQ_BULLET.match(fr.input.contents)
 
-def attach_coq_comments_to_code(fragments, predicate=lambda _: True):
+def attach_ml_comments_to_code(fragments, predicate=lambda _: True):
     """Attach comments immediately following a sentence to the sentence itself.
 
     This is to support this common pattern::
@@ -460,10 +461,10 @@ def attach_coq_comments_to_code(fragments, predicate=lambda _: True):
 
     >>> from .core import Sentence as S, Text as T
     >>> frs = [S("-", [], []), T(" (* … *) "), S("cbn.", [], []), T("(* … *)")]
-    >>> attach_coq_comments_to_code(frs) # doctest: +ELLIPSIS
+    >>> attach_ml_comments_to_code(frs) # doctest: +ELLIPSIS
     [RichSentence(...contents='- (* … *)'...), Text(contents=' '),
      RichSentence(...contents='cbn.(* … *)'...)]
-    >>> attach_coq_comments_to_code(frs, predicate=is_coq_bullet) # doctest: +ELLIPSIS
+    >>> attach_ml_comments_to_code(frs, predicate=is_coq_bullet) # doctest: +ELLIPSIS
     [RichSentence(...contents='- (* … *)'...), Text(contents=' '),
      RichSentence(...contents='cbn.'...), Text(contents='(* … *)')]
     """
@@ -684,21 +685,18 @@ def isolate_coqdoc(fragments):
 DEFAULT_TRANSFORMS = {
     "coq": [
         enrich_sentences,
-        attach_coq_comments_to_code,
+        attach_ml_comments_to_code,
         group_hypotheses,
-        read_coq_io_comments,
+        read_ml_io_comments,
         process_io_annots,
         strip_coq_failures,
         dedent,
     ],
-    "lean3": [
-        enrich_sentences,
-        process_io_annots,
-    ]
     # Not included:
-    #   group_whitespace_with_code (not semantically relevant except)
+    #   group_whitespace_with_code (HTML-specific)
     #   commit_io_annotations (breaks mref resolution by removing elements)
 }
+assert DEFAULT_TRANSFORMS.keys() == ALL_LANGUAGES
 
 def filter_errors(outputs, delay_errors=False):
     transformed, errors = [], []

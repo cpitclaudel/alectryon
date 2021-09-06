@@ -378,7 +378,7 @@ EXTENSIONS_BY_LANGUAGE = {
     "coq": (".v"),
 }
 
-CODE_LANGUAGES = EXTENSIONS_BY_LANGUAGE.keys()
+assert EXTENSIONS_BY_LANGUAGE.keys() == core.ALL_LANGUAGES
 CODE_EXTENSIONS = [ext for exts in EXTENSIONS_BY_LANGUAGE.values() for ext in exts]
 
 # No ‘apply_transforms’ in JSON pipelines: we save the prover output without
@@ -544,7 +544,7 @@ def _default_language_backends(lang):
 
 DEFAULT_BACKENDS = {
     **{fr: bk
-       for lang in CODE_LANGUAGES
+       for lang in core.ALL_LANGUAGES
        for (fr, bk) in _default_language_backends(lang).items()},
 
     'coqdoc': 'webpage',
@@ -559,7 +559,7 @@ def _input_frontends(lang):
 
 INPUT_LANGUAGE_BY_FRONTEND = {
     **{fr: lang
-       for lang in CODE_LANGUAGES
+       for lang in core.ALL_LANGUAGES
        for fr in _input_frontends(lang)},
 
     "coqdoc": "coq",
@@ -618,6 +618,7 @@ def post_process_arguments(parser, args):
     }
 
     args.language_drivers = {
+        **core.DEFAULT_DRIVERS,
         "coq": args.coq_driver
     }
 

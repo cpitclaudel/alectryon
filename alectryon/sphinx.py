@@ -54,7 +54,7 @@ def setup(app):
     # so no need for ``app.add_node(...)``
 
     if app.config.default_role is None:
-        app.config.default_role = docutils.coq_code_role.name
+        app.config.default_role = "coq"
 
     for (_doc, _flags, opts) in docutils.ALECTRYON_SETTINGS:
         if opts["dest"] not in ("pygments_style",): # Already in Sphinx

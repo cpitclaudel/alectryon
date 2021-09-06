@@ -54,8 +54,10 @@ class Id(Directive):
     def run(self):
         return [nodes.literal("".join(self.content))]
 
+ALL_LANGUAGES = ["coq"]
+
 # Treat .. coq:: as a regular code block and ignore .. alectryon-toggle::
-DIRECTIVES = {"coq": ProverDirective,
+DIRECTIVES = {**{lang: ProverDirective for lang in ALL_LANGUAGES},
               "alectryon-toggle": NoOp,
               "exercise": Id,
               "directive": NoOp,
@@ -70,8 +72,6 @@ def custom_code_role(lang):
         return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
     return _code_role
 
-coq_code_role = custom_code_role("coq")
-
 def no_op(role, rawtext, text, lineno, inliner, options={}, content=[]):
     return roles.generic_custom_role(
         role, rawtext, text, lineno, inliner, options, content)
@@ -84,8 +84,8 @@ no_op.options = { # type: ignore
 }
 
 ROLES = {
+    **{lang: custom_code_role(lang) for lang in ALL_LANGUAGES},
     "coqid": no_op,
-    "coq": coq_code_role,
     "alectryon-bubble": no_op,
     "mref": no_op,
     "mquote": no_op,

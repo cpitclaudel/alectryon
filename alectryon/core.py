@@ -496,9 +496,10 @@ DRIVERS_BY_LANGUAGE = {
         "coqc_time": (".coqc_time", "CoqcTime"),
     }
 }
-ALL_DRIVERS = [driver
-               for lang_driver in DRIVERS_BY_LANGUAGE.values()
-               for driver in lang_driver]
+
+DEFAULT_DRIVERS = {lang: next(iter(drivers)) for lang, drivers in DRIVERS_BY_LANGUAGE.items()}
+ALL_LANGUAGES = DEFAULT_DRIVERS.keys()
+ALL_DRIVERS = {d for ds in DRIVERS_BY_LANGUAGE.values() for d in ds}
 
 def resolve_driver(input_language, driver_name):
     if input_language not in DRIVERS_BY_LANGUAGE:

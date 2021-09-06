@@ -22,17 +22,16 @@
 
 """reStructuredText support for Alectryon.
 
-This file defines a ``.. coq::`` directive, which formats its contents using
-Alectryon::
+This file defines directives that format their contents using Alectryon::
 
-       .. coq::
+    .. coq::
 
-           Example test: nat.
+        Check nat.
 
-This directive supports various arguments to control the appearance of the
+These directives support various arguments to control the appearance of the
 output; check out the README for details.
 
-To use it, call ``docutils_support.register()`` before running your
+To use them, call ``docutils_support.register()`` before running your
 reStructuredText to HTML converter.  The generated code relies on CSS classes
 defined in the ``assets/alectryon.css`` file.
 
@@ -45,11 +44,11 @@ directive in your document, and you can ommit it entirely by setting
 contents following the checkbox are wrapped in a container with class
 ``alectryon-container``).
 
-Inline Coq highlighting is provided by the ``:coq:`` role.  By default it uses
-Pygments' default Coq highlighter (like ``.. code-block``), but you can change
-that using ``alectryon.pygments.replace_builtin_coq_lexer()``.
+Inline highlighting is provided by the ``:coq:`` role.  To replace Pygments'
+default Coq highlighter with Alectryon's everywhere, call
+``alectryon.pygments.replace_builtin_coq_lexer()``.
 
-If you write lots of inline Coq snippets, consider calling ``set_default_role``,
+If you write lots of inline code snippets, consider calling ``set_default_role``,
 which will set the default role to ``:coq:``.
 
 For convenience, ``alectryon.docutils.setup()`` can be used to perform all the
@@ -353,8 +352,8 @@ class AlectryonTransform(OneTimeTransform):
     SERTOP_ARGS = ()
     """DEPRECATED; use DRIVER_ARGS["sertop"] instead."""
 
-    LANGUAGE_DRIVERS: Dict[str, str] = {"coq": "sertop"}
-    DRIVER_ARGS: Dict[str, Iterable[str]] = {"sertop": (), "coqc_time": ()}
+    LANGUAGE_DRIVERS: Dict[str, str] = core.DEFAULT_DRIVERS
+    DRIVER_ARGS: Dict[str, Iterable[str]] = {d: () for d in core.ALL_DRIVERS}
 
     def check_for_long_lines(self, node, fragments):
         if LONG_LINE_THRESHOLD is None:
@@ -708,7 +707,7 @@ class AlectryonDirective(Directive): # pylint: disable=abstract-method
             return default, self._error(str(e))
 
 class ProverDirective(AlectryonDirective):
-    """Highlight and annotate a Coq snippet."""
+    """Highlight and annotate a code snippet."""
     required_arguments = 0
     optional_arguments = 1
     final_argument_whitespace = True
@@ -731,7 +730,7 @@ class ProverDirective(AlectryonDirective):
         annots, errors = self._try(transforms.read_all_io_flags,
                                    annotstr, False, default=transforms.IOAnnots())
 
-        indent, contents = recompute_contents(self, CoqDirective.EXPECTED_INDENTATION)
+        indent, contents = recompute_contents(self, ProverDirective.EXPECTED_INDENTATION)
         source, line = self.state_machine.get_source_and_line(self.content_offset + 1)
 
         col_offset = indent
@@ -753,9 +752,12 @@ class ProverDirective(AlectryonDirective):
 
         return [pending] + errors
 
-class CoqDirective(ProverDirective):
-    """Highlight and annotate a Coq snippet."""
-    name = "coq"
+def DriverDirective(lang: str):
+    return type("{}Directive".format(lang.capitalize()),
+                (ProverDirective,),
+                {"name": lang})
+
+DRIVER_DIRECTIVES = [DriverDirective(lang) for lang in core.ALL_LANGUAGES]
 
 class AlectryonToggleDirective(Directive):
     """Display a checkbox allowing readers to show all output at once."""
@@ -881,7 +883,7 @@ def mk_code_role(lang):
     code_role.name = lang
     return code_role
 
-coq_code_role = mk_code_role("coq")
+CODE_ROLES = {lang: mk_code_role(lang) for lang in core.ALL_LANGUAGES}
 
 COQ_ID_RE = re.compile(r"^(?P<title>.*?)(?:\s*<(?P<target>.*)>)?$")
 COQ_IDENT_DB_URLS = [
@@ -1443,14 +1445,14 @@ TRANSFORMS = [ActivateMathJaxTransform,
               AlectryonTransform,
               AlectryonMrefTransform,
               AlectryonPostTransform]
-DIRECTIVES = [CoqDirective,
+DIRECTIVES = [*DRIVER_DIRECTIVES,
               AlectryonToggleDirective,
               MQuoteDirective,
               MAssertDirective,
               ExperimentalExerciseDirective,
               DirectiveDirective]
-ROLES = [alectryon_bubble,
-         coq_code_role,
+ROLES = [*CODE_ROLES.values(),
+         alectryon_bubble,
          coq_id_role,
          marker_ref_role,
          marker_quote_role]
@@ -1466,8 +1468,7 @@ def set_default_role(lang="coq"):
     """Set the default role (the one used with single backticks) to :``lang``:."""
     for role in ROLES:
         if role.name == lang:
-            roles.register_canonical_role(coq_code_role.name, coq_code_role)
-            roles.DEFAULT_INTERPRETED_ROLE = coq_code_role.name # type: ignore
+            roles.DEFAULT_INTERPRETED_ROLE = CODE_ROLES["coq"].name # type: ignore
             return
     raise ValueError("Unsupported language: {}".format(lang))
 
