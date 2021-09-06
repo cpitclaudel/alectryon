@@ -45,11 +45,11 @@ def indent(text, prefix):
     text = re.sub("^(?!$)", prefix, text, flags=re.MULTILINE)
     return re.sub("^$", prefix.rstrip(), text, flags=re.MULTILINE)
 
-def debug(text, prefix):
-    if isinstance(text, (bytes, bytearray)):
-        text = text.decode("utf-8", errors="replace")
+def debug(v, prefix):
+    if isinstance(v, (bytes, bytearray)):
+        v = v.decode("utf-8", errors="replace")
     if DEBUG:
-        print(indent(text.rstrip(), prefix), flush=True)
+        print(indent(str(v).rstrip(), prefix), flush=True)
 
 class DriverInfo(namedtuple("DriverInfo", "name version")):
     def fmt(self, include_version_info=True):
