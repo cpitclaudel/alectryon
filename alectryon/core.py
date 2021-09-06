@@ -494,6 +494,17 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
         """Start or restart this prover instance."""
         self.repl = self._start(stderr=None)
 
+class TextREPLDriver(REPLDriver): # pylint: disable=abstract-method
+    REPL_ENCODING = "utf-8"
+
+    def _start(self, *args, **kwargs):
+        repl = super()._start(*args, **kwargs)
+        repl.stdin = TextIOWrapper( #type: ignore
+            repl.stdin, write_through=True, encoding=self.REPL_ENCODING) #type: ignore
+        repl.stdout = TextIOWrapper( #type: ignore
+            repl.stdout, encoding=self.REPL_ENCODING) #type: ignore
+        return repl
+
 DRIVERS_BY_LANGUAGE = {
     "coq": {
         "sertop": (".serapi", "SerAPI"),
