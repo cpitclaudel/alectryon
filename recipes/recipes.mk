@@ -93,6 +93,15 @@ _output/literate_coq.min.stdin.rst: literate_coq.v | _output/
 	cd ..; $(PYTHON) -m alectryon.literate --coq2rst - < recipes/$< > recipes/$@
 recipes_targets += _output/literate_coq.min.stdin.rst
 
+# reST → HTML
+_output/literate_easycrypt.html: literate_easycrypt.ec.rst
+	$(alectryon) $<
+recipes_targets += _output/literate_easycrypt.html
+# reST → HTML
+_output/literate_easycrypt.tex: literate_easycrypt.ec.rst
+	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex
+recipes_targets += _output/literate_easycrypt.tex
+
 # reST+Coq → HTML
 _output/literate_reST.html: literate_reST.rst
 	$(alectryon) $<

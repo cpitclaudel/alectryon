@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<title>Proof Engine</title>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="pygments.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running EasyCrypt. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="proof-engine">
+<h1 class="title">Proof Engine</h1>
+
+<p>To compile:</p>
+<pre class="literal-block">
+alectryon literate_easycrypt.ec.rst
+    # reST → HTML; produces ‘literate_easycrypt.html’
+$ DOCUTILSCONFIG=literate.docutils.conf alectryon \
+  literate_easycrypt.ec.rst --backend latex
+    # reST → HTML; produces ‘literate_easycrypt.tex’
+</pre>
+<p>EasyCrypt’s proof engine works with goal lists, where a <em>goal</em> has
+two parts:</p>
+<ul class="simple">
+<li>A <em>context</em> consisting of a<ul>
+<li>a set of type variables, and</li>
+<li>an <em>ordered</em> set of <em>assumptions</em>, consisting of identifiers with
+their types, memories, module names with their module types and
+restrictions, local definitions, and <em>hypotheses</em>, i.e., formulas.
+An identifier’s type may involve the type variables, the local
+definitions and formulas may involve the type variables,
+identifiers, memories and module names.</li>
+</ul>
+</li>
+<li>A <em>conclusion</em>, consisting of a single formula, with the same
+constraints as the assumption formulas.</li>
+</ul>
+<p>Informally, to prove a goal, one must show the conclusion to be true,
+given the truth of the hypotheses, for all valid instantiations of the
+assumption identifiers, memories and module names.</p>
+<p>For example, the following is a goal:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk0" style="display: none" type="checkbox"><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>'a, 'b</var><span class="hyp-type"><b>: </b><span><span class="vm">type</span></span></span></span><br><span><var>x, x'</var><span class="hyp-type"><b>: </b><span><span class="vm">&#39;a</span></span></span></span><br><span><var>y, y'</var><span class="hyp-type"><b>: </b><span><span class="vm">&#39;b</span></span></span></span><br><span><var>eq_xx'</var><span class="hyp-type"><b>: </b><span>x = x&#39;</span></span></span><br><span><var>eq_yy'</var><span class="hyp-type"><b>: </b><span>y = y&#39;</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(x, y) = (x&#39;, y&#39;)</div></blockquote></div></div></small></span></pre><p>And, in the context of the following declarations:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">module</span> <span class="kn">type</span> T = {
+  <span class="nb">proc</span> f() : unit
+}.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">module</span> G(X : T) = {
+  <span class="kr">var</span> x : int
+  <span class="nb">proc</span> g() : unit = {
+    X.f();
+  }
+}.</span></span></pre><p>… the following is a goal:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk1" style="display: none" type="checkbox"><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>X</var><span class="hyp-type"><b>: </b><span>T{G}</span></span></span><br><span><var>n</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br><span><var>LL</var><span class="hyp-type"><b>: </b><span><span class="kr">islossless</span> X.f</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="gs">Context :</span> G(X).g
+<span class="gs">Bound   :</span> [=] 1<span class="sa">%r</span>
+
+<span class="gs">pre =</span> G.x = n
+
+<span class="nl">(1)</span>  X.f()
+
+<span class="gs">post =</span> G.x = n</div></blockquote></div></div></small></span></pre><p>The conclusion of this goal is just a nonlinear rendering of the following
+formula, as EasyCrypt’s pretty printer renders <em>pRHL</em>, <em>pHL</em> and <em>HL</em>
+judgements in such a nonlinear style when the judgements appear as (as opposed
+to in) the conclusions of goals</p>
+<pre class="code easycrypt literal-block">
+<span class="kr">phoare</span> [<span class="n">G</span>(<span class="n">X</span>).<span class="n">g</span> : <span class="n">G</span>.<span class="n">x</span> = <span class="n">n</span> ==&gt; <span class="n">G</span>.<span class="n">x</span> = <span class="n">n</span>] = <span class="n">1</span><span class="sa">%r</span>.
+</pre>
+<p>Internally, EasyCrypt’s proof engine also works with <em>pRHL</em>,
+<em>pHL</em> and <em>HL</em> judgments involving lists of statements rather than
+procedure names, which we’ll call <em>statement judgements</em>, below. For
+example, take the following declaration:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">module</span> M = {
+  <span class="nb">proc</span> f(y : int) = {
+    <span class="kr">if</span> (y %% 3 = 1) y &lt;- y + 4;
+    <span class="kr">else</span> y &lt;- y + 2;
+    <span class="kr">return</span> y;
+  }
+}.</span></span></pre><p>This is a <em>pHL</em> statement judgement:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk2" style="display: none" type="checkbox"><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>x</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br><span><var>zor1_x</var><span class="hyp-type"><b>: </b><span>x = 1 \/ x = 2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="gs">Context :</span> M.f
+
+<span class="gs">pre =</span> y %% 3 = x /\ y %% 3 = 1
+
+<span class="nl">(1)</span>  y &lt;- y + 4
+
+<span class="gs">post =</span> y %% 3 = x %% 2 + 1</div></blockquote></div></div></small></span></pre><p>The pre- and post-conditions of a statement judgement may refer to the
+parameters and local variables of the <em>procedure context</em> of the
+conclusion—<code class="highlight easycrypt"><span class="n">M</span>.<span class="n">f</span></code> in the preceding example. They may also refer to
+the memories <code class="highlight easycrypt">&amp;<span class="n">1</span></code> and <code class="highlight easycrypt">&amp;<span class="n">2</span></code> in the case of <em>pRHL</em> statement
+judgements. When a statement judgement appears anywhere other than as
+the conclusion of a goal, the pretty printer renders it in abbreviated
+linear syntax. E.g., the preceding goal is rendered as</p>
+<pre class="code easycrypt literal-block">
+<span class="kr">hoare</span>[<span class="kr">if</span> (<span class="n">x</span> %% <span class="n">3</span> = <span class="n">1</span>) {...} : <span class="n">x</span> %% <span class="n">3</span> = <span class="n">n</span> ==&gt; <span class="n">x</span> %% <span class="n">3</span> = <span class="n">n</span> %% <span class="n">2</span> + <span class="n">1</span>]
+</pre>
+<p>Statement judgements can’t be directly input by the user.</p>
+<p>We use the term <em>program</em> to refer to <em>either</em> a procedure appearing in
+a <em>pRHL</em>, <em>pHL</em> or <em>HL</em> judgement, <em>or</em> a statement list
+appearing in a <em>pRHL</em>, <em>pHL</em> or <em>HL</em> statement judgement. In
+the case of <em>pRHL</em> (statement) judgements, we speak of the <em>left</em> and
+<em>right</em> programs, also using <em>program 1</em> for the left program, and
+<em>program 2</em> for the right one. We will only speak of a program’s
+<em>length</em> when it’s a statement list we are referring to. By the <em>empty</em>
+program, we mean the statement list with no statements.</p>
+<p>When the proof of a lemma is begun, the proof engine starts out with a
+single goal, consisting of the lemma’s statement:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk3"><span class="kn">lemma</span> PairEq [<span class="vm">&#39;a</span>, <span class="vm">&#39;b</span>] :
+  <span class="kr">forall</span> (x x&#39; : <span class="vm">&#39;a</span>) (y y&#39; : <span class="vm">&#39;b</span>),
+  x = x&#39; =&gt; y = y&#39; =&gt; (x, y) = (x&#39;, y&#39;).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>'a, 'b</var><span class="hyp-type"><b>: </b><span><span class="vm">type</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">forall</span> (x x&#39; : <span class="vm">&#39;a</span>) (y y&#39; : <span class="vm">&#39;b</span>),
+  x = x&#39; =&gt; y = y&#39; =&gt; (x, y) = (x&#39;, y&#39;)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span></pre><p>For parameterized lemmas, the goal includes the lemma’s parameters as
+assumptions. E.g.,</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk4"><span class="kn">lemma</span> PairEq_param (x x&#39; : <span class="vm">&#39;a</span>) (y y&#39; : <span class="vm">&#39;b</span>) :
+  x = x&#39; =&gt; y = y&#39; =&gt; (x, y) = (x&#39;, y&#39;).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>'a, 'b</var><span class="hyp-type"><b>: </b><span><span class="vm">type</span></span></span></span><br><span><var>x, x'</var><span class="hyp-type"><b>: </b><span><span class="vm">&#39;a</span></span></span></span><br><span><var>y, y'</var><span class="hyp-type"><b>: </b><span><span class="vm">&#39;b</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">x = x&#39; =&gt; y = y&#39; =&gt; (x, y) = (x&#39;, y&#39;)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span></pre><p>EasyCrypt’s tactics, when applicable, reduce the first goal to zero or
+more subgoals.  Here is a detailed example.  We start with a lemma
+statement:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk5" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk5"><span class="kn">lemma</span> L (x : int) :
+  x = 1 \/ x = 2 =&gt;
+  <span class="kr">hoare</span>[M.f : y %% 3 = x ==&gt; <span class="kr">res</span> %% 3 = (x %% 2) + 1].</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>x</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">x = 1 \/ x = 2 =&gt;
+<span class="kr">hoare</span>[ M.f : y %% 3 = x ==&gt; <span class="kr">res</span> %% 3 = x %% 2 + 1]</div></blockquote></div></div></small></span></pre><p>Then, we proceed through the proof step by step:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk6" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk6" id="literate-easycrypt-ec-rst-s-proof-0"><span class="kn">proof</span>.<span class="alectryon-mref-marker">1</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>x</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">x = 1 \/ x = 2 =&gt;
+<span class="kr">hoare</span>[ M.f : y %% 3 = x ==&gt; <span class="kr">res</span> %% 3 = x %% 2 + 1]</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk7" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk7" id="literate-easycrypt-ec-rst-s-move-0"><span class="nb">move</span>=&gt; zor1_x.<span class="alectryon-mref-marker">2</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>x</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br><span id="literate-easycrypt-ec-rst-s-move-h-x-1-0"><var>zor1_x</var><span class="hyp-type"><b>: </b><span>x = 1 \/ x = 2</span></span><span class="alectryon-mref-marker">3</span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="gs">pre =</span> y %% 3 = x
+
+    M.f
+
+<span class="gs">post =</span> <span class="kr">res</span> %% 3 = x %% 2 + 1</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk8" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk8" id="literate-easycrypt-ec-rst-s-proc-0"><span class="nb">proc</span>.<span class="alectryon-mref-marker">4</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>x</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br><span><var>zor1_x</var><span class="hyp-type"><b>: </b><span>x = 1 \/ x = 2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="gs">Context :</span> M.f
+
+<span class="gs">pre =</span> y %% 3 = x
+
+<span class="nl">(1--)</span>  <span class="kr">if</span> (y %% 3 = 1) {
+<span class="nl">(1.1)</span>    y &lt;- y + 4
+<span class="nl">(1--)</span>  } <span class="kr">else</span> {
+<span class="nl">(1?1)</span>    y &lt;- y + 2
+<span class="nl">(1--)</span>  }
+
+<span class="gs">post =</span> y %% 3 = x %% 2 + 1</div></blockquote></div></div></small></span></pre><p>The <code class="highlight easycrypt"><span class="kn">proof</span></code> command <a class="alectryon-mref reference internal" href="#literate-easycrypt-ec-rst-s-proof-0">1</a> starts the tactic script.  The <code class="highlight easycrypt"><span class="nb">move</span></code> <a class="alectryon-mref reference internal" href="#literate-easycrypt-ec-rst-s-move-0">2</a> then introduces the left part of the implication into the context, creating hypothesis <samp class="alectryon-inline highlight"><!-- Generator: Alectryon --><span><var>zor1_x</var><span class="hyp-type"><b>: </b><span>x = <span class="mi">1</span> \/ x = <span class="mi">2</span></span></span></span></samp> (<a class="alectryon-mref reference internal" href="#literate-easycrypt-ec-rst-s-move-h-x-1-0">3</a>).  The following tactic, <code class="highlight easycrypt"><span class="nb">proc</span></code> <a class="alectryon-mref reference internal" href="#literate-easycrypt-ec-rst-s-proc-0">4</a>, unfold <code class="highlight easycrypt"><span class="n">M</span>.<span class="n">f</span></code> and displays its code.  Given that the code includes a branch, we then invoke the <code class="highlight easycrypt"><span class="kr">if</span></code> tactic, which creates two goals: one for the <code class="highlight easycrypt"><span class="kr">if</span></code> branch and one for the <code class="highlight easycrypt"><span class="kr">else</span></code> branch:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk9" style="display: none" type="checkbox"><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>x</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br><span><var>zor1_x</var><span class="hyp-type"><b>: </b><span>x = 1 \/ x = 2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="gs">Context :</span> M.f
+
+<span class="gs">pre =</span> y %% 3 = x /\ y %% 3 = 1
+
+<span class="nl">(1)</span>  y &lt;- y + 4
+
+<span class="gs">post =</span> y %% 3 = x %% 2 + 1</div></blockquote></div></div></small></span></pre><p>We handle both goals in the same way; first, the <code class="highlight easycrypt"><span class="kr">if</span></code> branch:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chka" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chka" id="literate-easycrypt-ec-rst-s-wp-0"><span class="nb">wp</span>.<span class="alectryon-mref-marker">5</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>x</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br><span><var>zor1_x</var><span class="hyp-type"><b>: </b><span>x = 1 \/ x = 2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="gs">Context :</span> M.f
+
+<span class="gs">pre =</span> y %% 3 = x /\ y %% 3 = 1
+
+
+<span class="gs">post =</span> (y + 4) %% 3 = x %% 2 + 1</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chkb" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chkb" id="literate-easycrypt-ec-rst-s-skip-0"><span class="nb">skip</span>.<span class="alectryon-mref-marker">6</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>x</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br><span><var>zor1_x</var><span class="hyp-type"><b>: </b><span>x = 1 \/ x = 2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">forall</span> &amp;hr,
+  y{hr} %% 3 = x /\ y{hr} %% 3 = 1 =&gt;
+  (y{hr} + 4) %% 3 = x %% 2 + 1</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input" id="literate-easycrypt-ec-rst-s-smt-0"><span class="bp">smt</span>.<span class="alectryon-mref-marker">7</span></span></span></pre><p>The <code class="highlight easycrypt"><span class="nb">wp</span></code> tactic <a class="alectryon-mref reference internal" href="#literate-easycrypt-ec-rst-s-wp-0">5</a> runs a weakest-precondition calculation, consuming the program and yielding a new postcondition; then <code class="highlight easycrypt"><span class="nb">skip</span></code> <a class="alectryon-mref reference internal" href="#literate-easycrypt-ec-rst-s-skip-0">6</a> transforms the statement judgment about an empty program into a logic formula, and finally the <code class="highlight easycrypt"><span class="bp">smt</span></code> tactic <a class="alectryon-mref reference internal" href="#literate-easycrypt-ec-rst-s-smt-0">7</a> solves the goal using
+SMT provers, leaving no subgoals for this branch.</p>
+<p>We solve the <code class="highlight easycrypt"><span class="kr">else</span></code> branch in the same way;</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="literate-easycrypt-ec-rst-chkc" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chkc"><span class="nb">wp</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>x</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br><span><var>zor1_x</var><span class="hyp-type"><b>: </b><span>x = 1 \/ x = 2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="gs">Context :</span> M.f
+
+<span class="gs">pre =</span> y %% 3 = x /\ y %% 3 &lt;&gt; 1
+
+
+<span class="gs">post =</span> (y + 2) %% 3 = x %% 2 + 1</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="literate-easycrypt-ec-rst-chkd" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chkd"><span class="nb">skip</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>x</var><span class="hyp-type"><b>: </b><span>int</span></span></span><br><span><var>zor1_x</var><span class="hyp-type"><b>: </b><span>x = 1 \/ x = 2</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">forall</span> &amp;hr,
+  y{hr} %% 3 = x /\ y{hr} %% 3 &lt;&gt; 1 =&gt;
+  (y{hr} + 2) %% 3 = x %% 2 + 1</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="literate-easycrypt-ec-rst-chke" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chke"><span class="bp">smt</span>.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">No more goals</blockquote></div></div></small></span></pre><p>A finally, the lemma’s proof may be saved, using the step <code class="highlight easycrypt"><span class="kn">qed</span></code>, when
+the list of goals becomes empty. And this must be done before anything
+else may be done.</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chkf" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chkf"><span class="kn">qed</span>.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">+ added <span class="kn">lemma</span>: `L&#39;</blockquote></div></div></small></span></pre><p>Here is how the proof of the pair-equality lemma goes:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk10" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk10"><span class="kn">lemma</span> PairEq [<span class="vm">&#39;a</span>, <span class="vm">&#39;b</span>] :
+  <span class="kr">forall</span> (x x&#39; : <span class="vm">&#39;a</span>) (y y&#39; : <span class="vm">&#39;b</span>),
+  x = x&#39; =&gt; y = y&#39; =&gt; (x, y) = (x&#39;, y&#39;).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>'a, 'b</var><span class="hyp-type"><b>: </b><span><span class="vm">type</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">forall</span> (x x&#39; : <span class="vm">&#39;a</span>) (y y&#39; : <span class="vm">&#39;b</span>),
+  x = x&#39; =&gt; y = y&#39; =&gt; (x, y) = (x&#39;, y&#39;)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk11" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk11"><span class="kn">proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>'a, 'b</var><span class="hyp-type"><b>: </b><span><span class="vm">type</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">forall</span> (x x&#39; : <span class="vm">&#39;a</span>) (y y&#39; : <span class="vm">&#39;b</span>),
+  x = x&#39; =&gt; y = y&#39; =&gt; (x, y) = (x&#39;, y&#39;)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk12" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk12"><span class="nb">move</span>=&gt; x x&#39; y y&#39;.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>'a, 'b</var><span class="hyp-type"><b>: </b><span><span class="vm">type</span></span></span></span><br><span><var>x, x'</var><span class="hyp-type"><b>: </b><span><span class="vm">&#39;a</span></span></span></span><br><span><var>y, y'</var><span class="hyp-type"><b>: </b><span><span class="vm">&#39;b</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">x = x&#39; =&gt; y = y&#39; =&gt; (x, y) = (x&#39;, y&#39;)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk13" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk13"><span class="nb">move</span>=&gt; eq_xx&#39; eq_yy&#39;.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>'a, 'b</var><span class="hyp-type"><b>: </b><span><span class="vm">type</span></span></span></span><br><span><var>x, x'</var><span class="hyp-type"><b>: </b><span><span class="vm">&#39;a</span></span></span></span><br><span><var>y, y'</var><span class="hyp-type"><b>: </b><span><span class="vm">&#39;b</span></span></span></span><br><span><var>eq_xx'</var><span class="hyp-type"><b>: </b><span>x = x&#39;</span></span></span><br><span><var>eq_yy'</var><span class="hyp-type"><b>: </b><span>y = y&#39;</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(x, y) = (x&#39;, y&#39;)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk14" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk14"><span class="nb">rewrite</span> eq_xx&#39; eq_yy&#39;.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>'a, 'b</var><span class="hyp-type"><b>: </b><span><span class="vm">type</span></span></span></span><br><span><var>x, x'</var><span class="hyp-type"><b>: </b><span><span class="vm">&#39;a</span></span></span></span><br><span><var>y, y'</var><span class="hyp-type"><b>: </b><span><span class="vm">&#39;b</span></span></span></span><br><span><var>eq_xx'</var><span class="hyp-type"><b>: </b><span>x = x&#39;</span></span></span><br><span><var>eq_yy'</var><span class="hyp-type"><b>: </b><span>y = y&#39;</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">(x&#39;, y&#39;) = (x&#39;, y&#39;)</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk15" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk15"><span class="bp">reflexivity</span>.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">No more goals</blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="literate-easycrypt-ec-rst-chk16" style="display: none" type="checkbox"><label class="alectryon-input" for="literate-easycrypt-ec-rst-chk16"><span class="kn">qed</span>.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">+ added <span class="kn">lemma</span>: `PairEq&#39;</blockquote></div></div></small></span></pre><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Applying a tactic may fail; in this case an error message is issued and
+the list of goals is left unchanged.</p>
+<!-- FIXME: needs a way to allow errors in compilation mode too.
+
+For example:
+
+.. easycrypt::
+
+   lemma eq_refl ['a] (x: 'a) : x = x.
+   proof.
+     move=> y. (* .unfold *)
+   abort. -->
+</div>
+</div>
+</div></body>
+</html>
