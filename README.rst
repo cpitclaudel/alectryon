@@ -93,7 +93,7 @@ Annotate snippets (``pre.alectryon``) within an HTML document:
       alectryon coq.html
       alectryon --frontend html --backend webpage coq.html -o coq.annotated.html
 
-Annotate snippets (``\begin{coq}``) within a TeX/LaTeX document (make sure to add ``\usepackage{alectryon}`` and ``\usepackage{pygments}`` to your preamble):
+Annotate snippets (``\begin{alectryon}{coq}{unfold}``) within a TeX/LaTeX document (make sure to add ``\usepackage{alectryon}`` and ``\usepackage{pygments}`` to your preamble):
 
    .. code::
 

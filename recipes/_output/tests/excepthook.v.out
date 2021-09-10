@@ -2,6 +2,7 @@ Traceback (most recent call last):
   File …, line …, in <module>
   File …, line …, in main
   File …, line …, in process_pipelines
+  File …, line …, in run_pipeline
   File …, line …, in call_pipeline_step
   File …, line …, in ctx_invoke
   File …, line …, in read_plain

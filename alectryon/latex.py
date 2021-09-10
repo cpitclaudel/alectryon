@@ -315,7 +315,3 @@ class LatexGenerator(Backend):
             for fr in fragments:
                 self.gen_fragment(fr)
             return env
-
-    def gen(self, annotated):
-        for fragments in annotated:
-            yield self.gen_fragments(fragments)

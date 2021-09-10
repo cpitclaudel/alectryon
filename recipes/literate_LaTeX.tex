@@ -1,0 +1,55 @@
+\documentclass[10pt]{beamer}
+
+\usetheme{default}
+
+\title{Writing Alectryon documents in LaTeX}
+
+\usepackage{alectryon}
+\usepackage{pygments}
+
+\begin{document}
+\maketitle
+
+\begin{frame}[fragile]{Compiling this example}
+  In LaTeX mode alectryon takes a LaTeX document as input, and produces a LaTeX
+  document as output, with code blocks annotated:
+
+  \begin{verbatim}
+$ alectryon literate_LaTeX.tex
+  # LaTeX → LaTeX,
+    produces ‘literate_LaTeX.annotated.tex’
+  \end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Showing input-output examples}
+  In LaTeX Coq fragments are written as \verb|\begin{alectryon}{coq}{}|:
+
+  \begin{alectryon}{coq}{}
+  Goal exists x, x * x = 49 /\ x < 10.
+    let rec t n :=
+      (exists n; split; [reflexivity |]) || t (S n) in
+    t 0.
+    unfold lt.
+    repeat constructor.
+  Qed.
+  \end{alectryon}
+\end{frame}
+
+\begin{frame}[fragile]{Customizing output}
+  IO comments work as usual, but you can also put IO flags in the second argument of the \verb|{alectryon}| environment to specify the same flags that you would put on the first line of a \verb|.. coq::| directive.
+
+  Note also that special characters in \verb|{alectryon}| environments don't need to be escaped, since Alectryon is used as a preprocessor.
+
+  \begin{alectryon}{coq}{none}
+  Require Import ZArith.
+  \end{alectryon}
+
+  \begin{alectryon}{coq}{unfold messages fails}
+  Fail Check z + 0%nat.
+  \end{alectryon}
+\end{frame}
+
+\begin{frame}{Help wanted!}
+  We'd love to add support for converting between Coq and LaTeX, just like we have support for converting between Coq and reST.  Please send patches!
+\end{frame}
+\end{document}

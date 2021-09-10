@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import ClassVar, Dict, Optional, Tuple, List, Union, NamedTuple, TYPE_CHECKING
+from typing import Any, ClassVar, Dict, Optional, Tuple, List, Union, NamedTuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from bs4 import BeautifulSoup, ResultSet
@@ -49,6 +49,38 @@ def read_json(_, fpath, input_is_stdin):
 def parse_plain(contents, fpath):
     return [core.PosStr(contents, core.Position(fpath, 1, 1), 0)]
 
+class CodeSnippet(NamedTuple):
+    contents: Any
+    lang: str
+    annots: str
+
+    @property
+    def io_annots(self):
+        from .transforms import read_all_io_flags
+        return self.annots and read_all_io_flags(self.annots)
+
+    @staticmethod
+    def _by_lang(snippets: list["CodeSnippet"]) -> "SnippetCollection":
+        bylang = {}
+        for snippet in snippets:
+            bylang.setdefault(snippet.lang, []).append(snippet)
+        return bylang
+
+    @staticmethod
+    def _update(snippets: list["CodeSnippet"], items):
+        for snippet, contents in zip(snippets, items):
+            yield snippet._replace(contents=contents)
+
+    @staticmethod
+    def _update_by_lang(snippets, by_lang):
+        iters = { k: iter(vs) for k, vs in by_lang.items() }
+        for snippet in snippets:
+            if isinstance(snippet, CodeSnippet):
+                snippet = next(iters[snippet.lang])
+            yield snippet
+
+SnippetCollection = dict[str, list[CodeSnippet]]
+
 def _catch_parsing_errors(fpath, k, *args):
     from .literate import ParsingError
     try:
@@ -66,24 +98,36 @@ def markup_to_code(rst, fpath, point, marker, frontend, backend):
     markup = get_markup(frontend, backend.replace("+rst", ""))
     return _catch_parsing_errors(fpath, markup2code_marked, markup, rst, point, marker)
 
-def init_driver(input_language, driver_name, driver_args, fpath):
-    driver_cls = core.resolve_driver(input_language, driver_name)
-    return driver_cls(driver_args, fpath=fpath)
-
-def _get_driver(ctx):
-    driver = ctx["driver"] = ctx.get("driver") or ctx_invoke(init_driver, ctx)
-    return driver
+def _annotate_chunks(chunks, fpath, driver_config, cache, exit_code):
+    from .core import StderrObserver
+    driver = driver_config.init_driver(fpath)
+    annotated = cache.update(chunks, driver)
+    assert isinstance(driver.observer, StderrObserver)
+    exit_code.val = int(exit_code.val or driver.observer.exit_code >= 3)
+    return annotated
 
 def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
-                    input_language, exit_code, ctx):
-    from .core import StderrObserver
+                    driver_configs, input_language, exit_code):
     from .json import CacheSet
-    driver = _get_driver(ctx)
     with CacheSet(cache_directory, fpath, cache_compression) as caches:
-        annotated = caches[input_language].update(chunks, driver)
-        assert isinstance(driver.observer, StderrObserver)
-        exit_code.val = int(driver.observer.exit_code >= 3)
-        return annotated
+        return _annotate_chunks(chunks, fpath, driver_configs[input_language],
+                                caches[input_language], exit_code)
+
+def _annotate_snippets(snippets, fpath, driver_config, cache, exit_code):
+    contents = [s.contents for s in snippets]
+    annotated = _annotate_chunks(contents, fpath, driver_config, cache, exit_code)
+    return list(CodeSnippet._update(snippets, annotated))
+
+def annotate_polyglot(snippets: list[CodeSnippet], fpath, cache_directory, cache_compression,
+                      driver_configs, exit_code):
+    from .json import CacheSet
+    with CacheSet(cache_directory, fpath, cache_compression) as caches:
+        return {
+            lang: _annotate_snippets(snippets, fpath,
+                                     driver_configs[lang], caches[lang],
+                                     exit_code)
+            for lang, snippets in CodeSnippet._by_lang(snippets).items()
+        }
 
 # Passing these settings avoids `FutureWarning`s
 DOCUTILS_FUTURE_WARNINGS_SETTINGS_OVERRIDES = {
@@ -201,13 +245,28 @@ def _docutils_cmdline(description, frontend, backend, dialect):
                             **DOCUTILS_FUTURE_WARNINGS_SETTINGS_OVERRIDES},
         description="{} {}".format(description, default_description))
 
-def _scrub_fname(fname):
-    return re.sub("[^-a-zA-Z0-9]", "-", fname)
+def inherit_io_annots(snippets: list[CodeSnippet]):
+    from .transforms import inherit_io_annots as inherit_annots
+    for snippet in snippets:
+        if annots := snippet.io_annots:
+            fragments = list(inherit_annots(snippet.contents, annots))
+            snippet = snippet._replace(contents=fragments)
+        yield snippet
+
+def remove_hidden_snippets(snippets: list[CodeSnippet]):
+    from .transforms import all_hidden
+    for snippet in snippets:
+        if snippet.annots and all_hidden(snippet.contents, snippet.io_annots):
+            snippet = snippet._replace(contents=None)
+        yield snippet
 
 def apply_transforms(annotated, input_language):
     from .transforms import default_transform
     for fragments in annotated:
         yield default_transform(fragments, input_language)
+
+def _scrub_fname(fname):
+    return re.sub("[^-a-zA-Z0-9]", "-", fname)
 
 def gen_html_snippets(annotated, fname, input_language,
                       html_minification, pygments_style):
@@ -351,12 +410,18 @@ def _add_html_minification_class(html_classes, html_minification):
     if html_minification:
         html_classes.append("minified")
 
+def _get_banner(fpath, driver_configs, include_vernums):
+    from .html import gen_banner
+    vi = [dc.init_driver(fpath).version_info()
+          for dc in driver_configs.values() if dc.used]
+    return gen_banner(vi, include_vernums)
+
 def dump_html_standalone(snippets, fname, webpage_style,
-                         html_minification, include_banner, include_vernums,
+                         html_minification, include_banner,
                          assets, html_classes, ctx) -> str:
     from dominate import tags, document
     from dominate.util import raw
-    from .html import gen_banner, wrap_classes
+    from .html import wrap_classes
 
     doc = document(title=fname)
     doc.set_attribute("class", "alectryon-standalone")
@@ -369,7 +434,7 @@ def dump_html_standalone(snippets, fname, webpage_style,
 
     root = doc.body.add(tags.article(cls=cls))
     if include_banner:
-        root.add(raw(gen_banner([_get_driver(ctx).version_info()], include_vernums)))
+        root.add(raw(ctx_invoke(_get_banner, ctx)))
     for snippet in snippets:
         root.add(snippet)
 
@@ -379,32 +444,33 @@ class ParsedHTMLDocument:
     """A parsed HTML document."""
     HTML_CODE_BLOCK_SELECTOR: ClassVar[str] = "pre.alectryon"
 
-    def __init__(self, html: str):
+    def __init__(self, html: str, input_language: str):
         self.soup: BeautifulSoup = _parse_html(html)
         self.tags: ResultSet = self.soup.select(self.HTML_CODE_BLOCK_SELECTOR)
+        self.snippets: list[CodeSnippet] = [
+            CodeSnippet(tag.text, tag.get("data-lang", input_language), tag.get("data-io"))
+            for tag in self.tags
+        ]
 
-    @property
-    def chunks(self):
-        return [tag.text for tag in self.tags]
-
-    def update(self, chunks):
+    def update(self, by_lang):
         from bs4.element import PreformattedString
-        chunks = list(chunks)
-        assert(len(self.tags) == len(chunks))
-        for block, chunk in zip(self.tags, chunks):
-            block.clear()
-            block.append(PreformattedString(str(chunk)))
+        snippets = CodeSnippet._update_by_lang(self.snippets, by_lang)
+        for tag, snippet in zip(self.tags, snippets):
+            if snippet.contents is None:
+                tag.decompose()
+            else:
+                tag.replace_with(PreformattedString(str(snippet.contents)))
 
-def parse_html(state, ctx) -> List[str]:
+def parse_html(state, input_language, ctx) -> list[CodeSnippet]:
     """Separate code snippets from HTML document `state`."""
-    ctx["document"] = document = ParsedHTMLDocument(state)
-    return document.chunks
+    ctx["document"] = document = ParsedHTMLDocument(state, input_language)
+    return document.snippets
 
-def unparse_html(chunks, document, html_minification, include_banner, include_vernums,
+def unparse_html(chunks, document, html_minification, include_banner,
                  assets, html_classes, webpage_style, ctx) -> str:
     """Replace code blocks in `document` with annotated `chunks`."""
     from bs4.element import PreformattedString
-    from .html import gen_banner, wrap_classes
+    from .html import wrap_classes
     document.update(chunks)
 
     head, body = document.soup.find("head"), document.soup.find("body")
@@ -415,44 +481,49 @@ def unparse_html(chunks, document, html_minification, include_banner, include_ve
 
     if include_banner:
         from bs4.element import PreformattedString
-        body.insert(0, PreformattedString(gen_banner([_get_driver(ctx).version_info()], include_vernums)))
+        body.insert(0, PreformattedString(ctx_invoke(_get_banner, ctx)))
 
     return str(document.soup)
-
-class LaTeXBlock(NamedTuple):
-    is_chunk: bool
-    contents: str
 
 class ParsedLaTeXDocument:
     """A LaTeX document, split into a sequence of code and text blocks."""
 
-    @staticmethod
-    def latex_pattern(lang: str) -> re.Pattern:
-        return re.compile(rf"\\begin{{{lang}}}.*?\n(.*?)\\end{{{lang}}}", re.DOTALL)
+    LATEX_IO_RE = re.compile(r"""
+    ^(?P<indent>[ ]*)\\begin[{]alectryon[}][{](?P<lang>.*?)[}][{](?P<annots>.*)[}][ ]*\n
+        (?P<body>(?:.|\n)*?)
+    ^[ ]*\\end[{]alectryon[}]
+    """, re.VERBOSE | re.MULTILINE)
 
-    def __init__(self, latex: str, input_language: str):
-        from itertools import batched
-        matches = iter(self.latex_pattern(input_language).split(latex))
-        self.chunks = []
-        self.blocks: List[LaTeXBlock] = [LaTeXBlock(False, next(matches))]
-        for codeblock, textblock in batched(matches, 2):
-            self.chunks.append(codeblock)
-            self.blocks.append(LaTeXBlock(True, codeblock))
-            self.blocks.append(LaTeXBlock(False, textblock))
+    def __init__(self, latex: str):
+        self.blocks, end = [], 0
+        for m in self.LATEX_IO_RE.finditer(latex):
+            if end < m.start():
+                self.blocks.append(latex[end:m.start()])
+            indent, lang, body, annots = m.group("indent", "lang", "body", "annots")
+            _, body = core.dedent(body.splitlines(), len(indent))
+            self.blocks.append(CodeSnippet(body, lang, annots))
+            end = m.end()
+        if end < len(latex):
+            self.blocks.append(latex[end:])
 
-    def unparse(self, annotated):
-        return [str(next(annotated)) if block.is_chunk else block.contents for block in self.blocks]
+    @property
+    def snippets(self):
+        return [s for s in self.blocks if isinstance(s, CodeSnippet)]
 
-def parse_tex(state, input_language, ctx) -> List[str]:
+    def unparse(self, by_lang):
+        return [block.contents if isinstance(block, CodeSnippet) else block
+                for block in CodeSnippet._update_by_lang(self.blocks, by_lang)]
+
+def parse_latex(state, ctx) -> List[CodeSnippet]:
     """Extract code snippets from TeX input `state`."""
-    ctx["document"] = document = ParsedLaTeXDocument(state, input_language)
-    return document.chunks
+    ctx["document"] = document = ParsedLaTeXDocument(state)
+    return document.snippets
 
-def unparse_tex(chunks, document, assets) -> str:
-    """Replaces the code snippets in the LaTeX document with the chunks."""
+def unparse_latex(snippets, document, assets) -> str:
+    """Replaces snippets in a LaTeX document with their snippets equivalents."""
     from .docutils import LatexTranslator
     _record_assets(assets, LatexTranslator.ASSETS_PATH, LatexTranslator.ASSETS)
-    return "".join(document.unparse(chunks))
+    return "".join(str(s) for s in document.unparse(snippets) if s)
 
 def encode_json(obj):
     from .json import PlainSerializer
@@ -466,19 +537,14 @@ def dump_json(js):
     from json import dumps
     return dumps(js, indent=4)
 
+def dump_snippets(snippets, separator):
+    return "".join(s.render(pretty=True) + separator for s in snippets)
+
 def dump_html_snippets(snippets):
-    s = ""
-    for snippet in snippets:
-        s += snippet.render(pretty=True)
-        s += "<!-- alectryon-block-end -->\n"
-    return s
+    return dump_snippets(snippets, "<!-- alectryon-block-end -->\n")
 
 def dump_latex_snippets(snippets):
-    s = ""
-    for snippet in snippets:
-        s += str(snippet)
-        s += "\n%% alectryon-block-end\n"
-    return s
+    return dump_snippets(snippets, "\n%% alectryon-block-end\n")
 
 def write_output(ext, contents, fname, output, output_directory, strip_re):
     if output == "-":
@@ -496,6 +562,22 @@ def write_file(ext, strip):
     return lambda contents, fname, output, output_directory: \
         write_output(ext, contents, fname, output,
                      output_directory, strip_re=strip_re)
+
+def on_snippets(*pipeline):
+    def _dispatch(snippets: list[CodeSnippet], ctx):
+        snippets = list(snippets)
+        items = (snippet.contents for snippet in snippets)
+        return CodeSnippet._update(snippets, run_pipeline(pipeline, items, ctx))
+    return _dispatch
+
+def by_language(*pipeline):
+    def _dispatch(snippets_by_lang: SnippetCollection, ctx):
+        """Run `pipeline` on each group in `snippets_by_lang`."""
+        return {
+            lang: run_pipeline(pipeline, snippets, { **ctx, "input_language": lang })
+            for lang, snippets in snippets_by_lang.items()
+        }
+    return _dispatch
 
 CODE_EXTENSIONS = {
     ext for exts in core.EXTENSIONS_BY_LANGUAGE.values() for ext in exts
@@ -569,26 +651,30 @@ def _add_code_pipelines(pipelines, lang, *exts):
              write_file(".lint.json", strip=strip)),
         }
 
-def _add_coqdoc_pipeline(pipelines):
+def _add_special_pipelines(pipelines):
     pipelines['coqdoc'] = {
         'webpage':
         (read_plain, parse_plain, annotate_chunks, # transforms applied later
          gen_html_snippets_with_coqdoc, dump_html_standalone, copy_assets,
          write_file(".html", strip=(".v",))),
     }
-
-def _add_html_pipeline(pipelines):
-    pipelines['html'] = {
-        'webpage': (read_plain, parse_html, annotate_chunks, apply_transforms,
-                    gen_html_snippets, unparse_html, copy_assets,
-                    write_file(".annotated.html", strip=(".html",)))
+    pipelines['latex'] = {
+        'latex':
+        (read_plain, parse_latex, annotate_polyglot,
+         by_language(inherit_io_annots,
+                     on_snippets(apply_transforms),
+                     remove_hidden_snippets,
+                     on_snippets(gen_latex_snippets)),
+         unparse_latex, copy_assets, write_file(".annotated.tex", strip=(".tex",))),
     }
-
-def _add_tex_pipeline(pipelines):
-    pipelines['tex'] = {
-        'latex': (read_plain, parse_tex, annotate_chunks, apply_transforms,
-                  gen_latex_snippets, unparse_tex, copy_assets,
-                  write_file(".annotated.tex", strip=(".tex",)))
+    pipelines['html'] = {
+        'webpage':
+        (read_plain, parse_html, annotate_polyglot,
+         by_language(inherit_io_annots,
+                     on_snippets(apply_transforms),
+                     remove_hidden_snippets,
+                     on_snippets(gen_html_snippets)),
+         unparse_html, copy_assets, write_file(".annotated.html", strip=(".html",)))
     }
 
 def _add_docutils_pipelines(pipelines, lang, *exts):
@@ -634,13 +720,11 @@ def _add_compatibility_pipelines(pipelines):
 def _add_pipelines(pipelines):
     for lang, exts in core.EXTENSIONS_BY_LANGUAGE.items():
         _add_code_pipelines(pipelines, lang, *exts)
-    _add_coqdoc_pipeline(pipelines)
+    _add_special_pipelines(pipelines)
     for markup, exts in core.EXTENSIONS_BY_MARKUP.items():
         _add_docutils_pipelines(pipelines, markup, *exts)
     _add_transliteration_pipelines(pipelines)
     _add_compatibility_pipelines(pipelines)
-    _add_html_pipeline(pipelines)
-    _add_tex_pipeline(pipelines)
     return pipelines
 
 # LATER: Reorganize to separate concepts of language and frontend instead of
@@ -664,10 +748,10 @@ FRONTENDS_BY_EXTENSION = {
 
     '.rst': 'rst',
     '.md': 'md',
+    '.html': 'html',
+    '.tex': 'latex',
 
     '.json': 'json', # LATER: Remove
-    '.html': 'html',
-    '.tex': 'tex'
 }
 
 BACKENDS_BY_EXTENSION = {
@@ -696,10 +780,10 @@ DEFAULT_BACKENDS = {
     'coqdoc': 'webpage',
     'rst': 'webpage',
     'md': 'webpage',
+    'latex': 'latex',
+    'html': 'webpage',
 
     'json': 'json', # LATER: Remove
-    'html': 'webpage',
-    'tex': 'latex'
 }
 
 def _input_frontends(lang):
@@ -714,7 +798,7 @@ INPUT_LANGUAGE_BY_FRONTEND = {
 
     "json": "coq", # LATER: Remove
     "html": "coq",
-    "tex": "coq"
+    "latex": "coq"
 }
 
 def infer_mode(fpath, kind, arg, table):
@@ -1039,16 +1123,17 @@ def build_context(fpath, args, frontend, backend):
 
     dialect = args.backend_dialects.get(backend)
 
-    # These may be ``None`` (e.g. in reST mode)
+    driver_configs = {
+        lang: core.DriverConfig(lang, args.language_drivers, args.driver_args_by_name)
+        for lang in core.ALL_LANGUAGES
+    }
+
     input_language = INPUT_LANGUAGE_BY_FRONTEND.get(frontend)
-    driver_name = args.language_drivers.get(input_language)
-    driver_args = args.driver_args_by_name.get(driver_name, ())
 
     ctx = {**vars(args),
            "fpath": fpath, "fname": fname, "input_is_stdin": input_is_stdin,
            "frontend": frontend, "backend": backend, "dialect": dialect,
-           "input_language": input_language,
-           "driver_name": driver_name, "driver_args": driver_args,
+           "input_language": input_language, "driver_configs": driver_configs,
            "assets": [], "html_classes": [], "exit_code": ExitCode(0)}
     ctx["ctx"] = ctx
 
@@ -1071,6 +1156,11 @@ def except_hook(etype, value, tb):
     for line in TracebackException(etype, value, tb, capture_locals=True).format():
         print(line, file=sys.stderr)
 
+def run_pipeline(pipeline, state, ctx):
+    for step in pipeline:
+        state = call_pipeline_step(step, state, ctx)
+    return state
+
 def process_pipelines(args):
     if args.debug:
         core.DEBUG = True
@@ -1084,9 +1174,8 @@ def process_pipelines(args):
         serapi.SerAPI.EXPECT_UNEXPECTED = True
 
     for fpath, frontend, backend, pipeline in args.pipelines:
-        state, ctx = None, build_context(fpath, args, frontend, backend)
-        for step in pipeline:
-            state = call_pipeline_step(step, state, ctx)
+        ctx = build_context(fpath, args, frontend, backend)
+        run_pipeline(pipeline, None, ctx)
         yield ctx["exit_code"].val
 
 def main():

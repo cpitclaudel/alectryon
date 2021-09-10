@@ -295,16 +295,9 @@ class Config:
                 yield "-" + arg
                 yield ",".join(vals)
 
-    def get_driver_class_and_args(self, lang):
-        driver_name = self.language_drivers[lang]
-        driver_cls = core.resolve_driver(lang, driver_name)
-        driver_args = self.driver_args[driver_name]
-        assert driver_name == driver_cls.ID
-        return driver_cls, driver_args
-
     def init_driver(self, lang):
-        cls, args = self.get_driver_class_and_args(lang)
-        return cls(args, fpath=self.document['source'])
+        cfg = core.DriverConfig(lang, self.language_drivers, self.driver_args)
+        return cfg.init_driver(fpath=self.document['source'])
 
 class OneTimeTransform(Transform):
     is_post_transform = False
@@ -688,15 +681,6 @@ class AlectryonPostTransform(OneTimeTransform):
 # Directives
 # ----------
 
-INDENTATION_RE = re.compile(r"^ *(?=[^\s])")
-def measure_indentation(line):
-    m = INDENTATION_RE.match(line)
-    return m.end() - m.start() if m else None
-
-def measure_min_indentation(lines):
-    indents = (measure_indentation(l) for l in lines)
-    return min((i for i in indents if i is not None), default=0)
-
 def recompute_contents(directive, real_indentation):
     """Compute the contents of `directive` relative to `real_indentation`.
 
@@ -723,16 +707,12 @@ def recompute_contents(directive, real_indentation):
     """
     if directive.content_offset <= directive.lineno: # MyST bug
         return (0, "\n".join(directive.content))
-    block_lines = directive.block_text.splitlines() # Includes trailing blank lines
-    block_header_len = directive.content_offset - directive.lineno + 1
-    header_indentation = measure_indentation(directive.block_text)
+    lines = directive.block_text.splitlines()  # Includes trailing blank lines
+    header_nlines = directive.content_offset - directive.lineno + 1
+    header_indentation = core.measure_indentation(directive.block_text)
+    body_lines = lines[header_nlines:header_nlines + len(directive.content)]
     assert header_indentation is not None
-    block_header_end = block_header_len + len(directive.content)
-    body_lines = block_lines[block_header_len:block_header_end]
-    min_indentation = measure_min_indentation(body_lines)
-    body_indentation = min(header_indentation + real_indentation, min_indentation)
-    contents = "\n".join(ln[body_indentation:] for ln in body_lines)
-    return body_indentation, contents
+    return core.dedent(body_lines, header_indentation + real_indentation)
 
 class AlectryonDirective(Directive): # pylint: disable=abstract-method
     def _error(self, msg, line=None):

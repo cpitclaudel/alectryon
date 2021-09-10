@@ -27,16 +27,6 @@ _output/caching.html: caching.v
 	$(alectryon) --cache-directory _output/ --cache-compression=xz $<
 recipes_targets += _output/caching.html
 
-# HTML → HTML
-_output/coq.annotated.html: coq.html
-	$(alectryon) $<
-recipes_targets += _output/coq.annotated.html
-
-# LaTeX → LaTeX
-_output/coq.annotated.tex: coq.tex
-	$(alectryon) $<
-recipes_targets += _output/coq.annotated.tex
-
 # Coq+reST → HTML
 _output/coq_drivers.html: coq_drivers.v
 	$(alectryon) --coq-driver=sertop $< -o $@
@@ -90,6 +80,16 @@ recipes_targets += _output/lean3-tutorial.html
 _output/lean3-tutorial.lean3: lean3-tutorial.rst
 	$(alectryon) $< -o $@
 recipes_targets += _output/lean3-tutorial.lean3
+
+# HTML → HTML
+_output/literate_HTML.annotated.html: literate_HTML.html
+	$(alectryon) $<
+recipes_targets += _output/literate_HTML.annotated.html
+
+# LaTeX → LaTeX
+_output/literate_LaTeX.annotated.tex: literate_LaTeX.tex
+	$(alectryon) $<
+recipes_targets += _output/literate_LaTeX.annotated.tex
 
 # MyST → HTML
 _output/literate_MyST.html: literate_MyST.md
