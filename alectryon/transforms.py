@@ -704,6 +704,32 @@ def truncate_lean3_vernacs(fragments):
                 fr = Text(fr.input.contents[m.start():])
         yield fr
 
+LEAN_COMMA_RE = re.compile(r'\A(\s*,)(.*)\Z', flags=re.DOTALL)
+
+def lean_attach_commas(fragments):
+    """Attaches commas to their related sentences.
+
+    This pass gathers all commas (and spaces) following a sentence, up to the first
+    newline, and embeds them in the sentence itself. This improves the bubbles.
+
+    This pass assumes that consecutive ``Text`` fragments have been
+    coalesced.
+    """
+    grouped = list(enrich_sentences(fragments))
+    for idx, fr in enumerate(grouped):
+        if isinstance(fr, Text):
+            match = LEAN_COMMA_RE.match(fr.contents)
+            if match:
+                before, rest = match.groups()
+                if before:
+                    if idx > 0:
+                        assert not isinstance(grouped[idx - 1], Text)
+                        grouped[idx - 1].suffixes.append(before)
+                        grouped[idx] = Text(rest) if rest else None
+
+    return [g for g in grouped if g is not None]
+
+
 DEFAULT_TRANSFORMS = {
     "coq": [
         enrich_sentences,
@@ -718,6 +744,7 @@ DEFAULT_TRANSFORMS = {
         enrich_sentences,
         truncate_lean3_vernacs,
         process_io_annots,
+        lean_attach_commas
     ]
     # Not included:
     #   group_whitespace_with_code (HTML-specific)
