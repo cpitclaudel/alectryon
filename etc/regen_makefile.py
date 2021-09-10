@@ -14,8 +14,12 @@ CMD_RE = re.compile(r"""
 """, re.VERBOSE | re.MULTILINE)
 
 def parse_rules(path: str):
-    with open(path, encoding="utf-8") as f:
-        contents = f.read()
+    try:
+        with open(path) as f:
+            contents = f.read()
+    except UnicodeDecodeError as e:
+        e.reason += " (in {})".format(path)
+        raise e
     for m in CMD_RE.finditer(contents):
         yield m.groupdict()
 

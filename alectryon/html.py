@@ -279,10 +279,6 @@ class HtmlGenerator(Backend):
                 self.gen_fragment(fr)
             return pre
 
-    def gen(self, annotated):
-        for fragments in annotated:
-            yield self.gen_fragments(fragments)
-
 JS_UNMINIFY = """<script>
     // Resolve backreferences
     document.addEventListener("DOMContentLoaded", function() {

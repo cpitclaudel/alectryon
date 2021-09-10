@@ -8,17 +8,20 @@
   <body>
     <p>This file shows how to process a LaTeX file with Alectryon.  To compile it, use the following command:</p>
     <pre>
-      alectryon coq.html # HTML → HTML, produces ‘coq.annotated.html’
+      alectryon literate_HTML.html # HTML → HTML, produces ‘literate_HTML.annotated.html’
     </pre>
 
-    <p>To use Alectryon with your own HTML file, just wrap your code in <code>pre</code> tags with the <code>alectryon</code> class.  Here are two examples:</p>
+    <p>To use Alectryon with your own HTML file, just wrap your code in <code>pre</code> tags with the <code>alectryon</code> class.  Here are some examples:</p>
+    <pre class="alectryon" data-lang="coq" data-io="none">
+Require Import ZArith.
+    </pre>
     <pre class="alectryon">
 Goal True /\ True.
   split. (* .unfold *)
   - exact I.
     </pre>
     <pre class="alectryon">
-  Check nat. (* .unfold *)
+    Check nat. (* .unfold *)
   - exact I.
 Qed.
     </pre>

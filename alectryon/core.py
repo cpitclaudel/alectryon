@@ -49,7 +49,22 @@ def indent(text, prefix):
     text = re.sub("^(?!$)", prefix, text, flags=re.MULTILINE)
     return re.sub("^$", prefix.rstrip(), text, flags=re.MULTILINE)
 
-def debug(v: Any, prefix: str):
+INDENTATION_RE = re.compile(r"^ *(?=[^\s])")
+
+def measure_indentation(line):
+    m = INDENTATION_RE.match(line)
+    return m.end() - m.start() if m else None
+
+def measure_min_indentation(lines):
+    indents = (measure_indentation(l) for l in lines)
+    return min((i for i in indents if i is not None), default=0)
+
+def dedent(lines, amount):
+    indentation = min(amount, measure_min_indentation(lines))
+    contents = "\n".join(ln[indentation:] for ln in lines)
+    return indentation, contents
+
+def debug(v, prefix):
     if isinstance(v, (bytes, bytearray)):
         v = v.decode("utf-8", errors="replace")
     if DEBUG:
@@ -162,6 +177,10 @@ class Backend:
             self.gen_txt(obj)
         else:
             raise TypeError("Unexpected object type: {}".format(type(obj)))
+
+    def gen(self, annotated):
+        for fragments in annotated:
+            yield self.gen_fragments(fragments) if fragments is not None else None
 
 class Asset(str):
     def __new__(cls, fname, _gen=None):
@@ -626,3 +645,17 @@ def resolve_driver(input_language, driver_name):
         raise ValueError(MSG.format(input_language, driver_name))
     mod, cls = known_drivers[driver_name]
     return getattr(import_module(mod, __package__), cls)
+
+class DriverConfig:
+    def __init__(self, lang, language_drivers, driver_args_by_name):
+        self.lang = lang
+        self.name = language_drivers.get(lang)
+        self.args = driver_args_by_name.get(self.name, ())
+        self.used = False
+
+    def init_driver(self, fpath):
+        self.used = True
+        driver_cls = resolve_driver(self.lang, self.name)
+        assert self.lang == driver_cls.LANGUAGE
+        assert self.name == driver_cls.ID
+        return driver_cls(self.args, fpath=fpath)
