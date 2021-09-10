@@ -21,6 +21,10 @@ Alectryon supports literate programs and documents (combinations of code and pro
 
 -----
 
+.. coq:: none
+
+   Require Import Arith.
+
 Here's an *inductive specification* of evenness:
 
 .. coq::
