@@ -280,7 +280,7 @@ class Document:
         bol = self.bol_offsets[zline - 1]
         return zline, offset - bol
 
-    def pos2offset(self, line, col) -> int:
+    def pos2offset(self, line: int, col: int) -> int:
         return self.bol_offsets[line - 1] + col
 
     @staticmethod

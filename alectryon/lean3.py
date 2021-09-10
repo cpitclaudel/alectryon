@@ -92,46 +92,46 @@ class Lean3(TextREPLDriver):
             return set(node["children"]).union(*grandkids)
         return set()
 
-    def _get_key_locs(self) -> Iterable[Tuple[Range, bool]]:
+    KIND_ENDER = {'begin': 'end', '{': '}'}
+
+    def _get_key_locs(self) -> Iterable[Range]:
         """
-        Gets the "key locations" in a Lean3 file. Will return their location, and a boolean variable which is true
-        if it is a tactic container; else, it will be a tactic.
+        Gets the "key locations" in a Lean3 file. Will return their location; if they're a tactic container,
+        it splits these between begin and end.
         """
         for node in (self.ast[idx] for idx in set(chain.from_iterable(self._get_children(n) for n in self.ast))):
-            if node and (node["kind"] in self.TACTIC_NODES or node["kind"] in self.TACTIC_CONTAINERS):
-                yield Position("", node["start"][0], node["start"][1]),\
-                      Position("", node["end"][0], node["end"][1]), node["kind"] in self.TACTIC_CONTAINERS
+            if node:
+                if node["kind"] in self.TACTIC_NODES:
+                    yield Position(self.fpath, node["start"][0], node["start"][1]),\
+                          Position(self.fpath, node["end"][0], node["end"][1])
+                elif node["kind"] in self.TACTIC_CONTAINERS:
+                    yield Position(self.fpath, node["start"][0], node["start"][1]),\
+                          Position(self.fpath, node["start"][0], node["start"][1] + len(node["kind"]))
+
+                    # the reported end position is where the "d" of the "end" is, for example.
+                    assert 0 <= node["end"][1] - len(self.KIND_ENDER[node["kind"]])
+
+                    yield Position(self.fpath, node["end"][0], node["end"][1] - len(self.KIND_ENDER[node["kind"]])),\
+                          Position(self.fpath, node["end"][0], node["end"][1])
 
     def _get_state_at(self, pos: Position):
-        # todo: use widget stuff instead of the old code
+        # future improvement: use widget stuff. may be inviable.
         info, _ = self._query("info", line=pos.line, column=pos.col)
         record = info.get("record", {})
         return record.get("state")
 
     def _find_sentence_ranges(self, doc: Document) -> Tuple[int, int, Any]:
-        prev = Position("", 0, 0)
-        to_yield = (0, 0)
-        for [start, end, is_container] in sorted(self._get_key_locs()):
-            if is_container:
-                # say we're entering a nested container, we want the state beforehand
-                yield (*to_yield, self._get_state_at(prev))
-                loc = doc.pos2offset(start)
-                # I don't see a better way
-                if doc[loc] == "b":
-                    to_yield = loc, loc+5
-                elif doc[loc] == "{":
-                    to_yield = loc, loc+1
-                else:
-                    # only supported tactic containers so far are `begin` and `{`,
-                    # and Lean files don't usually have any others
-                    assert False
-            else:
-                if end <= prev:
-                    continue
-                prev = end
+        prev = Position(self.fpath, 0, 0)
+        to_yield = None
+        for (start, end) in sorted(self._get_key_locs()):
+            if end <= prev:
+                continue
+            prev = end
+            if to_yield:
                 yield (*to_yield, self._get_state_at(start))
-                to_yield = map(doc.pos2offset, (start, end))
-        yield (*to_yield, "")
+            to_yield = (doc.pos2offset(start), doc.pos2offset(end))
+        if to_yield:
+            yield (*to_yield, "")
 
     HYP_RE = re.compile(r"(?P<names>.*?)\s*:\s*(?P<type>(?:.*|\n )+)(?:,\n|\Z)")
 
@@ -164,8 +164,8 @@ class Lean3(TextREPLDriver):
 
     @staticmethod
     def _collect_message_span(msg, doc):
-        return (doc.pos2offset(Position("", msg["pos_line"], msg["pos_col"])),
-                doc.pos2offset(Position("", msg["end_pos_line"], msg["end_pos_col"])),
+        return (doc.pos2offset(Position(self.fpath, msg["pos_line"], msg["pos_col"])),
+                doc.pos2offset(Position(self.fpath, msg["end_pos_line"], msg["end_pos_col"])),
                 msg)
 
     @staticmethod
