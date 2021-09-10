@@ -486,7 +486,7 @@ def attach_ml_comments_to_code(fragments, predicate=lambda _: True):
                     best = prefix
             if best:
                 rest = fr.contents[len(best):]
-                grouped[idx - 1] = _replace_contents(prev, prev.input.contents + str(best))
+                grouped[idx - 1] = _replace_contents(prev, _contents(prev) + str(best))
                 grouped[idx] = Text(rest) if rest else None
     return [g for g in grouped if g is not None]
 
@@ -709,6 +709,30 @@ def lean3_truncate_vernacs(fragments):
                 fr = Text(contents[m.start():])
         yield fr
 
+LEAN_COMMA_RE = re.compile(r'\A\s*,')
+
+def lean3_attach_commas(fragments):
+    """Attach commas to preceding sentences.
+
+    This pass gathers all commas and spaces following a sentence up to the first
+    newline, and embeds them in the sentence itself. This improves the location
+    of the hover bubbles.
+
+    This pass assumes that consecutive ``Text`` fragments have been coalesced.
+    """
+    grouped = list(enrich_sentences(fragments))
+    for idx, fr in enumerate(grouped):
+        if isinstance(fr, Text) and idx > 0:
+            m = LEAN_COMMA_RE.match(fr.contents)
+            if m:
+                assert not isinstance(grouped[idx - 1], Text)
+                prev = grouped[idx-1]
+                comma, rest = fr.contents[:m.end()], fr.contents[m.end():]
+                grouped[idx-1] = _replace_contents(prev, _contents(prev) + comma)
+                grouped[idx] = Text(rest) if rest else None
+    return [g for g in grouped if g is not None]
+
+
 DEFAULT_TRANSFORMS = {
     "coq": [
         enrich_sentences,
@@ -722,7 +746,8 @@ DEFAULT_TRANSFORMS = {
     "lean3": [
         enrich_sentences,
         lean3_truncate_vernacs,
-        process_io_annots,
+        lean3_attach_commas,
+        process_io_annots
     ]
     # Not included:
     #   group_whitespace_with_code (HTML-specific)
