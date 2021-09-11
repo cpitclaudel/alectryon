@@ -28,7 +28,7 @@ from typing import Dict, List, Any, Tuple, Set, Iterable
 from itertools import chain
 
 from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, Message, Sentence,\
-    Text, debug, cwd, Position, Range
+    Text, cwd, Position, Range
 
 AstNode = Any
 AstData = List[Dict[str, AstNode]]
@@ -78,9 +78,7 @@ class Lean3(TextREPLDriver):
         query = {"seq_num": self.seq_num, "command": command,
                  "file_name": self.fpath.name, **kwargs}
         self._write(json.dumps(query, indent=None), "\n")
-        response = self._wait()
-        debug(response, '<< ')
-        return response
+        return self._wait()
 
     def _get_children(self, node: AstNode) -> Set[int]:
         if node and "children" in node and node["kind"] not in self.DONT_RECURSE_IN:
