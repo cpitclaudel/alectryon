@@ -39,8 +39,8 @@ class Lean3(TextREPLDriver):
     BIN = "lean"
     NAME = "Lean3"
 
-    # todo: threading
-    REPL_ARGS = ("--server", "--threads=0", "-M 4096", "-T 100000")  # use the same defaults as vscode
+    # TODO: Threading
+    REPL_ARGS = ("--server", "--threads=0", "-M 4096", "-T 100000") # Same defaults as vscode
 
     ID = "lean3_repl"
     LANGUAGE = "lean3"
@@ -79,11 +79,11 @@ class Lean3(TextREPLDriver):
         self._write(json.dumps(query, indent=None), "\n")
         return self._wait()
 
-    def _get_children(self, node: AstNode) -> Set[int]:
+    def _get_descendants(self, node: AstNode) -> Set[int]:
         if node and "children" in node and node["kind"] not in self.DONT_RECURSE_IN:
             yield from node["children"]
             for idx in node["children"]:
-                yield from self._get_children(self.ast[idx])
+                yield from self._get_descendants(self.ast[idx])
 
     def _pos(self, line, col):
         assert col >= 0
@@ -91,12 +91,12 @@ class Lean3(TextREPLDriver):
 
     KIND_ENDER = {'begin': 'end', '{': '}'}
 
-    def _get_key_locs(self) -> Iterable[Range]:
+    def _find_sentence_ranges(self) -> Iterable[Tuple[Position, Position]]:
+        """Get the ranges covering individual sentences of a Lean3 file.
+
+        For tactic containers return two ranges (beginning and end).
         """
-        Gets the "key locations" in a Lean3 file. Will return their location; if they're a tactic container,
-        it splits these between begin and end.
-        """
-        indices = set(idx for n in self.ast for idx in self._get_children(n))
+        indices = set(idx for n in self.ast for idx in self._get_descendants(n))
         for idx in indices:
             node = self.ast[idx]
             if not node or "start" not in node or "end" not in node:
@@ -116,19 +116,21 @@ class Lean3(TextREPLDriver):
         record = info.get("record", {})
         return record.get("state")
 
-    def _find_sentence_ranges(self, doc: Document) -> Tuple[int, int, Any]:
-        prev = Position(self.fpath, 0, 0)
-        to_yield = None
-        for (start, end) in sorted(self._get_key_locs()):
-            if end <= prev:
+    def _collect_sentences_and_states(self, doc: Document) -> Tuple[int, int, Any]:
+        prev = self._pos(0, 0)
+        last_span = None
+        for start, end in sorted(self._find_sentence_ranges()):
+            if end <= prev: # Skip overlapping ranges
                 continue
             prev = end
-            if to_yield:
-                yield (*to_yield, self._get_state_at(start))
-            to_yield = (doc.pos2offset(start), doc.pos2offset(end))
-        if to_yield:
-            yield (*to_yield, "")
+            if last_span:
+                yield (last_span, self._get_state_at(start))
+            last_span = (doc.pos2offset(start.line, start.col),
+                         doc.pos2offset(end.line, end.col))
+        if last_span:
+            yield (last_span, None)
 
+    # FIXME: this does not handle hypotheses with a body
     HYP_RE = re.compile(r"(?P<names>.*?)\s*:\s*(?P<type>(?:.*|\n )+)(?:,\n|\Z)")
 
     def _parse_hyps(self, hyps):
@@ -151,7 +153,7 @@ class Lean3(TextREPLDriver):
                        list(self._parse_hyps(m.group("hyps"))))
 
     def _find_sentences(self, doc: Document):
-        for beg, end, st in self._find_sentence_ranges(doc):
+        for (beg, end), st in self._collect_sentences_and_states(doc):
             sentence = Sentence(doc[beg:end], [], list(self._parse_goals(st)))
             yield Positioned(beg, end, sentence)
 
@@ -166,7 +168,7 @@ class Lean3(TextREPLDriver):
 
     @staticmethod
     def _collect_message_spans(messages, doc):
-        # FIXME this drops some errors (try ``#compute 1``) (not a real command, but there's no "end of error")
+        # FIXME this drops some errors (try ````#xyz 1````) (no end_pos)
         return sorted(Lean3._collect_message_span(m, doc) for m in messages
                       if "end_pos_line" in m and "end_pos_col" in m)
 
@@ -186,7 +188,6 @@ class Lean3(TextREPLDriver):
                 end = min(end, fr_end)  # Truncate to current fragment
                 if isinstance(fr, Text):  # Split current fragment if it's text
                     if fr_beg < beg:
-                        # print(f"prefix: {(fr_beg, beg, Text(fr.contents[:beg - fr_beg]))=}")
                         yield Text(fr.contents[:beg - fr_beg])
                         fr_beg, fr = beg, fr._replace(contents=fr.contents[beg - fr_beg:])
                     if end < fr_end:
