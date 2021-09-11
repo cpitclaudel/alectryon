@@ -55,10 +55,6 @@ class Lean3(TextREPLDriver):
         self.ast: AstData = []
         self.seq_num = -1
 
-    @classmethod
-    def driver_not_found(cls, binpath):
-        raise ValueError("Not found: {}".format(binpath))
-
     def _wait(self):
         messages = []
         while True:
