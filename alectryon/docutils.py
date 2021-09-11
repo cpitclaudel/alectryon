@@ -334,10 +334,10 @@ class DocutilsObserver(core.Observer):
         self.document = document
 
     def _notify(self, n: core.Notification):
-        beg, end = n.location.beg, n.location.end
-        kwargs = dict(end_line=end.line, end_column=end.col) if end else {}
-        self.document.reporter.system_message(
-            n.level, n.message, line=beg.line, column=beg.col, **kwargs)
+        loc = n.location
+        beg = dict(line=loc.beg.line, column=loc.beg.col) if loc else {}
+        end = dict(end_line=loc.end.line, end_column=loc.end.col) if loc and loc.end else {}
+        self.document.reporter.system_message(n.level, n.message, **beg, **end)
 
 def by_lang(pending_nodes):
     partitioned = {}

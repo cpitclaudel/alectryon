@@ -158,20 +158,12 @@ class Asset(str):
         self.gen = gen
 
 class Position(NamedTuple):
-    fpath: str
+    fpath: Union[str, Path]
     line: int
     col: int
 
-    @property
-    def beg(self):
-        return self
-
-    @property
-    def end(self):
-        return None
-
-    def as_header(self):
-        return "{}:{}:{}:".format(self.fpath or "<unknown>", self.line, self.col)
+    def as_range(self):
+        return Range(self, None)
 
 class Range(NamedTuple):
     beg: Position
@@ -368,14 +360,14 @@ class EncodedDocument(Document):
 class Notification(NamedTuple):
     obj: Any
     message: str
-    location: Range
+    location: Optional[Range]
     level: int
 
 class Observer:
     def _notify(self, n: Notification):
         raise NotImplementedError()
 
-    def notify(self, obj, message, location, level):
+    def notify(self, obj: Any, message: str, location: Optional[Range], level: int):
         self._notify(Notification(obj, message, location, level))
 
 class StderrObserver(Observer):
