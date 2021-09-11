@@ -85,6 +85,10 @@ class Lean3(TextREPLDriver):
             for idx in node["children"]:
                 yield from self._get_children(self.ast[idx])
 
+    def _pos(self, line, col):
+        assert col >= 0
+        return Position(self.fpath, line, col)
+
     KIND_ENDER = {'begin': 'end', '{': '}'}
 
     def _get_key_locs(self) -> Iterable[Range]:
@@ -95,20 +99,16 @@ class Lean3(TextREPLDriver):
         indices = set(idx for n in self.ast for idx in self._get_children(n))
         for idx in indices:
             node = self.ast[idx]
-            if not node:
+            if not node or "start" not in node or "end" not in node:
                 continue
-            if node["kind"] in self.TACTIC_NODES:
-                yield Position(self.fpath, node["start"][0], node["start"][1]),\
-                      Position(self.fpath, node["end"][0], node["end"][1])
-            elif node["kind"] in self.TACTIC_CONTAINERS:
-                yield Position(self.fpath, node["start"][0], node["start"][1]),\
-                      Position(self.fpath, node["start"][0], node["start"][1] + len(node["kind"]))
-
-                # the reported end position is where the "d" of the "end" is, for example.
-                assert 0 <= node["end"][1] - len(self.KIND_ENDER[node["kind"]])
-
-                yield Position(self.fpath, node["end"][0], node["end"][1] - len(self.KIND_ENDER[node["kind"]])),\
-                      Position(self.fpath, node["end"][0], node["end"][1])
+            kind = node["kind"]
+            start, end = self._pos(*node["start"]), self._pos(*node["end"])
+            if kind in self.TACTIC_NODES:
+                yield start, end
+            elif kind in self.TACTIC_CONTAINERS:
+                # Yield two spans corresponding to the delimiters of the container
+                yield start, self._pos(start.line, start.col + len(kind))
+                yield self._pos(end.line, end.col - len(self.KIND_ENDER[kind])), end
 
     def _get_state_at(self, pos: Position):
         # future improvement: use widget stuff. may be inviable.
