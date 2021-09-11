@@ -100,19 +100,20 @@ class Lean3(TextREPLDriver):
         it splits these between begin and end.
         """
         for node in (self.ast[idx] for idx in set(chain.from_iterable(self._get_children(n) for n in self.ast))):
-            if node:
-                if node["kind"] in self.TACTIC_NODES:
-                    yield Position(self.fpath, node["start"][0], node["start"][1]),\
-                          Position(self.fpath, node["end"][0], node["end"][1])
-                elif node["kind"] in self.TACTIC_CONTAINERS:
-                    yield Position(self.fpath, node["start"][0], node["start"][1]),\
-                          Position(self.fpath, node["start"][0], node["start"][1] + len(node["kind"]))
+            if not node:
+                continue
+            if node["kind"] in self.TACTIC_NODES:
+                yield Position(self.fpath, node["start"][0], node["start"][1]),\
+                      Position(self.fpath, node["end"][0], node["end"][1])
+            elif node["kind"] in self.TACTIC_CONTAINERS:
+                yield Position(self.fpath, node["start"][0], node["start"][1]),\
+                      Position(self.fpath, node["start"][0], node["start"][1] + len(node["kind"]))
 
-                    # the reported end position is where the "d" of the "end" is, for example.
-                    assert 0 <= node["end"][1] - len(self.KIND_ENDER[node["kind"]])
+                # the reported end position is where the "d" of the "end" is, for example.
+                assert 0 <= node["end"][1] - len(self.KIND_ENDER[node["kind"]])
 
-                    yield Position(self.fpath, node["end"][0], node["end"][1] - len(self.KIND_ENDER[node["kind"]])),\
-                          Position(self.fpath, node["end"][0], node["end"][1])
+                yield Position(self.fpath, node["end"][0], node["end"][1] - len(self.KIND_ENDER[node["kind"]])),\
+                      Position(self.fpath, node["end"][0], node["end"][1])
 
     def _get_state_at(self, pos: Position):
         # future improvement: use widget stuff. may be inviable.
