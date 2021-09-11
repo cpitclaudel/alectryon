@@ -25,7 +25,6 @@ import subprocess
 from collections import deque
 from pathlib import Path
 from typing import Dict, List, Any, Tuple, Set, Iterable
-from itertools import chain
 
 from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, Message, Sentence,\
     Text, cwd, Position, Range
@@ -82,9 +81,9 @@ class Lean3(TextREPLDriver):
 
     def _get_children(self, node: AstNode) -> Set[int]:
         if node and "children" in node and node["kind"] not in self.DONT_RECURSE_IN:
-            grandkids = (self._get_children(self.ast[idx]) for idx in node["children"])
-            return set(node["children"]).union(*grandkids)
-        return set()
+            yield from node["children"]
+            for idx in node["children"]:
+                yield from self._get_children(self.ast[idx])
 
     KIND_ENDER = {'begin': 'end', '{': '}'}
 
@@ -93,7 +92,9 @@ class Lean3(TextREPLDriver):
         Gets the "key locations" in a Lean3 file. Will return their location; if they're a tactic container,
         it splits these between begin and end.
         """
-        for node in (self.ast[idx] for idx in set(chain.from_iterable(self._get_children(n) for n in self.ast))):
+        indices = set(idx for n in self.ast for idx in self._get_children(n))
+        for idx in indices:
+            node = self.ast[idx]
             if not node:
                 continue
             if node["kind"] in self.TACTIC_NODES:
