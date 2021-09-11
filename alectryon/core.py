@@ -157,17 +157,26 @@ class Asset(str):
         super().__init__()
         self.gen = gen
 
-class Position(namedtuple("Position", "fpath line col")):
+class Position(NamedTuple):
+    fpath: str
+    line: int
+    col: int
+
     @property
     def beg(self):
         return self
+
     @property
     def end(self):
         return None
+
     def as_header(self):
         return "{}:{}:{}:".format(self.fpath or "<unknown>", self.line, self.col)
 
-class Range(namedtuple("Range", "beg end")):
+class Range(NamedTuple):
+    beg: Position
+    end: Optional[Position]
+
     def as_header(self):
         assert self.end is None or self.beg.fpath == self.end.fpath
         beg = "{}:{}".format(self.beg.line, self.beg.col)
@@ -263,13 +272,13 @@ class Document:
             self._bol_offsets = [m.start() for m in matches]
         return self._bol_offsets
 
-    def offset2pos(self, offset):
+    def offset2pos(self, offset) -> Tuple[int, int]:
         import bisect
         zline = bisect.bisect_right(self.bol_offsets, offset)
         bol = self.bol_offsets[zline - 1]
         return zline, offset - bol
 
-    def pos2offset(self, line, col):
+    def pos2offset(self, line, col) -> int:
         return self.bol_offsets[line - 1] + col
 
     @staticmethod
