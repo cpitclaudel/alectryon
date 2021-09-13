@@ -18,8 +18,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os.path
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from sphinx.application import Sphinx
+
 from . import docutils
-from .html import ASSETS
+from .html import ASSETS as HTML_ASSETS
+from .latex import ASSETS as LATEX_ASSETS
+from .pygments import LatexFormatter
 
 # Export here so config files can refer to just this module
 RSTCoqParser = docutils.RSTCoqParser
@@ -27,18 +35,21 @@ RSTCoqParser = docutils.RSTCoqParser
 # Setup
 # =====
 
-def register_coq_parser(app):
+def register_coq_parser(app: "Sphinx"):
     app.add_source_parser(RSTCoqParser)
     app.add_source_suffix('.v', 'coq')
 
-def add_html_assets(app):
-    if app.builder.name == "html":
-        app.config.html_static_path.append(ASSETS.PATH)
+def add_assets(app: "Sphinx"):
+    app.config.html_static_path.append(HTML_ASSETS.PATH)
 
-        for css in ASSETS.ALECTRYON_CSS:
-            app.add_css_file(css) # Not PYGMENTS_CSS: Sphinx generates its own
-        for js in ASSETS.ALECTRYON_JS:
-            app.add_js_file(js)
+    for css in HTML_ASSETS.ALECTRYON_CSS:
+        app.add_css_file(css) # Not PYGMENTS_CSS: Sphinx generates its own
+    for js in HTML_ASSETS.ALECTRYON_JS:
+        app.add_js_file(js)
+
+    for sty in LATEX_ASSETS.ALECTRYON_STY: # Not PYGMENTS_STY: Sphinx generates its own
+        app.config.latex_additional_files.append(os.path.join(LATEX_ASSETS.PATH, sty))
+        app.add_latex_package(sty.replace(".sty", ""))
 
 def setup(app):
     """Register Alectryon's directives, transforms, etc."""
@@ -72,6 +83,6 @@ def setup(app):
     # Sphinx uses PYG instead of PY for pygments
     LatexFormatter.COMMANDPREFIX = 'PYG'
 
-    app.connect('builder-inited', add_html_assets)
+    app.connect('builder-inited', add_assets)
 
     return {'version': '0.1', "parallel_read_safe": True}
