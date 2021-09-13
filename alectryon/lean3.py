@@ -230,7 +230,7 @@ class Lean3(TextREPLDriver):
                 with open(fdescriptor, "w") as tmp:
                     tmp.write(document.contents)
                 # FIXME: Use CLI_ARGS + self.run_cli
-                args = ["lean", "--make", "--ast", *(x for x in self.REPL_ARGS + self.user_args if x != "--server"), str(tmpname)]
+                args = ["lean", "--make", "--ast", *(x for x in (*self.REPL_ARGS, *self.user_args) if x != "--server"), str(tmpname)]
                 subprocess.check_call(args)
                 self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
             finally:
