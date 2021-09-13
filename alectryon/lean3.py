@@ -162,8 +162,8 @@ class Lean3(TextREPLDriver):
 
     @staticmethod
     def _collect_message_span(msg, doc):
-        return (doc.pos2offset(Position(self.fpath, msg["pos_line"], msg["pos_col"])),
-                doc.pos2offset(Position(self.fpath, msg["end_pos_line"], msg["end_pos_col"])),
+        return (doc.pos2offset(msg["pos_line"], msg["pos_col"]),
+                doc.pos2offset(msg["end_pos_line"], msg["end_pos_col"]),
                 msg)
 
     @staticmethod
