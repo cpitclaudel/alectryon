@@ -137,7 +137,11 @@ class HtmlFormatter(pygments.formatters.HtmlFormatter): # pylint: disable=no-mem
                 if not l.startswith("pre {")]
 
 class LatexFormatter(pygments.formatters.LatexFormatter): # pylint: disable=no-member
-    pass
+    COMMANDPREFIX = None
+    def __init__(self, **options):
+        if self.COMMANDPREFIX:
+            options.setdefault("commandprefix", self.COMMANDPREFIX)
+        super().__init__(**options)
 
 @lru_cache(maxsize=None)
 def get_formatter(fmt, style=None) -> Formatter:

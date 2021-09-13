@@ -69,6 +69,9 @@ def setup(app):
     # right away.)
     app.add_transform(docutils.ActivateMathJaxTransform)
 
+    # Sphinx uses PYG instead of PY for pygments
+    LatexFormatter.COMMANDPREFIX = 'PYG'
+
     app.connect('builder-inited', add_html_assets)
 
     return {'version': '0.1', "parallel_read_safe": True}
