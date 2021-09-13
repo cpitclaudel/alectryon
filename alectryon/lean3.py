@@ -41,6 +41,7 @@ class Lean3(TextREPLDriver):
 
     # TODO: Threading
     REPL_ARGS = ("--server", "--threads=0", "-M 4096", "-T 100000") # Same defaults as vscode
+    CLI_ARGS = ("--make", "--ast", "-M 4096", "-T 100000")
 
     ID = "lean3_repl"
     LANGUAGE = "lean3"
@@ -223,19 +224,14 @@ class Lean3(TextREPLDriver):
         """
         document = Document(chunks, "\n")
         with cwd(self.fpath.parent.resolve()):
-            # TODO: error checking around AST loading, and if AST is empty at
-            # runtime We use this instead of the ``NamedTemporaryFile`` API
+            # We use this instead of the ``NamedTemporaryFile`` API
             # because it works with Windows file locking.
             (fdescriptor, tmpname) = tempfile.mkstemp(suffix=".lean")
             tmpname = Path(tmpname).resolve()
             try:
                 with open(fdescriptor, "w") as tmp:
                     tmp.write(document.contents)
-                # FIXME: Use CLI_ARGS + self.run_cli
-                args = ["lean", "--make", "--ast",
-                        *(x for x in (*self.REPL_ARGS, *self.user_args) if x != "--server"),
-                        str(tmpname)]
-                subprocess.check_call(args)
+                self.run_cli([str(tmpname)])
                 self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
             finally:
                 tmpname.unlink(missing_ok=True)
