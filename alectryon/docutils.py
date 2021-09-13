@@ -189,13 +189,28 @@ def alectryon_state(document):
         st = document["alectryon_state"] = AlectryonState(document)
     return st
 
+def _sphinx_attr(document, attr):
+    env = getattr(document.settings, "env", None)
+    return env and getattr(env, attr)
+
+def _sphinx_app(document):
+    return _sphinx_attr(document, "app")
+
+def _sphinx_config(document):
+    return _sphinx_attr(document, "config")
+
 def _docutils_config(document, attr, default=None):
     """Look up `attr` in Sphinx config, falling back to docutils settings."""
-    settings = document.settings
-    value = getattr(settings, attr, default)
-    if hasattr(settings, "env"):
-        value = getattr(settings.env.config, attr, value)
+    value = getattr(document.settings, attr, default)
+    value = getattr(_sphinx_config(document), attr, value)
     return value
+
+def _note_pending(document, node: nodes.pending):
+    """Register the transform associated to a pending node."""
+    app = _sphinx_app(document)
+    if app and node.transform.is_post_transform:
+        return # Post-transforms are handled in sphinx.py
+    document.note_pending(node)
 
 def _gensym_stem(document, suffix=""):
     source = document.get('source', "")
@@ -285,6 +300,8 @@ class Config:
         return cls(args, fpath=self.document['source'])
 
 class OneTimeTransform(Transform):
+    is_post_transform = False
+
     def _apply(self):
         raise NotImplementedError()
 
@@ -313,7 +330,7 @@ class LoadConfigTransform(OneTimeTransform):
     def _apply(self):
         alectryon_state(self.document).populate_config()
 
-class ActivateMathJaxTransform(Transform):
+class ActivateMathJaxTransform(OneTimeTransform):
     """Add the ``mathjax_process`` class on math nodes.
 
     This is needed when another part of the pipeline adds mathjax_ignore on the
@@ -325,7 +342,7 @@ class ActivateMathJaxTransform(Transform):
     def is_math(node):
         return isinstance(node, (nodes.math, nodes.math_block))
 
-    def apply(self, **kwargs):
+    def _apply(self, **kwargs):
         for node in self.document.traverse(self.is_math):
             node.attributes.setdefault("classes", []).append("mathjax_process")
 
@@ -382,7 +399,7 @@ class AlectryonTransform(OneTimeTransform):
 
         details = {**pending.details, "fragments": fragments}
         io = alectryon_pending_io(AlectryonPostTransform, details)
-        self.document.note_pending(io)
+        _note_pending(self.document, io)
         pending.replace_self(io)
 
     def apply_drivers(self):
@@ -588,9 +605,20 @@ class AlectryonPostTransform(OneTimeTransform):
     ``AlectryonTransform``.  See ``docutils.components.transforms.Filter``.
     """
     default_priority = 820
+    is_post_transform = True
+
+    def _formats(self):
+        app = _sphinx_app(self.document)
+        if app:
+            # https://github.com/sphinx-doc/sphinx/issues/9632: Sphinx sets
+            # ``document.transformer`` to ``None`` when reading from cache and
+            # ``transformer.components`` to ``[]`` when writing, so we can't use
+            # the writer's list of supported formats when compiling with Sphinx.
+            return app.tags
+        return self.document.transformer.components['writer'].supported
 
     def init_generator(self):
-        formats = set(self.document.transformer.components['writer'].supported)
+        formats = set(self._formats())
         style = _docutils_config(self.document, "pygments_style")
         if 'html' in formats:
             highlighter = make_highlighter("html", None, style)
@@ -749,7 +777,7 @@ class ProverDirective(AlectryonDirective):
 
         set_line(pending, self.lineno, self.state_machine)
         self.add_name(pending)
-        document.note_pending(pending)
+        _note_pending(document, pending)
 
         return [pending] + errors
 
@@ -772,7 +800,7 @@ class AlectryonToggleDirective(Directive):
     def run(self):
         pending = alectryon_pending_toggle(AlectryonTransform)
         set_line(pending, self.lineno, self.state_machine)
-        self.state_machine.document.note_pending(pending)
+        _note_pending(self.state_machine.document, pending)
         return [pending]
 
 # This is just a small example
@@ -1012,7 +1040,7 @@ def _marker_ref(rawtext, text, lineno, document, reporter, options):
     roles.set_classes(options)
     node = alectryon_pending_mref(AlectryonMrefTransform, details, rawtext, **options)
     set_line(node, lineno, reporter)
-    document.note_pending(node)
+    _note_pending(document, node)
     return node
 
 def marker_ref_role(role, rawtext, text, lineno, inliner,
@@ -1442,7 +1470,8 @@ def get_pipeline(frontend, backend, dialect):
 NODES = [alectryon_pending,
          alectryon_pending_toggle,
          alectryon_pending_io]
-TRANSFORMS = [ActivateMathJaxTransform,
+TRANSFORMS = [LoadConfigTransform,
+              ActivateMathJaxTransform,
               AlectryonTransform,
               AlectryonMrefTransform,
               AlectryonPostTransform]

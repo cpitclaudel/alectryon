@@ -51,7 +51,7 @@ def add_assets(app: "Sphinx"):
         app.config.latex_additional_files.append(os.path.join(LATEX_ASSETS.PATH, sty))
         app.add_latex_package(sty.replace(".sty", ""))
 
-def setup(app):
+def setup(app: "Sphinx"):
     """Register Alectryon's directives, transforms, etc."""
     register_coq_parser(app)
 
@@ -71,14 +71,18 @@ def setup(app):
         if opts["dest"] not in ("pygments_style",): # Already in Sphinx
             app.add_config_value(opts["dest"], opts["default"], "env")
 
-    # All custom transforms are run through pending nodes,
-    # so no need for ``app.add_transform(...)`` except for MyST.
+    # All custom transforms are run through pending nodes, so no need for
+    # ``app.add_transform(...)`` — except for MyST and for post_transforms.
 
     # (This specific transformation is not strictly necessary in all cases, as
     # only MyST disables math processing at the level of the whole document; but
     # since there's an open Sphinx PR to do that in all cases, better do it
     # right away.)
     app.add_transform(docutils.ActivateMathJaxTransform)
+
+    for transform in docutils.TRANSFORMS:
+        if transform.is_post_transform:
+            app.add_post_transform(transform)
 
     # Sphinx uses PYG instead of PY for pygments
     LatexFormatter.COMMANDPREFIX = 'PYG'
