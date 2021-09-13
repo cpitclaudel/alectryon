@@ -704,7 +704,7 @@ def truncate_lean3_vernacs(fragments):
                 fr = Text(fr.input.contents[m.start():])
         yield fr
 
-LEAN_COMMA_RE = re.compile(r'\A(\s*,)(.*)\Z', flags=re.DOTALL)
+LEAN_COMMA_RE = re.compile(r'\A(\s*,)')
 
 def lean_attach_commas(fragments):
     """Attaches commas to their related sentences.
@@ -717,15 +717,12 @@ def lean_attach_commas(fragments):
     """
     grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
-        if isinstance(fr, Text):
+        if isinstance(fr, Text) and idx > 0:
             match = LEAN_COMMA_RE.match(fr.contents)
             if match:
-                before, rest = match.groups()
-                if before:
-                    if idx > 0:
-                        assert not isinstance(grouped[idx - 1], Text)
-                        grouped[idx - 1].suffixes.append(before)
-                        grouped[idx] = Text(rest) if rest else None
+                assert not isinstance(grouped[idx - 1], Text)
+                grouped[idx - 1].suffixes.append(fr.contents[match.start():match.end()])
+                grouped[idx] = Text(fr.contents[match.end():])
 
     return [g for g in grouped if g is not None]
 
