@@ -14,7 +14,9 @@ help:
 
 .PHONY: help Makefile
 
-# Catch-all target: route all unknown targets to Sphinx using the new
-# "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
+latexpdf: Makefile
+	+$(MAKE) latex
+	texfot --tee=/dev/null --no-stderr $(MAKE) -C $(BUILDDIR)/latex
+
 %: Makefile
 	$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

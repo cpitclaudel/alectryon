@@ -57,11 +57,18 @@ include recipes.mk tests.mk
 # Sphinx #
 ##########
 
-sphinx/_build/html/index.html: export SPHINXBUILD := $(PYTHON) "$(shell which sphinx-build)"
-sphinx/_build/html/index.html: sphinx/index.rst
+sphinx_html := sphinx/_build/html/index.html
+sphinx_pdf := sphinx/_build/latex/alectryon-demo.pdf
+
+$(sphinx_html) $(sphinx_pdf): export SPHINXBUILD := $(PYTHON) "$(shell which sphinx-build)"
+
+$(sphinx_html): sphinx/index.rst
 	+$(MAKE) -C sphinx html
 
-targets += sphinx/_build/html/index.html
+$(sphinx_pdf): sphinx/index.rst
+	+$(MAKE) -C sphinx latexpdf
+
+targets += $(sphinx_html) $(sphinx_pdf)
 
 ##############
 # Screenshot #
