@@ -194,9 +194,9 @@ class Lean3(TextREPLDriver):
                         yield Text(fr.contents[:beg - fr_beg])
                         fr_beg, fr = beg, fr._replace(contents=fr.contents[beg - fr_beg:])
                     if end < fr_end:
-                        # print(f"suffix: {(end, fr_end, Text(fr.contents[end - fr_beg:]))=}")
-                        segments.appendleft(Text(fr.contents[end-fr_beg:]))
-                        fr_end, fr = end, fr._replace(contents=fr.contents[:end - fr_beg])
+                        before, after = fr.contents[:end - fr_beg], fr.contents[end - fr_beg:]
+                        segments.appendleft(Positioned(end, fr_end, Text(after)))
+                        fr_end, fr = end, fr._replace(contents=before)
                     fr = Sentence(contents=fr.contents, messages=[], goals=[])
                 fr.messages.append(Message(msg["text"]))  # Don't truncate existing sentences
                 messages.popleft()
