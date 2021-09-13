@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Tuple, Set, Iterable
 
 from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, Message, Sentence,\
-    Text, cwd, Position, Range
+    Text, cwd, Position
 
 AstNode = Any
 AstData = List[Dict[str, AstNode]]
@@ -222,15 +222,18 @@ class Lean3(TextREPLDriver):
         """
         document = Document(chunks, "\n")
         with cwd(self.fpath.parent.resolve()):
-            # todo: error checking around AST loading, and if AST is empty at runtime
-            # We use this instead of the `NamedTemporaryFile` API because it works with Windows file locking
+            # TODO: error checking around AST loading, and if AST is empty at
+            # runtime We use this instead of the ``NamedTemporaryFile`` API
+            # because it works with Windows file locking.
             (fdescriptor, tmpname) = tempfile.mkstemp(suffix=".lean")
             tmpname = Path(tmpname).resolve()
             try:
                 with open(fdescriptor, "w") as tmp:
                     tmp.write(document.contents)
                 # FIXME: Use CLI_ARGS + self.run_cli
-                args = ["lean", "--make", "--ast", *(x for x in (*self.REPL_ARGS, *self.user_args) if x != "--server"), str(tmpname)]
+                args = ["lean", "--make", "--ast",
+                        *(x for x in (*self.REPL_ARGS, *self.user_args) if x != "--server"),
+                        str(tmpname)]
                 subprocess.check_call(args)
                 self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
             finally:
