@@ -29,6 +29,8 @@ To install from OPAM and PyPI:
     | ``opam install "coq-serapi>=8.10.0+0.7.0"`` (from the `Coq OPAM archive <https://coq.inria.fr/opam-using.html>`__)
     | ``python3 -m pip install alectryon``
 
+To install the latest version from Git, use ``python3 -m pip install git+https://github.com/cpitclaudel/alectryon.git``.  To install from a local clone, use ``python3 -m pip install .``.
+
 **A note on dependencies**: the ``serapi`` module only depends on the ``coq-serapi`` OPAM package.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires ``docutils`` (and optionally ``sphinx``); Markdown support requires ``myst_parser`` (`docs <https://myst-parser.readthedocs.io/en/latest/index.html>`__); Coqdoc support requires ``beautifulsoup4``.  Support for Coq versions follows SerAPI; Coq ≥ 8.10 works well and ≥ 8.12 works best.
 
 Usage
