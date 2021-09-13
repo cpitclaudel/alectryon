@@ -79,7 +79,7 @@ class Lean3(TextREPLDriver):
         self._write(json.dumps(query, indent=None), "\n")
         return self._wait()
 
-    def _get_descendants(self, node: AstNode) -> Set[int]:
+    def _get_descendants(self, node: AstNode) -> Iterable[int]:
         if node and "children" in node and node["kind"] not in self.DONT_RECURSE_IN:
             yield from node["children"]
             for idx in node["children"]:
@@ -116,7 +116,8 @@ class Lean3(TextREPLDriver):
         record = info.get("record", {})
         return record.get("state")
 
-    def _collect_sentences_and_states(self, doc: Document) -> Tuple[int, int, Any]:
+    def _collect_sentences_and_states(self, doc: Document) \
+        -> Iterable[Tuple[Tuple[int, int], Any]]:
         prev = self._pos(0, 0)
         last_span = None
         for start, end in sorted(self._find_sentence_ranges()):
