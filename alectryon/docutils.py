@@ -558,13 +558,13 @@ class AlectryonMrefTransform(OneTimeTransform):
         return nodes.reference(node.rawsource, marker,
                                classes=["alectryon-mref"], refid=refid)
 
-    @staticmethod
-    def format_one_quote(io, target, node):
+    def format_one_quote(self, io, target, node):
         if isinstance(target, core.RichSentence):
             target = target.input
         details = {**node.details, "lang": io.details["lang"], "target": target}
-        return alectryon_pending_quote(
-            AlectryonPostTransform, details, node.rawsource)
+        node = alectryon_pending_quote(AlectryonPostTransform, details, node.rawsource)
+        _note_pending(self.document, node)
+        return node
 
     def replace_one_mref(self, node, ios, last_io):
         kind, path = node.details["kind"], node.details["path"]
