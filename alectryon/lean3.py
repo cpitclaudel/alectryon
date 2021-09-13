@@ -21,17 +21,16 @@
 import json
 import re
 import tempfile
-import subprocess
 from collections import deque
 from pathlib import Path
-from typing import Dict, List, Any, Tuple, Set, Iterable
-from itertools import chain
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, Message, Sentence,\
-    Text, debug, cwd, Position, Range
+    Text, cwd, Position
 
 AstNode = Any
 AstData = List[Dict[str, AstNode]]
+Pos = Tuple[int, int]
 
 class ProtocolError(ValueError):
     pass
@@ -40,24 +39,21 @@ class Lean3(TextREPLDriver):
     BIN = "lean"
     NAME = "Lean3"
 
-    # todo: threading
-    REPL_ARGS = ("--server", "--threads=0", "-M 4096", "-T 100000")  # use the same defaults as vscode
+    # TODO: Threading
+    REPL_ARGS = ("--server", "--threads=0", "-M 4096", "-T 100000") # Same defaults as vscode
+    CLI_ARGS = ("--ast", "-M 4096", "-T 100000")
 
     ID = "lean3_repl"
     LANGUAGE = "lean3"
 
-    TACTIC_CONTAINERS = ["begin", "{"]
+    TACTIC_CONTAINERS = ["begin", "{", "by"]
     TACTIC_NODES = ["tactic", "<|>", ";"]
-    DONT_RECURSE_IN = ["by"] + TACTIC_NODES
+    DONT_RECURSE_IN = TACTIC_NODES
 
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
         self.ast: AstData = []
         self.seq_num = -1
-
-    @classmethod
-    def driver_not_found(cls, binpath):
-        raise ValueError("Not found: {}".format(binpath))
 
     def _wait(self):
         messages = []
@@ -82,57 +78,80 @@ class Lean3(TextREPLDriver):
         query = {"seq_num": self.seq_num, "command": command,
                  "file_name": self.fpath.name, **kwargs}
         self._write(json.dumps(query, indent=None), "\n")
-        response = self._wait()
-        debug(response, '<< ')
-        return response
+        return self._wait()
 
-    def _get_children(self, node: AstNode) -> Set[int]:
-        if node and "children" in node and node["kind"] not in self.DONT_RECURSE_IN:
-            grandkids = (self._get_children(self.ast[idx]) for idx in node["children"])
-            return set(node["children"]).union(*grandkids)
-        return set()
+    def _get_descendants(self, idx: int, parent: int) -> Iterable[Tuple[int, int]]:
+        node = self.ast[idx]
+        if node:
+            yield idx, parent
+            if node["kind"] in self.TACTIC_CONTAINERS:
+                parent = idx
+            if node["kind"] not in self.DONT_RECURSE_IN:
+                for cidx in node.get("children", ()):
+                    yield from self._get_descendants(cidx, parent)
 
-    KIND_ENDER = {'begin': 'end', '{': '}'}
+    KIND_ENDER = {"begin": "end", "{": "}", "by": ""}
 
-    def _get_key_locs(self) -> Iterable[Range]:
+    def _find_root(self):
+        for idx, n in enumerate(self.ast):
+            if n and n["kind"] == "file":
+                return idx
+        return None
+
+    def _find_sentence_ranges(self) -> Iterable[Tuple[Pos, Pos, int]]:
+        """Get the ranges covering individual sentences of a Lean3 file.
+
+        Each value in the resulting stream is a 4-element: the start and end of
+        the sentence, the index of its node, and the index of its parent.
         """
-        Gets the "key locations" in a Lean3 file. Will return their location; if they're a tactic container,
-        it splits these between begin and end.
-        """
-        for node in (self.ast[idx] for idx in set(chain.from_iterable(self._get_children(n) for n in self.ast))):
-            if node:
-                if node["kind"] in self.TACTIC_NODES:
-                    yield Position(self.fpath, node["start"][0], node["start"][1]),\
-                          Position(self.fpath, node["end"][0], node["end"][1])
-                elif node["kind"] in self.TACTIC_CONTAINERS:
-                    yield Position(self.fpath, node["start"][0], node["start"][1]),\
-                          Position(self.fpath, node["start"][0], node["start"][1] + len(node["kind"]))
+        for idx, parent in set(self._get_descendants(self._find_root(), 0)):
+            node = self.ast[idx]
+            if not node or "start" not in node or "end" not in node:
+                continue
+            kind = node["kind"]
+            start, end = tuple(node["start"]), tuple(node["end"])
+            if kind in self.TACTIC_NODES:
+                yield start, end, idx, parent
+            elif kind in self.TACTIC_CONTAINERS:
+                # Yield a span corresponding to the opening delimiter
+                yield start, (start[0], start[1] + len(kind)), idx, parent
 
-                    # the reported end position is where the "d" of the "end" is, for example.
-                    assert 0 <= node["end"][1] - len(self.KIND_ENDER[node["kind"]])
-
-                    yield Position(self.fpath, node["end"][0], node["end"][1] - len(self.KIND_ENDER[node["kind"]])),\
-                          Position(self.fpath, node["end"][0], node["end"][1])
-
-    def _get_state_at(self, pos: Position):
+    def _get_state_at(self, pos: Pos):
         # LATER: Render using Lean widgets
-        info, _ = self._query("info", line=pos.line, column=pos.col)
+        info, _ = self._query("info", line=pos[0], column=pos[1])
         record = info.get("record", {})
         return record.get("state")
 
-    def _find_sentence_ranges(self, doc: Document) -> Tuple[int, int, Any]:
-        prev = Position(self.fpath, 0, 0)
-        to_yield = None
-        for (start, end) in sorted(self._get_key_locs()):
-            if end <= prev:
-                continue
-            prev = end
-            if to_yield:
-                yield (*to_yield, self._get_state_at(start))
-            to_yield = (doc.pos2offset(start), doc.pos2offset(end))
-        if to_yield:
-            yield (*to_yield, "")
+    DEBUG = False
 
+    def _collect_sentences_and_states(self, doc: Document) -> Iterable[Tuple[Pos, Any]]:
+        last_end: Pos = (0, 0)
+        last_idx: Optional[int] = None
+        last_parent: Optional[int] = None
+        last_span: Optional[Pos] = None
+
+        if self.DEBUG:
+            print("=" * 72)
+            for idx, node in enumerate(self.ast):
+                print(idx, node)
+                if node and "start" in node and "end" in node:
+                    print(doc[doc.pos2offset(*node["start"]):
+                              doc.pos2offset(*node["end"])])
+                print()
+
+        for start, end, idx, parent in sorted(self._find_sentence_ranges()):
+            if end <= last_end: # Skip overlapping ranges
+                print("Skip")
+                continue
+            if last_span:
+                last_state = self._get_state_at(start) if parent in (last_idx, last_parent) else None
+                yield (last_span, last_state)
+            last_span = (doc.pos2offset(*start), doc.pos2offset(*end)) if start != end else None
+            last_end, last_idx, last_parent = end, idx, parent
+        if last_span:
+            yield (last_span, None)
+
+    # FIXME: this does not handle hypotheses with a body
     HYP_RE = re.compile(r"(?P<names>.*?)\s*:\s*(?P<type>(?:.*|\n )+)(?:,\n|\Z)")
 
     def _parse_hyps(self, hyps):
@@ -155,7 +174,7 @@ class Lean3(TextREPLDriver):
                        list(self._parse_hyps(m.group("hyps"))))
 
     def _find_sentences(self, doc: Document):
-        for beg, end, st in self._find_sentence_ranges(doc):
+        for (beg, end), st in self._collect_sentences_and_states(doc):
             sentence = Sentence(doc[beg:end], [], list(self._parse_goals(st)))
             yield Positioned(beg, end, sentence)
 
@@ -164,13 +183,13 @@ class Lean3(TextREPLDriver):
 
     @staticmethod
     def _collect_message_span(msg, doc):
-        return (doc.pos2offset(Position(self.fpath, msg["pos_line"], msg["pos_col"])),
-                doc.pos2offset(Position(self.fpath, msg["end_pos_line"], msg["end_pos_col"])),
+        return (doc.pos2offset(msg["pos_line"], msg["pos_col"]),
+                doc.pos2offset(msg["end_pos_line"], msg["end_pos_col"]),
                 msg)
 
     @staticmethod
     def _collect_message_spans(messages, doc):
-        # FIXME this drops some errors (try ``#compute 1``) (not a real command, but there's no "end of error")
+        # FIXME this drops some errors (try ````#xyz 1````) (no end_pos)
         return sorted(Lean3._collect_message_span(m, doc) for m in messages
                       if "end_pos_line" in m and "end_pos_col" in m)
 
@@ -186,19 +205,19 @@ class Lean3(TextREPLDriver):
         while messages:
             beg, end, msg = messages[0]
             assert fr_beg <= beg <= end
-            if beg < fr_end:  # Message overlaps current fragment
-                end = min(end, fr_end)  # Truncate to current fragment
-                if isinstance(fr, Text):  # Split current fragment if it's text
+            if beg < fr_end: # Message overlaps current fragment
+                end = min(end, fr_end) # Truncate to current fragment
+                if isinstance(fr, Text): # Split current fragment if it's text
                     if fr_beg < beg:
                         # print(f"prefix: {(fr_beg, beg, Text(fr.contents[:beg - fr_beg]))=}")
                         yield Text(fr.contents[:beg - fr_beg])
                         fr_beg, fr = beg, fr._replace(contents=fr.contents[beg - fr_beg:])
                     if end < fr_end:
                         # print(f"suffix: {(end, fr_end, Text(fr.contents[end - fr_beg:]))=}")
-                        segments.appendleft(Text(fr.contents[end-fr_beg:]))
+                        segments.appendleft(Positioned(end, fr_end, Text(fr.contents[end-fr_beg:])))
                         fr_end, fr = end, fr._replace(contents=fr.contents[:end - fr_beg])
                     fr = Sentence(contents=fr.contents, messages=[], goals=[])
-                fr.messages.append(Message(msg["text"]))  # Don't truncate existing sentences
+                fr.messages.append(Message(msg["text"])) # Don't truncate existing sentences
                 messages.popleft()
             else: # msg starts past fr; move to next fragment
                 yield fr
@@ -225,20 +244,17 @@ class Lean3(TextREPLDriver):
         """
         document = Document(chunks, "\n")
         with cwd(self.fpath.parent.resolve()):
-            # todo: error checking around AST loading, and if AST is empty at runtime
-            # We use this instead of the `NamedTemporaryFile` API because it works with Windows file locking
+            # We use this instead of the ``NamedTemporaryFile`` API
+            # because it works with Windows file locking.
             (fdescriptor, tmpname) = tempfile.mkstemp(suffix=".lean")
-            tmpname = Path(tmpname).resolve()
             try:
-                with open(fdescriptor, "w") as tmp:
+                tmpname = Path(tmpname).resolve()
+                with open(fdescriptor, "w", encoding="utf-8") as tmp:
                     tmp.write(document.contents)
-                # FIXME: Use CLI_ARGS + self.run_cli
-                args = ["lean", "--make", "--ast", *(x for x in self.REPL_ARGS + self.user_args if x != "--server"), str(tmpname)]
-                subprocess.check_call(args)
+                self.run_cli([str(tmpname)])
                 self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
             finally:
                 tmpname.unlink(missing_ok=True)
                 tmpname.with_suffix(".ast.json").unlink(missing_ok=True)
-                tmpname.with_suffix(".olean").unlink(missing_ok=True)
         with self as api:
             return api._annotate(document)
