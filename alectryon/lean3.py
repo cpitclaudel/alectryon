@@ -227,9 +227,9 @@ class Lean3(TextREPLDriver):
             # We use this instead of the ``NamedTemporaryFile`` API
             # because it works with Windows file locking.
             (fdescriptor, tmpname) = tempfile.mkstemp(suffix=".lean")
-            tmpname = Path(tmpname).resolve()
             try:
-                with open(fdescriptor, "w") as tmp:
+                tmpname = Path(tmpname).resolve()
+                with open(fdescriptor, "w", encoding="utf-8") as tmp:
                     tmp.write(document.contents)
                 self.run_cli([str(tmpname)])
                 self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
