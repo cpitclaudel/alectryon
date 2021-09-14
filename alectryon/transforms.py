@@ -688,22 +688,25 @@ def isolate_coqdoc(fragments):
 LEAN_VERNAC_RE = re.compile("^#[^ ]+")
 LEAN_TRAILING_BLANKS_RE = re.compile(r"\s*(\n|\Z)")
 
-def truncate_lean3_vernacs(fragments):
-    """Truncate vernacs like ``#check`` to a single line of text.
+def lean3_truncate_vernacs(fragments):
+    r"""Truncate vernacs like ``#check`` to a single line of text.
 
-    This changes ``[('#check nat \n-- xyz', "results…")] ``into
-    ``[('#check nat', "results…"), " \n-- xyz"]``.
+    >>> from .core import Message as M
+    >>> list(lean3_truncate_vernacs([Sentence("#check 1 \n-- xyz", [M("1 : ℕ")], [])]))
+    [Sentence(contents='#check 1', messages=[Message(contents='1 : ℕ')], goals=[]),
+     Text(contents=' \n-- xyz')]
 
     This is only needed in Lean 3: in Lean4 the region for #check statements is
     precisely known (in Lean3 it expands too far).
     """
     for fr in fragments:
         # Check that `fr` is a ‘#xyz’ vernac starting at the beginning of a line
-        if isinstance(fr, RichSentence) and LEAN_VERNAC_RE.match(fr.input.contents):
-            m = LEAN_TRAILING_BLANKS_RE.search(fr.input.contents)
+        contents = _contents(fr)
+        if isinstance(fr, (Sentence, RichSentence)) and LEAN_VERNAC_RE.match(contents):
+            m = LEAN_TRAILING_BLANKS_RE.search(contents)
             if m:
-                yield _replace_contents(fr, fr.input.contents[:m.start()])
-                fr = Text(fr.input.contents[m.start():])
+                yield _replace_contents(fr, contents[:m.start()])
+                fr = Text(contents[m.start():])
         yield fr
 
 DEFAULT_TRANSFORMS = {
@@ -718,7 +721,7 @@ DEFAULT_TRANSFORMS = {
     ],
     "lean3": [
         enrich_sentences,
-        truncate_lean3_vernacs,
+        lean3_truncate_vernacs,
         process_io_annots,
     ]
     # Not included:

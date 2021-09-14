@@ -54,10 +54,12 @@ group_hypotheses (alectryon.transforms)
 Doctest: alectryon.transforms.group_hypotheses ... ok
 group_whitespace_with_code (alectryon.transforms)
 Doctest: alectryon.transforms.group_whitespace_with_code ... ok
+lean3_truncate_vernacs (alectryon.transforms)
+Doctest: alectryon.transforms.lean3_truncate_vernacs ... ok
 partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 29 tests
+Ran 30 tests
 
 OK
