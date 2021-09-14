@@ -710,13 +710,13 @@ def lean3_truncate_vernacs(fragments):
 LEAN_COMMA_RE = re.compile(r'\A(\s*,)')
 
 def lean_attach_commas(fragments):
-    """Attaches commas to their related sentences.
+    """Attach commas to preceding sentences.
 
-    This pass gathers all commas (and spaces) following a sentence, up to the first
-    newline, and embeds them in the sentence itself. This improves the bubbles.
+    This pass gathers all commas and spaces following a sentence up to the first
+    newline, and embeds them in the sentence itself. This improves the location
+    of the hover bubbles.
 
-    This pass assumes that consecutive ``Text`` fragments have been
-    coalesced.
+    This pass assumes that consecutive ``Text`` fragments have been coalesced.
     """
     grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
