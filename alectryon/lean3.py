@@ -185,18 +185,19 @@ class Lean3(TextREPLDriver):
         while messages:
             beg, end, msg = messages[0]
             assert fr_beg <= beg <= end
-            if beg < fr_end:  # Message overlaps current fragment
-                end = min(end, fr_end)  # Truncate to current fragment
-                if isinstance(fr, Text):  # Split current fragment if it's text
+            if beg < fr_end: # Message overlaps current fragment
+                end = min(end, fr_end) # Truncate to current fragment
+                if isinstance(fr, Text): # Split current fragment if it's text
                     if fr_beg < beg:
+                        # print(f"prefix: {(fr_beg, beg, Text(fr.contents[:beg - fr_beg]))=}")
                         yield Text(fr.contents[:beg - fr_beg])
                         fr_beg, fr = beg, fr._replace(contents=fr.contents[beg - fr_beg:])
                     if end < fr_end:
-                        before, after = fr.contents[:end - fr_beg], fr.contents[end - fr_beg:]
-                        segments.appendleft(Positioned(end, fr_end, Text(after)))
-                        fr_end, fr = end, fr._replace(contents=before)
+                        # print(f"suffix: {(end, fr_end, Text(fr.contents[end - fr_beg:]))=}")
+                        segments.appendleft(Positioned(end, fr_end, Text(fr.contents[end-fr_beg:])))
+                        fr_end, fr = end, fr._replace(contents=fr.contents[:end - fr_beg])
                     fr = Sentence(contents=fr.contents, messages=[], goals=[])
-                fr.messages.append(Message(msg["text"]))  # Don't truncate existing sentences
+                fr.messages.append(Message(msg["text"])) # Don't truncate existing sentences
                 messages.popleft()
             else: # msg starts past fr; move to next fragment
                 yield fr
