@@ -21,10 +21,9 @@
 import json
 import re
 import tempfile
-import subprocess
 from collections import deque
 from pathlib import Path
-from typing import Dict, List, Any, Tuple, Set, Iterable
+from typing import Dict, List, Any, Tuple, Iterable
 
 from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, Message, Sentence,\
     Text, cwd, Position
