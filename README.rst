@@ -635,6 +635,7 @@ MathJax is a JavaScript library for rendering LaTeX math within webpages.  Prope
 Gallery
 =======
 
+- Pierre Castéran, `Hydra Battles and Cie <https://coq-community.org/hydra-battles/doc/hydras.pdf>`__ (PDF, using a custom `Alectryon driver <https://github.com/coq-community/hydra-battles/blob/master/doc/movies/driver.py>`__ to render snippets extracted from a large Coq development).
 - Enrico Tassi, `Tutorial on the Elpi programming language <https://lpcic.github.io/coq-elpi/tutorial_elpi_lang.html>`__ (using a `custom Alectryon driver <https://github.com/LPCIC/coq-elpi/blob/master/etc/alectryon_elpi.py>`__ to highlight mixed Coq/ELPI code).
 - Anton Trunov. `Introduction to Formal Verification course at CS Club <https://github.com/anton-trunov/csclub-coq-course-spring-2021>`__.
 - Jean-Paul Bodeveix, Érik Martin-Dorel, Pierre Roux. `Types Abstraits et Programmation Fonctionnelle Avancée <https://github.com/pfitaxel/tapfa-coq-alectryon>`__.
