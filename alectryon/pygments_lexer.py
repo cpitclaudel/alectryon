@@ -376,6 +376,8 @@ class CoqLexer(RegexLexer):
               '🄮🄰-🅫🅰-🆬🇦-🈂🈐-🈻🉀-🉈🉐-🉑🌀-🛒🛠-🛬🛰-🛶🜀-🝳🞀-🟔🠀-🠋🠐-🡇🡐-🡙🡠-🢇🢐-🢭🤐-🤞🤠-🤧🤰🤳-🤾🥀-🥋'
               '🥐-🥞🦀-🦑🧀')
 
+    symbol += '⃐-⃰' # Combining symbols
+
     local_global = regex_opt_inner(("Local", "Global", "Export"), '(?:')
     set_unset_test = regex_opt_inner(("Set", "Unset", "Test"), '(?:')
     add_remove_test = regex_opt_inner(("Add", "Remove", "Test"), '(?:')
