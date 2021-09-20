@@ -2,7 +2,7 @@
 The MIT License (MIT)
 
 Copyright (c) 2014 Matthias Eisen
-Further changes Copyright (c) 2020 Clément Pit-Claudel
+Further changes Copyright (c) 2020, 2021 Clément Pit-Claudel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,11 @@ kbd,
 pre,
 samp,
 tt,
-code,
-code.highlight,
+body code, /* Increase specificity to override IBM's stylesheet */
+body code.highlight,
 .docutils.literal {
     font-family: 'Iosevka Slab Web', 'Iosevka Web', 'Iosevka Slab', 'Iosevka', 'Fira Code', monospace;
-    font-feature-settings: "XV00" 1; /* Use Coq ligatures when Iosevka is available */
+    font-feature-settings: "COQX" 1 /* Coq ligatures */, "XV00" 1 /* Legacy */, "calt" 1 /* Fallback */;
 }
 
 body {
