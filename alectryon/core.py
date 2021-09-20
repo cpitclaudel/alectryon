@@ -150,10 +150,10 @@ class Backend:
             raise TypeError("Unexpected object type: {}".format(type(obj)))
 
 class Asset(str):
-    def __new__(cls, fname, _gen):
+    def __new__(cls, fname, _gen=None):
         return super().__new__(cls, fname)
 
-    def __init__(self, _fname, gen):
+    def __init__(self, _fname, gen=lambda _: ""):
         super().__init__()
         self.gen = gen
 
