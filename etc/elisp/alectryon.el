@@ -298,9 +298,12 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 (defun alectryon-insert-literate-block ()
   "Insert a pair of (*| … |*) markers."
   (interactive)
-  (let* ((in-lit (and (nth 4 (syntax-ppss))
-                      (memq 'alectryon-comment (face-at-point nil t))))
-         (delim (if in-lit '("|*)\n\n" . "\n\n(*|") '("(*|\n" . "\n|*)"))))
+  (let* ((face (get-text-property (point) 'face))
+         (in-lit (and (nth 4 (syntax-ppss))
+                      (memq 'alectryon-comment (if (listp face) face (list face)))))
+         (delim (if in-lit
+                    '("|*)\n\n" . "\n\n(*|")
+                  '("(*|\n" . "\n|*)"))))
     (insert (car delim))
     (save-excursion (insert (cdr delim)))))
 
