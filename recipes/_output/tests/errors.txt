@@ -97,7 +97,7 @@ The offending chunk is delimited by >>>…<<< below:
   > Definition a
   >   : >>>true<<< := 1. (* Next line *)
 Results past this point may be unreliable.
-tests/errors.rst:79: (WARNING/2) Long line (107 characters)
+tests/errors.rst:77: (WARNING/2) Long line (107 characters)
      exact I. (* A very long line *) (* whose contents are split *) (* across *) (* multiple *) (* comments *)
 tests/errors.rst:122: (ERROR/3) In `.. coq::`:
    Missing search pattern for key ``.io`` in expression ``.io.s``. (maybe an invalid pattern?)

@@ -377,7 +377,8 @@ class AlectryonTransform(OneTimeTransform):
             return
         for linum, s in transforms.find_long_lines(fragments, threshold=LONG_LINE_THRESHOLD):
             msg = "Long line ({} characters)\n   {}".format(len(s), s)
-            opts = dict(line=node.line + linum) if hasattr(node, "line") else {}
+            contents_line = getattr(node, "contents_line", None)
+            opts = dict(line=contents_line + linum) if contents_line else {}
             w = self.document.reporter.warning(msg, base_node=node, **opts)
             # We want a message on the command line but not in the document, so
             # remove the node created by ``Reporter.system_message``:
@@ -760,18 +761,19 @@ class ProverDirective(AlectryonDirective):
                                    annotstr, False, default=transforms.IOAnnots())
 
         indent, contents = recompute_contents(self, ProverDirective.EXPECTED_INDENTATION)
-        source, line = self.state_machine.get_source_and_line(self.content_offset + 1)
+        source, contents_line = self.state_machine.get_source_and_line(self.content_offset + 1)
 
         col_offset = indent
         if document.get('source', "") == source \
            and alectryon_state(document).root_language == "coq":
             col_offset = 0
 
-        pos = Position(source, line, col_offset)
+        pos = Position(source, contents_line, col_offset)
         contents = PosStr(contents, pos, indent)
 
         roles.set_classes(self.options)
-        details = {"lang": self.name, "directive_annots": annots, "contents": contents}
+        details = {"lang": self.name, "directive_annots": annots,
+                   "contents": contents, "contents_line": contents_line}
         pending = alectryon_pending(AlectryonTransform, details=details,
                                     rawsource=self.header, **self.options)
 
