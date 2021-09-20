@@ -119,7 +119,12 @@ def _gen_docutils(source, fpath,
     from docutils.io import StringInput, StringOutput
 
     parser = Parser()
-    output, pub = publish_programmatically(
+
+    # LATER: ``destination_path=None`` propagates to ``settings._destination``,
+    # which means that ``stylesheet_path`` isn't actually resolved relative to
+    # ``_destination``.  This isn't trivial to fix because the name of the
+    # output is determined by the argument to ``write_file``.
+    text, pub = publish_programmatically(
         source_class=StringInput, destination_class=StringOutput,
         source=source.encode("utf-8"), destination=None,
         source_path=fpath, destination_path=None,
@@ -134,7 +139,7 @@ def _gen_docutils(source, fpath,
 
     max_level = pub.document.reporter.max_level
     exit_code = max_level + 10 if max_level >= pub.settings.exit_status_level else 0
-    return output.decode("utf-8"), pub, exit_code
+    return text.decode("utf-8"), pub, exit_code
 
 def _record_assets(assets, path, names):
     for name in names:
@@ -145,7 +150,7 @@ def gen_docutils(src, frontend, backend, fpath, dialect,
     from .docutils import get_pipeline, alectryon_state
 
     pipeline = get_pipeline(frontend, backend, dialect)
-    output, pub, exit_code.val = \
+    text, pub, exit_code.val = \
         _gen_docutils(src, fpath,
                       pipeline.parser, pipeline.reader, pipeline.writer,
                       docutils_settings_overrides)
@@ -155,7 +160,7 @@ def gen_docutils(src, frontend, backend, fpath, dialect,
                    pipeline.translator.ASSETS_PATH,
                    [a for a in pipeline.translator.ASSETS if a not in embedded_assets])
 
-    return output
+    return text
 
 def _docutils_cmdline(description, frontend, backend, dialect):
     import locale
