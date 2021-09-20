@@ -54,6 +54,11 @@ _output/custom_highlighting.with_driver.html: custom_highlighting.v | _output/
 	$(PYTHON) alectryon_custom_driver.py $(alectryon_opts) $< -o $@
 recipes_targets += _output/custom_highlighting.with_driver.html
 
+# Coq+reST → HTML
+_output/custom_stylesheet.html: custom_stylesheet.rst
+	DOCUTILSCONFIG=custom_stylesheet.docutils.conf $(alectryon) $<
+recipes_targets += _output/custom_stylesheet.html
+
 # JSON → JSON
 _output/fragments.v.io.json: fragments.v.json
 	$(alectryon) $<
