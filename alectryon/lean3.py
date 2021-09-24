@@ -92,10 +92,11 @@ class Lean3(TextREPLDriver):
 
     KIND_ENDER = {'begin': 'end', '{': '}'}
 
-    def _find_sentence_ranges(self) -> Iterable[Tuple[Position, Position]]:
+    def _find_sentence_ranges(self) -> Iterable[Tuple[Position, Position, int]]:
         """Get the ranges covering individual sentences of a Lean3 file.
 
         For tactic containers return two ranges (beginning and end).
+        The extra variable indicates how deep in the stack we are.
         """
         indices = set(idx for n in self.ast for idx in self._get_descendants(n))
         for idx in indices:
@@ -105,11 +106,11 @@ class Lean3(TextREPLDriver):
             kind = node["kind"]
             start, end = self._pos(*node["start"]), self._pos(*node["end"])
             if kind in self.TACTIC_NODES:
-                yield start, end
+                yield start, end, 0
             elif kind in self.TACTIC_CONTAINERS:
                 # Yield two spans corresponding to the delimiters of the container
-                yield start, self._pos(start.line, start.col + len(kind))
-                yield self._pos(end.line, end.col - len(self.KIND_ENDER[kind])), end
+                yield start, self._pos(start.line, start.col + len(kind)), 1
+                yield self._pos(end.line, end.col - len(self.KIND_ENDER[kind])), end, -1
 
     def _get_state_at(self, pos: Position):
         # future improvement: use widget stuff. may be unviable.
@@ -121,14 +122,21 @@ class Lean3(TextREPLDriver):
         -> Iterable[Tuple[Tuple[int, int], Any]]:
         prev = self._pos(0, 0)
         last_span = None
-        for start, end in sorted(self._find_sentence_ranges()):
+        last_span_ender = False
+        stack = 0
+        for start, end, stack_mod in sorted(self._find_sentence_ranges()):
+            stack += stack_mod
+            assert 0 <= stack
             if end <= prev: # Skip overlapping ranges
                 continue
             prev = end
             if last_span:
-                yield (last_span, self._get_state_at(start))
-            last_span = (doc.pos2offset(start.line, start.col),
-                         doc.pos2offset(end.line, end.col))
+                yield (last_span, None if last_span_ender else self._get_state_at(start))
+            last_span = (doc.pos2offset(start), doc.pos2offset(end))
+            if stack == 0 and stack_mod == -1:
+                last_span_ender = True
+            else:
+                last_span_ender = False
         if last_span:
             yield (last_span, None)
 
@@ -162,16 +170,14 @@ class Lean3(TextREPLDriver):
     def partition(self, doc: Document):
         return Document.intersperse_text_fragments(doc.contents, self._find_sentences(doc))
 
-    @staticmethod
-    def _collect_message_span(msg, doc):
-        return (doc.pos2offset(msg["pos_line"], msg["pos_col"]),
-                doc.pos2offset(msg["end_pos_line"], msg["end_pos_col"]),
+    def _collect_message_span(self, msg, doc):
+        return (doc.pos2offset(self._pos(msg["pos_line"], msg["pos_col"])),
+                doc.pos2offset(self._pos(msg["end_pos_line"], msg["end_pos_col"])),
                 msg)
 
-    @staticmethod
-    def _collect_message_spans(messages, doc):
+    def _collect_message_spans(self, messages, doc):
         # FIXME this drops some errors (try ````#xyz 1````) (no end_pos)
-        return sorted(Lean3._collect_message_span(m, doc) for m in messages
+        return sorted(self._collect_message_span(m, doc) for m in messages
                       if "end_pos_line" in m and "end_pos_col" in m)
 
     def _add_messages(self, segments, messages, doc):
