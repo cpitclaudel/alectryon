@@ -80,11 +80,22 @@ class Lean3(TextREPLDriver):
         self._write(json.dumps({"seq_num": -1, "command": "sync_output"}, indent=None), "\n")
         return self._wait()
 
-    def _get_descendants(self, node: AstNode) -> Iterable[int]:
+    # maybe worth memoising?
+    def _get_descendants(self, idx: int) -> Iterable[int]:
+        node = self.ast[idx]
         if node and "children" in node and node["kind"] not in self.DONT_RECURSE_IN:
             yield from node["children"]
-            for idx in node["children"]:
-                yield from self._get_descendants(self.ast[idx])
+            for cidx in node["children"]:
+                yield from self._get_descendants(cidx)
+
+    def _assign_parenting(self):
+        for idx, node in enumerate(self.ast):
+            if node and "children" in node:
+                for cidx in node["children"]:
+                    if self.ast[cidx]:
+                        # There may be non-unique parenting (`;`s come to mind); drop at the earliest sign of trouble
+                        assert ("parent" not in self.ast[cidx] or self.ast[cidx]["parent"] == idx)
+                        self.ast[cidx]["parent"] = idx
 
     def _pos(self, line, col):
         assert col >= 0
@@ -98,10 +109,10 @@ class Lean3(TextREPLDriver):
         For tactic containers return two ranges (beginning and end).
         The extra variable indicates how deep in the stack we are.
         """
-        indices = set(idx for n in self.ast for idx in self._get_descendants(n))
+        indices = set(idx for n in range(len(self.ast)) for idx in self._get_descendants(n))
         for idx in indices:
             node = self.ast[idx]
-            if not node or "start" not in node or "end" not in node:
+            if not node or "start" not in node or "end" not in node or self._by_in_parents(node):
                 continue
             kind = node["kind"]
             start, end = self._pos(*node["start"]), self._pos(*node["end"])
@@ -111,6 +122,9 @@ class Lean3(TextREPLDriver):
                 # Yield two spans corresponding to the delimiters of the container
                 yield start, self._pos(start.line, start.col + len(kind)), 1
                 yield self._pos(end.line, end.col - len(self.KIND_ENDER[kind])), end, -1
+
+    def _by_in_parents(self, node: AstNode) -> bool:
+        return node["kind"] == "by" or ("parent" in node and self._by_in_parents(self.ast[node["parent"]]))
 
     def _get_state_at(self, pos: Position):
         # future improvement: use widget stuff. may be unviable.
@@ -127,16 +141,19 @@ class Lean3(TextREPLDriver):
         for start, end, stack_mod in sorted(self._find_sentence_ranges()):
             stack += stack_mod
             assert 0 <= stack
-            if end <= prev: # Skip overlapping ranges
+            if start <= prev: # Skip overlapping ranges or those with `by` in their parents
                 continue
             prev = end
-            if last_span:
-                yield (last_span, None if last_span_ender else self._get_state_at(start))
-            last_span = (doc.pos2offset(start), doc.pos2offset(end))
             if stack == 0 and stack_mod == -1:
+                if last_span:
+                    yield (last_span, None)
                 last_span_ender = True
             else:
+                if last_span:
+                    yield (last_span, None if last_span_ender else self._get_state_at(start))
                 last_span_ender = False
+            last_span = (doc.pos2offset(start), doc.pos2offset(end))
+
         if last_span:
             yield (last_span, None)
 
@@ -149,7 +166,8 @@ class Lean3(TextREPLDriver):
             typ = m.group("type").replace("\n  ", "\n")
             yield Hypothesis(names, None, typ)
 
-    CCL_SEP_RE = re.compile("(?P<hyps>.*?)^⊢(?P<ccl>.*)", re.DOTALL | re.MULTILINE)
+    # [⊢|] vs ⊢ is for `conv` mode - currently unused but makes less brittle
+    CCL_SEP_RE = re.compile("(?P<hyps>.*?)^[⊢|](?P<ccl>.*)", re.DOTALL | re.MULTILINE)
 
     def _parse_goals(self, state):
         if not state or state == "no goals":
@@ -158,7 +176,7 @@ class Lean3(TextREPLDriver):
         if len(goals) > 1:
             goals[0] = goals[0][goals[0].find('\n'):]  # Strip "`n` goals"
         for goal in goals:
-            m = self.CCL_SEP_RE.match(goal)  # note : this does not deal with, e.g. `conv` goals
+            m = self.CCL_SEP_RE.match(goal)
             yield Goal(None, m.group("ccl").replace("\n  ", "\n").strip(),
                        list(self._parse_hyps(m.group("hyps"))))
 
@@ -240,6 +258,7 @@ class Lean3(TextREPLDriver):
                     tmp.write(document.contents)
                 self.run_cli([str(tmpname)])
                 self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
+                self._assign_parenting()
             finally:
                 tmpname.unlink(missing_ok=True)
                 tmpname.with_suffix(".ast.json").unlink(missing_ok=True)
