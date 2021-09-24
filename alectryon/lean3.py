@@ -38,8 +38,7 @@ class Lean3(TextREPLDriver):
     BIN = "lean"
     NAME = "Lean3"
 
-    # TODO: Threading
-    REPL_ARGS = ("--server", "--threads=0", "-M 4096", "-T 100000") # Same defaults as vscode
+    REPL_ARGS = ("--server", "-M 4096", "-T 100000") # Same defaults as vscode
     CLI_ARGS = ("--ast", "-M 4096", "-T 100000")
 
     ID = "lean3_repl"
@@ -77,6 +76,8 @@ class Lean3(TextREPLDriver):
         query = {"seq_num": self.seq_num, "command": command,
                  "file_name": self.fpath.name, **kwargs}
         self._write(json.dumps(query, indent=None), "\n")
+        # the seq_num is irrelevant here; the c++ ignores it, and this basically just forces it to sync up all asyncs
+        self._write(json.dumps({"seq_num": -1, "command": "sync_output"}, indent=None), "\n")
         return self._wait()
 
     def _get_descendants(self, node: AstNode) -> Iterable[int]:
@@ -111,7 +112,7 @@ class Lean3(TextREPLDriver):
                 yield self._pos(end.line, end.col - len(self.KIND_ENDER[kind])), end
 
     def _get_state_at(self, pos: Position):
-        # future improvement: use widget stuff. may be inviable.
+        # future improvement: use widget stuff. may be unviable.
         info, _ = self._query("info", line=pos.line, column=pos.col)
         record = info.get("record", {})
         return record.get("state")
