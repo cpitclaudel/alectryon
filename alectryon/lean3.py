@@ -40,7 +40,7 @@ class Lean3(TextREPLDriver):
 
     # TODO: Threading
     REPL_ARGS = ("--server", "--threads=0", "-M 4096", "-T 100000") # Same defaults as vscode
-    CLI_ARGS = ("--make", "--ast", "-M 4096", "-T 100000")
+    CLI_ARGS = ("--ast", "-M 4096", "-T 100000")
 
     ID = "lean3_repl"
     LANGUAGE = "lean3"
@@ -236,6 +236,5 @@ class Lean3(TextREPLDriver):
             finally:
                 tmpname.unlink(missing_ok=True)
                 tmpname.with_suffix(".ast.json").unlink(missing_ok=True)
-                tmpname.with_suffix(".olean").unlink(missing_ok=True)
         with self as api:
             return api._annotate(document)
