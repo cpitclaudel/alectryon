@@ -568,6 +568,8 @@ def _check_line_lengths(lines, first_linum, threshold, upto):
 def find_long_lines(fragments, threshold):
     linum, prefix = 0, ""
     for fr in fragments:
+        if hasattr(fr, "props") and not _enabled(fr):
+            continue
         prefix += "".join(getattr(fr, "prefixes", ()))
         suffix = "".join(getattr(fr, "suffixes", ()))
         lines = (prefix + (_contents(fr) or "") + suffix).split("\n")
