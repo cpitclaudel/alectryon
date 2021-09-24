@@ -141,7 +141,7 @@ class Lean3(TextREPLDriver):
         for start, end, stack_mod in sorted(self._find_sentence_ranges()):
             stack += stack_mod
             assert 0 <= stack
-            if start <= prev: # Skip overlapping ranges or those with `by` in their parents
+            if end <= prev: # Skip overlapping ranges or those with `by` in their parents
                 continue
             prev = end
             if stack == 0 and stack_mod == -1:
