@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 project = 'alectryon-demo'
 copyright = '2019-2021, Clément Pit-Claudel'
 author = 'Clément Pit-Claudel'
+today = " "
 
 # -- General configuration ---------------------------------------------------
 
