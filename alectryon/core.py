@@ -252,8 +252,8 @@ class Document:
     def __init__(self, chunks, chunk_separator):
         self.chunks = list(chunks)
         self.with_separator = [c + chunk_separator for c in self.chunks]
-        self.contents = chunk_separator[0:0].join(self.with_separator)
-        self.separator = chunk_separator
+        self.contents: str = chunk_separator[0:0].join(self.with_separator)
+        self.separator: str = chunk_separator
         self._bol_offsets = None
 
     def __getitem__(self, index):
@@ -261,6 +261,9 @@ class Document:
 
     def __len__(self):
         return len(self.contents)
+
+    def __str__(self):
+        return self.contents
 
     def recover_chunks(self, fragments):
         grouped = self._recover_chunks(self.with_separator, fragments)

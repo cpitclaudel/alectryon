@@ -52,22 +52,22 @@ class Lean3(TextREPLDriver):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
         self.ast: AstData = []
         self.seq_num = -1
+        self.messages: List[Any] = []
 
     def _wait(self):
-        messages = []
         while True:
             js = json.loads(self._read())
             kind = js["response"]
             if kind in ("ok", "error"):
                 assert js["seq_num"] == self.seq_num
             if kind == "ok":
-                return js, messages
+                return js
             if kind == "error":
                 raise ProtocolError(js["message"])
             if kind == "current_tasks":
                 pass
             elif kind == "all_messages":
-                messages = js["msgs"]
+                self.messages += js["msgs"]
             else:
                 raise ProtocolError("Unexpected response {!r}".format(js))
 
@@ -128,7 +128,7 @@ class Lean3(TextREPLDriver):
 
     def _get_state_at(self, pos: Position):
         # future improvement: use widget stuff. may be unviable.
-        info, _ = self._query("info", line=pos.line, column=pos.col)
+        info = self._query("info", line=pos.line, column=pos.col)
         record = info.get("record", {})
         return record.get("state")
 
@@ -188,19 +188,22 @@ class Lean3(TextREPLDriver):
     def partition(self, doc: Document):
         return Document.intersperse_text_fragments(doc.contents, self._find_sentences(doc))
 
-    def _collect_message_span(self, msg, doc):
-        return (doc.pos2offset(self._pos(msg["pos_line"], msg["pos_col"])),
-                doc.pos2offset(self._pos(msg["end_pos_line"], msg["end_pos_col"])),
-                msg)
+    NON_WHITESPACE_RE = re.compile("[^\\s]+")
 
-    def _collect_message_spans(self, messages, doc):
-        # FIXME this drops some errors (try ````#xyz 1````) (no end_pos)
-        return sorted(self._collect_message_span(m, doc) for m in messages
-                      if "end_pos_line" in m and "end_pos_col" in m)
+    def _collect_message_span(self, msg, doc: Document):
+        if "end_pos_line" in msg and "end_pos_col" in msg:
+            return (doc.pos2offset(self._pos(msg["pos_line"], msg["pos_col"])),
+                    doc.pos2offset(self._pos(msg["end_pos_line"], msg["end_pos_col"])),
+                    msg)
+        msg_loc = doc.pos2offset(self._pos(msg["pos_line"], msg["pos_col"]))
+        # this is a heuristic; Lean3 doesn't give end poses
+        probable_command = self.NON_WHITESPACE_RE.search(str(doc), msg_loc)
+        if probable_command:
+            return msg_loc, probable_command.end(), msg
 
     def _add_messages(self, segments, messages, doc):
         segments = deque(Document.with_boundaries(segments))
-        messages = deque(self._collect_message_spans(messages, doc))
+        messages = deque(sorted(filter(None, (self._collect_message_span(m, doc) for m in messages))))
 
         if not segments:
             return
@@ -233,8 +236,8 @@ class Lean3(TextREPLDriver):
             yield fr
 
     def _annotate(self, document: Document):
-        _, messages = self._query("sync", content=document.contents)
-        fragments = self._add_messages(self.partition(document), messages, document)
+        self._query("sync", content=document.contents)
+        fragments = self._add_messages(self.partition(document), self.messages, document)
         return list(document.recover_chunks(fragments))
 
     def annotate(self, chunks):
@@ -256,7 +259,11 @@ class Lean3(TextREPLDriver):
                 tmpname = Path(tmpname).resolve()
                 with open(fdescriptor, "w", encoding="utf-8") as tmp:
                     tmp.write(document.contents)
-                self.run_cli([str(tmpname)])
+                try:
+                    self.run_cli([str(tmpname)])
+                except ValueError as err:
+                    print(err)
+                    pass
                 self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
                 self._assign_parenting()
             finally:
