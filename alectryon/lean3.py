@@ -168,6 +168,7 @@ class Lean3(TextREPLDriver):
 
     # [⊢|] vs ⊢ is for `conv` mode - currently unused but makes less brittle
     CCL_SEP_RE = re.compile("(?P<hyps>.*?)^[⊢|](?P<ccl>.*)", re.DOTALL | re.MULTILINE)
+    CASES_RE = re.compile(r"^\s*case\s+([^:].*)")
 
     def _parse_goals(self, state):
         if not state or state == "no goals":
@@ -176,8 +177,11 @@ class Lean3(TextREPLDriver):
         if len(goals) > 1:
             goals[0] = goals[0][goals[0].find('\n'):]  # Strip "`n` goals"
         for goal in goals:
+            name = self.CASES_RE.match(goal)
+            if name:
+                name = name.group(0)
             m = self.CCL_SEP_RE.match(goal)
-            yield Goal(None, m.group("ccl").replace("\n  ", "\n").strip(),
+            yield Goal(name, m.group("ccl").replace("\n  ", "\n").strip(),
                        list(self._parse_hyps(m.group("hyps"))))
 
     def _find_sentences(self, doc: Document):
@@ -188,7 +192,7 @@ class Lean3(TextREPLDriver):
     def partition(self, doc: Document):
         return Document.intersperse_text_fragments(doc.contents, self._find_sentences(doc))
 
-    NON_WHITESPACE_RE = re.compile("[^\\s]+")
+    NON_WHITESPACE_RE = re.compile(r"[^\s]+")
 
     def _collect_message_span(self, msg, doc: Document):
         if "end_pos_line" in msg and "end_pos_col" in msg:
@@ -261,9 +265,9 @@ class Lean3(TextREPLDriver):
                     tmp.write(document.contents)
                 try:
                     self.run_cli([str(tmpname)])
-                except ValueError as err:
-                    print(err)
-                    pass
+                except ValueError:
+                    print("""The Lean compiler returned an error code. This likely means there is an error in your code
+                          (intentional or unintentional). Please check that the output is as you'd expect.""")
                 self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
                 self._assign_parenting()
             finally:
