@@ -37,6 +37,11 @@ _output/tests/coqc_time_error.out: tests/coqc_time_error.rst
 	$(alectryon) --coq-driver=coqc_time $< > $@ 2>&1; echo "exit: $$?" >> $@
 tests_targets += _output/tests/coqc_time_error.out
 
+# Lean → HTML
+_output/tests/corner_cases.lean.html: tests/corner_cases.lean
+	$(alectryon) $< -o $@
+tests_targets += _output/tests/corner_cases.lean.html
+
 # Coq → HTML
 _output/tests/corner_cases.html: tests/corner_cases.rst
 	$(alectryon) --stdin-filename $< --frontend rst -o $@ - < $<
@@ -134,6 +139,16 @@ tests_targets += _output/tests/frontend_warnings.json.out
 _output/tests/latex_formatting.tex: tests/latex_formatting.v
 	$(alectryon) $< --backend latex
 tests_targets += _output/tests/latex_formatting.tex
+
+# ReST → HTML
+_output/tests/lean3_error.out: tests/lean3_error.rst
+	$(alectryon) $< --backend webpage -o /dev/null 2>&1 | sed 's/^\( *\).*\?\([.]lean:\)/\1...\2/g' > $@; echo "exit: $$?" >> $@
+tests_targets += _output/tests/lean3_error.out
+
+# Lean → HTML
+_output/tests/lists.lean.html: tests/lists.lean
+	$(alectryon) $< -o $@
+tests_targets += _output/tests/lists.lean.html
 
 # reST → Coq
 _output/tests/literate.v: tests/literate.rst
