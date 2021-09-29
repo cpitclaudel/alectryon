@@ -131,13 +131,18 @@ ONE_IO_ANNOT = r"(?:{}|{})".format(
     IOAnnots.DOTTED_RE.pattern, POLARIZED_PATH_SEGMENT)
 ONE_IO_ANNOT_RE = re.compile(
     ISOLATED.format(ONE_IO_ANNOT), re.VERBOSE)
-IO_COMMENT_RE = {
-    "coq": re.compile(
-        r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(ONE_IO_ANNOT),
-        re.VERBOSE),
-    "lean3": None
+
+_IO_ANNOTS_IN_COMMENT = r"\s+(?:{}\s+)+".format(ONE_IO_ANNOT)
+_IO_COMMENT_RE = {
+    "coq": r"[ \t]*[(][*]{}[*][)]",
+    "lean3": r"[ \t]*[/][-]{}[-][/]"
 }
-assert IO_COMMENT_RE.keys() == ALL_LANGUAGES
+IO_COMMENT_RE = {
+    lang: re.compile(
+        r.format(_IO_ANNOTS_IN_COMMENT), re.VERBOSE)
+    for lang, r in _IO_COMMENT_RE.items()
+}
+assert _IO_COMMENT_RE.keys() == ALL_LANGUAGES
 
 def _parse_path(path):
     path = markers.parse_path(path)
@@ -229,6 +234,9 @@ def read_io_comments(fragments, lang):
 
 def read_ml_io_comments(fragments):
     return read_io_comments(fragments, lang="coq")
+
+def read_lean3_io_comments(fragments):
+    return read_io_comments(fragments, lang="lean3")
 
 def _find_marked(sentence, path):
     assert isinstance(sentence, RichSentence)
@@ -747,6 +755,7 @@ DEFAULT_TRANSFORMS = {
         enrich_sentences,
         lean3_truncate_vernacs,
         lean3_attach_commas,
+        read_lean3_io_comments,
         process_io_annots
     ]
     # Not included:
