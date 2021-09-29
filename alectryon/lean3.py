@@ -51,34 +51,42 @@ class Lean3(TextREPLDriver):
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
         self.ast: AstData = []
-        self.seq_num = -1
+        self.seq_num: int = -1
         self.messages: List[Any] = []
+        self.currently_invalidated: bool = False
 
-    def _wait(self):
+    def _wait(self, for_validation=False):
         while True:
             js = json.loads(self._read())
             kind = js["response"]
             if kind in ("ok", "error"):
                 assert js["seq_num"] == self.seq_num
             if kind == "ok":
-                return js
-            if kind == "error":
+                if "message" in js and js["message"] == "file invalidated":
+                    # this should only happen after a `sync`, where we don't care about the return anyways
+                    self.currently_invalidated = True
+                if not for_validation or not self.currently_invalidated:
+                    return js
+            elif kind == "error":
                 raise ProtocolError(js["message"])
-            if kind == "current_tasks":
-                pass
+            elif kind == "current_tasks":
+                if self.currently_invalidated and not js["is_running"] and js["tasks"] == []:
+                    self.currently_invalidated = False
+                    if for_validation:
+                        return
             elif kind == "all_messages":
                 self.messages += js["msgs"]
             else:
                 raise ProtocolError("Unexpected response {!r}".format(js))
 
-    def _query(self, command, **kwargs):
+    def _query(self, command: str, for_validation: bool, **kwargs):
         self.seq_num += 1
         query = {"seq_num": self.seq_num, "command": command,
                  "file_name": self.fpath.name, **kwargs}
         self._write(json.dumps(query, indent=None), "\n")
         # the seq_num is irrelevant here; the c++ ignores it, and this basically just forces it to sync up all asyncs
         self._write(json.dumps({"seq_num": -1, "command": "sync_output"}, indent=None), "\n")
-        return self._wait()
+        return self._wait(for_validation)
 
     # maybe worth memoising?
     def _get_descendants(self, idx: int) -> Iterable[int]:
@@ -128,7 +136,7 @@ class Lean3(TextREPLDriver):
 
     def _get_state_at(self, pos: Position):
         # future improvement: use widget stuff. may be unviable.
-        info = self._query("info", line=pos.line, column=pos.col)
+        info = self._query("info", False, line=pos.line, column=pos.col)
         record = info.get("record", {})
         return record.get("state")
 
@@ -240,8 +248,10 @@ class Lean3(TextREPLDriver):
             yield fr
 
     def _annotate(self, document: Document):
-        self._query("sync", content=document.contents)
-        fragments = self._add_messages(self.partition(document), self.messages, document)
+        self._query("sync", False, content=document.contents)
+        segments = list(self.partition(document))
+        self._query("sync", True, content=document.contents) # force all the document to be parsed
+        fragments = self._add_messages(segments, self.messages, document)
         return list(document.recover_chunks(fragments))
 
     def annotate(self, chunks):
