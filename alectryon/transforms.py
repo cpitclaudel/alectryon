@@ -135,7 +135,7 @@ IO_COMMENT_RE = {
     "coq": re.compile(
         r"[ \t]*[(][*]\s+(?:{}\s+)+[*][)]".format(ONE_IO_ANNOT),
         re.VERBOSE),
-    "lean3": None
+    "lean3": re.compile(r"\s*/-[*]\s+(?:{}\s+)+[*]-/".format(ONE_IO_ANNOT), re.VERBOSE)
 }
 assert IO_COMMENT_RE.keys() == ALL_LANGUAGES
 
@@ -218,17 +218,20 @@ def read_io_comments(fragments, lang):
     for fr in enrich_sentences(fragments):
         sentence: Optional[RichSentence] = last_sentence if isinstance(fr, Text) else fr
         if sentence:
-            assert isinstance(sentence, RichSentence)
-            try:
-                contents = _read_io_comments(sentence.annots, _contents(fr), lang) # type: ignore
-                fr = _replace_contents(fr, contents)
-            except ValueError as e:
-                yield e
+            if isinstance(sentence, RichSentence):
+                try:
+                    contents = _read_io_comments(sentence.annots, _contents(fr), lang) # type: ignore
+                    fr = _replace_contents(fr, contents)
+                except ValueError as e:
+                    yield e
         last_sentence = fr
         yield fr
 
 def read_ml_io_comments(fragments):
     return read_io_comments(fragments, lang="coq")
+
+def read_lean3_io_comments(fragments):
+    return read_io_comments(fragments, lang="lean3")
 
 def _find_marked(sentence, path):
     assert isinstance(sentence, RichSentence)
@@ -745,6 +748,7 @@ DEFAULT_TRANSFORMS = {
         enrich_sentences,
         lean3_truncate_vernacs,
         lean3_attach_commas,
+        read_lean3_io_comments,
         process_io_annots
     ]
     # Not included:
