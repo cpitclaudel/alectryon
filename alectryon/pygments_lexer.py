@@ -377,6 +377,9 @@ class CoqLexer(RegexLexer):
               '🥐-🥞🦀-🦑🧀')
 
     symbol += '⃐-⃰' # Combining symbols
+    # The tweaks below can be removed on the next update of the manual
+    kwds['decls'].append("Equations")
+    kwds['tacn-solve'].remove("omega")
 
     local_global = regex_opt_inner(("Local", "Global", "Export"), '(?:')
     set_unset_test = regex_opt_inner(("Set", "Unset", "Test"), '(?:')
