@@ -431,9 +431,9 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         raise ValueError("{} binary not found (bin={}).".format(cls.NAME, binpath))
 
     @classmethod
-    def resolve_driver(cls, binpath) -> str:
+    def resolve_driver(cls, binpath: str) -> str:
         assert cls.BIN
-        path = which(binpath or cls.BIN)
+        path: Optional[str] = which(binpath or cls.BIN)
         if path is None:
             cls.driver_not_found(binpath)
         return path
