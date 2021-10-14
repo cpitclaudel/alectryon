@@ -2,8 +2,8 @@
  Major changes
 ===============
 
-Unreleased
-==========
+Version 1.4.0
+=============
 
 - JSON recordings (produced by ``--backend json``) can now be used as inputs to generate webpages or highlighted snippets. [c69b08ee]
 
