@@ -402,8 +402,8 @@ class Driver():
         raise NotImplementedError()
 
 class CLIDriver(Driver): # pylint: disable=abstract-method
-    BIN: Optional[str] = None
-    NAME: Optional[str] = None
+    BIN: str = "unset-binary"
+    NAME: str = "cli-driver"
 
     CLI_ARGS: Tuple[str, ...] = ()
     VERSION_ARGS = ("--version",)
@@ -414,7 +414,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         super().__init__()
         self.fpath = Path(fpath)
         self.user_args = args
-        self.binpath = binpath or self.BIN
+        self.binpath: str = binpath or self.BIN
 
     @classmethod
     def version_info(cls, binpath=None):

@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Dict
+from typing import Dict, Optional
 
 import re
 import warnings
@@ -137,7 +137,7 @@ class HtmlFormatter(pygments.formatters.HtmlFormatter): # pylint: disable=no-mem
                 if not l.startswith("pre {")]
 
 class LatexFormatter(pygments.formatters.LatexFormatter): # pylint: disable=no-member
-    COMMANDPREFIX = None
+    COMMANDPREFIX: Optional[str] = None
     def __init__(self, **options):
         if self.COMMANDPREFIX:
             options.setdefault("commandprefix", self.COMMANDPREFIX)

@@ -65,7 +65,7 @@ To work around this issue we use a writer-dependent transform on the docutils
 side, and a doctree-resolved event on the Sphinx side.
 """
 
-from typing import Any, Dict, List, Optional, Iterable, DefaultDict
+from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Tuple, Type
 
 import re
 import os.path
@@ -1293,7 +1293,7 @@ def opt_validate_style(setting, value, option_parser,
 
 # WISH: Either remove these settings and expose global constants (like
 # HTML_MINIFICATION), or add missing settings here.
-ALECTRYON_SETTINGS = (
+ALECTRYON_SETTINGS: Tuple[Tuple[str, List[str], Dict[str, Any]], ...] = (
     ("Choose an Alectryon webpage style",
      ["--webpage-style"],
      {"choices": ("centered", "floating", "windowed"),
@@ -1469,25 +1469,33 @@ def get_pipeline(frontend, backend, dialect):
 # Entry points
 # ============
 
-NODES = [alectryon_pending,
-         alectryon_pending_toggle,
-         alectryon_pending_io]
-TRANSFORMS = [LoadConfigTransform,
-              ActivateMathJaxTransform,
-              AlectryonTransform,
-              AlectryonMrefTransform,
-              AlectryonPostTransform]
-DIRECTIVES = [*DRIVER_DIRECTIVES,
-              AlectryonToggleDirective,
-              MQuoteDirective,
-              MAssertDirective,
-              ExperimentalExerciseDirective,
-              DirectiveDirective]
-ROLES = [*CODE_ROLES.values(),
-         alectryon_bubble,
-         coq_id_role,
-         marker_ref_role,
-         marker_quote_role]
+NODES = [
+    alectryon_pending,
+    alectryon_pending_toggle,
+    alectryon_pending_io
+]
+TRANSFORMS: List[Type[OneTimeTransform]] = [
+    LoadConfigTransform,
+    ActivateMathJaxTransform,
+    AlectryonTransform,
+    AlectryonMrefTransform,
+    AlectryonPostTransform
+]
+DIRECTIVES = [
+    *DRIVER_DIRECTIVES,
+    AlectryonToggleDirective,
+    MQuoteDirective,
+    MAssertDirective,
+    ExperimentalExerciseDirective,
+    DirectiveDirective
+]
+ROLES = [
+    *CODE_ROLES.values(),
+    alectryon_bubble,
+    coq_id_role,
+    marker_ref_role,
+    marker_quote_role
+]
 
 def register():
     """Tell Docutils about our roles and directives."""
