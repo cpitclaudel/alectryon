@@ -100,9 +100,9 @@
 (defvaralias 'flycheck-alectryon-executable 'alectryon-executable)
 
 (defcustom alectryon-executable
-  (if (file-executable-p
-       (expand-file-name "alectryon.py" alectryon--directory))
-      "alectryon")
+  (let ((exec (expand-file-name "alectryon.py" alectryon--directory)))
+    (if (file-executable-p exec) exec
+      "alectryon"))
   "Where to find the Alectryon binary."
   :group 'alectryon
   :type 'file
