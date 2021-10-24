@@ -123,7 +123,8 @@ def _gen_docutils(source, fpath,
     # LATER: ``destination_path=None`` propagates to ``settings._destination``,
     # which means that ``stylesheet_path`` isn't actually resolved relative to
     # ``_destination``.  This isn't trivial to fix because the name of the
-    # output is determined by the argument to ``write_file``.
+    # output is determined by the argument to ``write_file``.  Maybe we should
+    # call a function ``set_output_filename`` early in each pipeline instead?
     text, pub = publish_programmatically(
         source_class=StringInput, destination_class=StringOutput,
         source=source.encode("utf-8"), destination=None,
