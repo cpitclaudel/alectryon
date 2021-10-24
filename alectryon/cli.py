@@ -795,11 +795,12 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
                       metavar="SERTOP_ARG",
                       help=SERTOP_ARGS_HELP)
 
-    COQC_ARGS_HELP = ("Pass a single argument to coqc "
-                        "(e.g. --coqc-arg=-noinit).")
+    COQC_ARGS_HELP = ("Pass a single argument to coqc, "
+                      "for use with the coqc_time driver. "
+                      "(e.g. --coqc-arg=-noinit).")
     subp.add_argument("--coqc-arg", dest="coqc_args",
                       action="append", default=[],
-                      metavar="SERAPI_ARG",
+                      metavar="COQC_ARG",
                       help=COQC_ARGS_HELP)
 
     I_HELP = "Pass -I DIR to the SerAPI subprocess."
