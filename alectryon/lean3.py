@@ -39,8 +39,18 @@ class Lean3(TextREPLDriver):
     BIN = "lean"
     NAME = "Lean3"
 
-    # TODO: Threading
-    REPL_ARGS = ("--server", "--threads=0", "-M 4096", "-T 100000") # Same defaults as vscode
+    # I'm not completely sure that I understand Lean3's threading model.
+    # Waiting until the "ok" for a query is not enough to determine that it has
+    # completed (``"all_messages"`` can come after that), but waiting for
+    # ``"is_running" == False`` (or ``"current_tasks" == []``) isn't always
+    # applicable (``"info"`` doesn't seem to produce these progress messages).
+    # Additionally, in some cases, ``"is_running" == False`` can come before
+    # ``"is_running"=True`` (and before ``"ok"``), and in when running multiple
+    # copies of Lean concurrently the ``"all_messages"`` response sometimes
+    # never comes.  On the other hand, without threading, `"all_messages"` gets
+    # repeated dozens of times per query.
+    USE_THREADING = False
+    REPL_ARGS = ("--server", "-M 4096", "-T 100000") # Same defaults as vscode
     CLI_ARGS = ("--ast", "-M 4096", "-T 100000")
 
     ID = "lean3_repl"
@@ -52,33 +62,42 @@ class Lean3(TextREPLDriver):
 
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
+        self.instance_args = () if self.USE_THREADING else ("--threads=0",)
         self.ast: AstData = []
         self.seq_num = -1
 
-    def _wait(self):
-        messages = []
-        while True:
+    def _wait(self, seq_num, wait_for_current_tasks=False):
+        response, messages, done = None, [], False
+
+        while response is None or not done:
             js = json.loads(self._read())
             kind = js["response"]
-            if kind in ("ok", "error"):
-                assert js["seq_num"] == self.seq_num
             if kind == "ok":
-                return js, messages
-            if kind == "error":
+                if js["seq_num"] == seq_num:
+                    response = js
+                    done = done or not wait_for_current_tasks
+            elif kind == "error":
                 raise ProtocolError(js["message"])
-            if kind == "current_tasks":
-                pass
+            elif kind == "current_tasks":
+                done = not js["is_running"] and not js["tasks"]
             elif kind == "all_messages":
                 messages = js["msgs"]
             else:
                 raise ProtocolError("Unexpected response {!r}".format(js))
 
-    def _query(self, command, **kwargs):
+        assert response is not None
+        return response, messages
+
+    def _writeq(self, **query: Dict[str, Any]):
         self.seq_num += 1
-        query = {"seq_num": self.seq_num, "command": command,
-                 "file_name": self.fpath.name, **kwargs}
+        query["seq_num"] = self.seq_num
         self._write(json.dumps(query, indent=None), "\n")
-        return self._wait()
+        return self.seq_num
+
+    def _query(self, command: str, **kwargs):
+        seq_num = self._writeq(command=command, file_name=self.fpath.name, **kwargs)
+        self._writeq(command="sync_output")
+        return self._wait(seq_num, self.USE_THREADING and command == "sync")
 
     def _get_descendants(self, idx: int, parent: int) -> Iterable[Tuple[int, int]]:
         node = self.ast[idx]
