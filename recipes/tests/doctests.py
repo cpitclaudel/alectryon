@@ -8,10 +8,11 @@ Run Alectryon's doctests.
 """
 
 import doctest
-import unittest
 import re
 import sys
+import unittest
 
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 DIR = Path(__file__).parent
@@ -34,22 +35,30 @@ class DocFileCase(doctest.DocFileCase):
         return Path(self._dt_test.filename).name
 doctest.DocFileCase = DocFileCase
 
-def suite():
+def suite(loader):
     s = unittest.TestSuite()
 
-    readme = str((ROOT / "README.rst").resolve())
-    s.addTests(doctest.DocFileSuite(readme, module_relative=False,
-                                    checker=Checker(), optionflags=FLAGS))
+    files = [(ROOT / "README.rst"),
+             *sorted((ROOT / "alectryon").glob("*.py"))]
 
-    for f in sorted((ROOT / "alectryon").glob("*.py")):
-        if f.name not in EXCLUDED:
+    for f in files:
+        if f.name in EXCLUDED:
+            continue
+        if loader.testNamePatterns is not None:
+            if not any(fnmatchcase(f.name, pat) for pat in loader.testNamePatterns):
+                continue
+        if f.name.endswith(".rst"):
+            s.addTests(doctest.DocFileSuite(
+                str(f.resolve()), module_relative=False,
+                checker=Checker(), optionflags=FLAGS))
+        else:
             s.addTests(doctest.DocTestSuite(f"alectryon.{f.stem}", optionflags=FLAGS))
 
     return s
 
-def load_tests(loader, tests, ignore):
+def load_tests(loader, _standard_tests, _pattern): # pylint: disable=unused-argument
     # s.addTests(tests) # There are no tests in this file
-    return suite()
+    return suite(loader)
 
 if __name__ == '__main__':
     sys.stderr = sys.stdout
