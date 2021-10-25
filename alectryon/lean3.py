@@ -63,6 +63,7 @@ class Lean3(TextREPLDriver):
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
         self.instance_args = () if self.USE_THREADING else ("--threads=0",)
+        self.document = Document([], "")
         self.ast: AstData = []
         self.seq_num = -1
 
@@ -143,7 +144,7 @@ class Lean3(TextREPLDriver):
 
     DEBUG = False
 
-    def _collect_sentences_and_states(self, doc: Document) -> Iterable[Tuple[Pos, Any]]:
+    def _collect_sentences_and_states(self) -> Iterable[Tuple[Pos, Any]]:
         last_end: Pos = (0, 0)
         last_idx: Optional[int] = None
         last_parent: Optional[int] = None
@@ -154,8 +155,8 @@ class Lean3(TextREPLDriver):
             for idx, node in enumerate(self.ast):
                 print(idx, node)
                 if node and "start" in node and "end" in node:
-                    print(doc[doc.pos2offset(*node["start"]):
-                              doc.pos2offset(*node["end"])])
+                    print(self.document[self.document.pos2offset(*node["start"]):
+                                        self.document.pos2offset(*node["end"])])
                 print()
 
         for start, end, idx, parent in sorted(self._find_sentence_ranges()):
@@ -165,7 +166,8 @@ class Lean3(TextREPLDriver):
             if last_span:
                 last_state = self._get_state_at(start) if parent in (last_idx, last_parent) else None
                 yield (last_span, last_state)
-            last_span = (doc.pos2offset(*start), doc.pos2offset(*end)) if start != end else None
+            last_span = (self.document.pos2offset(*start),
+                         self.document.pos2offset(*end)) if start != end else None
             last_end, last_idx, last_parent = end, idx, parent
         if last_span:
             yield (last_span, None)
@@ -192,13 +194,13 @@ class Lean3(TextREPLDriver):
             yield Goal(None, m.group("ccl").replace("\n  ", "\n").strip(),
                        list(self._parse_hyps(m.group("hyps"))))
 
-    def _find_sentences(self, doc: Document):
-        for (beg, end), st in self._collect_sentences_and_states(doc):
-            sentence = Sentence(doc[beg:end], [], list(self._parse_goals(st)))
+    def _find_sentences(self):
+        for (beg, end), st in self._collect_sentences_and_states():
+            sentence = Sentence(self.document[beg:end], [], list(self._parse_goals(st)))
             yield Positioned(beg, end, sentence)
 
-    def partition(self, doc: Document):
-        return Document.intersperse_text_fragments(doc.contents, self._find_sentences(doc))
+    def partition(self):
+        return Document.intersperse_text_fragments(self.document.contents, self._find_sentences())
 
     @staticmethod
     def _collect_message_span(msg, doc):
@@ -212,9 +214,9 @@ class Lean3(TextREPLDriver):
         return sorted(Lean3._collect_message_span(m, doc) for m in messages
                       if "end_pos_line" in m and "end_pos_col" in m)
 
-    def _add_messages(self, segments, messages, doc):
+    def _add_messages(self, segments, messages):
         segments = deque(Document.with_boundaries(segments))
-        messages = deque(self._collect_message_spans(messages, doc))
+        messages = deque(self._collect_message_spans(messages, self.document))
 
         if not segments:
             return
@@ -246,10 +248,31 @@ class Lean3(TextREPLDriver):
         for _, _, fr in segments:
             yield fr
 
-    def _annotate(self, document: Document):
-        _, messages = self._query("sync", content=document.contents)
-        fragments = self._add_messages(self.partition(document), messages, document)
-        return list(document.recover_chunks(fragments))
+    def _annotate_doc(self):
+        _, messages = self._query("sync", content=self.document.contents)
+        fragments = self._add_messages(self.partition(), messages)
+        return list(self.document.recover_chunks(fragments))
+
+    def _annotate(self):
+        with cwd(self.fpath.parent.resolve()):
+            # We use this instead of the ``NamedTemporaryFile`` API
+            # because it works with Windows file locking.
+            (fdescriptor, tmpname) = tempfile.mkstemp(suffix=".lean")
+            try:
+                tmpname = Path(tmpname).resolve()
+                with open(fdescriptor, "w", encoding="utf-8") as tmp:
+                    tmp.write(self.document.contents)
+                self.run_cli(more_args=[str(tmpname)])
+                self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
+            finally:
+                tmpname.unlink(missing_ok=True)
+                tmpname.with_suffix(".ast.json").unlink(missing_ok=True)
+        with self as api:
+            return api._annotate_doc()
+
+    @classmethod
+    def _proc_out(cls, p):
+        return p.stdout + "\n" + p.stderr
 
     def annotate(self, chunks):
         """Annotate multiple ``chunks`` of Lean 3 code.
@@ -261,19 +284,10 @@ class Lean3(TextREPLDriver):
          [Sentence(contents='#check nat',
                    messages=[Message(contents='ℕ : Type')], goals=[])]]
         """
-        document = Document(chunks, "\n")
-        with cwd(self.fpath.parent.resolve()):
-            # We use this instead of the ``NamedTemporaryFile`` API
-            # because it works with Windows file locking.
-            (fdescriptor, tmpname) = tempfile.mkstemp(suffix=".lean")
-            try:
-                tmpname = Path(tmpname).resolve()
-                with open(fdescriptor, "w", encoding="utf-8") as tmp:
-                    tmp.write(document.contents)
-                self.run_cli([str(tmpname)])
-                self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
-            finally:
-                tmpname.unlink(missing_ok=True)
-                tmpname.with_suffix(".ast.json").unlink(missing_ok=True)
-        with self as api:
-            return api._annotate(document)
+        self.document = Document(chunks, "\n")
+        try:
+            return self._annotate()
+        except ValueError as e:
+            err = "Lean raised an exception:\n{}".format(e)
+            self.observer.notify(None, err, None, level=3)
+            return [[Text(c)] for c in chunks]

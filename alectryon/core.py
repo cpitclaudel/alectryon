@@ -448,14 +448,23 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
             cls.driver_not_found(binpath)
         return path
 
+    @staticmethod
+    def _debug_start(cmd):
+        debug(" ".join(quote(s) for s in cmd), '# ')
+
+    @classmethod
+    def _proc_out(cls, p):
+        return p.stderr
+
     def run_cli(self, more_args=()):
         cmd = [self.resolve_driver(self.binpath),
                *self.CLI_ARGS, *self.user_args, *more_args]
+        self._debug_start(cmd)
         p = subprocess.run(cmd, capture_output=True, check=False, encoding=self.CLI_ENCODING)
         if p.returncode != 0:
             MSG = "Driver {} ({}) exited with code {}:\n{}"
-            raise ValueError(MSG.format(self.NAME, self.binpath,
-                                        p.returncode, indent(p.stderr, "   ")))
+            raise ValueError(MSG.format(self.NAME, self.binpath, p.returncode,
+                                        indent(self._proc_out(p), "   ")))
         return p.stdout
 
 class REPLDriver(CLIDriver): # pylint: disable=abstract-method
@@ -497,7 +506,7 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
     def _start(self, stdin=PIPE, stderr=PIPE, stdout=PIPE, more_args=()):
         cmd = [self.resolve_driver(self.binpath),
                *self.REPL_ARGS, *self.user_args, *self.instance_args, *more_args]
-        debug(" ".join(quote(s) for s in cmd), '# ')
+        self._debug_start(cmd)
         # pylint: disable=consider-using-with
         return subprocess.Popen(cmd, stdin=stdin, stderr=stderr, stdout=stdout)
 
