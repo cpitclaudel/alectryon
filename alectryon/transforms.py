@@ -232,10 +232,10 @@ def read_io_comments(fragments, lang):
         last_sentence = fr
         yield fr
 
-def read_ml_io_comments(fragments):
+def ml_read_io_comments(fragments):
     return read_io_comments(fragments, lang="coq")
 
-def read_lean3_io_comments(fragments):
+def lean3_read_io_comments(fragments):
     return read_io_comments(fragments, lang="lean3")
 
 def _find_marked(sentence, path):
@@ -693,16 +693,36 @@ def isolate_coqdoc(fragments):
             strip_text(part.fragments)
     return partitioned
 
+SURROUNDING_BLANKS_RE = re.compile(r"\A(\s*)(.*?)(\s*)\Z", re.DOTALL)
+
+def convert_text_to_sentences(fragments):
+    r"""Make sure that ``Text`` objects in `fragments` only contain whitespace.
+
+    >>> from .core import Sentence as S, Text as T
+    >>> list(convert_text_to_sentences([S("S", [], []), T(" A \n B \n"), S("\n S", [], [])]))
+    [Sentence(contents='S', messages=[], goals=[]),
+     Text(contents=' '), Sentence(contents='A \n B', messages=[], goals=[]),
+     Text(contents=' \n'), Sentence(contents='\n S', messages=[], goals=[])]
+    """
+    for fr in fragments:
+        if isinstance(fr, Text):
+            before, txt, after = SURROUNDING_BLANKS_RE.match(_contents(fr)).groups()
+            if before: yield Text(before)
+            if txt: yield Sentence(txt, [], [])
+            if after: yield Text(after)
+        else:
+            yield fr
+
 LEAN_VERNAC_RE = re.compile("^#[^ ]+")
-LEAN_TRAILING_BLANKS_RE = re.compile(r"\s*(\n|\Z)")
+LEAN_TRAILING_BLANKS_RE = re.compile(r"\s+\Z")
 
 def lean3_truncate_vernacs(fragments):
-    r"""Truncate vernacs like ``#check`` to a single line of text.
+    r"""Strip trailing whitespace in vernacs like ``#check``.
 
     >>> from .core import Message as M
-    >>> list(lean3_truncate_vernacs([Sentence("#check 1 \n-- xyz", [M("1 : ℕ")], [])]))
-    [Sentence(contents='#check 1', messages=[Message(contents='1 : ℕ')], goals=[]),
-     Text(contents=' \n-- xyz')]
+    >>> list(lean3_truncate_vernacs([Sentence("#check (1 \n+ 1)\n\n", [M("…")], [])]))
+    [Sentence(contents='#check (1 \n+ 1)', messages=[Message(contents='…')], goals=[]),
+     Text(contents='\n\n')]
 
     This is only needed in Lean 3: in Lean4 the region for #check statements is
     precisely known (in Lean3 it expands too far).
@@ -725,15 +745,12 @@ def lean3_attach_commas(fragments):
     This pass gathers all commas and spaces following a sentence up to the first
     newline, and embeds them in the sentence itself. This improves the location
     of the hover bubbles.
-
-    This pass assumes that consecutive ``Text`` fragments have been coalesced.
     """
-    grouped = list(enrich_sentences(fragments))
+    grouped = list(fragments)
     for idx, fr in enumerate(grouped):
         if isinstance(fr, Text) and idx > 0:
             m = LEAN_COMMA_RE.match(fr.contents)
-            if m:
-                assert not isinstance(grouped[idx - 1], Text)
+            if m and not isinstance(grouped[idx - 1], Text):
                 prev = grouped[idx-1]
                 comma, rest = fr.contents[:m.end()], fr.contents[m.end():]
                 grouped[idx-1] = _replace_contents(prev, _contents(prev) + comma)
@@ -746,16 +763,18 @@ DEFAULT_TRANSFORMS = {
         enrich_sentences,
         attach_ml_comments_to_code,
         group_hypotheses,
-        read_ml_io_comments,
+        ml_read_io_comments,
         process_io_annots,
         strip_coq_failures,
         dedent,
     ],
     "lean3": [
+        lean3_attach_commas,
+        convert_text_to_sentences,
+        coalesce_text,
         enrich_sentences,
         lean3_truncate_vernacs,
-        lean3_attach_commas,
-        read_lean3_io_comments,
+        lean3_read_io_comments,
         process_io_annots
     ]
     # Not included:

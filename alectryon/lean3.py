@@ -112,11 +112,10 @@ class Lean3(TextREPLDriver):
 
     KIND_ENDER = {"begin": "end", "{": "}", "by": ""}
 
-    def _find_root(self):
+    def _find_nodes_by_kind(self, *kinds):
         for idx, n in enumerate(self.ast):
-            if n and n["kind"] == "file":
-                return idx
-        return None
+            if n and n["kind"] in kinds:
+                yield idx
 
     def _find_sentence_ranges(self) -> Iterable[Tuple[Pos, Pos, int]]:
         """Get the ranges covering individual sentences of a Lean3 file.
@@ -124,7 +123,9 @@ class Lean3(TextREPLDriver):
         Each value in the resulting stream is a 4-element: the start and end of
         the sentence, the index of its node, and the index of its parent.
         """
-        for idx, parent in set(self._get_descendants(self._find_root(), 0)):
+        roots = self._find_nodes_by_kind("file")
+        descendants = set(idx for r in roots for idx in self._get_descendants(r, 0))
+        for idx, parent in descendants:
             node = self.ast[idx]
             if not node or "start" not in node or "end" not in node:
                 continue
@@ -199,8 +200,17 @@ class Lean3(TextREPLDriver):
             sentence = Sentence(self.document[beg:end], [], list(self._parse_goals(st)))
             yield Positioned(beg, end, sentence)
 
+    def _resplit_fragments(self, fragments):
+        """Further split `fragments` using boundaries of top-level sentences."""
+        roots = self._find_nodes_by_kind("commands")
+        commands = (self.ast[cidx] for r in roots for cidx in self.ast[r]["children"])
+        cutoffs = [self.document.pos2offset(*c["start"]) for c in commands if "start" in c]
+        return self.document.split_fragments(fragments, cutoffs)
+
     def partition(self):
-        return Document.intersperse_text_fragments(self.document.contents, self._find_sentences())
+        sentences = self._find_sentences()
+        fragments = Document.intersperse_text_fragments(self.document.contents, sentences)
+        return self._resplit_fragments(fragments)
 
     @staticmethod
     def _collect_message_span(msg, doc):

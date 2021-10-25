@@ -62,10 +62,10 @@ theory is expressive enough to allow us to define and reason about all
 sorts of objects. For example, Lean’s standard library defines the
 natural numbers to be the structure generated freely and inductively by
 a constant, <em>zero</em>, and a unary function <em>succ</em>:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kn">namespace</span> hidden
-  <span class="kd">inductive</span> nat : <span class="kt">Type</span>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">namespace</span> hidden</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">inductive</span> nat : <span class="kt">Type</span>
   <span class="bp">|</span> zero : nat
-  <span class="bp">|</span> succ : nat <span class="bp">→</span> nat</span></pre><p>If you copy this definition into the editor window at right you will see
+  <span class="bp">|</span> succ : nat <span class="bp">→</span> nat</span></span></pre><p>If you copy this definition into the editor window at right you will see
 that we have wrapped it in a <em>namespace</em> to avoid conflicting with the
 standard definition, which is loaded by default. Even so, choosing the
 name <tt class="docutils literal">nat</tt> means that within the namespace this identifier is
@@ -73,10 +73,10 @@ overloaded, which can cause confusion. Thus we will do this only
 sparingly, for purposes of illustration.</p>
 <p>Having specified this data type, we can go on to define addition by
 recursion on the second argument:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp">  <span class="kd">def</span> add : nat <span class="bp">→</span> nat <span class="bp">→</span> nat
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">def</span> add : nat <span class="bp">→</span> nat <span class="bp">→</span> nat
   <span class="bp">|</span> m nat.zero     := m
-  <span class="bp">|</span> m (nat.succ n) := nat.succ (add m n)
-<span class="kd">end</span> hidden</span></pre><p>Lean compiles definitions like these down to a single axiomatic
+  <span class="bp">|</span> m (nat.succ n) := nat.succ (add m n)</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">end</span> hidden</span></span></pre><p>Lean compiles definitions like these down to a single axiomatic
 primitive that governs use of both induction and recursion on
 inductively defined structures. The library defines notation for the
 data type, as well as for <tt class="docutils literal">zero</tt> and <tt class="docutils literal">add</tt>. (In fact, Lean uses
@@ -87,7 +87,7 @@ alternative notation for the type <tt class="docutils literal">nat</tt>. You can
 editor by writing <tt class="docutils literal">\nat</tt>.</p>
 <p>Of course, we can also define non-recursive functions by giving an
 explicit definition:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">def</span> double (n : ℕ) : ℕ := n <span class="bp">+</span> n</span></pre><p>We can then go on to define other data types like the integers, the
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">def</span> double (n : ℕ) : ℕ := n <span class="bp">+</span> n</span></span></pre><p>We can then go on to define other data types like the integers, the
 rationals, and the real numbers, the booleans, characters and strings,
 lists, products, disjoint sums, and so on. We can also define algebraic
 structures like groups, rings, fields, vector spaces, and categories. In
@@ -112,13 +112,13 @@ concrete ones. In the following example, we declare a type <tt class="docutils l
 group structure, and variables <tt class="docutils literal">g₁</tt> and <tt class="docutils literal">g₂</tt> that range over <tt class="docutils literal">G</tt>.
 With those declarations, Lean knows that the expression
 <tt class="docutils literal">g₂⁻¹ * g₁ * g₂</tt> denotes an element of <tt class="docutils literal">G</tt>.</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kn">section</span>
-  <span class="kd">variables</span> (G : <span class="kt">Type</span>) [has_mul G] [has_inv G]
-
-  <span class="kd">variables</span> g₁ g₂ : G
-
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">section</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">variables</span> (G : <span class="kt">Type</span>) [has_mul G] [has_inv G]</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">variables</span> g₁ g₂ : G</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
 </span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk5" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk5"><span class="k">#check</span> g₂<span class="bp">⁻¹</span> <span class="bp">*</span> g₁ <span class="bp">*</span> g₂</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">g₂<span class="bp">⁻¹</span> <span class="bp">*</span> g₁ <span class="bp">*</span> g₂ : G</blockquote></div></div></small><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp"><span class="kd">end</span></span></pre><p>Putting the declarations in a <tt class="docutils literal">section</tt>, as we do here, delimits their
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">end</span></span></span></pre><p>Putting the declarations in a <tt class="docutils literal">section</tt>, as we do here, delimits their
 scope. In this case, the section declaration is not needed, and no harm
 would be done if we had declared these variables at the top level.</p>
 <p>An important feature of dependent type theory is that every expression
@@ -154,19 +154,19 @@ With just a few lines of code, we can write a generic sort procedure
 that sorts elements of a list according to a specified binary relation
 <tt class="docutils literal">r</tt> on an arbitrary type <tt class="docutils literal">α</tt>, assuming only that we can determine
 computationally when <tt class="docutils literal">r</tt> holds.</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kn">section</span> sort
-  <span class="kd">universe</span> u
-  <span class="kd">parameters</span> {α : <span class="kt">Type</span> u} (r : α <span class="bp">→</span> α <span class="bp">→</span> <span class="kt">Prop</span>) [decidable_rel r]
-  <span class="kn">local</span> <span class="kd">infix</span> <span class="bp">`≼`</span> : <span class="mi">50</span> := r
-
-  <span class="kd">def</span> ordered_insert (a : α) : list α <span class="bp">→</span> list α
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">section</span> sort</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">universe</span> u</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">parameters</span> {α : <span class="kt">Type</span> u} (r : α <span class="bp">→</span> α <span class="bp">→</span> <span class="kt">Prop</span>) [decidable_rel r]</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">local</span> <span class="kd">infix</span> <span class="bp">`≼`</span> : <span class="mi">50</span> := r</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">def</span> ordered_insert (a : α) : list α <span class="bp">→</span> list α
   <span class="bp">|</span> []       := [a]
-  <span class="bp">|</span> (b :: l) := <span class="k">if</span> a <span class="bp">≼</span> b <span class="k">then</span> a :: (b :: l) <span class="k">else</span> b :: ordered_insert l
-
-  <span class="kd">def</span> insertion_sort : list α <span class="bp">→</span> list α
+  <span class="bp">|</span> (b :: l) := <span class="k">if</span> a <span class="bp">≼</span> b <span class="k">then</span> a :: (b :: l) <span class="k">else</span> b :: ordered_insert l</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">def</span> insertion_sort : list α <span class="bp">→</span> list α
   <span class="bp">|</span> []       := []
-  <span class="bp">|</span> (b :: l) := ordered_insert b (insertion_sort l)
-<span class="kd">end</span> sort</span></pre><p>For foundational reasons, types in Lean have to be stratified into a
+  <span class="bp">|</span> (b :: l) := ordered_insert b (insertion_sort l)</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">end</span> sort</span></span></pre><p>For foundational reasons, types in Lean have to be stratified into a
 hierarchy of <em>type universes</em>, and the definitions above work for any
 type <tt class="docutils literal">α</tt> in any such universe. We can run the procedure above on a
 list of natural numbers, using the usual ordering:</p>
@@ -175,7 +175,7 @@ interpreter. In fact, a full-blown <a class="reference external" href="https://g
 prover</a> for Lean has been
 written in Lean itself.</p>
 <p>You can profile your code by setting the relevant options:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">set_option</span> profiler true <span class="kd">set_option</span> profiler.freq <span class="mi">10</span></span></pre><p>The second option determines the frequency that the virtual machine is
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">set_option</span> profiler true</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">set_option</span> profiler.freq <span class="mi">10</span></span></span></pre><p>The second option determines the frequency that the virtual machine is
 polled with. Be careful: if the task you profile is too short, there
 won’t be any output! You can even implement your own
 <a class="reference external" href="https://github.com/leanprover/lean/tree/master/library/tools/debugger">debugger</a>
@@ -187,7 +187,7 @@ assertions about the objects we define and then go on to prove those
 assertions. We can do this because the language of dependent type theory
 is rich enough to encode such assertions and proofs. For example, we can
 express the property that a natural number is even:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">def</span> even (n : ℕ) : <span class="kt">Prop</span> := <span class="bp">∃</span> m, n <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> m</span></pre><p>As presented, it is not clear that the property of being even is
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">def</span> even (n : ℕ) : <span class="kt">Prop</span> := <span class="bp">∃</span> m, n <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> m</span></span></pre><p>As presented, it is not clear that the property of being even is
 decidable, since we cannot in general test every natural number to
 determine whether any of them serves as a witness to the given
 existential statement. But we can nonetheless use this definition to
@@ -211,7 +211,7 @@ used, if <tt class="docutils literal">p</tt> is any proposition, a proof of <tt 
 expression <tt class="docutils literal">e</tt> of type <tt class="docutils literal">p</tt>. Thus, in Lean, checking a proof is just
 a special case of checking that an expression is well-formed and has a
 given type. We can prove that 10 is even as follows:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">example</span> : even <span class="mi">10</span> := ⟨<span class="mi">5</span>, rfl⟩</span></pre><p>In general, to prove an existential statement, it is enough to present a
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">example</span> : even <span class="mi">10</span> := ⟨<span class="mi">5</span>, rfl⟩</span></span></pre><p>In general, to prove an existential statement, it is enough to present a
 witness to the existential quantifier and then show that the subsequent
 claim is true of that witness. The Unicode angle brackets just package
 this data together; you can enter them in an editor with <tt class="docutils literal">\&lt;</tt> and
@@ -226,14 +226,14 @@ mathematical foundation, so that any conventional mathematical assertion
 can be reasonably expressed, and any theorem that can be proved using
 conventional mathematical means can be carried out formally, with enough
 effort. Here is a proof that the sum of two even numbers is even:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="c1">-- theorem even_add : ∀ m n, even m → even n → even (n + m) :=</span>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="c1">-- theorem even_add : ∀ m n, even m → even n → even (n + m) :=</span>
 <span class="c1">--   take m n,</span>
 <span class="c1">--   assume ⟨k, (hk : m = 2 * k)⟩,</span>
 <span class="c1">--   assume ⟨l, (hl : n = 2 * l)⟩,</span>
 <span class="c1">--   have n + m = 2 * (k + l),</span>
 <span class="c1">--     by simp [hk, hl, mul_add],</span>
 <span class="c1">--   show even (n + m),</span>
-<span class="c1">--     from ⟨_, this⟩</span></span></pre><p>Again, we emphasize that the proof is really just an expression in
+<span class="c1">--     from ⟨_, this⟩</span></span></span></pre><p>Again, we emphasize that the proof is really just an expression in
 dependent type theory, presented with syntactic sugar that makes it look
 somewhat like any informal mathematical proof. There is also a tiny bit
 of automated reasoning thrown in: the command <tt class="docutils literal">by simp</tt> calls on
@@ -244,18 +244,18 @@ of multiplication over addition.</p>
 These are instructions, or procedures, that tell Lean how to construct
 the requisite expression. Here is a tactic-style proof of the theorem
 above:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">axiom</span> mul_add: <span class="bp">∀</span> m n p: nat, m <span class="bp">*</span> (n <span class="bp">+</span> p) <span class="bp">=</span> m <span class="bp">*</span> n <span class="bp">+</span> m <span class="bp">*</span> p
-<span class="kd">axiom</span> add_sym: <span class="bp">∀</span> m n: nat, n <span class="bp">+</span> m <span class="bp">=</span> m <span class="bp">+</span> n
-
-<span class="kd">theorem</span> even_add : <span class="bp">∀</span> m n, even m <span class="bp">→</span> even n <span class="bp">→</span> even (n <span class="bp">+</span> m) :=
-</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk10" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk10"><span class="kd">begin</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="bp">∀</span> (m n : ℕ), even m <span class="bp">→</span> even n <span class="bp">→</span> even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">axiom</span> mul_add: <span class="bp">∀</span> m n p: nat, m <span class="bp">*</span> (n <span class="bp">+</span> p) <span class="bp">=</span> m <span class="bp">*</span> n <span class="bp">+</span> m <span class="bp">*</span> p</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">axiom</span> add_sym: <span class="bp">∀</span> m n: nat, n <span class="bp">+</span> m <span class="bp">=</span> m <span class="bp">+</span> n</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">theorem</span> even_add : <span class="bp">∀</span> m n, even m <span class="bp">→</span> even n <span class="bp">→</span> even (n <span class="bp">+</span> m) :=</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk10" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk10"><span class="kd">begin</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="bp">∀</span> (m n : ℕ), even m <span class="bp">→</span> even n <span class="bp">→</span> even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk11" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk11">intros m n hm hn,</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hm</var><span class="hyp-type"><b>: </b><span>even m</span></span></span><br><span><var>hn</var><span class="hyp-type"><b>: </b><span>even n</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk12" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk12">cases hm <span class="k">with</span> k hk,</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hn</var><span class="hyp-type"><b>: </b><span>even n</span></span></span><br><span><var>k</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hk</var><span class="hyp-type"><b>: </b><span>m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> k</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk13" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk13">cases hn <span class="k">with</span> l hl,</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n, k</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hk</var><span class="hyp-type"><b>: </b><span>m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> k</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hl</var><span class="hyp-type"><b>: </b><span>n <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> l</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk14" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk14">unfold even,</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n, k</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hk</var><span class="hyp-type"><b>: </b><span>m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> k</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hl</var><span class="hyp-type"><b>: </b><span>n <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> l</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="bp">∃</span> (m_1 : ℕ), n <span class="bp">+</span> m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> m_1</div></blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk15" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk15">existsi (k <span class="bp">+</span> l),</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n, k</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hk</var><span class="hyp-type"><b>: </b><span>m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> k</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hl</var><span class="hyp-type"><b>: </b><span>n <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> l</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">n <span class="bp">+</span> m <span class="bp">=</span> <span class="mi">2</span> <span class="bp">*</span> (k <span class="bp">+</span> l)</div></blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">simp [hk, hl, mul_add, add_sym]</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp"><span class="kd">end</span></span></pre><p>Just as we can prove statements about the natural numbers, we can also
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">end</span></span></span></pre><p>Just as we can prove statements about the natural numbers, we can also
 reason about computer programs written in Lean, because these, too, are
 no different from any other definitions. This enables us to specify
 properties of computer programs, prove that the programs meet their
@@ -301,9 +301,9 @@ tactic proof, in search of a pair of the form <tt class="docutils literal">h₁ 
 <tt class="docutils literal">h₂ : ¬ p</tt>. When it finds such a pair, it uses it to produce a proof
 of the resulting theorem. The procedure <tt class="docutils literal">contra</tt> then applies
 <tt class="docutils literal">contra_aux</tt> to the hypotheses in the local context.</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kn">open</span> expr tactic
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">open</span> expr tactic
 
-<span class="kn">private</span> <span class="kd">meta</span> <span class="kd">def</span> contra_aux : list expr <span class="bp">→</span> list expr <span class="bp">→</span> tactic unit
+<span class="kn">private</span> <span class="kd">meta</span></span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">def</span> contra_aux : list expr <span class="bp">→</span> list expr <span class="bp">→</span> tactic unit
 <span class="bp">|</span> []         hs := failed
 <span class="bp">|</span> (h₁ :: rs) hs :=
   <span class="k">do</span> t₀ <span class="bp">←</span> infer_type h₁,
@@ -315,11 +315,11 @@ of the resulting theorem. The procedure <tt class="docutils literal">contra</tt>
          exact pr)
      <span class="bp">&lt;|&gt;</span> contra_aux rs hs
 
-<span class="kd">meta</span> <span class="kd">def</span> contra : tactic unit :=
+<span class="kd">meta</span></span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">def</span> contra : tactic unit :=
 <span class="k">do</span> ctx <span class="bp">←</span> local_context,
-   contra_aux ctx ctx</span></pre><p>Having defined this procedure, we can then use it to prove theorems:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="kd">example</span> (p q r : <span class="kt">Prop</span>) (h₁ : p <span class="bp">∧</span> q) (h₂ : q <span class="bp">→</span> r) (h₃ : <span class="bp">¬</span> (p <span class="bp">∧</span> q)) : r :=
-</span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">by</span></span></span><span class="alectryon-wsp"> contra</span></pre><p>The results of such a tactic are always checked by the Lean kernel, so
+   contra_aux ctx ctx</span></span></pre><p>Having defined this procedure, we can then use it to prove theorems:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">example</span> (p q r : <span class="kt">Prop</span>) (h₁ : p <span class="bp">∧</span> q) (h₂ : q <span class="bp">→</span> r) (h₃ : <span class="bp">¬</span> (p <span class="bp">∧</span> q)) : r :=</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">by</span></span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">contra</span></span></pre><p>The results of such a tactic are always checked by the Lean kernel, so
 they can be trusted, even if the code itself is buggy. If the kernel
 fails to type check the resulting term, it raises an error, and the
 resulting theorem is not added to the environment.</p>

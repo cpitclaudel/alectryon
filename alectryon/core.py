@@ -18,7 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Dict, DefaultDict, Optional, Tuple, Union, NamedTuple, NoReturn
+from typing import Any, DefaultDict, Dict, Iterable, \
+    NamedTuple, NoReturn, Optional, Tuple, Union
 
 from collections import deque, namedtuple, defaultdict
 from contextlib import contextmanager
@@ -302,7 +303,7 @@ class Document:
             yield Positioned(beg, end, item)
 
     @staticmethod
-    def split_fragment(fr, cutoff):
+    def split_fragment(fr: Union[Text, Sentence], cutoff):
         """Split `fr` at position `cutoff`.
 
         >>> Document.split_fragment(Text("abcxyz"), 3)
@@ -316,12 +317,34 @@ class Document:
         if isinstance(fr, Text):
             fr0 = Text(before)
         else:
-            assert isinstance(fr, Sentence)
             fr0 = Sentence(before, messages=[], goals=[])
         return fr0, fr._replace(contents=after)
 
     @classmethod
-    def _recover_chunks(cls, chunks, fragments):
+    def split_fragments(cls, fragments, cutoffs):
+        """Split `fragments` at positions `cutoffs`.
+
+        >>> list(Document.split_fragments([Text("abcdwxyz")], [0, 2, 4, 5, 7]))
+        [Text(contents='ab'), Text(contents='cd'),
+         Text(contents='w'), Text(contents='xy'), Text(contents='z')]
+        >>> list(Document.split_fragments([Text("abcd"), Text("wxyz")], [0, 2, 4, 5, 7]))
+        [Text(contents='ab'), Text(contents='cd'),
+         Text(contents='w'), Text(contents='xy'), Text(contents='z')]
+        """
+        fragments = deque(cls.with_boundaries(fragments))
+        for cutoff in cutoffs:
+            while fragments and fragments[0].end <= cutoff:
+                yield fragments.popleft().e
+            if fragments and fragments[0].beg < cutoff < fragments[0].end:
+                before, after = cls.split_fragment(fragments[0].e, cutoff - fragments[0].beg)
+                fragments[0] = fragments[0]._replace(beg=cutoff, e=after)
+                yield before
+        for fr in fragments:
+            yield fr.e
+
+    @classmethod
+    def _recover_chunks(cls, chunks: Iterable[str],
+                        fragments: Iterable[Union[Sentence, Text]]):
         fragments = deque(cls.with_boundaries(fragments))
         for chunk in cls.with_boundaries(chunks):
             chunk_fragments = []
@@ -329,8 +352,8 @@ class Document:
                 assert fragments[0].beg >= chunk.beg
             while fragments and fragments[0].end <= chunk.end:
                 chunk_fragments.append(fragments.popleft().e)
-            if fragments and fragments[0].beg < chunk.end and fragments[0].end > chunk.end:
-                cutoff = chunk.end - fragments[0].end
+            if fragments and fragments[0].beg < chunk.end < fragments[0].end:
+                cutoff = chunk.end - fragments[0].beg
                 before, after = cls.split_fragment(fragments[0].e, cutoff)
                 fragments[0] = fragments[0]._replace(beg=chunk.end, e=after)
                 chunk_fragments.append(before)

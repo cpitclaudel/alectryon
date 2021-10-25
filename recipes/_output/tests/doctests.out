@@ -8,6 +8,8 @@ annotate (alectryon.coqc_time.CoqcTime)
 Doctest: alectryon.coqc_time.CoqcTime.annotate ... ok
 split_fragment (alectryon.core.Document)
 Doctest: alectryon.core.Document.split_fragment ... ok
+split_fragments (alectryon.core.Document)
+Doctest: alectryon.core.Document.split_fragments ... ok
 strip_separators (alectryon.core.Document)
 Doctest: alectryon.core.Document.strip_separators ... ok
 translate_offset (alectryon.core.PosView)
@@ -48,6 +50,8 @@ attach_ml_comments_to_code (alectryon.transforms)
 Doctest: alectryon.transforms.attach_ml_comments_to_code ... ok
 coalesce_text (alectryon.transforms)
 Doctest: alectryon.transforms.coalesce_text ... ok
+convert_text_to_sentences (alectryon.transforms)
+Doctest: alectryon.transforms.convert_text_to_sentences ... ok
 dedent (alectryon.transforms)
 Doctest: alectryon.transforms.dedent ... ok
 group_hypotheses (alectryon.transforms)
@@ -60,6 +64,6 @@ partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 30 tests
+Ran 32 tests
 
 OK
