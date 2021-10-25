@@ -669,9 +669,10 @@ class CoqdocFragment(namedtuple("CoqdocFragment", "contents")):
     def special(self):
         return bool(self.COQDOC_SPECIAL.match(self.contents))
 
+COQDOC_OPEN = re.compile(r"[(][*][*]\s[ \t]*")
 AlectryonFragments = namedtuple("AlectryonFragments", "fragments")
 def isolate_coqdoc(fragments):
-    from .literate import coq_partition_literate, Comment, COQDOC_OPEN
+    from .literate import coq_partition_literate, Comment
     refined = []
     for fr in fragments:
         if isinstance(fr, Text):

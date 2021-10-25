@@ -331,12 +331,6 @@ def coq_partition(doc):
 # Conversion
 # ----------
 
-LIT_OPEN = re.compile(r"[(][*][|][ \t]*")
-LIT_CLOSE = re.compile(r"[ \t]*[|]?[*][)]\Z")
-
-COQDOC_OPEN = re.compile(r"[(][*][*]\s[ \t]*")
-COQDOC_CLOSE = re.compile(r"[ \t]*[*]+[)]\Z")
-
 DEFAULT_HEADER = ".. coq::"
 INDENT = re.compile(r"(?P<indent>[ ]*)")
 COQ_DIRECTIVE = re.compile(r"(?P<indent>[ \t]*)([.][.] coq::.*)")
@@ -411,11 +405,11 @@ def number_lines(span, start):
     d = deque(Line(num, [s]) for (num, s) in enumerate(lines, start=start))
     return start + len(lines) - 1, d
 
-def gen_rst(spans):
+def gen_rst(spans, opener, closer):
     linum, indent, prefix = 0, "", [DEFAULT_HEADER]
     for span in spans:
         if isinstance(span, Comment):
-            linum, lines = number_lines(span.v.trim(LIT_OPEN, LIT_CLOSE), linum)
+            linum, lines = number_lines(span.v.trim(opener, closer), linum)
             litspan = lit(lines, indent)
             indent, prefix = litspan.indent, litspan.directive_lines
             if litspan.lines:
@@ -432,8 +426,9 @@ def gen_rst(spans):
                 yield from lines
                 yield ""
 
-def coq_partition_literate(code, opener=LIT_OPEN):
-    spans = coq_partition(code)
+def partition_literate(code, spans, opener):
+    """Fold ``Comment`` spans into ``Code`` ones, except those matching ``opener``.
+    ``spans`` should be the result of partitioning ``code``."""
     code = StringView(code, 0, len(code))
     code_acc = code[0:0]
     for span in spans:
@@ -447,8 +442,15 @@ def coq_partition_literate(code, opener=LIT_OPEN):
     if code_acc:
         yield Code(code_acc)
 
+LIT_OPEN = re.compile(r"[(][*][|][ \t]*")
+LIT_CLOSE = re.compile(r"[ \t]*[|]?[*][)]\Z")
+
+def coq_partition_literate(coq, opener=LIT_OPEN):
+    spans = coq_partition(coq)
+    return partition_literate(coq, spans, opener)
+
 def coq2rst_lines(coq):
-    return gen_rst(coq_partition_literate(coq))
+    return gen_rst(coq_partition_literate(coq, LIT_OPEN), LIT_OPEN, LIT_CLOSE)
 
 def coq2rst(coq):
     """Translate a fragment of Coq code to reST.
@@ -487,8 +489,11 @@ def coq2rst(coq):
     """
     return join_lines(coq2rst_lines(coq))
 
+def mark_rst_lines(rst_lines, point, marker):
+    return join_lines(mark_point(rst_lines, point, marker))
+
 def coq2rst_marked(coq, point, marker):
-    return join_lines(mark_point(coq2rst_lines(coq), point, marker))
+    return mark_rst_lines(coq2rst_lines(coq), point, marker)
 
 # reStructuredText → Coq
 # ======================
