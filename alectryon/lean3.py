@@ -181,17 +181,17 @@ class Lean3(TextREPLDriver):
             typ = m.group("type").replace("\n  ", "\n")
             yield Hypothesis(names, None, typ)
 
-    CCL_SEP_RE = re.compile("(?P<hyps>.*?)^⊢(?P<ccl>.*)", re.DOTALL | re.MULTILINE)
+    CCL_SEP_RE = re.compile(r"([0-9]+ goals\s+)?"
+                            r"(?:case (?P<case>[^\n]+)\s+)?"
+                            r"(?P<hyps>.*?)^⊢(?P<ccl>.*)",
+                            re.DOTALL | re.MULTILINE)
 
     def _parse_goals(self, state):
         if not state or state == "no goals":
             return
-        goals = state.split("\n\n")
-        if len(goals) > 1:
-            goals[0] = goals[0][goals[0].find('\n'):]  # Strip "`n` goals"
-        for goal in goals:
-            m = self.CCL_SEP_RE.match(goal)  # note : this does not deal with, e.g. `conv` goals
-            yield Goal(None, m.group("ccl").replace("\n  ", "\n").strip(),
+        for goal in state.split("\n\n"):
+            m = self.CCL_SEP_RE.match(goal.strip())  # note : this does not deal with, e.g. `conv` goals
+            yield Goal(m.group("case"), m.group("ccl").replace("\n  ", "\n").strip(),
                        list(self._parse_hyps(m.group("hyps"))))
 
     def _find_sentences(self):
