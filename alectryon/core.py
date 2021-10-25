@@ -62,6 +62,7 @@ Goal = namedtuple("Goal", "name conclusion hypotheses")
 Message = namedtuple("Message", "contents")
 Sentence = namedtuple("Sentence", "contents messages goals")
 Text = namedtuple("Text", "contents")
+Fragment = Union[Text, Sentence]
 
 class Enriched():
     def __new__(cls, *args, **kwargs):
@@ -296,14 +297,14 @@ class Document:
             yield Text(text[pos:len(text)])
 
     @staticmethod
-    def with_boundaries(items: Union[Sentence, Text, str]):
+    def with_boundaries(items: Iterable[Union[Sentence, Text, str]]):
         end = 0
         for item in items:
             beg, end = end, end + len(getattr(item, "contents", item))
             yield Positioned(beg, end, item)
 
     @staticmethod
-    def split_fragment(fr: Union[Text, Sentence], cutoff):
+    def split_fragment(fr: Fragment, cutoff):
         """Split `fr` at position `cutoff`.
 
         >>> Document.split_fragment(Text("abcxyz"), 3)
@@ -314,6 +315,7 @@ class Document:
         """
         before = fr.contents[:cutoff]
         after = fr.contents[cutoff:]
+        fr0: Fragment
         if isinstance(fr, Text):
             fr0 = Text(before)
         else:
@@ -345,21 +347,21 @@ class Document:
     @classmethod
     def _recover_chunks(cls, chunks: Iterable[str],
                         fragments: Iterable[Union[Sentence, Text]]):
-        fragments = deque(cls.with_boundaries(fragments))
+        frs = deque(cls.with_boundaries(fragments))
         for chunk in cls.with_boundaries(chunks):
-            chunk_fragments = []
-            if fragments:
-                assert fragments[0].beg >= chunk.beg
-            while fragments and fragments[0].end <= chunk.end:
-                chunk_fragments.append(fragments.popleft().e)
-            if fragments and fragments[0].beg < chunk.end < fragments[0].end:
-                cutoff = chunk.end - fragments[0].beg
-                before, after = cls.split_fragment(fragments[0].e, cutoff)
-                fragments[0] = fragments[0]._replace(beg=chunk.end, e=after)
-                chunk_fragments.append(before)
-            assert chunk.e == chunk.e[0:0].join(c.contents for c in chunk_fragments)
-            yield chunk_fragments
-        assert not fragments
+            chunk_frs = []
+            if frs:
+                assert frs[0].beg >= chunk.beg
+            while frs and frs[0].end <= chunk.end:
+                chunk_frs.append(frs.popleft().e)
+            if frs and frs[0].beg < chunk.end < frs[0].end:
+                cutoff = chunk.end - frs[0].beg
+                before, after = cls.split_fragment(frs[0].e, cutoff)
+                frs[0] = frs[0]._replace(beg=chunk.end, e=after)
+                chunk_frs.append(before)
+            assert chunk.e == chunk.e[0:0].join(c.contents for c in chunk_frs)
+            yield chunk_frs
+        assert not frs
 
     @classmethod
     def strip_separators(cls, grouped, separator):

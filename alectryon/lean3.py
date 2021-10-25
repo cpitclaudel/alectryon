@@ -23,13 +23,19 @@ import re
 import tempfile
 from collections import deque
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Iterable, List, Optional, Tuple, TypedDict
 
-from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, Message, Sentence,\
-    Text, cwd, Position
+from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, Message, Sentence, \
+    Text, cwd
 
-AstNode = Any
-AstData = List[Dict[str, AstNode]]
+class _AstNode(TypedDict):
+    kind: str
+class AstNode(_AstNode, total=False):
+    start: List[int]
+    end: List[int]
+    children: List[int]
+
+AstData = List[AstNode]
 Pos = Tuple[int, int]
 
 class ProtocolError(ValueError):
@@ -89,7 +95,7 @@ class Lean3(TextREPLDriver):
         assert response is not None
         return response, messages
 
-    def _writeq(self, **query: Dict[str, Any]):
+    def _writeq(self, **query: Any):
         self.seq_num += 1
         query["seq_num"] = self.seq_num
         self._write(json.dumps(query, indent=None), "\n")
@@ -101,13 +107,13 @@ class Lean3(TextREPLDriver):
         return self._wait(seq_num, self.USE_THREADING and command == "sync")
 
     def _get_descendants(self, idx: int, parent: int) -> Iterable[Tuple[int, int]]:
-        node = self.ast[idx]
+        node: AstNode = self.ast[idx]
         if node:
             yield idx, parent
             if node["kind"] in self.TACTIC_CONTAINERS:
                 parent = idx
             if node["kind"] not in self.DONT_RECURSE_IN:
-                for cidx in node.get("children", ()):
+                for cidx in node.get("children", []):
                     yield from self._get_descendants(cidx, parent)
 
     KIND_ENDER = {"begin": "end", "{": "}", "by": ""}
@@ -117,7 +123,7 @@ class Lean3(TextREPLDriver):
             if n and n["kind"] in kinds:
                 yield idx
 
-    def _find_sentence_ranges(self) -> Iterable[Tuple[Pos, Pos, int]]:
+    def _find_sentence_ranges(self) -> Iterable[Tuple[Pos, Pos, int, int]]:
         """Get the ranges covering individual sentences of a Lean3 file.
 
         Each value in the resulting stream is a 4-element: the start and end of
@@ -130,7 +136,8 @@ class Lean3(TextREPLDriver):
             if not node or "start" not in node or "end" not in node:
                 continue
             kind = node["kind"]
-            start, end = tuple(node["start"]), tuple(node["end"])
+            start: Pos = tuple(node["start"]) # type: ignore
+            end: Pos = tuple(node["end"]) # type: ignore
             if kind in self.TACTIC_NODES:
                 yield start, end, idx, parent
             elif kind in self.TACTIC_CONTAINERS:
@@ -165,7 +172,9 @@ class Lean3(TextREPLDriver):
                 print("Skip")
                 continue
             if last_span:
-                last_state = self._get_state_at(start) if parent in (last_idx, last_parent) else None
+                last_state = None
+                if parent in (last_idx, last_parent):
+                    last_state = self._get_state_at(start)
                 yield (last_span, last_state)
             last_span = (self.document.pos2offset(*start),
                          self.document.pos2offset(*end)) if start != end else None
@@ -174,6 +183,7 @@ class Lean3(TextREPLDriver):
             yield (last_span, None)
 
     # FIXME: this does not handle hypotheses with a body
+    # FIXME: this does not deal with `conv` goals
     HYP_RE = re.compile(r"(?P<names>.*?)\s*:\s*(?P<type>(?:.*|\n )+)(?:,\n|\Z)")
 
     def _parse_hyps(self, hyps):
@@ -191,7 +201,7 @@ class Lean3(TextREPLDriver):
         if not state or state == "no goals":
             return
         for goal in state.split("\n\n"):
-            m = self.CCL_SEP_RE.match(goal.strip())  # note : this does not deal with, e.g. `conv` goals
+            m = self.CCL_SEP_RE.match(goal.strip())
             yield Goal(m.group("case"), m.group("ccl").replace("\n  ", "\n").strip(),
                        list(self._parse_hyps(m.group("hyps"))))
 
@@ -203,7 +213,7 @@ class Lean3(TextREPLDriver):
     def _resplit_fragments(self, fragments):
         """Further split `fragments` using boundaries of top-level sentences."""
         roots = self._find_nodes_by_kind("commands")
-        commands = (self.ast[cidx] for r in roots for cidx in self.ast[r]["children"])
+        commands = (self.ast[cidx] for r in roots for cidx in self.ast[r].get("children", []))
         cutoffs = [self.document.pos2offset(*c["start"]) for c in commands if "start" in c]
         return self.document.split_fragments(fragments, cutoffs)
 
@@ -267,9 +277,9 @@ class Lean3(TextREPLDriver):
         with cwd(self.fpath.parent.resolve()):
             # We use this instead of the ``NamedTemporaryFile`` API
             # because it works with Windows file locking.
-            (fdescriptor, tmpname) = tempfile.mkstemp(suffix=".lean")
+            (fdescriptor, tmp_str) = tempfile.mkstemp(suffix=".lean")
+            tmpname: Path = Path(tmp_str).resolve()
             try:
-                tmpname = Path(tmpname).resolve()
                 with open(fdescriptor, "w", encoding="utf-8") as tmp:
                     tmp.write(self.document.contents)
                 self.run_cli(more_args=[str(tmpname)])
