@@ -84,7 +84,7 @@ def register_docutils(v, ctx):
     docutils.CACHE_COMPRESSION = ctx["cache_compression"]
     docutils.HTML_MINIFICATION = ctx["html_minification"]
     docutils.LONG_LINE_THRESHOLD = ctx["long_line_threshold"]
-    docutils.setup()
+    docutils.setup(ctx["input_language"] or "coq")
 
     # The encoding/decoding dance below happens because setting output_encoding
     # to "unicode" causes reST to generate a bad <meta> tag, and setting
