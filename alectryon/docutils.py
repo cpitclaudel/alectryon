@@ -48,9 +48,9 @@ directive in your document, and you can ommit it entirely by setting
 contents following the checkbox are wrapped in a container with class
 ``alectryon-container``).
 
-Inline Coq highlighting is provided by the ``:coq:`` role (use ``:lean:`` for
-Lean code).  To replace Pygments' default Coq highlighter with Alectryon's
-everywhere, call ``alectryon.pygments.replace_builtin_coq_lexer()``.
+Inline Coq highlighting is provided by the ``:coq:`` role (use ``:lean3:`` for
+Lean code).  To replace Pygments' default highlighters with Alectryon's
+everywhere, call ``alectryon.pygments.replace_builtin_lexer()``.
 
 If you write lots of inline code snippets, consider calling ``set_default_role``,
 which will set the default role to ``:coq:``.
@@ -94,7 +94,7 @@ from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 from . import core, transforms, html, latex, markers
 from .core import Gensym, Position, PosStr
 from .pygments import make_highlighter, added_tokens, validate_style, \
-    get_lexer, resolve_token, replace_builtin_coq_lexer
+    get_lexer, resolve_token, replace_builtin_lexers
 
 # reST extensions
 # ===============
@@ -1543,4 +1543,4 @@ def setup(lang="coq"):
     """
     register()
     set_default_role(lang)
-    replace_builtin_coq_lexer()
+    replace_builtin_lexers()
