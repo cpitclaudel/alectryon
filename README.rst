@@ -2,7 +2,9 @@
  Alectryon
 ===========
 
-A library to process Coq snippets embedded in documents, showing goals and messages for each Coq sentence.  Also a literate programming toolkit for Coq.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix Coq code and prose.
+A library to process Coq snippets embedded in documents, showing goals and messages for each Coq sentence.  Also a literate programming toolkit for Coq.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix interactive proofs and prose.
+
+Alectryon has `preliminary support for Lean 3 <lean3_>`__, but some work remains to be done.
 
 .. image:: etc/screenshot.svg
    :width: 100%
@@ -478,6 +480,35 @@ Extensions might include, registering additional docutils directives or roles wi
 
 See `<recipes/alectryon_custom_driver.py>`__ for a concrete example.
 
+Other proof assistants
+======================
+
+.. _lean3:
+
+Lean 3
+------
+
+Alectryon has preliminary support for Lean 3.
+
+Recording Lean's output and generating HTML or LaTeX is supported, from plain ``.lean`` files and from ``.rst`` files using the ``.. lean3::`` directive (as well as Markdown/MyST files using the ``{lean3}`` directive.  Language-agnostic features like caching work.
+
+See `<recipes/plain.lean>`__ and `<recipes/lean3-tutorial.rst>`__ for examples.
+
+The following features are missing:
+
+- Conversion between reST and Lean 3.  See `<alectryon/literate.py>`__ for the corresponding feature on the Coq side; what is needed is a simple state machine that isolates Lean comments from the surrounding code.
+- Concurrent processing of documents.  See the long comment above ``USE_THREADING`` in ``class Lean3`` of `<alectryon/lean3.py>`__.
+- Support for literate Lean documents in Emacs/``alectryon-mode``.
+
+Support for quoting snippets and displaying or hiding sentences is partial (without support for segmenting comments, comments get attached to preceding code).
+
+For a more detailed TODO list, see the header of `<alectryon/lean3.py>`__.
+
+Polyglot documents
+------------------
+
+reStructuredText and Markdown documents compiled with Alectryon may combine all supported languages.  Code from each language is executed separately.  See `<recipes/polyglot.rst>`__ for an example.
+
 Tips
 ====
 
@@ -629,6 +660,23 @@ MathJax is a JavaScript library for rendering LaTeX math within webpages.  Prope
 - If you just want to include math in reStructuredText or Markdown documents, docutils will generally do the right thing: it will generate code to load MathJaX from a CDN if you use the ``:math:`` role, and it leave that code out if you don't.
 
 - If you want to render parts of your Coq code using MathJaX, things are trickier.  You need to identify which text to render as math by wrapping it into ``\( … \)`` markers; then add the ``mathjax_process`` class to the corresponding document nodes to force processing (otherwise MathJax ignores the contents of Alectryon's ``<pre>`` blocks); then trigger a recomputation.  See `<./recipes/mathjax.rst>`__ for an example and a more detailed discussion.
+
+Suggested projects / TODOs
+==========================
+
+I do not work on the following tasks, but it would be very useful to complete them:
+
+- Add support for converting to and from Markdown/MyST instead of reST.  This requires (1) changing ``literate.py`` to support reading and writing ``myst`` (a simple state machine); (2) adjusting ``cli.py`` to expose the new conversion functions; and (3) modifying ``etc/elisp/alectryon.el`` to make it convenient to switch back and forth.
+
+- Upstream Alectryon's Coq highlighter for Pygments (it's an almost-complete rewrite of the original one).
+
+- Add support for prettification in Pygments (display ``forall`` as ``∀``, etc.).  This require (1) Adding a pygments filter for prettification and (2) special-casing the rendering of prettified symbols somehow, so that copy-pasting them produces the original, unprettified rendering.
+
+- Add support for diffing (displaying only changed hypotheses). See https://github.com/ejgallego/coq-serapi/issues/251
+
+- Add support for ``mquote``-ing full goals and sentences.  This requires revamping the CSS (right now it assumes a specific nesting order of classes, and subparts of a proof state except the currently supported ones do not display correctly).
+
+- Add support for quoting parts of another file, including its proof states: (1) design a mini-language to specify where to start and end, either in term of which definitions to select, or in terms of strings of text or regular expressions, or a combination (“definition of ``x`` within module ``A``” or “from ``induction …`` to ``solve [eauto]`` in proof of ``foo``”); (2) load documents that these directives refer to and embed the corresponding parts, compiling (with caching) as needed.
 
 .. _gallery:
 
