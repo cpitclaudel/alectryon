@@ -153,6 +153,11 @@ _output/plain.v.html: plain.v
 	$(alectryon) --frontend coq $<
 recipes_targets += _output/plain.v.html
 
+# reST+… → HTML
+_output/polyglot.html: polyglot.rst
+	$(alectryon) $<
+recipes_targets += _output/polyglot.html
+
 # ReST → HTML
 _output/references.html: references.rst
 	$(alectryon) $<
