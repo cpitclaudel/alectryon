@@ -71,7 +71,8 @@ targets += $({prefix}_targets)\
 EXCLUDED_SOURCES = {
     "*docutils.conf",
     "*.v.cache",
-    "flycheck_*.py"
+    "flycheck_*.py",
+    "custom_stylesheet.css"
 }
 
 def main():
