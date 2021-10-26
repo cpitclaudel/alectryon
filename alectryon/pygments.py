@@ -258,8 +258,8 @@ class StripErrorsTokenFilter(Filter):
                 typ = Text
             yield typ, val
 
-def replace_builtin_coq_lexer():
-    """Monkey-patch pygments to replace the built-in Coq Lexer.
+def replace_builtin_lexers():
+    """Patch pygments to replace its Coq Lexer and register aliases.
 
     https://stackoverflow.com/questions/40514205/ describes a way to register
     entry points dynamically, so we could use that to play nice with pygments
@@ -268,6 +268,13 @@ def replace_builtin_coq_lexer():
     """ # FIXME replace the formatter too?
     from pygments.lexers import _lexer_cache
     from pygments.lexers._mapping import LEXERS
+
+    for dst, src in CUSTOM_LEXER_ALIASES.items():
+        for key, (mod, name, aliases, fnames, mimes) in LEXERS.items():
+            if src.lower() in aliases:
+                LEXERS[key] = (mod, name, aliases + (dst,), fnames, mimes)
+                _lexer_cache.pop(name, None)
+
     for nm, Lx in CUSTOM_LEXERS.items():
         dflt = (None, Lx.name, tuple(Lx.aliases), tuple(Lx.filenames), tuple(Lx.mimetypes))
         meta = ("alectryon.pygments_lexer", *LEXERS.get(nm, dflt)[1:])
