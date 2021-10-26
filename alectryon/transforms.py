@@ -198,7 +198,7 @@ def inherit_io_annots(fragments, annots):
             fr.annots.inherit(annots)
         yield fr
 
-def _read_io_comments(annots, contents, lang, must_match=True):
+def __read_io_comments(annots, contents, lang, must_match=True):
     for m in IO_COMMENT_RE[lang].finditer(contents):
         _update_io_annots(annots, m.group(0), ONE_IO_ANNOT_RE, must_match=must_match)
     return IO_COMMENT_RE[lang].sub("", contents)
@@ -213,7 +213,7 @@ def _replace_contents(fr, contents):
         return fr._replace(input=fr.input._replace(contents=contents))
     return fr._replace(contents=contents)
 
-def read_io_comments(fragments, lang):
+def _read_io_comments(fragments, lang):
     """Strip IO comments and update ``.annots`` fields accordingly.
 
     This pass assumes that consecutive ``Text`` fragments have been
@@ -225,18 +225,15 @@ def read_io_comments(fragments, lang):
         if sentence:
             assert isinstance(sentence, RichSentence)
             try:
-                contents = _read_io_comments(sentence.annots, _contents(fr), lang) # type: ignore
+                contents = __read_io_comments(sentence.annots, _contents(fr), lang) # type: ignore
                 fr = _replace_contents(fr, contents)
             except ValueError as e:
                 yield e
         last_sentence = fr
         yield fr
 
-def ml_read_io_comments(fragments):
-    return read_io_comments(fragments, lang="coq")
-
-def lean3_read_io_comments(fragments):
-    return read_io_comments(fragments, lang="lean3")
+def read_io_comments(lang):
+    return lambda fragments: _read_io_comments(fragments, lang=lang)
 
 def _find_marked(sentence, path):
     assert isinstance(sentence, RichSentence)
@@ -450,7 +447,7 @@ COQ_BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
 def is_coq_bullet(fr):
     return COQ_BULLET.match(fr.input.contents)
 
-def attach_ml_comments_to_code(fragments, predicate=lambda _: True):
+def _attach_comments_to_code(lang, fragments, predicate=lambda _: True):
     """Attach comments immediately following a sentence to the sentence itself.
 
     This is to support this common pattern::
@@ -470,21 +467,21 @@ def attach_ml_comments_to_code(fragments, predicate=lambda _: True):
 
     >>> from .core import Sentence as S, Text as T
     >>> frs = [S("-", [], []), T(" (* … *) "), S("cbn.", [], []), T("(* … *)")]
-    >>> attach_ml_comments_to_code(frs) # doctest: +ELLIPSIS
+    >>> attach_comments_to_code("coq")(frs) # doctest: +ELLIPSIS
     [RichSentence(...contents='- (* … *)'...), Text(contents=' '),
      RichSentence(...contents='cbn.(* … *)'...)]
-    >>> attach_ml_comments_to_code(frs, predicate=is_coq_bullet) # doctest: +ELLIPSIS
+    >>> attach_comments_to_code("coq")(frs, predicate=is_coq_bullet) # doctest: +ELLIPSIS
     [RichSentence(...contents='- (* … *)'...), Text(contents=' '),
      RichSentence(...contents='cbn.'...), Text(contents='(* … *)')]
     """
-    from .literate import coq_partition, StringView, Code, Comment
+    from .literate import partition, StringView, Code, Comment
     grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
         prev = grouped[idx - 1] if idx > 0 else None
         prev_is_sentence = isinstance(prev, RichSentence)
         if prev_is_sentence and predicate(prev) and isinstance(fr, Text):
             best = prefix = StringView(fr.contents, 0, 0)
-            for part in coq_partition(fr.contents):
+            for part in partition(lang, fr.contents):
                 if "\n" in part.v:
                     break
                 if isinstance(part, Code):
@@ -497,6 +494,13 @@ def attach_ml_comments_to_code(fragments, predicate=lambda _: True):
                 grouped[idx - 1] = _replace_contents(prev, _contents(prev) + str(best))
                 grouped[idx] = Text(rest) if rest else None
     return [g for g in grouped if g is not None]
+
+def attach_comments_to_code(lang_name):
+    """Attach comments to preceding code (see ``attach_comments_to_code``)."""
+    def attach_comments_to_code_wrapper(*args, **kwargs):
+        from .literate import LANGUAGES
+        return _attach_comments_to_code(LANGUAGES[lang_name], *args, **kwargs)
+    return attach_comments_to_code_wrapper
 
 def fragment_goal_sets(fr):
     if isinstance(fr, RichSentence):
@@ -672,11 +676,11 @@ class CoqdocFragment(namedtuple("CoqdocFragment", "contents")):
 COQDOC_OPEN = re.compile(r"[(][*][*]\s[ \t]*")
 AlectryonFragments = namedtuple("AlectryonFragments", "fragments")
 def isolate_coqdoc(fragments):
-    from .literate import coq_partition_literate, Comment
+    from .literate import partition_literate, Comment, COQ
     refined = []
     for fr in fragments:
         if isinstance(fr, Text):
-            for span in coq_partition_literate(fr.contents, opener=COQDOC_OPEN):
+            for span in partition_literate(COQ, fr.contents, opener=COQDOC_OPEN):
                 wrapper = CoqdocFragment if isinstance(span, Comment) else Text
                 refined.append(wrapper(str(span.v)))
         else:
@@ -696,21 +700,31 @@ def isolate_coqdoc(fragments):
 
 SURROUNDING_BLANKS_RE = re.compile(r"\A(\s*)(.*?)(\s*)\Z", re.DOTALL)
 
-def convert_text_to_sentences(fragments):
-    r"""Make sure that ``Text`` objects in `fragments` only contain whitespace.
+
+def split_surrounding_space(fr):
+    before, txt, after = SURROUNDING_BLANKS_RE.match(_contents(fr)).groups()
+    if before: yield Text(before)
+    if txt: yield _replace_contents(fr, txt)
+    if after: yield Text(after)
+
+def lean3_split_comments(fragments):
+    r"""Make sure that ``Text`` objects in `fragments` only contain whitespace and comments.
 
     >>> from .core import Sentence as S, Text as T
-    >>> list(convert_text_to_sentences([S("S", [], []), T(" A \n B \n"), S("\n S", [], [])]))
-    [Sentence(contents='S', messages=[], goals=[]),
-     Text(contents=' '), Sentence(contents='A \n B', messages=[], goals=[]),
-     Text(contents=' \n'), Sentence(contents='\n S', messages=[], goals=[])]
+    >>> list(lean3_split_comments([T(" A \n /- x -/ B \n"), S("\n S", [], [])]))
+    [Text(contents=' '), Sentence(contents='A', messages=[], goals=[]),
+     Text(contents=' \n '), Text(contents='/- x -/'), Text(contents=' '),
+     Sentence(contents='B', messages=[], goals=[]), Text(contents=' \n'),
+     Sentence(contents='\n S', messages=[], goals=[])]
     """
+    from .literate import LEAN3, partition, Code, Comment
     for fr in fragments:
         if isinstance(fr, Text):
-            before, txt, after = SURROUNDING_BLANKS_RE.match(_contents(fr)).groups()
-            if before: yield Text(before)
-            if txt: yield Sentence(txt, [], [])
-            if after: yield Text(after)
+            for part in partition(LEAN3, fr.contents):
+                if isinstance(part, Code):
+                    yield from split_surrounding_space(Sentence(str(part.v), [], []))
+                if isinstance(part, Comment):
+                    yield from split_surrounding_space(Text(str(part.v)))
         else:
             yield fr
 
@@ -762,20 +776,21 @@ def lean3_attach_commas(fragments):
 DEFAULT_TRANSFORMS = {
     "coq": [
         enrich_sentences,
-        attach_ml_comments_to_code,
+        attach_comments_to_code("coq"),
         group_hypotheses,
-        ml_read_io_comments,
+        read_io_comments("coq"),
         process_io_annots,
         strip_coq_failures,
         dedent,
     ],
     "lean3": [
         lean3_attach_commas,
-        convert_text_to_sentences,
+        lean3_split_comments,
         coalesce_text,
         enrich_sentences,
         lean3_truncate_vernacs,
-        lean3_read_io_comments,
+        # attach_comments_to_code("lean3"),
+        read_io_comments("lean3"),
         process_io_annots
     ]
     # Not included:

@@ -22,16 +22,18 @@ PlainSerializer (alectryon.json)
 Doctest: alectryon.json.PlainSerializer ... ok
 annotate (alectryon.lean3.Lean3)
 Doctest: alectryon.lean3.Lean3.annotate ... ok
+step (alectryon.literate.CoqParser)
+Doctest: alectryon.literate.CoqParser.step ... ok
+step (alectryon.literate.LeanParser)
+Doctest: alectryon.literate.LeanParser.step ... ok
 __len__ (alectryon.literate.Line)
 Doctest: alectryon.literate.Line.__len__ ... ok
-_last_coq_directive (alectryon.literate)
-Doctest: alectryon.literate._last_coq_directive ... ok
-coq2rst (alectryon.literate)
-Doctest: alectryon.literate.coq2rst ... ok
-coq_partition (alectryon.literate)
-Doctest: alectryon.literate.coq_partition ... ok
-rst2coq (alectryon.literate)
-Doctest: alectryon.literate.rst2coq ... ok
+_last_directive (alectryon.literate)
+Doctest: alectryon.literate._last_directive ... ok
+code2rst (alectryon.literate)
+Doctest: alectryon.literate.code2rst ... ok
+rst2code (alectryon.literate)
+Doctest: alectryon.literate.rst2code ... ok
 rst_partition (alectryon.literate)
 Doctest: alectryon.literate.rst_partition ... ok
 cli (alectryon.minimal)
@@ -46,24 +48,24 @@ annotate (alectryon.serapi)
 Doctest: alectryon.serapi.annotate ... ok
 _all_sub_objects (alectryon.transforms)
 Doctest: alectryon.transforms._all_sub_objects ... ok
-attach_ml_comments_to_code (alectryon.transforms)
-Doctest: alectryon.transforms.attach_ml_comments_to_code ... ok
+_attach_comments_to_code (alectryon.transforms)
+Doctest: alectryon.transforms._attach_comments_to_code ... ok
 coalesce_text (alectryon.transforms)
 Doctest: alectryon.transforms.coalesce_text ... ok
-convert_text_to_sentences (alectryon.transforms)
-Doctest: alectryon.transforms.convert_text_to_sentences ... ok
 dedent (alectryon.transforms)
 Doctest: alectryon.transforms.dedent ... ok
 group_hypotheses (alectryon.transforms)
 Doctest: alectryon.transforms.group_hypotheses ... ok
 group_whitespace_with_code (alectryon.transforms)
 Doctest: alectryon.transforms.group_whitespace_with_code ... ok
+lean3_split_comments (alectryon.transforms)
+Doctest: alectryon.transforms.lean3_split_comments ... ok
 lean3_truncate_vernacs (alectryon.transforms)
 Doctest: alectryon.transforms.lean3_truncate_vernacs ... ok
 partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 32 tests
+Ran 33 tests
 
 OK

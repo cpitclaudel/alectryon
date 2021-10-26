@@ -490,17 +490,36 @@ Lean 3
 
 Alectryon has preliminary support for Lean 3.
 
-Recording Lean's output and generating HTML or LaTeX is supported, from plain ``.lean`` files and from ``.rst`` files using the ``.. lean3::`` directive (as well as Markdown/MyST files using the ``{lean3}`` directive.  Language-agnostic features like caching work.
+Recording Lean's output and generating HTML or LaTeX is supported, from plain ``.lean`` files and from ``.rst`` files using the ``.. lean3::`` directive (as well as Markdown/MyST files using the ``{lean3}`` directive).  Language-agnostic features like caching work.  The literate delimiter is ``/-|``; in other words, you may write:
+
+- Lean 3 code in reStructuredText files, like this:
+
+  .. code-block:: rst
+
+     Some reST prose.
+
+     .. lean3::
+
+        … some Lean 3 code
+
+- reStructuredText prose in Lean3 files, like this:
+
+  .. code-block:: lean
+
+     … some Lean 3 code
+
+     /-|
+     Some reST prose.
+     |-/
 
 See `<recipes/plain.lean>`__ and `<recipes/lean3-tutorial.rst>`__ for examples.
 
 The following features are missing:
 
-- Conversion between reST and Lean 3.  See `<alectryon/literate.py>`__ for the corresponding feature on the Coq side; what is needed is a simple state machine that isolates Lean comments from the surrounding code.
 - Concurrent processing of documents.  See the long comment above ``USE_THREADING`` in ``class Lean3`` of `<alectryon/lean3.py>`__.
 - Support for literate Lean documents in Emacs/``alectryon-mode``.
 
-Support for quoting snippets and displaying or hiding sentences is partial (without support for segmenting comments, comments get attached to preceding code).
+Support for quoting snippets and displaying or hiding sentences is partial.
 
 For a more detailed TODO list, see the header of `<alectryon/lean3.py>`__.
 

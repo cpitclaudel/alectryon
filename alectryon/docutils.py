@@ -171,7 +171,7 @@ def _try(document, fn, node, *args, **kwargs):
 class AlectryonState:
     def __init__(self, document):
         self.drivers_info: List[core.DriverInfo] = []
-        self.root_language: Optional[str] = None
+        self.root_is_code: bool = False
         self.transforms_executed = set()
         self.embedded_assets = []
         self.document = document
@@ -769,7 +769,7 @@ class ProverDirective(AlectryonDirective):
 
         col_offset = indent
         if document.get('source', "") == source \
-           and alectryon_state(document).root_language == "coq":
+           and alectryon_state(document).root_is_code:
             col_offset = 0
 
         pos = Position(source, contents_line, col_offset)
@@ -1177,18 +1177,19 @@ class JsErrorObserver:
 # Parser
 # ------
 
-class RSTCoqParser(docutils.parsers.rst.Parser): # type: ignore
-    """A wrapper around the reStructuredText parser for literate Coq files."""
+class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
+    """A wrapper around the reStructuredText parser for literate files."""
 
-    supported = ('coq',)
-    config_section = 'Literate Coq parser'
+    LANG = ""
+    supported = ()
+    config_section = 'Literate parser'
     config_section_dependencies = ('parsers',)
 
     @staticmethod
-    def rst_lines(coq_input):
-        from .literate import coq2rst_lines, Line
+    def rst_lines(lang, code):
+        from .literate import code2rst_lines, Line
         last_line = 0
-        for line in coq2rst_lines(coq_input):
+        for line in code2rst_lines(lang, code):
             if isinstance(line, Line):
                 yield (str(line), line.num)
                 last_line = line.num
@@ -1196,10 +1197,10 @@ class RSTCoqParser(docutils.parsers.rst.Parser): # type: ignore
                 assert isinstance(line, str)
                 yield (line, last_line)
 
-    @staticmethod
-    def coq_input_lines(coq_input, source):
+    @classmethod
+    def input_lines(cls, lang, code, source):
         from docutils.statemachine import StringList
-        lines = RSTCoqParser.rst_lines(coq_input)
+        lines = cls.rst_lines(lang, code)
         initlist, items = [], []
         # Don't use zip(): we need lists, not tuples, and the input can be empty
         for (line, i) in lines:
@@ -1212,24 +1213,37 @@ class RSTCoqParser(docutils.parsers.rst.Parser): # type: ignore
             e.message, line=e.line, column=e.column,
             end_line=e.end_line, end_column=e.end_column))
 
+    @property
+    def lang(self):
+        from .literate import LANGUAGES
+        return LANGUAGES[self.LANG]
+
     def parse(self, inputstring, document):
         """Parse `inputstring` and populate `document`, a document tree."""
         from .literate import ParsingError
         self.setup_parse(inputstring, document)
         # pylint: disable=attribute-defined-outside-init
-        alectryon_state(document).root_language = "coq"
+        alectryon_state(document).root_is_code = True
         self.statemachine = docutils.parsers.rst.states.RSTStateMachine( # type: ignore
             state_classes=self.state_classes,
             initial_state=self.initial_state,
             debug=document.reporter.debug_flag)
         try:
-            lines = RSTCoqParser.coq_input_lines(inputstring, document['source'])
+            lines = self.input_lines(self.lang, inputstring, document['source'])
             self.statemachine.run(lines, document, inliner=self.inliner)
         except ParsingError as e:
             self.report_parsing_error(e)
         finally:
             roles._roles.pop('', None) # Reset the default role
         self.finish_parse()
+
+class RSTCoqParser(RSTLiterateParser):
+    LANG = "coq"
+    supported = ("coq",)
+
+class RSTLean3Parser(RSTLiterateParser):
+    LANG = "lean3"
+    supported = ("lean3",)
 
 # Writer
 # ------
@@ -1427,6 +1441,7 @@ Pipeline = namedtuple("Pipeline", "reader parser translator writer")
 
 PARSERS = {
     "coq+rst": (__name__, "RSTCoqParser"),
+    "lean3+rst": (__name__, "RSTLean3Parser"),
     "rst": ("docutils.parsers.rst", "Parser"),
     "md": ("alectryon.myst", "Parser"),
 }

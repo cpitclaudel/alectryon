@@ -76,6 +76,10 @@ recipes_targets += _output/fragments.snippets.tex
 _output/lean3-tutorial.html: lean3-tutorial.rst
 	$(alectryon) $<
 recipes_targets += _output/lean3-tutorial.html
+# reST+Lean → Lean
+_output/lean3-tutorial.lean: lean3-tutorial.rst
+	$(alectryon) $< -o $@
+recipes_targets += _output/lean3-tutorial.lean
 
 # MyST → HTML
 _output/literate_MyST.html: literate_MyST.md

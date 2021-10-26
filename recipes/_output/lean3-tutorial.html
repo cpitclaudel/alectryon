@@ -20,7 +20,10 @@
 <input type="checkbox" class="alectryon-toggle" id="alectryon-toggle-0" /><label for="alectryon-toggle-0" class="alectryon-toggle-label">Display all goals and responses</label><div class="alectryon-container docutils container">
 <p>To compile:</p>
 <pre class="literal-block">
-alectryon lean3-tutorial.rst # reST+Lean → HTML; produces ‘lean3-tutorial.html’ -/
+alectryon lean3-tutorial.rst
+    # reST+Lean → HTML; produces ‘lean3-tutorial.html’
+alectryon lean3-tutorial.rst -o lean3-tutorial.lean
+    # reST+Lean → Lean; produces ‘lean3-tutorial.lean’
 </pre>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -226,14 +229,14 @@ mathematical foundation, so that any conventional mathematical assertion
 can be reasonably expressed, and any theorem that can be proved using
 conventional mathematical means can be carried out formally, with enough
 effort. Here is a proof that the sum of two even numbers is even:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="c1">-- theorem even_add : ∀ m n, even m → even n → even (n + m) :=</span>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="c1">-- theorem even_add : ∀ m n, even m → even n → even (n + m) :=</span>
 <span class="c1">--   take m n,</span>
 <span class="c1">--   assume ⟨k, (hk : m = 2 * k)⟩,</span>
 <span class="c1">--   assume ⟨l, (hl : n = 2 * l)⟩,</span>
 <span class="c1">--   have n + m = 2 * (k + l),</span>
 <span class="c1">--     by simp [hk, hl, mul_add],</span>
 <span class="c1">--   show even (n + m),</span>
-<span class="c1">--     from ⟨_, this⟩</span></span></span></pre><p>Again, we emphasize that the proof is really just an expression in
+<span class="c1">--     from ⟨_, this⟩</span></span></pre><p>Again, we emphasize that the proof is really just an expression in
 dependent type theory, presented with syntactic sugar that makes it look
 somewhat like any informal mathematical proof. There is also a tiny bit
 of automated reasoning thrown in: the command <tt class="docutils literal">by simp</tt> calls on

@@ -54,18 +54,14 @@ def _catch_parsing_errors(fpath, k, *args):
         raise ValueError("{}: {}".format(fpath, e)) from e
 
 def code_to_rst(code, fpath, point, marker, input_language):
-    if input_language == "coq":
-        from .literate import coq2rst_marked as converter
-    else:
-        assert False
-    return _catch_parsing_errors(fpath, converter, code, point, marker)
+    from .literate import code2rst_marked, LANGUAGES
+    lang = LANGUAGES[input_language]
+    return _catch_parsing_errors(fpath, code2rst_marked, lang, code, point, marker)
 
 def rst_to_code(rst, fpath, point, marker, backend):
-    if backend in ("coq", "coq+rst"):
-        from .literate import rst2coq_marked as converter
-    else:
-        assert False
-    return _catch_parsing_errors(fpath, converter, rst, point, marker)
+    from .literate import rst2code_marked, LANGUAGES
+    lang = LANGUAGES[backend.replace("+rst", "")]
+    return _catch_parsing_errors(fpath, rst2code_marked, lang, rst, point, marker)
 
 def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
                     input_language, driver_name, driver_args, exit_code):
@@ -381,7 +377,7 @@ def write_file(ext, strip):
                      output_directory, strip_re=strip_re)
 
 EXTENSIONS_BY_LANGUAGE = {
-    "coq": (".v"),
+    "coq": (".v",),
     "lean3": (".lean", ".lean3"),
 }
 
@@ -478,12 +474,13 @@ def _add_docutils_pipelines(pipelines, lang, *exts):
 
 def _add_transliteration_pipelines(pipelines):
     exts = (*CODE_EXTENSIONS, ".rst")
-    pipelines['rst']['coq'] = pipelines['rst']['coq+rst'] = \
-        (read_plain, rst_to_code, write_file(".v", strip=exts))
-    pipelines['coq']['rst'] = \
-        (read_plain, code_to_rst, write_file(".rst", strip=()))
-    pipelines['coq+rst']['rst'] = \
-        (read_plain, code_to_rst, write_file(".v.rst", strip=(*exts, ".rst")))
+    for lang, (ext, *_) in EXTENSIONS_BY_LANGUAGE.items():
+        pipelines['rst'][lang] = pipelines['rst'][lang + '+rst'] = \
+            (read_plain, rst_to_code, write_file(ext, strip=exts))
+        pipelines[lang]['rst'] = \
+            (read_plain, code_to_rst, write_file(".rst", strip=()))
+        pipelines[lang + '+rst']['rst'] = \
+            (read_plain, code_to_rst, write_file(ext + ".rst", strip=(*exts, ".rst")))
 
 def warn_renamed_json_pipeline(v, ctx):
     print("WARNING: Frontend `json` is ambiguous; use `coq.json` instead.",
@@ -522,10 +519,6 @@ def _language_frontends_by_extension(ext, lang):
     ]
 
 FRONTENDS_BY_EXTENSION = [
-    # FIXME: Add support for lean3+rst Docutils frontend
-    ('.lean', 'lean3'),
-    ('.lean3', 'lean3'),
-
     *(pair
       for lang, exts in EXTENSIONS_BY_LANGUAGE.items() for ext in exts
       for pair in _language_frontends_by_extension(ext, lang)),
