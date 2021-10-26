@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import List, Tuple
+from typing import Dict, List, Tuple, Type
 
 import re
 from enum import Enum
@@ -175,11 +175,11 @@ def mark_point(lines, point, marker):
 def join_lines(lines):
     return "\n".join(str(l) for l in lines)
 
-# Coq → reStructuredText
-# ======================
+# Code → reST
+# ===========
 
-# Coq parsing
-# -----------
+# Partitioning
+# ------------
 
 Code = namedtuple("Code", "v")
 Comment = namedtuple("Comment", "v")
@@ -197,46 +197,23 @@ class State(Enum):
     COMMENT = "COMMENT"
     NESTED_COMMENT = "NESTED_COMMENT"
 
-REGEXPS = {
-    Token.COMMENT_OPEN: r"[(][*]+(?![)])",
-    Token.COMMENT_CLOSE: r"[*]+[)]",
-    Token.STRING_ESCAPE: r'""',
-    Token.STRING_DELIM: r'"',
-    Token.EOF: r"(?!.)",
-}
-
-TRANSITIONS = {
-    State.CODE: (Token.COMMENT_OPEN,
-                 Token.STRING_DELIM,
-                 Token.EOF),
-    State.STRING: (Token.STRING_ESCAPE,
-                   Token.STRING_DELIM,),
-    State.COMMENT: (Token.COMMENT_OPEN,
-                    Token.COMMENT_CLOSE,
-                    Token.STRING_DELIM),
-    State.NESTED_COMMENT: (Token.COMMENT_OPEN,
-                           Token.COMMENT_CLOSE,
-                           Token.STRING_DELIM)
-}
-
-def regexp_opt(tokens):
-    labeled = ("(?P<{}>{})".format(tok.name, REGEXPS[tok]) for tok in tokens)
+def regexp_opt(tokens, token_regexps):
+    labeled = ("(?P<{}>{})".format(tok.name, token_regexps[tok]) for tok in tokens)
     return re.compile("|".join(labeled), re.DOTALL)
 
-SCANNERS = {state: regexp_opt(tokens)
-            for (state, tokens) in TRANSITIONS.items()}
-
 class ParsingError(ValueError):
-    def __init__(self, document, state, position, end):
+    def __init__(self, document, state, expected, position, end):
         super().__init__()
         self.document = document
         self.state = state
+        self.expected = expected
         self.position, self.end = position, end
         self.line, self.column = self.line_col_of_pos(position)
         self.end_line, self.end_column = self.line_col_of_pos(end)
 
     def line_col_of_pos(self, pos):
         assert pos >= 0
+        # FIXME use the binary search code from core
         # Lines and columns are 1-based
         bol = self.document.rfind("\n", 0, pos) + 1 # 0 if not found
         line = 1 + self.document.count("\n", 0, pos)
@@ -245,55 +222,122 @@ class ParsingError(ValueError):
 
     @property
     def message(self):
-        expected = " or ".join(t.name for t in TRANSITIONS[self.state])
+        expected_str = " or ".join(t.name for t in self.expected)
         MSG = "Unterminated {} (looking for {})"
-        return MSG.format(self.state.name.lower(), expected)
+        return MSG.format(self.state.name.lower(), expected_str)
 
     def __str__(self):
         return "{}:{}: {}".format(self.line, self.column, self.message)
 
-def coq_partition(doc):
-    """Partition `doc` into runs of code and comments (both ``StringView``\\s).
+class Parser:
+    TRANSITIONS: Dict[str, Tuple[Token, ...]] = {}
+    TOKEN_REGEXPS: Dict[Token, str] = {}
 
-    Example:
-    >>> coq_partition("Code (* comment *) code")
-    [Code(v='Code '), Comment(v='(* comment *)'), Code(v=' code')]
+    def __init__(self, doc):
+        self.doc = doc
+        self.pos = 0
+        self.spans = []
+        self.stack: List[Tuple[int, int, State]] = [(0, 0, State.CODE)]
+
+    def step(self, state: State, start: int, tok: Token, mstart: int):
+        raise NotImplementedError()
+
+    def partition(self):
+        """Partition `doc` into runs of code and comments (both ``StringView``\\s)."""
+        scanners = {state: regexp_opt(tokens, self.TOKEN_REGEXPS)
+                    for (state, tokens) in self.TRANSITIONS.items()}
+        while True:
+            start, token_end, state = self.stack[-1]
+            m = scanners[state].search(self.doc, self.pos)
+            if not m:
+                expected = self.TRANSITIONS[state]
+                raise ParsingError(self.doc, state, start, token_end, expected)
+            tok, mstart, self.pos = Token(m.lastgroup), m.start(), m.end()
+            if not self.step(state, start, tok, mstart):
+                break
+        return self.spans
+
+# Language definitions
+# ====================
+
+class LangDef:
+    def __init__(self, name: str, parser: Type[Parser],
+                 lit_open: str, lit_close: str,
+                 lit_open_re: str, lit_close_re: str):
+        self.name = name
+        self.parser = parser
+        self.header = ".. {}::".format(name)
+        self.directive = re.compile(r"(?P<indent>[ \t]*)([.][.] {}::.*)".format(name))
+        self.lit_open, self.lit_close, self.lit_empty = lit_open, lit_close, lit_open + lit_close
+        self.lit_open_re, self.lit_close_re = re.compile(lit_open_re), re.compile(lit_close_re)
+        self.rst_block = re.compile(r"""
+           (?P<directive>
+            ^(?P<indent>[ ]*)
+             [.][.][ ]coq::.*
+             (?P<options>
+              (?:\n
+                (?P=indent)[ ][ ][ ] [ \t]*[^ \t].*$)*))
+           (?P<body>
+              (?:\n
+                (?:[ \t]*\n)*
+                (?P=indent)[ ][ ][ ] .*$)*)
+        """, re.VERBOSE | re.MULTILINE)
+
+class CoqParser(Parser):
+    TRANSITIONS = {
+        State.CODE: (Token.COMMENT_OPEN,
+                     Token.STRING_DELIM,
+                     Token.EOF),
+        State.STRING: (Token.STRING_ESCAPE,
+                       Token.STRING_DELIM,),
+        State.COMMENT: (Token.COMMENT_OPEN,
+                        Token.COMMENT_CLOSE,
+                        Token.STRING_DELIM),
+        State.NESTED_COMMENT: (Token.COMMENT_OPEN,
+                               Token.COMMENT_CLOSE,
+                               Token.STRING_DELIM)
+    }
+
+    TOKEN_REGEXPS = {
+        Token.COMMENT_OPEN: r"[(][*]+(?![)])",
+        Token.COMMENT_CLOSE: r"[*]+[)]",
+        Token.STRING_ESCAPE: r'""',
+        Token.STRING_DELIM: r'"',
+        Token.EOF: r"(?!.)",
+    }
+
+    def step(self, state: State, start: int, tok: Token, mstart: int):
+        """Partition `doc` into runs of code and comments (both ``StringView``\\s).
+
+        Example:
+        >>> CoqParser("Code (* comment *) code").partition()
+        [Code(v='Code '), Comment(v='(* comment *)'), Code(v=' code')]
 
 
-    Tricky cases:
-    >>> coq_partition("")
-    [Code(v='')]
-    >>> coq_partition("(**)(***)")
-    [Code(v=''), Comment(v='(**)'), Code(v=''), Comment(v='(***)'), Code(v='')]
-    >>> coq_partition("(*c*)(*c*c*)")
-    [Code(v=''), Comment(v='(*c*)'), Code(v=''), Comment(v='(*c*c*)'), Code(v='')]
-    >>> coq_partition('C "(*" C "(*""*)" C')
-    [Code(v='C "(*" C "(*""*)" C')]
-    >>> coq_partition('C (** "*)" *)')
-    [Code(v='C '), Comment(v='(** "*)" *)'), Code(v='')]
-    """
-    pos = 0
-    spans = []
-    stack: List[Tuple[int, int, State]] = [(0, 0, State.CODE)]
-    spans = []
-    while True:
-        start, token_end, state = stack[-1]
-        m = SCANNERS[state].search(doc, pos)
-        if not m:
-            raise ParsingError(doc, state, start, token_end)
-        tok = Token(m.lastgroup)
-        mstart, mend, pos = m.start(), m.end(), m.end()
+        Tricky cases:
+        >>> CoqParser("").partition()
+        [Code(v='')]
+        >>> CoqParser("(**)(***)").partition()
+        [Code(v=''), Comment(v='(**)'), Code(v=''), Comment(v='(***)'), Code(v='')]
+        >>> CoqParser("(*c*)(*c*c*)").partition()
+        [Code(v=''), Comment(v='(*c*)'), Code(v=''), Comment(v='(*c*c*)'), Code(v='')]
+        >>> CoqParser('C "(*" C "(*""*)" C').partition()
+        [Code(v='C "(*" C "(*""*)" C')]
+        >>> CoqParser('C (** "*)" *)').partition()
+        [Code(v='C '), Comment(v='(** "*)" *)'), Code(v='')]
+        """
+        doc, pos, stack, spans = self.doc, self.pos, self.stack, self.spans
         if state is State.CODE:
             if tok is Token.COMMENT_OPEN:
-                stack.pop()
-                stack.append((mstart, mend, State.COMMENT))
+                stack.pop() # pop
+                stack.append((mstart, pos, State.COMMENT))
                 spans.append(Code(StringView(doc, start, mstart)))
             elif tok is Token.STRING_DELIM:
-                stack.append((mstart, mend, State.STRING))
+                stack.append((mstart, pos, State.STRING))
             elif tok is Token.EOF:
                 stack.pop()
                 spans.append(Code(StringView(doc, start, pos)))
-                break
+                return False
             else:
                 assert False
         elif state is State.STRING:
@@ -305,40 +349,37 @@ def coq_partition(doc):
                 assert False
         elif state is State.COMMENT:
             if tok is Token.COMMENT_OPEN:
-                stack.append((mstart, mend, State.NESTED_COMMENT))
+                stack.append((mstart, pos, State.NESTED_COMMENT))
             elif tok is Token.COMMENT_CLOSE:
                 stack.pop()
                 stack.append((pos, pos, State.CODE))
                 spans.append(Comment(StringView(doc, start, pos)))
             elif tok is Token.STRING_DELIM:
-                stack.append((mstart, mend, State.STRING))
+                stack.append((mstart, pos, State.STRING))
             else:
                 assert False
         elif state is State.NESTED_COMMENT:
             if tok is Token.COMMENT_OPEN:
-                stack.append((mstart, mend, State.NESTED_COMMENT))
+                stack.append((mstart, pos, State.NESTED_COMMENT))
             elif tok is Token.COMMENT_CLOSE:
                 stack.pop()
             elif tok is Token.STRING_DELIM:
-                stack.append((mstart, mend, State.STRING))
+                stack.append((mstart, pos, State.STRING))
             else:
                 assert False
         else:
             assert False
-
-    return spans
+        return True
 
 # Conversion
 # ----------
 
-DEFAULT_HEADER = ".. coq::"
 INDENT = re.compile(r"(?P<indent>[ ]*)")
-COQ_DIRECTIVE = re.compile(r"(?P<indent>[ \t]*)([.][.] coq::.*)")
 
 Lit = namedtuple("Lit", "lines directive_lines indent")
 CodeBlock = namedtuple("CodeBlock", "lines indent")
 
-def _last_coq_directive(lines):
+def _last_directive(lang: LangDef, lines):
     r"""Scan backwards across `lines` to find the beginning of the Coq directive.
 
     >>> _, ls = number_lines(StringView('''\
@@ -346,7 +387,7 @@ def _last_coq_directive(lines):
     ... .. coq:: unfold
     ...    :name: nm
     ... '''), 6)
-    >>> _last_coq_directive(ls) # doctest: +ELLIPSIS
+    >>> _last_directive(COQ, ls) # doctest: +ELLIPSIS
     (...[Line(num=6, parts=['Text.'])]...,
         <re.Match ...'.. coq:: unfold'>,
      ...[Line(num=7, parts=['.. coq:: unfold']),
@@ -358,46 +399,46 @@ def _last_coq_directive(lines):
     ...    .. coq:: unfold
     ...    Text.
     ... '''), 6)
-    >>> _last_coq_directive(ls) # doctest: +ELLIPSIS
+    >>> _last_directive(COQ, ls) # doctest: +ELLIPSIS
     (...[Line(num=6, parts=['Text.']),
          Line(num=7, parts=['   .. coq:: unfold']),
          Line(num=8, parts=['   Text.']),
          Line(num=9, parts=[''])]...)
 
     >>> _, ls = number_lines(StringView('Text.\n   Text.'), 6)
-    >>> _last_coq_directive(ls) # doctest: +ELLIPSIS
+    >>> _last_directive(COQ, ls) # doctest: +ELLIPSIS
     (...[Line(num=6, parts=['Text.']),
          Line(num=7, parts=['   Text.'])]...)
 
     """
     directive = deque()
-    expected_coq_indent = float("+inf")
+    expected_indent = float("+inf")
     while lines:
         line = lines.pop()
         directive.appendleft(line)
         indent = measure_indentation(line)
-        m = line.match(COQ_DIRECTIVE)
+        m = line.match(lang.directive)
         if m:
-            if indent <= expected_coq_indent:
+            if indent <= expected_indent:
                 return lines, m, directive
             break # pragma: no cover # coverage.py bug
         if not line.isspace():
-            expected_coq_indent = min(expected_coq_indent, indent - 3)
-            if expected_coq_indent < 0:
+            expected_indent = min(expected_indent, indent - 3)
+            if expected_indent < 0:
                 break # No need to keep looping
     lines.extend(directive)
     return lines, None, None
 
-def lit(lines, indent):
+def lit(lang: LangDef, lines, indent):
     strip_deque(lines)
-    lines, m, directive_lines = _last_coq_directive(lines)
+    lines, m, directive_lines = _last_directive(lang, lines)
     if directive_lines:
         indent = m.group("indent")
         strip_deque(lines)
     else:
         if lines:
             indent = lines[-1].match(INDENT).group("indent")
-        directive_lines = [indent + DEFAULT_HEADER]
+        directive_lines = [indent + lang.header]
     return Lit(lines, directive_lines=directive_lines, indent=indent)
 
 def number_lines(span, start):
@@ -405,12 +446,13 @@ def number_lines(span, start):
     d = deque(Line(num, [s]) for (num, s) in enumerate(lines, start=start))
     return start + len(lines) - 1, d
 
-def gen_rst(spans, opener, closer):
-    linum, indent, prefix = 0, "", [DEFAULT_HEADER]
+def gen_rst(lang: LangDef, spans):
+    linum, indent, prefix = 0, "", [lang.header]
     for span in spans:
         if isinstance(span, Comment):
-            linum, lines = number_lines(span.v.trim(opener, closer), linum)
-            litspan = lit(lines, indent)
+            trimmed = span.v.trim(lang.lit_open_re, lang.lit_close_re)
+            linum, lines = number_lines(trimmed, linum)
+            litspan = lit(lang, lines, indent)
             indent, prefix = litspan.indent, litspan.directive_lines
             if litspan.lines:
                 yield from (replace(l, UNQUOTE_PAIRS) for l in litspan.lines)
@@ -426,7 +468,7 @@ def gen_rst(spans, opener, closer):
                 yield from lines
                 yield ""
 
-def partition_literate(code, spans, opener):
+def _partition_literate(code, spans, opener):
     """Fold ``Comment`` spans into ``Code`` ones, except those matching ``opener``.
     ``spans`` should be the result of partitioning ``code``."""
     code = StringView(code, 0, len(code))
@@ -442,20 +484,17 @@ def partition_literate(code, spans, opener):
     if code_acc:
         yield Code(code_acc)
 
-LIT_OPEN = re.compile(r"[(][*][|][ \t]*")
-LIT_CLOSE = re.compile(r"[ \t]*[|]?[*][)]\Z")
+def partition_literate(lang: LangDef, code, opener=None):
+    spans = lang.parser(code).partition()
+    return _partition_literate(code, spans, opener or lang.lit_open_re)
 
-def coq_partition_literate(coq, opener=LIT_OPEN):
-    spans = coq_partition(coq)
-    return partition_literate(coq, spans, opener)
+def code2rst_lines(lang: LangDef, code):
+    return gen_rst(lang, partition_literate(lang, code))
 
-def coq2rst_lines(coq):
-    return gen_rst(coq_partition_literate(coq, LIT_OPEN), LIT_OPEN, LIT_CLOSE)
+def code2rst(lang: LangDef, code):
+    """Translate a fragment of `code` in `lang` to reST.
 
-def coq2rst(coq):
-    """Translate a fragment of Coq code to reST.
-
-    >>> print(coq2rst('''
+    >>> print(code2rst(COQ, '''
     ... (*|
     ... Example:
     ... |*)
@@ -487,16 +526,16 @@ def coq2rst(coq):
        exact I. Qed.
     <BLANKLINE>
     """
-    return join_lines(coq2rst_lines(coq))
+    return join_lines(code2rst_lines(lang, code))
 
 def mark_rst_lines(rst_lines, point, marker):
     return join_lines(mark_point(rst_lines, point, marker))
 
-def coq2rst_marked(coq, point, marker):
-    return mark_rst_lines(coq2rst_lines(coq), point, marker)
+def code2rst_marked(lang: LangDef, code, point, marker):
+    return mark_rst_lines(code2rst_lines(lang, code), point, marker)
 
-# reStructuredText → Coq
-# ======================
+# reStructuredText → Code
+# =======================
 
 # reST parsing
 # ------------
@@ -507,23 +546,10 @@ def coq2rst_marked(coq, point, marker):
 # malformed text (maybe a configuration issue?).  Hence the approach below, but
 # note that it detects *all* ‘.. coq::’ blocks, including quoted ones.
 
-COQ_BLOCK = re.compile(r"""
-(?P<directive>
- ^(?P<indent>[ ]*)
-  [.][.][ ]coq::.*
-  (?P<options>
-   (?:\n
-     (?P=indent)[ ][ ][ ] [ \t]*[^ \t].*$)*))
-(?P<body>
-   (?:\n
-     (?:[ \t]*\n)*
-     (?P=indent)[ ][ ][ ] .*$)*)
-""", re.VERBOSE | re.MULTILINE)
+def rst_partition(lang: LangDef, s):
+    """Identify ``.. lang::`` blocks in reST sources.
 
-def rst_partition(s):
-    """Identify ``.. coq::`` blocks in reST sources.
-
-    >>> print(list(rst_partition('''\\
+    >>> print(list(rst_partition(COQ, '''\\
     ... .. coq::
     ...
     ...      Goal True.
@@ -540,7 +566,7 @@ def rst_partition(s):
     <BLANKLINE>
     """
     beg, linum = 0, 0
-    for m in COQ_BLOCK.finditer(s):
+    for m in lang.rst_block.finditer(s):
         indent = len(m.group("indent"))
         rst = StringView(s, beg, m.start())
         directive = StringView(s, *m.span('directive'))
@@ -568,35 +594,35 @@ def measure_indentation(line):
     m = line.match(INDENTATION_RE)
     return m.end() - m.start()
 
-def redundant_directive(directive_lines, directive_indent, last_indent):
+def redundant_directive(lang: LangDef, directive_lines, directive_indent, last_indent):
     return (
         directive_lines and
         len(directive_lines) == 1 and
-        str(directive_lines[0]).strip() == DEFAULT_HEADER
+        str(directive_lines[0]).strip() == lang.header
         and directive_indent == last_indent
     )
 
-def trim_rst_block(block, last_indent, keep_empty):
+def trim_rst_block(lang: LangDef, block, last_indent, keep_empty):
     strip_deque(block.lines)
     last_indent = measure_indentation(block.lines[-1]) if block.lines else last_indent
 
     directive_lines = block.directive_lines
     keep_empty = keep_empty and directive_lines
-    if redundant_directive(directive_lines, block.indent, last_indent):
+    if redundant_directive(lang, directive_lines, block.indent, last_indent):
         directive_lines = None
 
     if not block.lines and not directive_lines:
         if keep_empty:
-            yield "(*||*)"
+            yield lang.lit_empty
             yield ""
     else:
-        yield "(*|"
+        yield lang.lit_open
         yield from (replace(l, QUOTE_PAIRS) for l in block.lines)
         if directive_lines:
             if block.lines:
                 yield ""
             yield from directive_lines
-        yield "|*)"
+        yield lang.lit_close
         yield ""
 
 def trim_coq_block(block):
@@ -606,22 +632,22 @@ def trim_coq_block(block):
     if block.lines:
         yield ""
 
-def gen_coq(blocks):
+def gen_code(lang: LangDef, blocks):
     last_indent = 0
     for idx, block in enumerate(blocks):
         if isinstance(block, Lit):
-            yield from trim_rst_block(block, last_indent, idx > 0)
+            yield from trim_rst_block(lang, block, last_indent, idx > 0)
         elif isinstance(block, CodeBlock):
             yield from trim_coq_block(block)
         last_indent = block.indent
 
-def rst2coq_lines(rst):
-    return gen_coq(rst_partition(rst))
+def rst2code_lines(lang: LangDef, rst):
+    return gen_code(lang, rst_partition(lang, rst))
 
-def rst2coq(rst):
-    """Translate a fragment of reST code to Coq.
+def rst2code(lang: LangDef, rst):
+    """Translate a fragment of a reST document `rst` to code in `lang`.
 
-    >>> print(rst2coq('''
+    >>> print(rst2code(COQ, '''
     ... Example:
     ...
     ... .. coq::
@@ -653,40 +679,78 @@ def rst2coq(rst):
     exact I. Qed.
     <BLANKLINE>
     """
-    return join_lines(rst2coq_lines(rst))
+    return join_lines(rst2code_lines(lang, rst))
 
-def rst2coq_marked(rst, point, marker):
-    return join_lines(mark_point(rst2coq_lines(rst), point, marker))
+def rst2code_marked(lang: LangDef, rst, point, marker):
+    return join_lines(mark_point(rst2code_lines(lang, rst), point, marker))
+
+# Language definitions
+# ====================
+
+COQ = LangDef(
+    "coq",
+    CoqParser,
+    lit_open="(*|", lit_close="|*)",
+    lit_open_re=r"[(][*][|][ \t]*", lit_close_re=r"[ \t]*[|]?[*][)]\Z"
+)
+
+def coq2rst(coq):
+    """Convert from Coq to reStructuredText."""
+    return code2rst(COQ, coq)
+
+def rst2coq(rst):
+    """Convert from reStructuredText to Coq."""
+    return rst2code(COQ, rst)
+
+Lean3Parser = None
+LEAN3 = LangDef(
+    "lean3",
+    Lean3Parser,
+    lit_open=r"/--*", lit_close=r"--/",
+    lit_open_re=r"[/][-][-][ \t]*", lit_close_re=r"[ \t]*[-]?[-][/]\Z"
+)
+
+
+def lean32rst(lean):
+    """Convert from Lean3 to reStructuredText."""
+    return code2rst(LEAN3, lean)
+
+def rst2lean3(rst):
+    """Convert from reStructuredText to Lean3."""
+    return rst2code(LEAN3, rst)
 
 # CLI
 # ===
+
+CONVERTERS = (coq2rst, rst2coq, lean32rst, rst2lean3)
 
 def parse_arguments():
     import argparse
     from os import path
 
-    DESCRIPTION = "Convert between reStructuredText and literate Coq."
+    DESCRIPTION = "Convert between reStructuredText and literate code."
     parser = argparse.ArgumentParser(description=DESCRIPTION)
 
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--coq2rst", dest="fn",
-                       action="store_const", const=coq2rst,
-                       help="Convert from Coq to reStructuredText.")
-    group.add_argument("--rst2coq", dest="fn",
-                       action="store_const", const=rst2coq,
-                       help="Convert from reStructuredText to Coq.")
+    for fn in CONVERTERS:
+        group.add_argument("--{}".format(fn.__name__), dest="fn",
+                           action="store_const", const=fn,
+                           help=fn.__doc__)
     parser.add_argument("input", nargs="?", default="-")
 
     args = parser.parse_args()
     if args.input == "-":
         if not args.fn:
-            parser.error("Reading from standard input requires one of --coq2rst, --rst2coq.")
+            available = group._get_optional_kwargs()
+            parser.error("Reading from standard input requires one of {}.".format(available))
     else:
         _, ext = path.splitext(args.input)
-        args.fn = {".v": coq2rst, ".rst": rst2coq}.get(ext)
+        ext_fn = {".v": coq2rst, ".lean3": lean32rst, ".rst": rst2coq}
+        args.fn = ext_fn.get(ext)
         if not args.fn:
+            expected = ", ".join(repr(k) for k in ext_fn)
             parser.error("Unexpected file extension: "
-                         "expected '.rst' or '.v', got '{}'.".format(ext))
+                         "expected {}, got '{}'.".format(expected, ext))
 
     return args
 
