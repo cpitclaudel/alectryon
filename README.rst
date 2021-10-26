@@ -2,9 +2,9 @@
  Alectryon
 ===========
 
-A library to process Coq snippets embedded in documents, showing goals and messages for each Coq sentence.  Also a literate programming toolkit for Coq.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix interactive proofs and prose.
+A library to process Coq and Lean snippets embedded in text documents, showing goals and messages for each input sentence.  Also a literate programming toolkit.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix interactive proofs and prose.
 
-Alectryon has `preliminary support for Lean 3 <lean3_>`__, but some work remains to be done.
+Alectryon originally supported Coq only.  Support for Lean is preliminary and restricted to `Lean 3 <lean3_>`__.
 
 .. image:: etc/screenshot.svg
    :width: 100%
