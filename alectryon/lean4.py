@@ -1,10 +1,12 @@
 # TODO: Add license
 
-from .core import CLIDriver, EncodedDocument, Positioned, Position, Sentence, Text
+from .core import CLIDriver, Document
 
 class Lean4(CLIDriver):
     BIN = "leanInk"
     NAME = "Lean4"
+
+    VERSION_ARGS = ("lV",)
 
     ID = "leanInk"
     LANGUAGE = "lean4"
