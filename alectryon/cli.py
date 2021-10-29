@@ -379,6 +379,7 @@ def write_file(ext, strip):
 EXTENSIONS_BY_LANGUAGE = {
     "coq": (".v",),
     "lean3": (".lean", ".lean3"),
+    "lean4": (".lean4"),
 }
 
 assert EXTENSIONS_BY_LANGUAGE.keys() == core.ALL_LANGUAGES
@@ -641,7 +642,8 @@ def post_process_arguments(parser, args):
         "sertop": args.sertop_args,
         "sertop_noexec": args.sertop_args,
         "coqc_time": args.coqc_args,
-        "lean3_repl": ()
+        "lean3_repl": (),
+        "leanInk": (),
     }
     assert set(core.ALL_DRIVERS) == args.driver_args_by_name.keys()
 

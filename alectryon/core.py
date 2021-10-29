@@ -558,7 +558,10 @@ DRIVERS_BY_LANGUAGE = {
     },
     "lean3": {
         "lean3_repl": (".lean3", "Lean3")
-    }
+    },
+    "lean4": {
+        "leanInk": (".lean4", "Lean4")
+    },
 }
 
 DEFAULT_DRIVERS = {lang: next(iter(drivers)) for lang, drivers in DRIVERS_BY_LANGUAGE.items()}
