@@ -135,7 +135,8 @@ ONE_IO_ANNOT_RE = re.compile(
 _IO_ANNOTS_IN_COMMENT = r"\s+(?:{}\s+)+".format(ONE_IO_ANNOT)
 _IO_COMMENT_RE = {
     "coq": r"[ \t]*[(][*]{}[*][)]",
-    "lean3": r"[ \t]*[/][-]{}[-][/]"
+    "lean3": r"[ \t]*[/][-]{}[-][/]",
+    "lean4": r"[ \t]*[/][-]{}[-][/]" # TODO: Adjust this
 }
 IO_COMMENT_RE = {
     lang: re.compile(
@@ -792,7 +793,10 @@ DEFAULT_TRANSFORMS = {
         # attach_comments_to_code("lean3"),
         read_io_comments("lean3"),
         process_io_annots
-    ]
+    ],
+    "lean4": [
+        # TODO: Add functionality
+    ],
     # Not included:
     #   group_whitespace_with_code (HTML-specific)
     #   commit_io_annotations (breaks mref resolution by removing elements)

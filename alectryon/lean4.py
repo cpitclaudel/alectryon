@@ -10,3 +10,7 @@ class Lean4(CLIDriver):
     LANGUAGE = "lean4"
 
     CLI_ARGS = ("analyze")
+
+    def annotate(self, chunks):
+        print("Hello from Lean4 driver")
+        return [] # TODO: Actually return something usefull
