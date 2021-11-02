@@ -14,7 +14,7 @@ class Lean4(CLIDriver):
     ID = "leanInk"
     LANGUAGE = "lean4"
 
-    CLI_ARGS = ("analyze")
+    CLI_ARGS = ("analyze",)
 
     TMP_PREFIX = "leanInk_"
 
