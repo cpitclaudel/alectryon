@@ -21,7 +21,7 @@
 import tempfile
 import os
 from pathlib import Path
-from .core import CLIDriver, EncodedDocument, Positioned, Sentence
+from .core import CLIDriver, EncodedDocument, Sentence, Text
 
 class Lean4(CLIDriver):
     BIN = "leanInk"
@@ -45,6 +45,6 @@ class Lean4(CLIDriver):
             print(result)
 
     def annotate(self, chunks):
-        print("Hello from Lean4 driver")
-        self.run_leanInk(EncodedDocument(chunks, "\n", encoding="utf-8")) # Actually use the info from LeanInk to annotate chunks
+        document = EncodedDocument(chunks, "\n", encoding="utf-8")
+        self.run_leanInk(document) # Actually use the info from LeanInk to annotate chunks
         return [] # TODO: Actually return something usefull
