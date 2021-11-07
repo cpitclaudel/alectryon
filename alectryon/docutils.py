@@ -1245,6 +1245,10 @@ class RSTLean3Parser(RSTLiterateParser):
     LANG = "lean3"
     supported = ("lean3",)
 
+class RSTLean4Parser(RSTLiterateParser):
+    LANG = "lean4"
+    supported = ("lean4",)
+
 # Writer
 # ------
 
@@ -1442,6 +1446,7 @@ Pipeline = namedtuple("Pipeline", "reader parser translator writer")
 PARSERS = {
     "coq+rst": (__name__, "RSTCoqParser"),
     "lean3+rst": (__name__, "RSTLean3Parser"),
+    "lean4+rst": (__name__, "RSTLean4Parser"),
     "rst": ("docutils.parsers.rst", "Parser"),
     "md": ("alectryon.myst", "Parser"),
 }
