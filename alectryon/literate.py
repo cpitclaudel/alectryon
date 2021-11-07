@@ -862,15 +862,32 @@ def rst2lean3(rst):
     """Convert from reStructuredText to Lean3."""
     return rst2code(LEAN3, rst)
 
+LEAN4 = LangDef(
+    "lean4",
+    LeanParser, # TODO: Use new Lean4Parser if necessary
+    lit_open=r"/-|", lit_close=r"|-/",
+    lit_open_re=r"[/][-][|][ \t]*", lit_close_re=r"[ \t]*[|]?[-][/]\Z",
+    quote_pairs=[("/-", r"/\ -"), ("-/", r"-\ /")]
+)
+
+def lean42rst(lean):
+    """Convert from Lean4 to reStructuredText."""
+    return code2rst(LEAN4, lean)
+
+def rst2lean4(rst):
+    """Convert from reStructuredText to Lean4."""
+    return rst2code(LEAN4, rst)
+
 LANGUAGES = {
     "coq": COQ,
-    "lean3": LEAN3
+    "lean3": LEAN3,
+    "lean4": LEAN4
 }
 
 # CLI
 # ===
 
-CONVERTERS = (coq2rst, rst2coq, lean32rst, rst2lean3)
+CONVERTERS = (coq2rst, rst2coq, lean32rst, rst2lean3, lean42rst, rst2lean4)
 
 def parse_arguments():
     import argparse
