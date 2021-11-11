@@ -48,7 +48,11 @@ def resolve_token(kind):
     return tokentype
 
 CUSTOM_LEXERS = {'CoqLexer': CoqLexer}
-CUSTOM_LEXER_ALIASES: Dict[str, str] = {"lean3": "lean"}
+CUSTOM_LEXER_ALIASES: Dict[str, str] = {
+    "lean3": "lean", 
+    "lean4": "lean" # TODO: Use correct lexer for Lean 4
+}
+
 CUSTOM_LEXERS_BY_ALIAS = {alias: Lx for Lx in CUSTOM_LEXERS.values() for alias in Lx.aliases}
 
 @lru_cache(maxsize=None)
