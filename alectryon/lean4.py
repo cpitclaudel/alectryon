@@ -34,10 +34,8 @@ class Lean4(CLIDriver):
             print(result)
             outputFile = inputFile.with_suffix(self.LEAN_FILE_EXT + self.LEAN_INK_FILE_EXT)
             content = outputFile.read_text(encoding="utf-8")
-            print(content)
             jsonResult = json.loads(content)
             tupleResult = PlainSerializer.decode(jsonResult)
-            print(tupleResult)
             return tupleResult
 
     def run_leanInk_filePath(self, fpath):
