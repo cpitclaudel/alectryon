@@ -638,12 +638,16 @@ def post_process_arguments(parser, args):
     args.sertop_args.extend(coq_args)
     args.coqc_args.extend(coq_args)
 
+    leanInk_args = []
+    for (filePath,) in args.leanInk_args_lake:
+        leanInk_args.extend(("--lake", filePath))
+
     args.driver_args_by_name = {
         "sertop": args.sertop_args,
         "sertop_noexec": args.sertop_args,
         "coqc_time": args.coqc_args,
         "lean3_repl": (),
-        "leanInk": (),
+        "leanInk": leanInk_args,
     }
     assert set(core.ALL_DRIVERS) == args.driver_args_by_name.keys()
 
@@ -820,6 +824,13 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
                       metavar=("DIR", "COQDIR"), nargs=2, action="append",
                       default=[], help=R_HELP)
 
+    leanInkp = parser.add_argument_group("LeanInk configuration")
+
+    LAKE_PATH_HELP = "Path to 'lakefile.lean' if necessary."
+    leanInkp.add_argument("--lake", dest="leanInk_args_lake",
+                         metavar="LAKE_FILE", nargs=1, action="append",
+                         default=None, help=LAKE_PATH_HELP)
+
     warn_out = parser.add_argument_group("Warnings configuration")
 
     LL_THRESHOLD_HELP = "Warn on lines longer than this threshold (docutils)."
@@ -838,8 +849,7 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
 
     TRACEBACK_HELP = "Print error traces."
     debug.add_argument("--traceback", action="store_true",
-                       default=False, help=TRACEBACK_HELP)
-
+                       default=False, help=TRACEBACK_HELP)    
     return parser
 
 def parse_arguments():
