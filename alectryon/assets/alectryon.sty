@@ -38,22 +38,30 @@
      {\normalfont%
       \setlength{\spaceskip}{\alectryon@@spaceskip}%
       \setlength{\xspaceskip}{\alectryon@@xspaceskip}}}
+% \alectryon@spacestretch@set{SP}{XSP} sets spaceskip and xspaceskip
+\newcommand*{\alectryon@spacestretch@set}[2]
+  {\alectryon@savespaceskips%
+   \setlength{\spaceskip}{#1}%
+   \setlength{\xspaceskip}{#2}}
 % \alectryon@spacestretch@off ensures that spaces can't stretch
 \newcommand*{\alectryon@spacestretch@off}
-  {\alectryon@savespaceskips%
-   \setlength{\spaceskip}{\fontdimen2\font}%
-   \setlength{\xspaceskip}{0pt}}
+  {\alectryon@spacestretch@set{\fontdimen2\font}{0pt}}
 % \alectryon@spacestretch@on ensures that spaces can stretch
 % https://tex.stackexchange.com/a/799/1551
+% https://tex.stackexchange.com/q/624295/1551
 \newcommand*{\alectryon@spacestretch@on}
-  {\fontdimen2\font=0.45em% base
-   \fontdimen3\font=0.225em% plus
-   \fontdimen4\font=0.15em% minus
-   \fontdimen7\font=0.08em% extra space
-   \hyphenchar\font=`\-%
-   % \fontdimen3\font=.5\fontdimen2\font% plus
-   % \fontdimen4\font=.3\fontdimen2\font% minus
-   }
+  {\alectryon@spacestretch@set
+    {0.45em plus 0.225em minus 0.15em}
+    {0.53em plus 0.225em minus 0.15em}}
+% \alectryon@hyphenchar@on sets hyphenchar to -
+\newcommand*{\alectryon@hyphenchar@on}
+  {\edef\alectryon@hyphenchar@restore
+     {\hyphenchar\the\font=\the\hyphenchar\font\relax}%
+   \hyphenchar\font=`\-}
+% \alectryon@hyphenchar@off restores hyphenchar
+\newcommand*{\alectryon@hyphenchar@off}
+  {\alectryon@hyphenchar@restore}
+  % {\hyphenchar\font=-1}
 % \alectryon@arraystretch resets \arraystretch
 \newcommand*{\alectryon@arraystretch}{\renewcommand{\arraystretch}{1.0}}
 % \alectryon@fontsetup sets fonts properties
@@ -126,7 +134,10 @@
 \newcommand{\alectryon@prelude@inline}
   {\alectryon@prelude%
    \alectryon@spacestretch@on%
+   \alectryon@hyphenchar@on%
    \def~{\alectryon@varspace}}
+\newcommand{\alectryon@coda@inline}
+  {\alectryon@hyphenchar@off}
 
 \newcommand{\alectryon@par}{\leavevmode\par\ignorespaces}
 \newcommand{\alectryon@newline}{\-\\\ignorespaces}
@@ -177,7 +188,7 @@
   {\begin{trivlist}\alectryon@prelude@io}
   {\end{trivlist}}
   {}
-\alectryon@newenvironment{inline}{\alectryon@prelude@inline}{}
+\alectryon@newenvironment{inline}{\alectryon@prelude@inline}{\alectryon@coda@inline}
   {}
 \alectryon@newenvironment{txt}{}{}
   {}
