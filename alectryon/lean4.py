@@ -42,22 +42,7 @@ class Lean4(CLIDriver):
     TMP_PREFIX = "leanInk_"
     LEAN_FILE_EXT = ".lean"
     LEAN_INK_FILE_EXT = ".leanInk"
-
-    LAKE_FILE_PATH = None
     LAKE_TMP_FILE_PATH = "lakefile.lean"
-    LEAN_TOOLCHAIN_PATH = "lean-toolchain"
-
-    def create_toolchain_file(self, working_directory):
-        lean_toolchain_file = Path(working_directory) / os.path.basename(self.LEAN_TOOLCHAIN_PATH)
-        version = "leanprover/lean4:nightly-2021-12-03" # TODO: get this from leanInk
-        lean_toolchain_file.write_bytes(version.encode("utf-8")) 
-
-    def copy_lake_file(self, working_directory):
-        if self.LAKE_FILE_PATH == None: return
-        lake_out_file = Path(working_directory) / os.path.basename(self.LAKE_TMP_FILE_PATH)
-        lake_in_file = Path(self.LAKE_FILE_PATH)
-        shutil.copyfile(lake_in_file, lake_out_file)
-        self.user_args += ["--lake", str(self.LAKE_TMP_FILE_PATH)]
 
     def run_leanInk_CLI(self, working_directory, more_args=()):
         cmd = [self.resolve_driver(self.binpath),
@@ -74,12 +59,14 @@ class Lean4(CLIDriver):
         r"""
         Run LeanInk with encoded_document file.
         """
-        with tempfile.TemporaryDirectory(prefix=self.TMP_PREFIX) as working_directory:
-            inputFile = Path(working_directory) / os.path.basename(self.fpath)
+        with tempfile.TemporaryDirectory(prefix=self.TMP_PREFIX) as temp_directory:
+            inputFile = Path(temp_directory) / os.path.basename(self.fpath)
             inputFile.write_bytes(encoded_document.contents)
-            self.copy_lake_file(working_directory)
-            self.create_toolchain_file(working_directory)
-            result = self.run_leanInk_CLI(working_directory, more_args=[str(os.path.basename(inputFile))])
+            working_directory = temp_directory
+            if self.lake_file_path != None:
+                working_directory = os.path.dirname(os.path.realpath(self.lake_file_path))
+                self.user_args += ["--lake", self.LAKE_TMP_FILE_PATH]
+            result = self.run_leanInk_CLI(working_directory, more_args=[str(os.path.abspath(inputFile))])
             print(result)
             outputFile = inputFile.with_suffix(self.LEAN_FILE_EXT + self.LEAN_INK_FILE_EXT)
             content = outputFile.read_text(encoding="utf-8")
@@ -94,7 +81,7 @@ class Lean4(CLIDriver):
         new_user_args = []
         for (index, arg) in enumerate(self.user_args, start=0):
             if arg == "--lake":
-                self.LAKE_FILE_PATH = self.user_args[index + 1]
+                self.lake_file_path = self.user_args[index + 1]
                 new_user_args = self.user_args[index + 2:]
                 break
             else:
