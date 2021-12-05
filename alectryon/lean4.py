@@ -2,7 +2,6 @@
 
 import tempfile
 import os
-import shutil
 import subprocess
 from pathlib import Path
 from alectryon import json
@@ -24,18 +23,8 @@ class Lean4(CLIDriver):
     TMP_PREFIX = "leanInk_"
     LEAN_FILE_EXT = ".lean"
     LEAN_INK_FILE_EXT = ".leanInk"
+    LAKE_ENV_KEY = "--lake"
     LAKE_TMP_FILE_PATH = "lakefile.lean"
-
-    def run_leanInk_CLI(self, working_directory, more_args=()):
-        cmd = [self.resolve_driver(self.binpath),
-               *self.CLI_ARGS, *self.user_args, *more_args]
-        self._debug_start(cmd)
-        p = subprocess.run(cmd, capture_output=True, cwd=working_directory, check=False, encoding=self.CLI_ENCODING)
-        if p.returncode != 0:
-            MSG = "Driver {} ({}) exited with code {}:\n{}"
-            raise ValueError(MSG.format(self.NAME, self.binpath, p.returncode,
-                                        indent(self._proc_out(p), "   ")))
-        return p.stdout
 
     def run_leanInk_document(self, encoded_document):
         r"""
@@ -47,9 +36,8 @@ class Lean4(CLIDriver):
             working_directory = temp_directory
             if self.lake_file_path != None:
                 working_directory = os.path.dirname(os.path.realpath(self.lake_file_path))
-                self.user_args += ["--lake", self.LAKE_TMP_FILE_PATH]
-            result = self.run_leanInk_CLI(working_directory, more_args=[str(os.path.abspath(inputFile))])
-            print(result)
+                self.user_args += [self.LAKE_ENV_KEY, self.LAKE_TMP_FILE_PATH]
+            self.run_cli(working_directory=working_directory, capturesOutput=False, more_args=[str(os.path.abspath(inputFile))])
             outputFile = inputFile.with_suffix(self.LEAN_FILE_EXT + self.LEAN_INK_FILE_EXT)
             content = outputFile.read_text(encoding="utf-8")
             jsonResult = json.loads(content)
