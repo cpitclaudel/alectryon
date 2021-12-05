@@ -641,6 +641,8 @@ def post_process_arguments(parser, args):
     leanInk_args = []
     for (filePath,) in args.leanInk_args_lake:
         leanInk_args.extend(("--lake", filePath))
+    if args.debug:
+        leanInk_args.extend(("--verbose",))
 
     args.driver_args_by_name = {
         "sertop": args.sertop_args,
