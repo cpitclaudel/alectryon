@@ -119,7 +119,7 @@ class serapi(unittest.TestCase):
         api = SerAPI()
         with redirected_std() as (_, err):
             api._warn_orphaned(View(b"chunk"), PrettyPrinted(0, "pp"))
-            self.assertEqual(api.observer.exit_code, 2)
+            self.assertEqual(api.observer.exit_code, 1)
             self.assertRegex(err.getvalue(), "Orphaned message")
 
 class pygments(unittest.TestCase):
