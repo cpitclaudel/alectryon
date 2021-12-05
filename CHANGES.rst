@@ -2,6 +2,14 @@
  Major changes
 ===============
 
+Unreleased
+==========
+
+Bug fixes
+---------
+
+- Fix an issue with narrow spaces in Alectryon blocks in LaTeX export (revert changes to fontdimen parameters in inline ``:mquote:`` environments). [ba9fd6c5]
+
 1.5.0
 =====
 
