@@ -507,6 +507,7 @@ class CoqLexer(RegexLexer):
         ],
         'type annot': [
             (':', Operator, '#pop'),
+            (",", Text), # let (a, b) := …
             (name_re, Name.Variable),
             include('_basic'),
             default("#pop"),
