@@ -291,7 +291,7 @@ class SerAPI(REPLDriver):
         err = "Orphaned message for sid {}:".format(message.sid)
         err += "\n" + indent(message.pp, " >  ")
         err_range = SerAPI._range_of_span((0, len(chunk)), chunk)
-        self.observer.notify(chunk.s, err, err_range, level=2)
+        self.observer.notify(chunk.s, err, err_range, level=1)
 
     def run(self, chunk):
         """Send a `chunk` to sertop.
