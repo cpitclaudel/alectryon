@@ -241,9 +241,9 @@ class LatexGenerator(Backend):
             # break before output blocks; otherwise we'd have to handle
             # sentences that end the line differently from sentences in the
             # middle of a line.
+            self.gen_mrefs(fr)
             if not fr.outputs:
                 self.gen_whitespace(fr.suffixes)
-            self.gen_mrefs(fr)
 
     def gen_message(self, message):
         with environments.message(verbatim=True):
