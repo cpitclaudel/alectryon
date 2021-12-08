@@ -639,8 +639,8 @@ def post_process_arguments(parser, args):
     args.coqc_args.extend(coq_args)
 
     leanInk_args = []
-    for (filePath,) in args.leanInk_args_lake:
-        leanInk_args.extend(("--lake", filePath))
+    if args.leanInk_args_lake != None:
+        leanInk_args.extend(("--lake", args.leanInk_args_lake))
     if args.debug:
         leanInk_args.extend(("--verbose",))
 
