@@ -49,7 +49,7 @@ class Lean4(CLIDriver):
         Run LeanInk with encoded_document file.
         """
         with tempfile.TemporaryDirectory(prefix=self.TMP_PREFIX) as temp_directory:
-            inputFile = Path(temp_directory) / os.path.basename(self.fpath)
+            inputFile = Path(temp_directory) / os.path.basename(self.fpath.with_suffix(self.LEAN_FILE_EXT))
             inputFile.write_bytes(encoded_document.contents)
             working_directory = temp_directory
             if self.lake_file_path != None:
