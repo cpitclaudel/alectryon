@@ -7,7 +7,7 @@ from pathlib import Path
 from alectryon import json
 
 from alectryon.json import PlainSerializer
-from .core import CLIDriver, EncodedDocument, indent
+from .core import CLIDriver, EncodedDocument, indent, Text
 
 class Lean4(CLIDriver):
     BIN = "leanInk"
@@ -49,6 +49,7 @@ class Lean4(CLIDriver):
         Remove lake argument from user_args for manual evaluation.
         """
         new_user_args = []
+        self.lake_file_path = None
         for (index, arg) in enumerate(self.user_args, start=0):
             if arg == "--lake":
                 self.lake_file_path = self.user_args[index + 1]
@@ -61,4 +62,5 @@ class Lean4(CLIDriver):
     def annotate(self, chunks):
         document = EncodedDocument(chunks, "\n", encoding="utf-8")
         self.resolve_lake_arg()
-        return [self.run_leanInk_document(document)] # Atm this only works for a single chunk, we have to split them up again after evaluation.
+        result = self.run_leanInk_document(document) + [Text(contents="\n")]
+        return list(document.recover_chunks(result))

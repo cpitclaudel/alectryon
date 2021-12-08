@@ -32,6 +32,10 @@ This file defines directives that format their contents using Alectryon::
 
         #check nat.
 
+    .. lean4::
+
+        #check Nat
+
 These directives support various arguments to control the appearance of the
 output; check out the README for details.
 
@@ -48,7 +52,7 @@ directive in your document, and you can ommit it entirely by setting
 contents following the checkbox are wrapped in a container with class
 ``alectryon-container``).
 
-Inline Coq highlighting is provided by the ``:coq:`` role (use ``:lean3:`` for
+Inline Coq highlighting is provided by the ``:coq:`` role (use ``:lean3:`` or ``:lean4:``for
 Lean code).  To replace Pygments' default highlighters with Alectryon's
 everywhere, call ``alectryon.pygments.replace_builtin_lexer()``.
 
@@ -797,6 +801,10 @@ DRIVER_DIRECTIVES = [DriverDirective(lang) for lang in core.ALL_LANGUAGES]
 class Lean3Directive(ProverDirective):
     """Highlight and annotate a Coq snippet."""
     name = "lean3"
+
+class Lean4Directive(ProverDirective):
+    """Highlight and annotate a Coq snippet."""
+    name = "lean4"
 
 class AlectryonToggleDirective(Directive):
     """Display a checkbox allowing readers to show all output at once."""
