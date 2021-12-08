@@ -1255,7 +1255,7 @@ class RSTLean3Parser(RSTLiterateParser):
 
 class RSTLean4Parser(RSTLiterateParser):
     LANG = "lean4"
-    supported = ("lean4",)
+    supported = ("lean4", "lean")
 
 # Writer
 # ------
