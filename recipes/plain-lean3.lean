@@ -1,5 +1,5 @@
 /- To compile:
-     alectryon --frontend lean3 plain.lean # Lean → HTML; produces ‘plain.lean.html’ -/
+     alectryon --frontend lean3 plain-lean3.lean # Lean → HTML; produces ‘plain-lean3.lean.html’ -/
 
 -- Queries:
 #check nat  #check bool
