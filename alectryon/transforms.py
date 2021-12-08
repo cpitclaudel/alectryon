@@ -795,8 +795,8 @@ DEFAULT_TRANSFORMS = {
         process_io_annots
     ],
     "lean4": [
-        enrich_sentences,
         coalesce_text,
+        enrich_sentences,
         read_io_comments("lean4"),
         process_io_annots,
         # TODO: Add functionality
