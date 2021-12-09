@@ -798,8 +798,7 @@ DEFAULT_TRANSFORMS = {
         coalesce_text,
         enrich_sentences,
         read_io_comments("lean4"),
-        process_io_annots,
-        # TODO: Add functionality
+        process_io_annots
     ],
     # Not included:
     #   group_whitespace_with_code (HTML-specific)
