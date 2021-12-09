@@ -5,15 +5,12 @@ Theorem Proving in Lean 4 - Tactics
 
 To compile::
 
-   alectryon lean4-tactics.md
-       # reST+Lean4 → HTML; produces ‘lean4-tactics.html’
-   alectryon lean4-tactics.md -o lean4-tactics.lean
-       # reST+Lean4 → HTML; produces ‘lean4-tactics.lean’
+   alectryon lean4-tactics-MyST.md
+       # reST+Lean4 → HTML; produces ‘lean4-tactics-MyST.html’
 
 .. note::
 
    The original document is at https://leanprover.github.io/theorem_proving_in_lean4/
-   and was converted from .md to .rst
 
 Tactics
 =======
