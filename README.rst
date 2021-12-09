@@ -4,7 +4,7 @@
 
 A library to process Coq and Lean snippets embedded in text documents, showing goals and messages for each input sentence.  Also a literate programming toolkit.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix interactive proofs and prose.
 
-Alectryon originally supported Coq only. Both `Lean 4 <lean4_>`__ and `Lean 3 <lean3_>`__ are supported. `Lean 3 <lean3_>`__ is preliminary.
+Alectryon originally supported Coq only. Both `Lean 4 <lean4_>`__ and `Lean 3 <lean3_>`__ are supported. `Lean 3 <lean3_>`__ support is preliminary.
 
 .. image:: etc/screenshot.svg
    :width: 100%
