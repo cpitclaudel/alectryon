@@ -50,7 +50,7 @@ def resolve_token(kind):
 CUSTOM_LEXERS = {'CoqLexer': CoqLexer}
 CUSTOM_LEXER_ALIASES: Dict[str, str] = {
     "lean3": "lean", 
-    "lean4": "lean" # TODO: Use correct lexer for Lean 4
+    "lean4": "lean"
 }
 
 CUSTOM_LEXERS_BY_ALIAS = {alias: Lx for Lx in CUSTOM_LEXERS.values() for alias in Lx.aliases}
