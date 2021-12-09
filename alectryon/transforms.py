@@ -136,7 +136,7 @@ _IO_ANNOTS_IN_COMMENT = r"\s+(?:{}\s+)+".format(ONE_IO_ANNOT)
 _IO_COMMENT_RE = {
     "coq": r"[ \t]*[(][*]{}[*][)]",
     "lean3": r"[ \t]*[/][-]{}[-][/]",
-    "lean4": r"[ \t]*[/][-]{}[-][/]" # TODO: Adjust this
+    "lean4": r"[ \t]*[/][-]{}[-][/]"
 }
 IO_COMMENT_RE = {
     lang: re.compile(

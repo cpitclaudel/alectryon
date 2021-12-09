@@ -910,7 +910,7 @@ def parse_arguments():
             parser.error("Reading from standard input requires one of {}.".format(available))
     else:
         _, ext = path.splitext(args.input)
-        ext_fn = {".v": coq2rst, ".lean3": lean32rst, ".rst": rst2coq}
+        ext_fn = {".v": coq2rst, ".lean3": lean32rst, ".lean": lean42rst, ".rst": rst2coq}
         args.fn = ext_fn.get(ext)
         if not args.fn:
             expected = ", ".join(repr(k) for k in ext_fn)
