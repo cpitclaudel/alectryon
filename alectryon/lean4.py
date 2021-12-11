@@ -1,4 +1,4 @@
-# Copyright © 2019 Clément Pit-Claudel
+# Copyright © 2021 Niklas Bülow
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,6 @@
 
 import tempfile
 import os
-import subprocess
 from pathlib import Path
 from alectryon import json
 
