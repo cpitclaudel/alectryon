@@ -829,8 +829,7 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
     leanInkp = parser.add_argument_group("LeanInk configuration")
 
     LAKE_PATH_HELP = "Path to 'lakefile.lean' if necessary."
-    leanInkp.add_argument("--lake", dest="leanInk_args_lake",
-                         metavar="LAKE_FILE", nargs=1, action="append",
+    leanInkp.add_argument("--lake", dest="leanInk_args_lake", metavar="LAKE_FILE",
                          default=None, help=LAKE_PATH_HELP)
 
     warn_out = parser.add_argument_group("Warnings configuration")
