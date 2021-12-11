@@ -799,11 +799,11 @@ def DriverDirective(lang: str):
 DRIVER_DIRECTIVES = [DriverDirective(lang) for lang in core.ALL_LANGUAGES]
 
 class Lean3Directive(ProverDirective):
-    """Highlight and annotate a Coq snippet."""
+    """Highlight and annotate a Lean 3 snippet."""
     name = "lean3"
 
 class Lean4Directive(ProverDirective):
-    """Highlight and annotate a Coq snippet."""
+    """Highlight and annotate a Lean 4 snippet."""
     name = "lean4"
 
 class AlectryonToggleDirective(Directive):

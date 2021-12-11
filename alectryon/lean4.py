@@ -54,7 +54,7 @@ class Lean4(CLIDriver):
             if self.lake_file_path != None:
                 working_directory = os.path.dirname(os.path.realpath(self.lake_file_path))
                 self.user_args += [self.LAKE_ENV_KEY, self.LAKE_TMP_FILE_PATH]
-            self.run_cli(working_directory=working_directory, capturesOutput=False, more_args=[str(os.path.abspath(inputFile))])
+            self.run_cli(working_directory=working_directory, capture_output=False, more_args=[str(os.path.abspath(inputFile))])
             outputFile = inputFile.with_suffix(self.LEAN_FILE_EXT + self.LEAN_INK_FILE_EXT)
             content = outputFile.read_text(encoding="utf-8")
             jsonResult = json.loads(content)
