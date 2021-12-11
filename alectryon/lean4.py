@@ -78,7 +78,7 @@ class Lean4(CLIDriver):
         self.user_args = new_user_args
 
     def annotate(self, chunks):
-        document = EncodedDocument(chunks, "\n", encoding="utf-8")
+        document = EncodedDocument(chunks, "", encoding="utf-8")
         self.resolve_lake_arg()
-        result = self.run_leanInk_document(document) + [Text(contents="\n")]
+        result = self.run_leanInk_document(document)
         return list(document.recover_chunks(result))
