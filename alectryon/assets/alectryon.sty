@@ -19,6 +19,7 @@
 \definecolor{alectryon@tango@dark@gray}{HTML}{2E3436}
 
 \makeatletter
+\newcommand*{\alectryon@nopagebreak}{\nopagebreak[3]}
 % \alectryon@nohyphens disables hyphenation and \discretionary
 % (though see https://tex.stackexchange.com/questions/606697/)
 \newcount{\alectryon@@hyphenpenalty}
@@ -193,7 +194,7 @@
 \alectryon@newenvironment{txt}{}{}
   {}
 \alectryon@newenvironment{sentence}{}{}
-  {\par\alectryon@vsep}
+  {\par\alectryon@nopagebreak\alectryon@vsep}
 \alectryon@newenvironment{input}{}{}
   {} % No \par here: the \sep in \sentence takes care of it.
 \alectryon@newenvironment{output}{\alectryon@output@setsize}{\par}
