@@ -19,6 +19,9 @@
 \definecolor{alectryon@tango@dark@gray}{HTML}{2E3436}
 
 \makeatletter
+% \alectryon@nopagebreak prevents a page break before output. It's not called in
+% before every Alectryon block because that's not how things traditionally work
+% in LaTeX, but it's reasonable to add it to the beginning of alectryon@env.
 \newcommand*{\alectryon@nopagebreak}{\nopagebreak[3]}
 % \alectryon@nohyphens disables hyphenation and \discretionary
 % (though see https://tex.stackexchange.com/questions/606697/)
@@ -163,6 +166,9 @@
 % \alectryon@label inserts a label and a phantomsection
 % \leavevmode: See https://tex.stackexchange.com/questions/610679/
 \newcommand{\alectryon@anchor}[1]{\leavevmode\phantomsection\label{#1}}
+% alectryon@env wraps the whole Alectryon block; it can be changed (e.g. to a
+% minipage or a trivlist without margins) to customize rendering.
+\newenvironment{alectryon@env}{\begin{trivlist}\item}{\end{trivlist}}
 % alectryon@outer wraps collections of goals and messages
 \newenvironment{alectryon@outer}
   {\begin{tcolorbox}[colframe=alectryon@tango@medium@gray, colback=alectryon@tango@medium@aluminium]}
@@ -186,8 +192,8 @@
      {\alectryon@unskip#4}}
 
 \alectryon@newenvironment{io}
-  {\begin{trivlist}\alectryon@prelude@io}
-  {\end{trivlist}}
+  {\begin{alectryon@env}\alectryon@prelude@io}
+  {\end{alectryon@env}}
   {}
 \alectryon@newenvironment{inline}{\alectryon@prelude@inline}{\alectryon@coda@inline}
   {}
@@ -276,7 +282,7 @@
    \alectryon@copymacro{nl}}
 
 \newenvironment{alectryon}
-  {\alectryon@copymacros\begin{io}\item}
+  {\alectryon@copymacros\begin{io}}
   {\end{io}}
 
 \newcommand*{\alectryon@inline@copymacros}
