@@ -528,8 +528,8 @@ def fragment_message_sets(fr):
         yield fr.messages
 
 def fragment_messages(fr):
-    for gs in fragment_message_sets(fr):
-        yield from gs
+    for ms in fragment_message_sets(fr):
+        yield from ms
 
 def group_hypotheses(fragments):
     """Merge consecutive hypotheses with the same name.
