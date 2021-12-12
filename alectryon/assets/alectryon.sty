@@ -253,14 +253,46 @@
   {\alectryon@unskip\hspace{0.5em}%
    {\setlength{\fboxsep}{1pt}\fbox{\footnotesize\textbf{#1}}}}
 
+% alectryon@@copymacro{DST}{SRC} makes macro \DST a synonym of \SRC.
+\newcommand{\alectryon@@copymacro}[2]
+  {\expandafter\def\csname #1\endcsname{\csname #2\endcsname}}
+
+% alectryon@copymacro[SUFFIX]{NAME} and alectryon@copyenvironment[SUFFIX]{NAME}
+% bind the macro or environment al@NAME to alectryon@NAMESUFFIX.  This is
+% used to give a different meaning to some of the macros in inline mode, and for
+% consistency everything is copied (originally the copy produced macros without
+% the al@ prefix, but that caused incompatibilities with other packages,
+% especially for the alectryon@input environment).
 \newcommand{\alectryon@copymacro}[2][]
-  {\expandafter\def\csname #2\endcsname{\csname alectryon@#2#1\endcsname}}
+  {\alectryon@@copymacro{al@#2}{alectryon@#2#1}}
 \newcommand{\alectryon@copyenvironment}[2][]
-  {\expandafter\def\csname #2\endcsname{\csname alectryon@#2#1\endcsname}%
-   \expandafter\def\csname end#2\endcsname{\csname endalectryon@#2#1\endcsname}}
+  {\alectryon@@copymacro{al@#2}{alectryon@#2#1}%
+   \alectryon@@copymacro{endal@#2}{endalectryon@#2#1}}
+
+% alectryon@al{M} and alectryon@Al{M} are used internally to dispatch to al@M
+% environments and macros, which invoke alectryon@M or alectryon@M@inline
+% depending on calls to alectryon@copy.
+\newenvironment{alectryon@al}[1]
+  {\bgroup%
+     \def\al@@env{al@#1}%
+     % \def\al@enter{\csname al@#1\endcsname}%
+     % \def\al@exit{\csname endal@#1\endcsname}%
+     % \al@enter
+     \begin{\al@@env}}
+  {\end{\al@@env}\egroup}
+% \al@exit\egroup}
+\newcommand*{\alectryon@Al}[1]
+  {\csname al@#1\endcsname}
+
+% \alectryon@copy@al binds al{M} and \Al{M} to their alectryon@ versions.
+\newcommand{\alectryon@copy@al}
+  {\alectryon@@copymacro{Al}{alectryon@Al}%
+   \alectryon@@copymacro{al}{alectryon@al}%
+   \alectryon@@copymacro{endal}{endalectryon@al}}
 
 \newcommand*{\alectryon@copymacros}
-  {\alectryon@copyenvironment{io}%
+  {\alectryon@copy@al%
+   \alectryon@copyenvironment{io}%
    \alectryon@copyenvironment{txt}%
    \alectryon@copyenvironment{sentence}%
    \alectryon@copyenvironment{input}%
@@ -282,11 +314,12 @@
    \alectryon@copymacro{nl}}
 
 \newenvironment{alectryon}
-  {\alectryon@copymacros\begin{io}}
-  {\end{io}}
+  {\alectryon@copymacros\begin{al}{io}}
+  {\end{al}}
 
 \newcommand*{\alectryon@inline@copymacros}
-  {\alectryon@copyenvironment[@inline]{hyp}%
+  {\alectryon@copyenvironment{al}%
+   \alectryon@copyenvironment[@inline]{hyp}%
    \alectryon@copyenvironment[@inline]{message}%
    \alectryon@copymacro{mrefmarker}%
    \alectryon@copymacro{hypn}%
