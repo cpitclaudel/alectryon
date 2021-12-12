@@ -224,12 +224,19 @@ def munged_dict(d, updates):
     finally:
         d.update(saved)
 
+class SelfHighlighting:
+    def highlight(self, hl: "Highlighter"):
+        raise NotImplementedError
+
 class Highlighter: # LATER: dataclass
     def __init__(self, fmt, lang, style=None):
+        self.fmt = fmt
         self.kwargs = {"lang": lang, "style": style}
         self.highlighter = HIGHLIGHTERS[fmt]
 
     def __call__(self, code, **kwargs):
+        if isinstance(code, SelfHighlighting):
+            return code.highlight(self, **kwargs)
         return self.highlighter(code, **{**self.kwargs, **kwargs})
 
     @contextmanager
