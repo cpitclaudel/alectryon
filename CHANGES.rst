@@ -14,7 +14,9 @@ Unreleased
 Bug fixes
 ---------
 
-- Fix an issue with narrow spaces in Alectryon blocks in LaTeX export (revert changes to fontdimen parameters in inline ``:mquote:`` environments). [ba9fd6c5]
+- (LaTeX) Fix an incompatibility with the hyperref package by namespacing alectryon macros (``\al{xyz}`` expands to ``alectryon@xyz``). [35cb6439]
+
+- (LaTeX export) Prevent narrow spaces in ``\alectryonInline{}`` macros from propagating to ``\begin{alectryon}`` environments. [ba9fd6c5]
 
 Version 1.4.0
 =============
