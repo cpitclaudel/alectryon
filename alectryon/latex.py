@@ -56,11 +56,13 @@ def add_top(*elements, prepend=False):
         CONTEXT_STACK[-1].add(*elements, prepend=prepend)
 
 class Context:
-    def __init__(self, name, *children, args=(), optargs=(), verbatim=False, detach=False):
+    def __init__(self, name, *children, args=(), optargs=(),
+                 verbatim=False, escape_name=True, detach=False):
         self.name = name
         self.args = args
         self.optargs = optargs
         self.verbatim = verbatim
+        self.escape_name = escape_name
         self.children = []
         if not detach:
             add_top(self)
@@ -102,24 +104,28 @@ class Environment(Context):
         self.indent = 2
 
     def format(self, indent, verbatim):
-        begin = format_macro("begin", self.args, self.optargs, self.name)
-        end = format_macro("end", (self.name,), ())
+        name = r"\al{{{}}}".format(self.name) if self.escape_name else self.name
+        begin = format_macro("begin", self.args, self.optargs, name)
+        end = format_macro("end", (name,), ())
+        if not self.children:
+            return begin + end
         outside_indent = "" if verbatim else ' ' * indent
         verbatim = verbatim or self.verbatim
         indent = indent + self.indent
         inside_indent = ' ' * indent
+        nl = "\n" + inside_indent
+        sep = "" if verbatim else "\n\\Al{sep}\n".replace("\n", nl)
         children = [c.format(indent, verbatim) for c in self.children]
-        children_sep = "" if verbatim else "\n\\sep\n".replace("\n", "\n" + inside_indent)
-        if children:
-            return (begin + "\n" +
-                    inside_indent + children_sep.join(children) + "\n" +
-                    outside_indent + end)
-        return begin + end
+        return (begin + "\n" +
+                inside_indent + sep.join(children) + "\n" +
+                outside_indent + end)
 
 class Macro(Context):
     def format(self, indent, verbatim):
-        children = "".join(c.format(indent, self.verbatim or verbatim) for c in self.children)
-        return format_macro(self.name, (*self.args, children), self.optargs)
+        children = "".join(c.format(indent, self.verbatim or verbatim)
+                           for c in self.children)
+        name = r"Al{{{}}}".format(self.name) if self.escape_name else self.name
+        return format_macro(name, (*self.args, children), self.optargs)
 
 class Concat(Context):
     def __init__(self, *children):
@@ -143,7 +149,7 @@ class Replacements:
 class Raw:
     VERB_REPLACE = Replacements({
         " ": "~",
-        "\n": "\\nl\n"})
+        "\n": "\\Al{nl}\n"})
 
     def __init__(self, s, verbatim=False):
         self.s = s
@@ -296,7 +302,7 @@ class LatexGenerator(Backend):
         """Serialize a single `obj` to LaTeX."""
         # FIXME: classes.
         wrapper = macros.alectryonInline if inline else environments.alectryon
-        with wrapper() as env:
+        with wrapper(escape_name=False) as env:
             self.gen_ids(ids)
             self._gen_any(obj)
             return env
@@ -304,7 +310,7 @@ class LatexGenerator(Backend):
     def gen_fragments(self, fragments, ids=(), classes=()): # pylint: disable=unused-argument
         """Serialize a list of `fragments` to LaTeX."""
         # FIXME: classes. optargs=[",".join(classes)] if classes else [] ?
-        with environments.alectryon() as env:
+        with environments.alectryon(escape_name=False) as env:
             Raw("% Generator: {}".format(GENERATOR))
             self.gen_ids(ids)
             fragments = transforms.apply_transforms(fragments, [

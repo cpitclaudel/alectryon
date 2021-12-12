@@ -195,7 +195,7 @@
   {\begin{alectryon@env}\alectryon@prelude@io}
   {\end{alectryon@env}}
   {}
-\alectryon@newenvironment{inline}{\alectryon@prelude@inline}{\alectryon@coda@inline}
+\alectryon@newenvironment{io@inline}{\alectryon@prelude@inline}{\alectryon@coda@inline}
   {}
 \alectryon@newenvironment{txt}{}{}
   {}
@@ -253,82 +253,31 @@
   {\alectryon@unskip\hspace{0.5em}%
    {\setlength{\fboxsep}{1pt}\fbox{\footnotesize\textbf{#1}}}}
 
+\newcommand{\alectryon@al}[1]
+  {alectryon@#1}
+\newcommand{\alectryon@Al}[1]
+  {\expandafter\csname\al{#1}\endcsname}
+
+\newcommand{\alectryon@al@inline}[1]
+  {\ifcsname alectryon@#1@inline\endcsname alectryon@#1@inline%
+   \else alectryon@#1\fi}
+\newcommand{\alectryon@Al@inline}[1]
+  {\expandafter\csname\alectryon@al@inline{#1}\endcsname}
+
 % alectryon@@copymacro{DST}{SRC} makes macro \DST a synonym of \SRC.
 \newcommand{\alectryon@@copymacro}[2]
   {\expandafter\def\csname #1\endcsname{\csname #2\endcsname}}
 
-% alectryon@copymacro[SUFFIX]{NAME} and alectryon@copyenvironment[SUFFIX]{NAME}
-% bind the macro or environment al@NAME to alectryon@NAMESUFFIX.  This is
-% used to give a different meaning to some of the macros in inline mode, and for
-% consistency everything is copied (originally the copy produced macros without
-% the al@ prefix, but that caused incompatibilities with other packages,
-% especially for the alectryon@input environment).
-\newcommand{\alectryon@copymacro}[2][]
-  {\alectryon@@copymacro{al@#2}{alectryon@#2#1}}
-\newcommand{\alectryon@copyenvironment}[2][]
-  {\alectryon@@copymacro{al@#2}{alectryon@#2#1}%
-   \alectryon@@copymacro{endal@#2}{endalectryon@#2#1}}
-
-% alectryon@al{M} and alectryon@Al{M} are used internally to dispatch to al@M
-% environments and macros, which invoke alectryon@M or alectryon@M@inline
-% depending on calls to alectryon@copy.
-\newenvironment{alectryon@al}[1]
-  {\bgroup%
-     \def\al@@env{al@#1}%
-     % \def\al@enter{\csname al@#1\endcsname}%
-     % \def\al@exit{\csname endal@#1\endcsname}%
-     % \al@enter
-     \begin{\al@@env}}
-  {\end{\al@@env}\egroup}
-% \al@exit\egroup}
-\newcommand*{\alectryon@Al}[1]
-  {\csname al@#1\endcsname}
-
-% \alectryon@copy@al binds al{M} and \Al{M} to their alectryon@ versions.
-\newcommand{\alectryon@copy@al}
-  {\alectryon@@copymacro{Al}{alectryon@Al}%
-   \alectryon@@copymacro{al}{alectryon@al}%
-   \alectryon@@copymacro{endal}{endalectryon@al}}
-
-\newcommand*{\alectryon@copymacros}
-  {\alectryon@copy@al%
-   \alectryon@copyenvironment{io}%
-   \alectryon@copyenvironment{txt}%
-   \alectryon@copyenvironment{sentence}%
-   \alectryon@copyenvironment{input}%
-   \alectryon@copyenvironment{output}%
-   \alectryon@copyenvironment{goals}%
-   \alectryon@copyenvironment{goal}%
-   \alectryon@copyenvironment{hyps}%
-   \alectryon@copyenvironment{hyp}%
-   \alectryon@copyenvironment{extragoals}%
-   \alectryon@copyenvironment{messages}%
-   \alectryon@copyenvironment{message}%
-   \alectryon@copyenvironment{conclusion}%
-   \alectryon@copymacro{anchor}%
-   \alectryon@copymacro{mrefmarker}%
-   \alectryon@copymacro{infrule}%
-   \alectryon@copymacro{gid}%
-   \alectryon@copymacro{hypn}%
-   \alectryon@copymacro{sep}%
-   \alectryon@copymacro{nl}}
-
 \newenvironment{alectryon}
-  {\alectryon@copymacros\begin{al}{io}}
-  {\end{al}}
-
-\newcommand*{\alectryon@inline@copymacros}
-  {\alectryon@copyenvironment{al}%
-   \alectryon@copyenvironment[@inline]{hyp}%
-   \alectryon@copyenvironment[@inline]{message}%
-   \alectryon@copymacro{mrefmarker}%
-   \alectryon@copymacro{hypn}%
-   \alectryon@copymacro{sep}%
-   \alectryon@copymacro[@inline]{nl}}
+  {\alectryon@@copymacro{al}{alectryon@al}%
+   \alectryon@@copymacro{Al}{alectryon@Al}%
+   \begin{\al{io}}}
+  {\end{\al{io}}}
 
 \newcommand{\alectryonInline}[1]
-  {{\alectryon@inline@copymacros%
-    \begin{alectryon@inline}#1\end{alectryon@inline}}}
+  {{\alectryon@@copymacro{al}{alectryon@al@inline}%
+    \alectryon@@copymacro{Al}{alectryon@Al@inline}%
+    \begin{\al{io}}#1\end{\al{io}}}}
 
 \ifcsname DUrolecode\endcsname
   % Must be a robust command to be usable in section titles
