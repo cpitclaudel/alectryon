@@ -249,18 +249,25 @@
 \alectryon@newenvironment{conclusion}{\alectryon@strut{}}{\par}
   {}
 
+% alectryon@mrefmarker{M} insert a small, bold, boxed marker M
 \newcommand*{\alectryon@mrefmarker}[1]
   {\alectryon@unskip\hspace{0.5em}%
    {\setlength{\fboxsep}{1pt}\fbox{\footnotesize\textbf{#1}}}}
 
+% \alectryon@al{NAME} translates NAME into alectryon@NAME
 \newcommand{\alectryon@al}[1]
   {alectryon@#1}
+% \alectryon@Al{NAME} invokes macro alectryon@NAME
 \newcommand{\alectryon@Al}[1]
   {\expandafter\csname\al{#1}\endcsname}
 
+% \alectryon@al@inline{NAME} translates NAME into alectryon@NAME@inline if that
+% macro exists, and alectryon@NAME otherwise.
 \newcommand{\alectryon@al@inline}[1]
   {\ifcsname alectryon@#1@inline\endcsname alectryon@#1@inline%
    \else alectryon@#1\fi}
+% \alectryon@Al@inline{NAME} invokes macro alectryon@NAME@inline if it exists,
+% and alectryon@NAME otherwise.
 \newcommand{\alectryon@Al@inline}[1]
   {\expandafter\csname\alectryon@al@inline{#1}\endcsname}
 
