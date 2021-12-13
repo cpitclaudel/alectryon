@@ -132,9 +132,10 @@
    % FIXME make this into a new box style
    \tcbsetforeverylayer{before={},after={}}%
    \tcbsetforeverylayer{halign=flush left}%
-   \tcbsetforeverylayer{boxsep=0pt, left=\alectryonMargin, right=\alectryonMargin, top=\alectryonMargin, bottom=\alectryonMargin}%
-   \tcbsetforeverylayer{boxrule=0pt, sharp corners}}
-
+   \tcbsetforeverylayer{boxsep=\alectryonMargin,%
+     left=0pt, right=0pt, top=0pt, bottom=0pt}%
+   \tcbsetforeverylayer{frame empty, boxrule=0pt, sharp corners}}
+% enhanced, borderline west = {0.5pt}{0pt}{red,dashed}
 \newcommand{\alectryon@prelude@inline}
   {\alectryon@prelude%
    \alectryon@spacestretch@on%
@@ -146,6 +147,7 @@
 \newcommand{\alectryon@par}{\leavevmode\par\ignorespaces}
 \newcommand{\alectryon@newline}{\-\\\ignorespaces}
 \newcommand{\alectryon@vsep}{\vspace{0.15em}}
+\newcommand{\alectryon@outer@vsep}{\vspace{-\alectryonMargin}\nointerlineskip}
 \newcommand{\alectryon@sep}{\relax}
 \newcommand{\alectryon@nl}{\alectryon@par}
 \newcommand{\alectryon@nl@inline}{\alectryon@varspace}
@@ -170,13 +172,19 @@
 % minipage or a trivlist without margins) to customize rendering.
 \newenvironment{alectryon@env}{\begin{trivlist}\item}{\end{trivlist}}
 % alectryon@outer wraps collections of goals and messages
-\newenvironment{alectryon@outer}
-  {\begin{tcolorbox}[colframe=alectryon@tango@medium@gray, colback=alectryon@tango@medium@aluminium]}
-  {\end{tcolorbox}}
-% alectryon@inner wraps individual goals or messages
+\newenvironment{alectryon@outer}{}{}
+% alectryon@inner wraps individual goals or messages.  On its own it displays
+% one outer tcolorbox for each inner tcolorbox, but\par alectryon@outer@vsep reduces
+% the margin between consecutive alectryon@inner environment.  This is more
+% complicated than just putting the outer frame in alectryon@outer but it allows
+% line breaks between goals and messages. Using tcolorbox' `break` setting does
+% not work because there is then no way to prevent a break *before* the first
+% box (after the input sentence).
 \newenvironment{alectryon@inner}
-  {\begin{tcolorbox}[colframe=alectryon@tango@light@gray, colback=alectryon@tango@light@aluminium]}
-  {\end{tcolorbox}}
+  {\begin{tcolorbox}[colback=alectryon@tango@medium@aluminium]%
+     \begin{tcolorbox}[colback=alectryon@tango@light@aluminium]}
+  {\end{tcolorbox}
+   \end{tcolorbox}}
 
 % \alectryon@newenvironment[NARGS]{NAME}{BEFORE}{AFTER}{SEP} defines a new
 % environment alectryon@NAME[NARGS]{BEFORE}{AFTER} and a new command
@@ -206,7 +214,7 @@
 \alectryon@newenvironment{output}{\alectryon@output@setsize}{\par}
   {\par\alectryon@vsep}
 \alectryon@newenvironment{goals}{\begin{alectryon@outer}}{\end{alectryon@outer}}
-  {\par\alectryon@vsep}
+  {\par\alectryon@outer@vsep}
 \alectryon@newenvironment{goal}{\begin{alectryon@inner}}{\end{alectryon@inner}}
   {}
 \newcommand{\alectryon@infrule}[1]
@@ -239,9 +247,9 @@
 \newcommand*{\alectryon@hypn}[1]
   {\mbox{\textbf{#1}:}\nobreak}
 \alectryon@newenvironment{extragoals}{}{}
-  {\par\alectryon@vsep}
+  {\par\alectryon@outer@vsep}
 \alectryon@newenvironment{messages}{\begin{alectryon@outer}}{\end{alectryon@outer}}
-  {\par\alectryon@vsep}
+  {\par\alectryon@outer@vsep}
 \alectryon@newenvironment{message}{\begin{alectryon@inner}}{\par\end{alectryon@inner}}
   {}
 \alectryon@newenvironment{message@inline}{}{}
