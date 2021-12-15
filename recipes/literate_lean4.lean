@@ -22,25 +22,25 @@ Running queries
 ===============
 
 Alectryon captures the results of `#check`, `#eval`, and the like:
-|-/
+-/
 
 def x : Nat := 5
 #reduce 5 + x
 
 /-|
 By default, these results are folded and are displayed upon hovering or clicking.  We can unfold them by default using annotations or directives:
-|-/
+-/
 
 #check Nat /- .unfold -/
 
 /-|
 .. lean4:: unfold
-|-/
+-/
 
 #check Bool
 #eval 1 + 1
 
-/-| Other flags can be used to control display, like ``.no-in``: |-/
+/-| Other flags can be used to control display, like ``.no-in``: -/
 
 #print Iff /- .unfold .no-in -/
 
@@ -49,7 +49,7 @@ Documenting proofs
 ==================
 
 Alectryon also captures goals and hypotheses as proofs progress:
-|-/
+-/
 
 theorem test (p q : Prop) (hp : p) (hq : q): p ∧ q ↔ q ∧ p := by
   apply Iff.intro
