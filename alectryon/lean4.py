@@ -77,7 +77,18 @@ class Lean4(CLIDriver):
         self.user_args = new_user_args
 
     def annotate(self, chunks):
-        document = EncodedDocument(chunks, "", encoding="utf-8")
+        document = EncodedDocument(chunks, "\n", encoding="utf-8")
         self.resolve_lake_arg()
         result = self.run_leanInk_document(document)
-        return list(document.recover_chunks(result))
+
+        if not result:
+            return list([])
+
+        last = result[-1]
+        
+        # Sometimes we require an additonal \n and sometimes not. I wasn't really able to
+        # find out exactly when, but this workaround seems to work for almost all cases.
+        if last.contents.endswith("\n"):
+            return list(document.recover_chunks(result))
+        else:
+            return list(document.recover_chunks(result + [Text(contents="\n")]))
