@@ -118,12 +118,43 @@
      {\ifdim\alectryon@@width@initial>#1 #1\else\alectryon@@width@initial\fi}%
    \alectryon@parbox{\alectryon@@width}{#2}}
 
+
+% \alectryon@al{NAME} translates NAME into alectryon@NAME
+\newcommand{\alectryon@al}[1]
+  {alectryon@#1}
+% \alectryon@Al{NAME} invokes macro alectryon@NAME
+\newcommand{\alectryon@Al}[1]
+  {\expandafter\csname\al{#1}\endcsname}
+
+% alectryon@@copymacro{DST}{SRC} makes macro \DST a synonym of \SRC.
+\newcommand{\alectryon@@copymacro}[2]
+  {\expandafter\def\csname #1\endcsname{\csname #2\endcsname}}
+
+% \alectryon@al@inline{NAME} translates NAME into alectryon@NAME@inline if that
+% macro exists, and alectryon@NAME otherwise.
+\newcommand{\alectryon@al@inline}[1]
+  {\ifcsname alectryon@#1@inline\endcsname alectryon@#1@inline%
+   \else alectryon@#1\fi}
+% \alectryon@Al@inline{NAME} invokes macro alectryon@NAME@inline if it exists,
+% and alectryon@NAME otherwise.
+\newcommand{\alectryon@Al@inline}[1]
+  {\expandafter\csname\alectryon@al@inline{#1}\endcsname}
+
+% \alectryon@entry and \alectryon@entry@inline set up the \al and \Al macros.
+\newcommand{\alectryon@entry}
+  {\alectryon@@copymacro{al}{alectryon@al}%
+   \alectryon@@copymacro{Al}{alectryon@Al}}
+\newcommand{\alectryon@entry@inline}
+  {\alectryon@@copymacro{al}{alectryon@al@inline}%
+   \alectryon@@copymacro{Al}{alectryon@Al@inline}}
+
 \newcommand{\alectryon@prelude}
   {\alectryon@fontsetup%
    \alectryon@nohyphens}
 
 \newcommand{\alectryon@prelude@io}
-  {\alectryon@prelude%
+  {\alectryon@entry%
+   \alectryon@prelude%
    \alectryon@parsetup%
    \alectryon@spacestretch@off%
    \alectryon@arraystretch%
@@ -137,7 +168,8 @@
    \tcbsetforeverylayer{frame empty, boxrule=0pt, sharp corners}}
 % enhanced, borderline west = {0.5pt}{0pt}{red,dashed}
 \newcommand{\alectryon@prelude@inline}
-  {\alectryon@prelude%
+  {\alectryon@entry@inline%
+   \alectryon@prelude%
    \alectryon@spacestretch@on%
    \alectryon@hyphenchar@on%
    \def~{\alectryon@varspace}}
@@ -199,9 +231,7 @@
       \ignorespaces}
      {\alectryon@unskip#4}}
 
-\alectryon@newenvironment{io}
-  {\begin{alectryon@env}\alectryon@prelude@io}
-  {\end{alectryon@env}}
+\alectryon@newenvironment{io}{\alectryon@prelude@io}{}
   {}
 \alectryon@newenvironment{io@inline}{\alectryon@prelude@inline}{\alectryon@coda@inline}
   {}
@@ -257,42 +287,22 @@
 \alectryon@newenvironment{conclusion}{\alectryon@strut{}}{\par}
   {}
 
-% alectryon@mrefmarker{M} insert a small, bold, boxed marker M
+% \alectryon@mrefmarker{M} inserts a small, bold, boxed marker M
 \newcommand*{\alectryon@mrefmarker}[1]
   {\alectryon@unskip\hspace{0.5em}%
    {\setlength{\fboxsep}{1pt}\fbox{\footnotesize\textbf{#1}}}}
 
-% \alectryon@al{NAME} translates NAME into alectryon@NAME
-\newcommand{\alectryon@al}[1]
-  {alectryon@#1}
-% \alectryon@Al{NAME} invokes macro alectryon@NAME
-\newcommand{\alectryon@Al}[1]
-  {\expandafter\csname\al{#1}\endcsname}
-
-% \alectryon@al@inline{NAME} translates NAME into alectryon@NAME@inline if that
-% macro exists, and alectryon@NAME otherwise.
-\newcommand{\alectryon@al@inline}[1]
-  {\ifcsname alectryon@#1@inline\endcsname alectryon@#1@inline%
-   \else alectryon@#1\fi}
-% \alectryon@Al@inline{NAME} invokes macro alectryon@NAME@inline if it exists,
-% and alectryon@NAME otherwise.
-\newcommand{\alectryon@Al@inline}[1]
-  {\expandafter\csname\alectryon@al@inline{#1}\endcsname}
-
-% alectryon@@copymacro{DST}{SRC} makes macro \DST a synonym of \SRC.
-\newcommand{\alectryon@@copymacro}[2]
-  {\expandafter\def\csname #1\endcsname{\csname #2\endcsname}}
-
+% \alectryon and \alectryonInline are the main entry points.  \alectryon@env
+% serves as a customizable wrapper.  It is outside of alectryon@io to make sure
+% that it runs first and last.
 \newenvironment{alectryon}
-  {\alectryon@@copymacro{al}{alectryon@al}%
-   \alectryon@@copymacro{Al}{alectryon@Al}%
-   \begin{\al{io}}}
-  {\end{\al{io}}}
+  {\begin{alectryon@env}\begin{alectryon@io}}
+  {\end{alectryon@io}\end{alectryon@env}}
 
 \newcommand{\alectryonInline}[1]
-  {{\alectryon@@copymacro{al}{alectryon@al@inline}%
-    \alectryon@@copymacro{Al}{alectryon@Al@inline}%
-    \begin{\al{io}}#1\end{\al{io}}}}
+  {{\begin{alectryon@env}\begin{alectryon@io@inline}%
+        #1%
+    \end{alectryon@io@inline}\end{alectryon@env}}}
 
 \ifcsname DUrolecode\endcsname
   % Must be a robust command to be usable in section titles
