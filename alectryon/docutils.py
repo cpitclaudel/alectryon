@@ -22,19 +22,7 @@
 
 """reStructuredText support for Alectryon.
 
-This file defines directives that format their contents using Alectryon::
-
-    .. coq::
-
-        Check nat.
-
-    .. lean3::
-
-        #check nat.
-
-    .. lean4::
-
-        #check Nat
+This file defines directives that format their contents using Alectryon.
 
 These directives support various arguments to control the appearance of the
 output; check out the README for details.
@@ -52,8 +40,7 @@ directive in your document, and you can ommit it entirely by setting
 contents following the checkbox are wrapped in a container with class
 ``alectryon-container``).
 
-Inline Coq highlighting is provided by the ``:coq:`` role (use ``:lean3:`` or ``:lean4:``for
-Lean code).  To replace Pygments' default highlighters with Alectryon's
+To replace Pygments' default highlighters with Alectryon's
 everywhere, call ``alectryon.pygments.replace_builtin_lexer()``.
 
 If you write lots of inline code snippets, consider calling ``set_default_role``,
