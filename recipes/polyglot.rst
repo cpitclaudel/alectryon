@@ -27,36 +27,36 @@ To compile::
          reflexivity.
    Qed.
 
-.. lean3::
+.. lean4::
 
-   open nat
+  open Nat
 
-   def Sum : nat → nat
-   | 0        := 0
-   | (succ n) := (succ n) + Sum n
+  def customSum : Nat -> Nat
+    | 0      => 0
+    | succ n => succ n + customSum n
 
-   #eval (Sum 10)
+  #eval customSum 10
 
-   namespace nat
-     lemma mul_two: forall n: nat, 2 * n = n + n :=
-     begin
-       intros n, induction n,
-       { refl },
-       { rw [← nat.add_one, nat.left_distrib, n_ih],
-         change (2 * 1) with (1 + 1),
-         simp [nat.add_assoc, nat.add_comm 1], }
-     end
-   end nat
+  namespace Nat
+    theorem mul_two : ∀ n : Nat, 2 * n = n + n := by
+      intros n
+      induction n with
+      | zero => simp
+      | succ n n_ih =>
+        rw [← Nat.add_one, Nat.left_distrib, n_ih]
+        simp [Nat.add_assoc, Nat.add_comm 1]
 
-   lemma gauss: forall n: nat, 2 * Sum n = n * (n + 1) :=
-   begin
-     intros n,
-     induction n with n ih; simp [Sum],
-     { refl },
-     { simp [nat.left_distrib],
-       rw [ih, ← nat.add_one],
-       simp [nat.left_distrib, nat.right_distrib,
-             nat.mul_one, nat.one_mul, nat.mul_two];
-         change (1 * 1) with 1; change (2 * 1) with (1 + 1);
-         rw [nat.add_comm]; simp [nat.add_assoc] },
-   end
+    theorem gauss : ∀ n : Nat, 2 * customSum n = n * (n + 1) := by
+      intros n
+      induction n with
+      | zero => simp [customSum]
+      | succ n n_ih =>
+        simp [customSum]
+        simp [Nat.left_distrib]
+        rw [n_ih, ← Nat.add_one]
+        simp [Nat.left_distrib, Nat.right_distrib,
+              Nat.mul_one, Nat.one_mul, Nat.mul_two]
+        rw [Nat.add_comm]
+        simp [Nat.add_assoc]
+        rw [Nat.add_one, Nat.add_comm 1]
+  end Nat
