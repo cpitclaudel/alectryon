@@ -773,10 +773,10 @@ def lean3_attach_commas(fragments):
                 grouped[idx] = Text(rest) if rest else None
     return [g for g in grouped if g is not None]
 
-LEAN_WHITESPACE_PREFIX = re.compile(r"^\s+")
-LEAN_WHITESPACE_POSTFIX = re.compile(r"(\s|;)+$")
+LEAN_TRIM_PREFIX = re.compile(r"^\s+")
+LEAN_TRIM_POSTFIX = re.compile(r"(\s|;)+$")
 
-def lean4_trim_whitespace(fragments):
+def lean4_trim_sentences(fragments):
     """This pass removes all prefixes and postfixes of whitespaces, newlines, or semicolons
     of a sentences and transforms these pre- and postfixes into separate Text fragments.
     """
@@ -786,11 +786,11 @@ def lean4_trim_whitespace(fragments):
             prefix = ""
             center = fr.input.contents
             postfix = ""
-            prefix_match = LEAN_WHITESPACE_PREFIX.search(center)
+            prefix_match = LEAN_TRIM_PREFIX.search(center)
             if prefix_match is not None:
                 prefix = center[:prefix_match.start()]
                 center = center[prefix_match.start():]
-            postifx_match = LEAN_WHITESPACE_POSTFIX.search(center)
+            postifx_match = LEAN_TRIM_POSTFIX.search(center)
             if postifx_match is not None:
                 postfix = center[postifx_match.start():]
                 center = center[:postifx_match.start()]
@@ -838,7 +838,7 @@ DEFAULT_TRANSFORMS = {
         process_io_annots
     ],
     "lean4": [
-        lean4_trim_whitespace,
+        lean4_trim_sentences,
         lean4_transform_whitespace_to_text,
         coalesce_text,
         enrich_sentences,

@@ -5,13 +5,13 @@
 Alectryon supports literate programs and documents (combinations of code and prose) written in Lean4 and reStructuredText.  Here is an example written in Lean4.  It can be converted to reST, HTML, or LaTeX using the following commands::
 
    alectryon literate_lean4.lean
-       # Coq+reST → HTML;  produces ‘literate_lean4.html’
+       # Lean4+reST → HTML;  produces ‘literate_lean4.html’
    alectryon literate_lean4.lean --backend latex \
         --latex-dialect xelatex \
         -o literate_lean4.xe.tex
-       # Coq+reST → LaTeX; produces ‘literate_lean4.xe.tex’
+       # Lean4+reST → LaTeX; produces ‘literate_lean4.xe.tex’
    alectryon literate_lean4.lean --backend rst
-       # Coq+reST → reST;  produces ‘literate_lean4.lean.rst’
+       # Lean4+reST → reST;  produces ‘literate_lean4.lean.rst’
 
 -----
 

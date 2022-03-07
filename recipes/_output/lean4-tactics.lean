@@ -6,12 +6,15 @@ Theorem Proving in Lean 4 - Tactics
 
 To compile::
 
-   alectryon lean4-tactics.md
-       # myST+Lean4 → HTML; produces ‘lean4-tactics.html’
+   alectryon lean4-tactics.rst
+       # reST+Lean4 → HTML; produces ‘lean4-tactics.html’
+   alectryon lean4-tactics.rst -o lean4-tactics.lean
+       # reST+Lean4 → Lean4; produces ‘lean4-tactics.lean’
 
 .. note::
 
    The original document is at https://leanprover.github.io/theorem_proving_in_lean4/
+   and has been converted from .md to .rst.
 
 Tactics
 =======
@@ -44,7 +47,7 @@ creates a goal, namely, the goal of constructing a term with the
 expected type. For example, the following creates the goal of
 constructing a term of type ``p ∧ q ∧ p``, in a context with constants
 ``p q : Prop``, ``hp : p`` and ``hq : q``:
-|-/
+-/
 
 theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p :=
   sorry
@@ -65,7 +68,7 @@ wherever a term is expected, Lean allows us to insert instead a
 ``by <tactics>`` block, where ``<tactics>`` is a sequence of commands,
 separated by semicolons or line breaks. You can prove the theorem above
 in that way:
-|-/
+-/
 
 theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p :=
   by apply And.intro
@@ -77,7 +80,7 @@ theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p :=
 /-|
 We often put the ``by`` keyword on the preceding line, and write the
 example above as
-|-/
+-/
 
 theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
   apply And.intro
@@ -119,7 +122,7 @@ processing the expression that is being applied. In this case, however,
 ``apply`` would work just as well.
 
 You can see the resulting proof term with the ``#print`` command:
-|-/
+-/
 
 # theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
 #  apply And.intro
@@ -141,7 +144,7 @@ squiggly line, and the error message contains the remaining goals.
 
 Tactic commands can take compound expressions, not just single
 identifiers. The following is a shorter version of the preceding proof:
-|-/
+-/
 
 theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
   apply And.intro hp
@@ -149,7 +152,7 @@ theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
 
 /-|
 Unsurprisingly, it produces exactly the same proof term.
-|-/
+-/
 
 # theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
 #  apply And.intro hp
@@ -159,7 +162,7 @@ Unsurprisingly, it produces exactly the same proof term.
 /-|
 Multiple tactic applications can be written in a single line by
 concatenating with a semicolon.
-|-/
+-/
 
 theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
   apply And.intro hp; exact And.intro hq hp
@@ -172,7 +175,7 @@ are inferred from the parameters names used in the ``And.intro``
 declaration. You can structure your tactics using the notation
 ``case <tag> => <tactics>``. The following is a structured version of
 our first tactic proof in this chapter.
-|-/
+-/
 
 theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
   apply And.intro
@@ -185,7 +188,7 @@ theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
 /-|
 You can solve the subgoal ``right`` before ``left`` using the ``case``
 notation
-|-/
+-/
 
 theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
   apply And.intro
@@ -204,7 +207,7 @@ For simple sugoals, it may not be worth selecting a subgoal using its
 tag, but you may still want to structure the proof. Lean also provides
 the "bullet" notation ``. <tactics>`` (or ``· <tactics>``) for
 structuring proof.
-|-/
+-/
 
 theorem test (p q : Prop) (hp : p) (hq : q) : p ∧ q ∧ p := by
   apply And.intro
@@ -221,7 +224,7 @@ In addition to ``apply`` and ``exact``, another useful tactic is
 ``intro``, which introduces a hypothesis. What follows is an example of
 an identity from propositional logic that we proved in a previous
 chapter, now proved using tactics.
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
   apply Iff.intro
@@ -253,7 +256,7 @@ example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
 /-|
 The ``intro`` command can more generally be used to introduce a variable
 of any type:
-|-/
+-/
 
 example (α : Type) : α → α := by
   intro a
@@ -265,7 +268,7 @@ example (α : Type) : ∀ x : α, x = x := by
 
 /-|
 You can use it to introduce several variables:
-|-/
+-/
 
 example : ∀ a b c : Nat, a = b → a = c → c = b := by
   intro a b c h₁ h₂
@@ -277,7 +280,7 @@ applications interactively, the ``intro`` tactic is a command for
 constructing function abstractions interactively (i.e., terms of the
 form ``fun x => e``). As with lambda abstraction notation, the ``intro``
 tactic allows us to use an implicit ``match``.
-|-/
+-/
 
 example (α : Type) (p q : α → Prop) : (∃ x, p x ∧ q x) → ∃ x, q x ∧ p x := by
   intro ⟨w, hpw, hqw⟩
@@ -286,7 +289,7 @@ example (α : Type) (p q : α → Prop) : (∃ x, p x ∧ q x) → ∃ x, q x �
 /-|
 You can also provide multiple alternatives like in the ``match``
 expression.
-|-/
+-/
 
 example (α : Type) (p q : α → Prop) : (∃ x, p x ∨ q x) → ∃ x, q x ∨ p x := by
   intro
@@ -301,7 +304,7 @@ see an example of this in a moment.
 The ``assumption`` tactic looks through the assumptions in context of
 the current goal, and if there is one matching the conclusion, it
 applies it.
-|-/
+-/
 
 example (x y z w : Nat) (h₁ : x = y) (h₂ : y = z) (h₃ : z = w) : x = w := by
   apply Eq.trans h₁
@@ -310,7 +313,7 @@ example (x y z w : Nat) (h₁ : x = y) (h₂ : y = z) (h₃ : z = w) : x = w := 
 
 /-|
 It will unify metavariables in the conclusion if necessary:
-|-/
+-/
 
 example (x y z w : Nat) (h₁ : x = y) (h₂ : y = z) (h₃ : z = w) : x = w := by
   apply Eq.trans
@@ -322,7 +325,7 @@ example (x y z w : Nat) (h₁ : x = y) (h₂ : y = z) (h₃ : z = w) : x = w := 
 /-|
 The following example uses the ``intros`` command to introduce the three
 variables and two hypotheses automatically:
-|-/
+-/
 
 example : ∀ a b c : Nat, a = b → a = c → c = b := by
   intros
@@ -337,7 +340,7 @@ default. The motivation is to ensure your tactic proofs do not rely on
 automatically generated names, and are consequently more robust.
 However, you can use the combinator ``unhygienic`` to disable this
 restriction.
-|-/
+-/
 
 example : ∀ a b c : Nat, a = b → a = c → c = b := by unhygienic
   intros
@@ -351,7 +354,7 @@ You can also use the ``rename_i`` tactic to rename the most recent
 inaccessible names in your context. In the following example, the tactic
 ``rename_i h1 _ h2`` renames two of the last three hypotheses in your
 context.
-|-/
+-/
 
 example : ∀ a b c d : Nat, a = b → a = d → a = c → c = b := by
   intros
@@ -363,14 +366,14 @@ example : ∀ a b c d : Nat, a = b → a = d → a = c → c = b := by
 
 /-|
 The ``rfl`` tactic is syntax sugar for ``exact rfl``.
-|-/
+-/
 
 example (y : Nat) : (fun x : Nat => 0) y = 0 :=
   by rfl
 
 /-|
 The ``repeat`` combinator can be used to apply a tactic several times.
-|-/
+-/
 
 example : ∀ a b c : Nat, a = b → a = c → c = b := by
   intros
@@ -381,7 +384,7 @@ example : ∀ a b c : Nat, a = b → a = c → c = b := by
 /-|
 Another tactic that is sometimes useful is the ``revert`` tactic, which
 is, in a sense, an inverse to ``intro``.
-|-/
+-/
 
 example (x : Nat) : x = x := by
   revert x
@@ -392,7 +395,7 @@ example (x : Nat) : x = x := by
 
 /-|
 Moving a hypothesis into the goal yields an implication:
-|-/
+-/
 
 example (x y : Nat) (h : x = y) : y = x := by
   revert h
@@ -407,7 +410,7 @@ But ``revert`` is even more clever, in that it will revert not only an
 element of the context but also all the subsequent elements of the
 context that depend on it. For example, reverting ``x`` in the example
 above brings ``h`` along with it:
-|-/
+-/
 
 example (x y : Nat) (h : x = y) : y = x := by
   revert x
@@ -418,7 +421,7 @@ example (x y : Nat) (h : x = y) : y = x := by
 
 /-|
 You can also revert multiple elements of the context at once:
-|-/
+-/
 
 example (x y : Nat) (h : x = y) : y = x := by
   revert x y
@@ -432,7 +435,7 @@ You can only ``revert`` an element of the local context, that is, a
 local variable or hypothesis. But you can replace an arbitrary
 expression in the goal by a fresh variable using the ``generalize``
 tactic.
-|-/
+-/
 
 example : 3 = 3 := by
   generalize 3 = x
@@ -449,7 +452,7 @@ by setting ``3`` to an arbitrary variable ``x``. Be careful: not every
 generalization preserves the validity of the goal. Here, ``generalize``
 replaces a goal that could be proved using ``rfl`` with one that is not
 provable:
-|-/
+-/
 
 example : 2 + 3 = 5 := by
   generalize  3 = x
@@ -463,7 +466,7 @@ proof term. It closes the current goal, producing the usual warning that
 the ``generalize`` tactic allows us to record the fact that ``3`` has
 been replaced by ``x``. All you need to do is to provide a label, and
 ``generalize`` uses it to store the assignment in the local context:
-|-/
+-/
 
 example : 2 + 3 = 5 := by
   generalize h : 3 = x
@@ -482,7 +485,7 @@ propositions and data. For example, when applied to a goal of the form
 ``p ∨ q``, you use tactics such as ``apply Or.inl`` and
 ``apply Or.inr``. Conversely, the ``cases`` tactic can be used to
 decompose a disjunction.
-|-/
+-/
 
 example (p q : Prop) : p ∨ q → q ∨ p := by
   intro h
@@ -493,7 +496,7 @@ example (p q : Prop) : p ∨ q → q ∨ p := by
 /-|
 Note that the syntax is similar to the one used in ``match``
 expressions. The new subgoals can be solved in any order.
-|-/
+-/
 
 example (p q : Prop) : p ∨ q → q ∨ p := by
   intro h
@@ -504,7 +507,7 @@ example (p q : Prop) : p ∨ q → q ∨ p := by
 /-|
 You can also use a (unstructured) ``cases`` without the ``with`` and a
 tactic for each alternative.
-|-/
+-/
 
 example (p q : Prop) : p ∨ q → q ∨ p := by
   intro h
@@ -517,7 +520,7 @@ example (p q : Prop) : p ∨ q → q ∨ p := by
 /-|
 The (unstructured) ``cases`` is particularly useful when you can close
 several subgoals using the same tactic.
-|-/
+-/
 
 example (p : Prop) : p ∨ p → p := by
   intro h
@@ -527,7 +530,7 @@ example (p : Prop) : p ∨ p → p := by
 /-|
 You can also use the combinator ``tac1 <;> tac2`` to apply ``tac2`` to
 each subgoal produced by tactic ``tac1``
-|-/
+-/
 
 example (p : Prop) : p ∨ p → p := by
   intro h
@@ -536,7 +539,7 @@ example (p : Prop) : p ∨ p → p := by
 /-|
 You can combine the unstructured ``cases`` tactic with the ``case`` and
 ``.`` notation.
-|-/
+-/
 
 example (p q : Prop) : p ∨ q → q ∨ p := by
   intro h
@@ -567,7 +570,7 @@ example (p q : Prop) : p ∨ q → q ∨ p := by
 
 /-|
 The ``cases`` tactic can also be used to decompose a conjunction.
-|-/
+-/
 
 example (p q : Prop) : p ∧ q → q ∧ p := by
   intro h
@@ -580,7 +583,7 @@ applied, with ``h : p ∧ q`` replaced by a pair of assumptions,
 ``hp : p`` and ``hq : q``. The ``constructor`` tactic applies the unique
 constructor for conjunction, ``And.intro``. With these tactics, an
 example from the previous section can be rewritten as follows:
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
   apply Iff.intro
@@ -606,7 +609,7 @@ decompose any element of an inductively defined type; ``constructor``
 always applies the first applicable constructor of an inductively
 defined type. For example, you can use ``cases`` and ``constructor``
 with an existential quantifier:
-|-/
+-/
 
 example (p q : Nat → Prop) : (∃ x, p x) → ∃ x, p x ∨ q x := by
   intro h
@@ -621,7 +624,7 @@ previous example, the proper value of the metavariable is determined by
 the tactic ``exact px``, since ``px`` has type ``p x``. If you want to
 specify a witness to the existential quantifier explicitly, you can use
 the ``exists`` tactic instead:
-|-/
+-/
 
 example (p q : Nat → Prop) : (∃ x, p x) → ∃ x, p x ∨ q x := by
   intro h
@@ -630,7 +633,7 @@ example (p q : Nat → Prop) : (∃ x, p x) → ∃ x, p x ∨ q x := by
 
 /-|
 Here is another example:
-|-/
+-/
 
 example (p q : Nat → Prop) : (∃ x, p x ∧ q x) → ∃ x, q x ∧ p x := by
   intro h
@@ -645,14 +648,14 @@ example (p q : Nat → Prop) : (∃ x, p x ∧ q x) → ∃ x, q x ∧ p x := by
 These tactics can be used on data just as well as propositions. In the
 next two examples, they are used to define functions which swap the
 components of the product and sum types:
-|-/
+-/
 
 def swap_pair : α × β → β × α := by
   intro p
   cases p
   constructor <;> assumption
 
-/-||-/
+/-|-/
 
 def swap_sum : Sum α β → Sum β α := by
   intro p
@@ -665,7 +668,7 @@ Note that up to the names we have chosen for the variables, the
 definitions are identical to the proofs of the analogous propositions
 for conjunction and disjunction. The ``cases`` tactic will also do a
 case distinction on a natural number:
-|-/
+-/
 
 open Nat
 example (P : Nat → Prop) (h₀ : P 0) (h₁ : ∀ n, P (succ n)) (m : Nat) : P m := by
@@ -680,7 +683,7 @@ Types <./inductive_types.md#tactics_for_inductive_types>`__ section.
 
 The ``contradiction`` tactic searches for a contradiction among the
 hypotheses of the current goal:
-|-/
+-/
 
 example (p q : Prop) : p ∧ ¬ p → q := by
   intro h
@@ -689,7 +692,7 @@ example (p q : Prop) : p ∧ ¬ p → q := by
 
 /-|
 You can also use ``match`` in tactic blocks.
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
   apply Iff.intro
@@ -705,7 +708,7 @@ example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
 /-|
 You can "combine" ``intro h`` with ``match h ...`` and write the
 previous examples as follows
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
   apply Iff.intro
@@ -732,7 +735,7 @@ arbitrary terms, which you can write using ``have``, ``show``, and so
 on. Conversely, when writing an arbitrary Lean term, you can always
 invoke the tactic mode by inserting a ``by`` block. The following is a
 somewhat toy example:
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) := by
   intro h
@@ -746,7 +749,7 @@ example (p q r : Prop) : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) := by
 
 /-|
 The following is a more natural example:
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
   apply Iff.intro
@@ -763,7 +766,7 @@ example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
 In fact, there is a ``show`` tactic, which is similar to the ``show``
 expression in a proof term. It simply declares the type of the goal that
 is about to be solved, while remaining in tactic mode.
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
   apply Iff.intro
@@ -787,7 +790,7 @@ example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
 /-|
 The ``show`` tactic can actually be used to rewrite a goal to something
 definitionally equivalent:
-|-/
+-/
 
 example (n : Nat) : n + 1 = Nat.succ n := by
   show Nat.succ n = Nat.succ n
@@ -796,7 +799,7 @@ example (n : Nat) : n + 1 = Nat.succ n := by
 /-|
 There is also a ``have`` tactic, which introduces a new subgoal, just as
 when writing proof terms:
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) := by
   intro ⟨hp, hqr⟩
@@ -814,7 +817,7 @@ example (p q r : Prop) : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) := by
 /-|
 As with proof terms, you can omit the label in the ``have`` tactic, in
 which case, the default label ``this`` is used:
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) := by
   intro ⟨hp, hqr⟩
@@ -834,7 +837,7 @@ The types in a ``have`` tactic can be omitted, so you can write
 ``have hp := h.left`` and ``have hqr := h.right``. In fact, with this
 notation, you can even omit both the type and the label, in which case
 the new fact is introduced with the label ``this``.
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) := by
   intro ⟨hp, hqr⟩
@@ -850,7 +853,7 @@ example (p q r : Prop) : p ∧ (q ∨ r) → (p ∧ q) ∨ (p ∧ r) := by
 Lean also has a ``let`` tactic, which is similar to the ``have`` tactic,
 but is used to introduce local definitions instead of auxiliary facts.
 It is the tactic analogue of a ``let`` in a proof term.
-|-/
+-/
 
 example : ∃ x, x + 2 = 8 := by
   let a : Nat := 3 * 2
@@ -870,7 +873,7 @@ indicating the separate proofs of multiple subgoals introduced by a
 tactic. The notation ``.`` is whitespace sensitive and relies on the
 indentation to detect whether the tactic block ends. Alternatively, you
 can define tactic blocks usind curly braces and semicolons.
-|-/
+-/
 
 example (p q r : Prop) : p ∧ (q ∨ r) ↔ (p ∧ q) ∨ (p ∧ r) := by
   apply Iff.intro
@@ -929,7 +932,7 @@ Tactic Combinators
 
 *Tactic combinators* are operations that form new tactics from old ones.
 A sequencing combinator is already implicit in the ``by`` block:
-|-/
+-/
 
 example (p q : Prop) (hp : p) : p ∨ q :=
   by apply Or.inl; assumption
@@ -942,7 +945,7 @@ single tactic which first applies ``apply Or.inl`` and then applies
 In ``t₁ <;> t₂``, the ``<;>`` operator provides a *parallel* version of
 the sequencing operation: ``t₁`` is applied to the current goal, and
 then ``t₂`` is applied to *all* the resulting subgoals:
-|-/
+-/
 
 example (p q : Prop) (hp : p) (hq : q) : p ∧ q :=
   by constructor <;> assumption
@@ -954,7 +957,7 @@ all of them uniformly.
 
 The ``first | t₁ | t₂ | ... | tₙ`` applies each ``tᵢ`` until one
 succeeds, or else fails:
-|-/
+-/
 
 example (p q : Prop) (hp : p) : p ∨ q := by
   first | apply Or.inl; assumption | apply Or.inr; assumption
@@ -963,7 +966,7 @@ example (p q : Prop) (hp : p) : p ∨ q := by
 In the first example, the left branch succeeds, whereas in the second
 one, it is the right one that succeeds. In the next three examples, the
 same compound tactic succeeds in each case.
-|-/
+-/
 
 example (p q r : Prop) (hp : p) : p ∨ q ∨ r :=
   by repeat (first | apply Or.inl; assumption | apply Or.inr | assumption)
@@ -989,7 +992,7 @@ succeeds in doing so). In the next example, the second ``constructor``
 succeeds on the right conjunct ``q ∧ r`` (remember that disjunction and
 conjunction associate to the right) but fails on the first. The ``try``
 tactic ensures that the sequential composition succeeds.
-|-/
+-/
 
 example (p q r : Prop) (hp : p) (hq : q) (hr : r) : p ∧ q ∧ r := by
   constructor <;> (try constructor) <;> assumption
@@ -1002,7 +1005,7 @@ In a proof, there are often multiple goals outstanding. Parallel
 sequencing is one way to arrange it so that a single tactic is applied
 to multiple goals, but there are other ways to do this. For example,
 ``all_goals t`` applies ``t`` to all open goals:
-|-/
+-/
 
 example (p q r : Prop) (hp : p) (hq : q) (hr : r) : p ∧ q ∧ r := by
   constructor
@@ -1013,7 +1016,7 @@ example (p q r : Prop) (hp : p) (hq : q) (hr : r) : p ∧ q ∧ r := by
 In this case, the ``any_goals`` tactic provides a more robust solution.
 It is similar to ``all_goals``, except it fails unless its argument
 succeeds on at least one goal.
-|-/
+-/
 
 example (p q r : Prop) (hp : p) (hq : q) (hr : r) : p ∧ q ∧ r := by
   constructor
@@ -1023,7 +1026,7 @@ example (p q r : Prop) (hp : p) (hq : q) (hr : r) : p ∧ q ∧ r := by
 /-|
 The first tactic in the ``by`` block below repeatedly splits
 conjunctions:
-|-/
+-/
 
 example (p q r : Prop) (hp : p) (hq : q) (hr : r) :
       p ∧ ((p ∧ q) ∧ r) ∧ (q ∧ r ∧ p) := by
@@ -1032,7 +1035,7 @@ example (p q r : Prop) (hp : p) (hq : q) (hr : r) :
 
 /-|
 In fact, we can compress the full tactic down to one line:
-|-/
+-/
 
 example (p q r : Prop) (hp : p) (hq : q) (hr : r) :
       p ∧ ((p ∧ q) ∧ r) ∧ (q ∧ r ∧ p) := by
@@ -1062,7 +1065,7 @@ context; it can be a general lemma, like
 to find suitable instantiations of ``x`` and ``y``; or it can be any
 compound term asserting a concrete or general equation. In the following
 example, we use this basic form to rewrite the goal using a hypothesis.
-|-/
+-/
 
 example (f : Nat → Nat) (k : Nat) (h₁ : f 0 = 0) (h₂ : k = 0) : f k = 0 := by
   rw [h₂] -- replace k with 0
@@ -1073,7 +1076,7 @@ In the example above, the first use of ``rw`` replaces ``k`` with ``0``
 in the goal ``f k = 0``. Then, the second one replaces ``f 0`` with
 ``0``. The tactic automatically closes any goal of the form ``t = t``.
 Here is an example of rewriting using a compound expression:
-|-/
+-/
 
 example (x y : Nat) (p : Nat → Prop) (q : Prop) (h : q → x = y)
         (h' : p y) (hq : q) : p x := by
@@ -1086,7 +1089,7 @@ around ``h hq`` are not necessary, but we have added them for clarity.
 Multiple rewrites can be combined using the notation
 ``rw [t_1, ..., t_n]``, which is just shorthand for
 ``rw t_1; ...; rw t_n``. The previous example can be written as follows:
-|-/
+-/
 
 example (f : Nat → Nat) (k : Nat) (h₁ : f 0 = 0) (h₂ : k = 0) : f k = 0 := by
   rw [h₂, h₁]
@@ -1096,7 +1099,7 @@ By default, ``rw`` uses an equation in the forward direction, matching
 the left-hand side with an expression, and replacing it with the
 right-hand side. The notation ``←t`` can be used to instruct the tactic
 to use the equality ``t`` in the reverse direction.
-|-/
+-/
 
 example (f : Nat → Nat) (a b : Nat) (h₁ : a = b) (h₂ : f a = 0) : f b = 0 := by
   rw [←h₁, h₂]
@@ -1111,7 +1114,7 @@ subterm in the pattern, in which case the ``rw`` tactic chooses the
 first match it finds when traversing the term. If that is not the one
 you want, you can use additional arguments to specify the appropriate
 subterm.
-|-/
+-/
 
 example (a b c : Nat) : a + b + c = a + c + b := by
   rw [Nat.add_assoc, Nat.add_comm b, ← Nat.add_assoc]
@@ -1136,7 +1139,7 @@ take place on the right-hand side by specifying the second argument to
 
 By default, the ``rewrite`` tactic affects only the goal. The notation
 ``rw [t] at h`` applies the rewrite ``t`` at hypothesis ``h``.
-|-/
+-/
 
 example (f : Nat → Nat) (a : Nat) (h : a + 0 = 0) : f a = f 0 := by
   rw [Nat.add_zero] at h
@@ -1150,7 +1153,7 @@ rewrite the goal to ``f 0 = f 0``.
 The ``rewrite`` tactic is not restricted to propositions. In the
 following example, we use ``rw [h] at t`` to rewrite the hypothesis
 ``t : Tuple α n`` to ``t : Tuple α 0``.
-|-/
+-/
 
 def Tuple (α : Type) (n : Nat) :=
   { as : List α // as.length = n }
@@ -1168,7 +1171,7 @@ goal, the simplifier offers a more powerful form of automation. A number
 of identities in Lean's library have been tagged with the ``[simp]``
 attribute, and the ``simp`` tactic uses them to iteratively rewrite
 subterms in an expression.
-|-/
+-/
 
 example (x y z : Nat) (p : Nat → Prop) (h : p (x * y))
         : (x + 0) * (0 + y * 1 + z * 0) = x * y := by
@@ -1185,7 +1188,7 @@ goal to ``x * y = x * y``. At that point, ``simp`` applies reflexivity
 to finish it off. In the second example, ``simp`` reduces the goal to
 ``p (x * y)``, at which point the assumption ``h`` finishes it off. Here
 are some more examples with lists:
-|-/
+-/
 
 open List
 
@@ -1199,7 +1202,7 @@ example (xs ys : List α)
 
 /-|
 As with ``rw``, you can use the keyword ``at`` to simplify a hypothesis:
-|-/
+-/
 
 example (x y z : Nat) (p : Nat → Prop)
         (h : p ((x + 0) * (0 + y * 1 + z * 0))) : p (x * y) := by
@@ -1208,7 +1211,7 @@ example (x y z : Nat) (p : Nat → Prop)
 /-|
 Moreover, you can use a "wildcard" asterisk to simplify all the
 hypotheses and the goal:
-|-/
+-/
 
 attribute [local simp] Nat.mul_comm Nat.mul_assoc Nat.mul_left_comm
 attribute [local simp] Nat.add_assoc Nat.add_comm Nat.add_left_comm
@@ -1240,7 +1243,7 @@ the parentheses in an expression are associated to the right, and the
 expressions are ordered in a canonical (though somewhat arbitrary) way.
 Two expressions that are equivalent up to associativity and
 commutativity are then rewritten to the same canonical form.
-|-/
+-/
 
 # attribute [local simp] Nat.mul_comm Nat.mul_assoc Nat.mul_left_comm
 # attribute [local simp] Nat.add_assoc Nat.add_comm Nat.add_left_comm
@@ -1258,7 +1261,7 @@ including general lemmas, local hypotheses, definitions to unfold, and
 compound expressions. The ``simp`` tactic also recognizes the ``←t``
 syntax that ``rewrite`` does. In any case, the additional rules are
 added to the collection of identities that are used to simplify a term.
-|-/
+-/
 
 def f (m n : Nat) : Nat :=
   m + n + m
@@ -1268,7 +1271,7 @@ example {m n : Nat} (h : n = 1) (h' : 0 = m) : (f m n) = n := by
 
 /-|
 A common idiom is to simplify a goal using local hypotheses:
-|-/
+-/
 
 example (f : Nat → Nat) (k : Nat) (h₁ : f 0 = 0) (h₂ : k = 0) : f k = 0 := by
   simp [h₁, h₂]
@@ -1276,14 +1279,14 @@ example (f : Nat → Nat) (k : Nat) (h₁ : f 0 = 0) (h₂ : k = 0) : f k = 0 :=
 /-|
 To use all the hypotheses present in the local context when simplifying,
 we can use the wildcard symbol, ``*``:
-|-/
+-/
 
 example (f : Nat → Nat) (k : Nat) (h₁ : f 0 = 0) (h₂ : k = 0) : f k = 0 := by
   simp [*]
 
 /-|
 Here is another example:
-|-/
+-/
 
 example (u w x y z : Nat) (h₁ : x = y + z) (h₂ : w = u + x)
         : w = z + y + u := by
@@ -1294,7 +1297,7 @@ The simplifier will also do propositional rewriting. For example, using
 the hypothesis ``p``, it rewrites ``p ∧ q`` to ``q`` and ``p ∨ q`` to
 ``true``, which it then proves trivially. Iterating such rewrites
 produces nontrivial propositional reasoning.
-|-/
+-/
 
 example (p q : Prop) (hp : p) : p ∧ q ↔ q := by
   simp [*]
@@ -1308,7 +1311,7 @@ example (p q r : Prop) (hp : p) (hq : q) : p ∧ (q ∨ r) := by
 /-|
 The next example simplifies all the hypotheses, and then uses them to
 prove the goal.
-|-/
+-/
 
 example (u w x x' y y' z : Nat) (p : Nat → Prop)
         (h₁ : x + 0 = x') (h₂ : y + 0 = y')
@@ -1321,7 +1324,7 @@ One thing that makes the simplifier especially useful is that its
 capabilities can grow as a library develops. For example, suppose we
 define a list operation that symmetrizes its input by appending its
 reversal:
-|-/
+-/
 
 def mk_symm (xs : List α) :=
   xs ++ xs.reverse
@@ -1329,7 +1332,7 @@ def mk_symm (xs : List α) :=
 /-|
 Then for any list ``xs``, ``reverse (mk_symm xs)`` is equal to
 ``mk_symm xs``, which can easily be proved by unfolding the definition:
-|-/
+-/
 
 # def mk_symm (xs : List α) :=
 #  xs ++ xs.reverse
@@ -1339,7 +1342,7 @@ theorem reverse_mk_symm (xs : List α)
 
 /-|
 We can now use this theorem to prove new results:
-|-/
+-/
 
 # def mk_symm (xs : List α) :=
 #  xs ++ xs.reverse
@@ -1360,7 +1363,7 @@ But using ``reverse_mk_symm`` is generally the right thing to do, and it
 would be nice if users did not have to invoke it explicitly. You can
 achieve that by marking it as a simplification rule when the theorem is
 defined:
-|-/
+-/
 
 # def mk_symm (xs : List α) :=
 #  xs ++ xs.reverse
@@ -1380,7 +1383,7 @@ example (xs ys : List Nat) (p : List Nat → Prop)
 /-|
 The notation ``@[simp]`` declares ``reverse_mk_symm`` to have the
 ``[simp]`` attribute, and can be spelled out more explicitly:
-|-/
+-/
 
 # def mk_symm (xs : List α) :=
 #  xs ++ xs.reverse
@@ -1402,7 +1405,7 @@ example (xs ys : List Nat) (p : List Nat → Prop)
 /-|
 The attribute can also be applied any time after the theorem is
 declared:
-|-/
+-/
 
 # def mk_symm (xs : List α) :=
 #  xs ++ xs.reverse
@@ -1427,7 +1430,7 @@ remove it; it persists in any file that imports the one where the
 attribute is assigned. As we will discuss further in
 `Attributes <TBD>`__, one can limit the scope of an attribute to the
 current file or section using the ``local`` modifier:
-|-/
+-/
 
 # def mk_symm (xs : List α) :=
 #  xs ++ xs.reverse
@@ -1464,7 +1467,7 @@ includes all theorems that have been marked with the attribute
 to use a more explicitly crafted list of rules. In the examples below,
 the minus sign and ``only`` are used to block the application of
 ``reverse_mk_symm``.
-|-/
+-/
 
 def mk_symm (xs : List α) :=
   xs ++ xs.reverse
@@ -1496,7 +1499,7 @@ command ``syntax``. Then, we use the command ``macro_rules`` to specify
 what should be done when ``triv`` is used. You can provide different
 expansions, and the tactic interpreter will try all of them until one
 succeeds.
-|-/
+-/
 
 -- Define a new tactic notation
 syntax "triv" : tactic
@@ -1539,7 +1542,7 @@ Exercises
    appropriate.
 
 2. Use tactic combinators to obtain a one line proof of the following:
-|-/
+-/
 
  example (p q r : Prop) (hp : p)
          : (p ∨ q ∨ r) ∧ (q ∨ p ∨ r) ∧ (q ∨ r ∨ p) := by
