@@ -773,6 +773,49 @@ def lean3_attach_commas(fragments):
                 grouped[idx] = Text(rest) if rest else None
     return [g for g in grouped if g is not None]
 
+LEAN_TRIM_PREFIX = re.compile(r"^\s+")
+LEAN_TRIM_POSTFIX = re.compile(r"(\s|;)+$")
+
+def lean4_trim_sentences(fragments):
+    """This pass removes all prefixes and postfixes of whitespaces, newlines, or semicolons
+    of a sentences and transforms these pre- and postfixes into separate Text fragments.
+    """
+    transformed = []
+    for fr in fragments:
+        if isinstance(fr, RichSentence):
+            prefix = ""
+            center = fr.input.contents
+            postfix = ""
+            prefix_match = LEAN_TRIM_PREFIX.search(center)
+            if prefix_match is not None:
+                prefix = center[:prefix_match.start()]
+                center = center[prefix_match.start():]
+            postifx_match = LEAN_TRIM_POSTFIX.search(center)
+            if postifx_match is not None:
+                postfix = center[postifx_match.start():]
+                center = center[:postifx_match.start()]
+            transformed.append(Text(prefix))
+            new_input = fr.input._replace(contents=center)
+            transformed.append(fr._replace(input=new_input))
+            transformed.append(Text(postfix))
+        else:
+            transformed.append(fr)
+    return transformed
+
+LEAN4_WHITESPACE_ONLY = re.compile(r"^\s*$")
+
+def lean4_transform_whitespace_to_text(fragments):
+    "Transforms each sentence that only contains whitespaces to a Text fragment."
+    transformed = []
+    for fr in fragments:
+        if isinstance(fr, RichSentence):
+            if LEAN4_WHITESPACE_ONLY.match(str(fr.input.contents)):
+                transformed.append(Text(fr.input.contents))
+            else:
+                transformed.append(fr)
+        else:
+            transformed.append(fr)
+    return transformed
 
 DEFAULT_TRANSFORMS = {
     "coq": [
@@ -795,8 +838,11 @@ DEFAULT_TRANSFORMS = {
         process_io_annots
     ],
     "lean4": [
+        lean4_trim_sentences,
+        lean4_transform_whitespace_to_text,
         coalesce_text,
         enrich_sentences,
+        group_hypotheses,
         read_io_comments("lean4"),
         process_io_annots
     ],
