@@ -639,7 +639,7 @@ def post_process_arguments(parser, args):
     args.coqc_args.extend(coq_args)
 
     leanInk_args = []
-    if args.leanInk_args_lake != None:
+    if args.leanInk_args_lake is not None:
         leanInk_args.extend(("--lake", args.leanInk_args_lake))
     if args.debug:
         leanInk_args.extend(("--verbose",))
@@ -850,7 +850,7 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
 
     TRACEBACK_HELP = "Print error traces."
     debug.add_argument("--traceback", action="store_true",
-                       default=False, help=TRACEBACK_HELP)    
+                       default=False, help=TRACEBACK_HELP)
     return parser
 
 def parse_arguments():
