@@ -483,6 +483,37 @@ See `<recipes/alectryon_custom_driver.py>`__ for a concrete example.
 Other proof assistants
 ======================
 
+.. _lean4:
+
+Lean 4
+------
+
+Alectryon has support for the Lean 4. LeanInk (`LeanInk <https://github.com/insightmind/LeanInk>`_) is required to use Alectryon with Lean 4 files.
+HTML and LaTeX output is supported from plain ``.lean`` source files and from ``.rst`` files.
+The reStructuredText directive for Lean 4 is ``.. lean4::``, for Markdown/MyST files it is ``{lean4}``. The literate delimiter is ``/-|``.
+
+- Lean 4 code in reStructuredText files, like this:
+
+  .. code-block:: rst
+
+     Some reST prose.
+
+     .. lean4::
+
+        … some Lean 4 code
+
+- reStructuredText prose in Lean 4 files, like this:
+
+  .. code-block:: lean
+
+     … some Lean 4 code
+
+     /-|
+     Some reST prose.
+     |-/
+
+See `<recipes/plain-lean4.lean>`__, `<recipes/lean4-tactics.rst>`__, `<recipes/lean4-tactics-myst.md>`__ and `<recipes/literate-lean4.lean>`__  for examples.
+
 .. _lean3:
 
 Lean 3
@@ -522,37 +553,7 @@ The following features are missing:
 Support for quoting snippets and displaying or hiding sentences is partial.
 
 For a more detailed TODO list, see the header of `<alectryon/lean3.py>`__.
-
-.. _lean4:
-
-Lean 4
-------
-
-Alectryon also has support for the upcoming Lean 4. To use Alectryon with your Lean 4 files, you have to install LeanInk first. Take a look at `LeanInk <https://github.com/insightmind/LeanInk>`_ for installation instructions.
-Lean 4 support is similar to Lean 3 support. The reStructuredText directive for Lean 4 is ``.. lean4::``, for Markdown/MyST files it is ``{lean4}``. The literate delimiter is also ``/-|``:
-
-- Lean 4 code in reStructuredText files, like this:
-
-  .. code-block:: rst
-
-     Some reST prose.
-
-     .. lean4::
-
-        … some Lean 4 code
-
-- reStructuredText prose in Lean 4 files, like this:
-
-  .. code-block:: lean
-
-     … some Lean 4 code
-
-     /-|
-     Some reST prose.
-     |-/
-
-See `<recipes/plain-lean4.lean>`__, `<recipes/lean4-tactics.rst>`__, `<recipes/lean4-tactics-myst.md>`__ and `<recipes/literate-lean4.lean>`__  for examples.
-
+ 
 Polyglot documents
 ------------------
 
