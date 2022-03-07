@@ -490,7 +490,7 @@ Lean 4
 
 Alectryon has support for the Lean 4. LeanInk (`LeanInk <https://github.com/insightmind/LeanInk>`_) is required to use Alectryon with Lean 4 files.
 HTML and LaTeX output is supported from plain ``.lean`` source files and from ``.rst`` files.
-The reStructuredText directive for Lean 4 is ``.. lean4::``, for Markdown/MyST files it is ``{lean4}``. The literate delimiter is ``/-|``:
+The reStructuredText directive for Lean 4 is ``.. lean4::``, for Markdown/MyST files it is ``{lean4}``. The literate delimiter is ``/-|``.
 
 - Lean 4 code in reStructuredText files, like this:
 
