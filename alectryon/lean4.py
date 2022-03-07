@@ -47,10 +47,8 @@ class Lean4(CLIDriver):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
         self.lake_file_path = None
 
-    def run_leanInk_document(self, encoded_document):
-        r"""
-        Run LeanInk with encoded_document file.
-        """
+    def run_leanInk_document(self, encoded_document: EncodedDocument):
+        "Run LeanInk with encoded_document file."
         with tempfile.TemporaryDirectory(prefix=self.TMP_PREFIX) as temp_directory:
             input_file_name = self.fpath.with_suffix(self.LEAN_FILE_EXT)
             input_file = Path(temp_directory) / os.path.basename(input_file_name)
@@ -73,9 +71,7 @@ class Lean4(CLIDriver):
             return tuple_result
 
     def resolve_lake_arg(self):
-        r"""
-        Remove lake argument from user_args for manual evaluation.
-        """
+        "Remove lake argument from user_args for manual evaluation."
         new_user_args = []
         self.lake_file_path = None
         for (index, arg) in enumerate(self.user_args, start=0):
