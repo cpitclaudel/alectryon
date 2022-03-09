@@ -74,6 +74,18 @@ span.section-subtitle {
     font-size: 80%,
 }
 
+a.self-link {
+  text-decoration: none;
+}
+
+*:hover > a.self-link:after {
+  text-decoration: none;
+  content: "\1F517"; /* LINK SYMBOL */
+  color: grey;
+  font-size: smaller;
+  margin-left: 0.2em;
+}
+
 /* //-------- Headings ---------- */
 
 
