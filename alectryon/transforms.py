@@ -20,7 +20,7 @@
 
 """Post-process annotated fragments of source code."""
 
-from typing import Optional
+from typing import Optional, Tuple
 
 import re
 import textwrap
@@ -396,9 +396,11 @@ def strip_ids_and_props(obj, props):
 LEADING_BLANKS_RE = re.compile(r'\A([ \t]*(?:\n|\Z))?(.*?)([ \t]*)\Z',
                                flags=re.DOTALL)
 
-def isolate_blanks(txt):
-    """Split `txt` into blanks and an optional newline, text, and blanks."""
-    return LEADING_BLANKS_RE.match(txt).groups()
+def isolate_blanks(txt) -> Tuple[int, int]:
+    """Split `txt` into blanks and an optional newline, text, and blanks.
+    Returns the positions of the two splits.
+    """
+    return LEADING_BLANKS_RE.match(txt).span(2)
 
 def group_whitespace_with_code(fragments):
     r"""Attach spaces to neighboring sentences.
@@ -422,25 +424,26 @@ def group_whitespace_with_code(fragments):
     grouped = list(enrich_sentences(fragments))
     for idx, fr in enumerate(grouped):
         if isinstance(fr, Text):
-            before, rest, after = isolate_blanks(fr.contents)
+            txt = fr.contents
+            beg, end = isolate_blanks(txt)
 
-            if before:
+            if 0 < beg:
                 if idx > 0:
                     assert not isinstance(grouped[idx - 1], Text)
-                    grouped[idx - 1].suffixes.append(before)
-                elif not rest: # blank text at very beginning
-                    after = before + after
+                    grouped[idx - 1].suffixes.append(txt[:beg])
+                elif beg == end: # blank text at very beginning
+                    beg = end = 0
                 else:
-                    rest = before + rest
+                    beg = 0
 
-            if after:
+            if end < len(txt):
                 if idx + 1 < len(grouped):
                     assert not isinstance(grouped[idx + 1], Text)
-                    grouped[idx + 1].prefixes.append(after)
+                    grouped[idx + 1].prefixes.append(txt[end:])
                 else:
-                    rest = rest + after
+                    end = len(txt)
 
-            grouped[idx] = Text(rest) if rest else None
+            grouped[idx] = Text(txt[beg:end]) if end > beg else None
     return [g for g in grouped if g is not None]
 
 COQ_BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
