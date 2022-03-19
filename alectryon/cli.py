@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Tuple, List, Union
+from typing import Dict, Optional, Tuple, List, Union
 
 import argparse
 import inspect
@@ -612,6 +612,18 @@ COPY_FUNCTIONS = {
     "none": None
 }
 
+DRIVER_ARGS_BY_NAME: Dict[str, Optional[str]] = {
+    "sertop": "sertop_args",
+    "sertop_noexec": "sertop_args",
+    "coqc_time": "coqc_args",
+    "lean3_repl": None,
+    "leanInk": "leanInk_args"
+}
+"""Map from driver name to field in argparse namespace.
+Used to populate ``args.driver_args_by_name`` in ``post_process_arguments``."""
+
+assert set(core.ALL_DRIVERS) == DRIVER_ARGS_BY_NAME.keys()
+
 def post_process_arguments(parser, args):
     if len(args.input) > 1 and args.output:
         parser.error("argument --output: Not valid with multiple inputs")
@@ -640,20 +652,16 @@ def post_process_arguments(parser, args):
     args.sertop_args.extend(coq_args)
     args.coqc_args.extend(coq_args)
 
-    leanInk_args = []
+    args.leanInk_args = []
     if args.leanInk_args_lake is not None:
-        leanInk_args.extend(("--lake", args.leanInk_args_lake))
+        args.leanInk_args.extend(("--lake", args.leanInk_args_lake))
     if args.debug:
-        leanInk_args.extend(("--verbose",))
+        args.leanInk_args.extend(("--verbose",))
 
     args.driver_args_by_name = {
-        "sertop": args.sertop_args,
-        "sertop_noexec": args.sertop_args,
-        "coqc_time": args.coqc_args,
-        "lean3_repl": (),
-        "leanInk": leanInk_args,
+        driver: (getattr(args, field) if field else ())
+        for driver, field in DRIVER_ARGS_BY_NAME.items()
     }
-    assert set(core.ALL_DRIVERS) == args.driver_args_by_name.keys()
 
     # argparse applies ‘type’ before ‘choices’, so we do the conversion here
     args.copy_fn = COPY_FUNCTIONS[args.copy_fn]
