@@ -586,9 +586,21 @@ Keys in the driver dictionary are driver names; values are pairs of module names
 and class names.  In other words, each driver is a class within a module.
 """
 
-DEFAULT_DRIVERS = {lang: next(iter(drivers)) for lang, drivers in DRIVERS_BY_LANGUAGE.items()}
-ALL_LANGUAGES = DEFAULT_DRIVERS.keys()
+ALL_LANGUAGES = DRIVERS_BY_LANGUAGE.keys()
 ALL_DRIVERS = {d for ds in DRIVERS_BY_LANGUAGE.values() for d in ds}
+DEFAULT_DRIVERS = {lang: next(iter(drivers)) for lang, drivers in DRIVERS_BY_LANGUAGE.items()}
+
+EXTENSIONS_BY_LANGUAGE = {
+    "coq": (".v",),
+    "lean4": (".lean",),
+    "lean3": (".lean3", ".lean"),
+}
+"""A map from language identifiers to file extensions.
+
+Extensions past the first one are only used for stripping file names (so
+``.lean`` is Lean4, but ``xyz.lean`` in ``lean3`` still becomes ``xyz.html``).
+"""
+assert EXTENSIONS_BY_LANGUAGE.keys() == ALL_LANGUAGES
 
 def resolve_driver(input_language, driver_name):
     if input_language not in DRIVERS_BY_LANGUAGE:
