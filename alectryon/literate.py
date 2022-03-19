@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, Deque, Iterable, Iterator, List, Optional, Tuple, Type, TypeVar, Union
 
 import re
 from enum import Enum
@@ -18,6 +18,9 @@ class StringView:
 
     def __len__(self):
         return self.end - self.beg
+
+    def __bool__(self):
+        return len(self) > 0
 
     def __getitem__(self, idx):
         if isinstance(idx, slice):
@@ -86,6 +89,9 @@ class Line(namedtuple("Line", "num parts")):
         """
         return sum(len(p) for p in self.parts)
 
+    def __bool__(self):
+        return len(self) > 0
+
     def __str__(self):
         s = "".join(str(p) for p in self.parts)
         return s if not s.isspace() else ""
@@ -101,24 +107,35 @@ class Line(namedtuple("Line", "num parts")):
             n -= len(p)
         return Line(self.num, self.parts)
 
-    def replace(self, src, dst):
+    def __radd__(self, other: Any) -> "Line":
+        if not isinstance(other, str):
+            return NotImplemented
+        return self._replace(parts = [other] + self.parts)
+
+    def replace(self, src: str, dst: str) -> "Line":
         parts = []
         for part in self.parts:
             for idx, p in enumerate(part.split(src)):
                 if idx > 0:
                     parts.append(dst)
                 parts.append(p)
-        self.parts[:] = parts
-        return self
+        return self._replace(parts=parts)
+
+    @staticmethod
+    def replacen(line: "T_LineOrStr", pairs) -> "T_LineOrStr":
+        for src, dst in pairs:
+            line = line.replace(src, dst)
+        return line
 
     def match(self, regex):
         assert len(self.parts) == 1
         return self.parts[0].match(regex)
 
-def replace(line, pairs):
-    for src, dst in pairs:
-        line = line.replace(src, dst)
-    return line
+    # Overload needed because of __len__ above
+    def _replace(self, **kwds) -> "Line": # pylint: disable=arguments-differ
+        line = Line(*map(kwds.pop, self._fields, self))
+        assert not kwds
+        return line
 
 def strip_block(lines, beg, end):
     while beg < len(lines) and lines[beg].isspace():
@@ -231,20 +248,28 @@ class ParsingError(ValueError):
         return "{}:{}: {}".format(self.line, self.column, self.message)
 
 class Parser:
-    TRANSITIONS: Dict[str, Tuple[Token, ...]] = {}
+    def __init__(self, doc: str):
+        self.doc = doc
+
+    def partition(self) -> Iterable[Union[Code, Comment]]:
+        """Partition `self.doc` into runs of ``Code`` and ``Comment`` objects."""
+        raise NotImplementedError
+
+class BlockParser(Parser):
+    TRANSITIONS: Dict[State, Tuple[Token, ...]] = {}
     TOKEN_REGEXPS: Dict[Token, str] = {}
 
-    def __init__(self, doc):
-        self.doc = doc
+    def __init__(self, doc: str):
+        super().__init__(doc)
         self.pos = 0
-        self.spans = []
+        self.spans: List[Union[Code, Comment]] = []
         self.stack: List[Tuple[int, int, State]] = [(0, 0, State.CODE)]
 
     def step(self, state: State, start: int, tok: Token, mstart: int):
         raise NotImplementedError()
 
-    def partition(self):
-        """Partition `doc` into runs of code and comments (both ``StringView``\\s)."""
+    def partition(self) -> List[Union[Code, Comment]]:
+        """Partition `self.doc` into runs of ``Code`` and ``Comment`` objects."""
         scanners = {state: regexp_opt(tokens, self.TOKEN_REGEXPS)
                     for (state, tokens) in self.TRANSITIONS.items()}
         while True:
@@ -259,24 +284,20 @@ class Parser:
         return self.spans
 
 def partition(lang, code):
-    return lang.parser(code).partition()
+    return list(lang.parser(code).partition())
 
 # Language definitions
-# ====================
+# --------------------
+
+LineOrStr = Union[Line, str]
+T_LineOrStr = TypeVar("T", bound=LineOrStr)
 
 class LangDef:
-    def __init__(self, name: str, parser: Type[Parser],
-                 lit_open: str, lit_close: str,
-                 lit_open_re: str, lit_close_re: str,
-                 quote_pairs: List[Tuple[str, str]]):
+    def __init__(self, name: str, parser: Type[Parser]):
         self.name = name
         self.parser = parser
         self.header = ".. {}::".format(name)
         self.directive = re.compile(r"(?P<indent>[ \t]*)([.][.] {}::.*)".format(name))
-        self.lit_open, self.lit_close, self.lit_empty = lit_open, lit_close, lit_open + lit_close
-        self.lit_open_re, self.lit_close_re = re.compile(lit_open_re), re.compile(lit_close_re)
-        self.quote_pairs = list(quote_pairs)
-        self.unquote_pairs = [(dst, src) for (src, dst) in self.quote_pairs]
         self.rst_block = re.compile(r"""
            (?P<directive>
             ^(?P<indent>[ ]*)
@@ -290,7 +311,59 @@ class LangDef:
                 (?P=indent)[ ][ ][ ] .*$)*)
         """.format(name), re.VERBOSE | re.MULTILINE)
 
-class CoqParser(Parser):
+    @property
+    def lit_empty(self) -> str:
+        raise NotImplementedError
+
+    def is_literate_comment(self, block: StringView) -> bool:
+        raise NotImplementedError
+
+    def wrap_literate(self, lines: Iterable[LineOrStr]) -> Iterable[LineOrStr]:
+        raise NotImplementedError
+
+    def unwrap_literate(self, block: StringView) -> Iterable[StringView]:
+        raise NotImplementedError
+
+    def quote(self, line: T_LineOrStr) -> T_LineOrStr:
+        raise NotImplementedError
+
+    def unquote(self, line: T_LineOrStr) -> T_LineOrStr:
+        raise NotImplementedError
+
+class BlockLangDef(LangDef):
+    def __init__(self, name: str, parser: Type[Parser],
+                 lit_open: str, lit_close: str,
+                 lit_open_re: str, lit_close_re: str,
+                 quote_pairs: List[Tuple[str, str]]):
+        super().__init__(name, parser)
+        self.lit_open, self.lit_close = lit_open, lit_close
+        self.lit_open_re, self.lit_close_re = re.compile(lit_open_re), re.compile(lit_close_re)
+        self.quote_pairs = list(quote_pairs)
+        self.unquote_pairs = [(dst, src) for (src, dst) in self.quote_pairs]
+
+    @property
+    def lit_empty(self) -> str:
+        return self.lit_open + self.lit_close
+
+    def is_literate_comment(self, block: StringView) -> bool:
+        return bool(block.match(self.lit_open_re))
+
+    def wrap_literate(self, lines: Iterable[LineOrStr]) -> Iterable[LineOrStr]:
+        yield self.lit_open
+        yield from lines
+        yield self.lit_close
+
+    def unwrap_literate(self, block: StringView) -> Iterable[StringView]:
+        return split_lines(block.trim(self.lit_open_re, self.lit_close_re))
+
+    def quote(self, line: T_LineOrStr) -> T_LineOrStr:
+        return Line.replacen(line, self.quote_pairs)
+
+    def unquote(self, line: T_LineOrStr) -> T_LineOrStr:
+        return Line.replacen(line, self.unquote_pairs)
+
+
+class CoqParser(BlockParser):
     TRANSITIONS = {
         State.CODE: (Token.COMMENT_OPEN,
                      Token.STRING_DELIM,
@@ -314,7 +387,7 @@ class CoqParser(Parser):
     }
 
     def step(self, state: State, start: int, tok: Token, mstart: int):
-        """Partition `doc` into runs of code and comments (both ``StringView``\\s).
+        """Partition `doc` into runs of ``Code`` and ``Comment`` objects.
 
         Example:
         >>> CoqParser("Code (* comment *) code").partition()
@@ -378,7 +451,7 @@ class CoqParser(Parser):
             assert False
         return True
 
-class LeanParser(Parser):
+class LeanParser(BlockParser):
     # FIXME: Add support for char (``'"'``) syntax
     # FIXME: Technically doc comments don't support nesting
     TRANSITIONS = {
@@ -408,7 +481,7 @@ class LeanParser(Parser):
     }
 
     def step(self, state: State, start: int, tok: Token, mstart: int):
-        r"""Partition `doc` into runs of code and comments (both ``StringView``\\s).
+        r"""Partition `doc` into runs of ``Code`` and ``Comment`` objects.
 
         Example:
         >>> LeanParser("Code /- comment -/ code").partition()
@@ -495,7 +568,7 @@ CodeBlock = namedtuple("CodeBlock", "lines indent")
 def _last_directive(lang: LangDef, lines):
     r"""Scan backwards across `lines` to find the beginning of the Coq directive.
 
-    >>> _, ls = number_lines(StringView('''\
+    >>> _, ls = split_lines_numbered(StringView('''\
     ... Text.
     ... .. coq:: unfold
     ...    :name: nm
@@ -507,7 +580,7 @@ def _last_directive(lang: LangDef, lines):
          Line(num=8, parts=['   :name: nm']),
          Line(num=9, parts=[''])]...)
 
-    >>> _, ls = number_lines(StringView('''\
+    >>> _, ls = split_lines_numbered(StringView('''\
     ... Text.
     ...    .. coq:: unfold
     ...    Text.
@@ -518,7 +591,7 @@ def _last_directive(lang: LangDef, lines):
          Line(num=8, parts=['   Text.']),
          Line(num=9, parts=[''])]...)
 
-    >>> _, ls = number_lines(StringView('Text.\n   Text.'), 6)
+    >>> _, ls = split_lines_numbered(StringView('Text.\n   Text.'), 6)
     >>> _last_directive(COQ, ls) # doctest: +ELLIPSIS
     (...[Line(num=6, parts=['Text.']),
          Line(num=7, parts=['   Text.'])]...)
@@ -546,6 +619,7 @@ def lit(lang: LangDef, lines, indent):
     strip_deque(lines)
     lines, m, directive_lines = _last_directive(lang, lines)
     if directive_lines:
+        assert m
         indent = m.group("indent")
         strip_deque(lines)
     else:
@@ -554,40 +628,46 @@ def lit(lang: LangDef, lines, indent):
         directive_lines = [indent + lang.header]
     return Lit(lines, directive_lines=directive_lines, indent=indent)
 
-def number_lines(span, start):
-    lines = span.split("\n")
+def number_lines(lines: Iterable[StringView], start: int) \
+    -> Tuple[int, Deque[Line]]:
     d = deque(Line(num, [s]) for (num, s) in enumerate(lines, start=start))
-    return start + len(lines) - 1, d
+    return start + len(d) - 1, d
+
+def split_lines(text: StringView) -> Iterable[StringView]:
+    return text.split("\n")
+
+def split_lines_numbered(text: StringView, start: int) \
+    -> Tuple[int, Iterable[Line]]:
+    return number_lines(split_lines(text), start)
 
 def gen_rst(lang: LangDef, spans):
     linum, indent, prefix = 0, "", [lang.header]
     for span in spans:
         if isinstance(span, Comment):
-            trimmed = span.v.trim(lang.lit_open_re, lang.lit_close_re)
-            linum, lines = number_lines(trimmed, linum)
+            lines = lang.unwrap_literate(span.v)
+            linum, lines = number_lines(lines, linum)
             litspan = lit(lang, lines, indent)
             indent, prefix = litspan.indent, litspan.directive_lines
             if litspan.lines:
-                yield from (replace(l, lang.unquote_pairs) for l in litspan.lines)
+                yield from (lang.unquote(l) for l in litspan.lines)
                 yield ""
         else:
-            linum, lines = number_lines(span.v, linum)
+            linum, lines = split_lines_numbered(span.v, linum)
             strip_deque(lines)
-            for l in lines:
-                l.parts.insert(0, indent + "   ")
             if lines:
                 yield from prefix
                 yield ""
-                yield from lines
+                for line in lines:
+                    yield indent + "   " + line
                 yield ""
 
-def _partition_literate(code, spans, opener):
+def _partition_literate(code, spans, literate_matcher):
     """Fold ``Comment`` spans into ``Code`` ones, except those matching ``opener``.
     ``spans`` should be the result of partitioning ``code``."""
     code = StringView(code, 0, len(code))
     code_acc = code[0:0]
     for span in spans:
-        if isinstance(span, Comment) and span.v.match(opener):
+        if isinstance(span, Comment) and literate_matcher(span.v):
             if code_acc:
                 yield Code(code_acc)
             code_acc = code[span.v.end:span.v.end]
@@ -598,7 +678,8 @@ def _partition_literate(code, spans, opener):
         yield Code(code_acc)
 
 def partition_literate(lang: LangDef, code, opener=None):
-    return _partition_literate(code, partition(lang, code), opener or lang.lit_open_re)
+    matcher = (lambda s: s.match(opener)) if opener else lang.is_literate_comment
+    return _partition_literate(code, partition(lang, code), matcher)
 
 def code2rst_lines(lang: LangDef, code):
     return gen_rst(lang, partition_literate(lang, code))
@@ -650,9 +731,9 @@ def rst_partition(lang: LangDef, s):
         directive = StringView(s, *m.span('directive'))
         body = StringView(s, *m.span('body'))
 
-        linum, rst_lines = number_lines(rst, linum)
-        linum, directive_lines = number_lines(directive, linum)
-        linum, body_lines = number_lines(body, linum)
+        linum, rst_lines = split_lines_numbered(rst, linum)
+        linum, directive_lines = split_lines_numbered(directive, linum)
+        linum, body_lines = split_lines_numbered(body, linum)
 
         # body_lines.popleft() # Discard initial blank
 
@@ -661,7 +742,7 @@ def rst_partition(lang: LangDef, s):
         beg = m.end()
     if beg < len(s):
         rst = StringView(s, beg, len(s))
-        linum, lines = number_lines(rst, linum)
+        linum, lines = split_lines_numbered(rst, linum)
         yield Lit(lines, directive_lines=None, indent=None)
 
 # Conversion
@@ -680,6 +761,16 @@ def redundant_directive(lang: LangDef, directive_lines, directive_indent, last_i
         and directive_indent == last_indent
     )
 
+def concat_line_blocks(*blocks: List[Line]) -> Iterator[LineOrStr]:
+    prev = None
+    for b in blocks:
+        if not b:
+            continue
+        if prev:
+            yield ""
+        yield from b
+        prev = b
+
 def trim_rst_block(lang: LangDef, block, last_indent, keep_empty):
     strip_deque(block.lines)
     last_indent = measure_indentation(block.lines[-1]) if block.lines else last_indent
@@ -687,20 +778,15 @@ def trim_rst_block(lang: LangDef, block, last_indent, keep_empty):
     directive_lines = block.directive_lines
     keep_empty = keep_empty and directive_lines
     if redundant_directive(lang, directive_lines, block.indent, last_indent):
-        directive_lines = None
+        directive_lines = []
 
     if not block.lines and not directive_lines:
         if keep_empty:
             yield lang.lit_empty
             yield ""
     else:
-        yield lang.lit_open
-        yield from (replace(l, lang.quote_pairs) for l in block.lines)
-        if directive_lines:
-            if block.lines:
-                yield ""
-            yield from directive_lines
-        yield lang.lit_close
+        lines = concat_line_blocks(block.lines, directive_lines)
+        yield from lang.wrap_literate(lang.quote(l) for l in lines)
         yield ""
 
 def trim_code_block(block):
@@ -732,7 +818,7 @@ def rst2code_marked(lang: LangDef, rst, point, marker):
 # Language definitions
 # ====================
 
-COQ = LangDef(
+COQ = BlockLangDef(
     "coq",
     CoqParser,
     lit_open="(*|", lit_close="|*)",
@@ -814,7 +900,7 @@ def rst2coq(rst):
     """
     return rst2code(COQ, rst)
 
-LEAN3 = LangDef(
+LEAN3 = BlockLangDef(
     "lean3",
     LeanParser,
     lit_open=r"/-!", lit_close=r"-/",
@@ -863,7 +949,7 @@ def rst2lean3(rst):
     """
     return rst2code(LEAN3, rst)
 
-LEAN4 = LangDef(
+LEAN4 = BlockLangDef(
     "lean4",
     LeanParser, # We can use the same parser as Lean 3, because the syntax for
                 # comments has not changed between the versions.
