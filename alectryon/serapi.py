@@ -18,14 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Dict, Iterator, List, Tuple, Union
+from typing import Any, Dict, Iterator, Iterable, List, Tuple, Union
 
 from collections import namedtuple
 import sys
 
 from . import sexp as sx
 from .core import UnexpectedError, REPLDriver, \
-    Hypothesis, Goal, Message, Sentence, Text, \
+    Hypothesis, Goal, Message, Sentence, Text, Fragment, \
     PrettyPrinted, PosView, indent, debug
 from .coq import CoqIdents
 
@@ -323,7 +323,7 @@ class SerAPI(REPLDriver):
                 fragment.messages.append(Message(message.pp))
         return fragments
 
-    def annotate(self, chunks):
+    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
         with self as api:
             return [api.run(chunk) for chunk in chunks]
 
@@ -340,7 +340,8 @@ class SerAPI_noexec(SerAPI):
     def _goals(self, sid, chunk):
         return []
 
-def annotate(chunks, sertop_args=(), fpath="-", binpath=None):
+def annotate(chunks: Iterable[str], sertop_args=(), fpath="-", binpath=None) \
+    -> List[List[Fragment]]:
     r"""Annotate multiple `chunks` of Coq code.
 
     >>> annotate(["Check 1."])

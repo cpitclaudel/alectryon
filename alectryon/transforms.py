@@ -139,8 +139,7 @@ _IO_COMMENT_RE = {
     "lean4": r"[ \t]*[/][-]{}[-][/]"
 }
 IO_COMMENT_RE = {
-    lang: re.compile(
-        r.format(_IO_ANNOTS_IN_COMMENT), re.VERBOSE)
+    lang: re.compile(r.format(_IO_ANNOTS_IN_COMMENT), re.VERBOSE)
     for lang, r in _IO_COMMENT_RE.items()
 }
 assert _IO_COMMENT_RE.keys() == ALL_LANGUAGES

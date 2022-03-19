@@ -607,7 +607,7 @@ class LeanParser(BlockParser):
         return True
 
 class DafnyParser(LineParser):
-    r"""Line-based parser for Dafny
+    r"""Line-based parser for Dafny.
 
     >>> list(DafnyParser("/// A\nB").partition())
     [Comment(v='/// A\n'), Code(v='B')]
@@ -721,8 +721,10 @@ def gen_rst(lang: LangDef, spans):
                 yield ""
 
 def _partition_literate(code, spans, literate_matcher):
-    """Fold ``Comment`` spans into ``Code`` ones, except those matching ``opener``.
-    ``spans`` should be the result of partitioning ``code``."""
+    """Fold non-literate ``Comment`` spans into ``Code`` ones.
+    ``literate_matcher`` should return ``True`` for literate comments and
+    ``False`` for regular ones.  ``spans`` should be the result of partitioning
+    ``code``."""
     code = StringView(code, 0, len(code))
     code_acc = code[0:0]
     for span in spans:
