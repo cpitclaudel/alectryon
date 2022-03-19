@@ -617,6 +617,7 @@ COPY_FUNCTIONS = {
 }
 
 DRIVER_ARGS_BY_NAME: Dict[str, Optional[str]] = {
+    "noop": None,
     "sertop": "sertop_args",
     "sertop_noexec": "sertop_args",
     "coqc_time": "coqc_args",
