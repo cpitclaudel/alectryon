@@ -288,15 +288,24 @@ class Document:
         return self.bol_offsets[line - 1] + col
 
     @staticmethod
-    def intersperse_text_fragments(text, positioned_sentences):
+    def _intersperse_text_fragments(text, pfragments: Iterable[Positioned]) -> Iterable[Fragment]:
+        """Split `text` into fragments.
+
+        For ranges covered by `pfragments`, return the corresponding element.
+        For the rest, create fresh ``Text`` objects.
+        """
         pos = 0
-        for st in positioned_sentences:
+        for st in pfragments:
             if pos < st.beg:
                 yield Text(text[pos:st.beg])
             yield st.e
             pos = st.end
         if pos < len(text):
-            yield Text(text[pos:len(text)])
+            yield Text(text[pos:])
+
+    def intersperse_text_fragments(self, pfragments: Iterable[Positioned]) -> Iterable[Fragment]:
+        """Split `self.contents` into fragments."""
+        return self._intersperse_text_fragments(self, pfragments)
 
     @staticmethod
     def with_boundaries(items: Iterable[Union[Sentence, Text, str]]):

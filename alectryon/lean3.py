@@ -225,7 +225,7 @@ class Lean3(TextREPLDriver):
 
     def partition(self):
         sentences = self._find_sentences()
-        fragments = Document.intersperse_text_fragments(self.document.contents, sentences)
+        fragments = self.document.intersperse_text_fragments(sentences)
         return self._resplit_fragments(fragments)
 
     @staticmethod
