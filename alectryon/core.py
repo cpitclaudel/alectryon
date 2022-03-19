@@ -424,8 +424,7 @@ class Driver():
     def __init__(self):
         self.observer: Observer = StderrObserver()
 
-    @classmethod
-    def version_info(cls, binpath=None):
+    def version_info(self) -> DriverInfo:
         raise NotImplementedError()
 
     def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
@@ -453,10 +452,9 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         self.user_args = args
         self.binpath: str = binpath or self.BIN
 
-    @classmethod
-    def version_info(cls, binpath=None):
-        bs = subprocess.check_output([cls.resolve_driver(binpath), *cls.VERSION_ARGS])
-        return DriverInfo(cls.NAME, bs.decode('ascii', 'ignore').strip())
+    def version_info(self) -> DriverInfo:
+        bs = subprocess.check_output([self.resolve_driver(), *self.VERSION_ARGS])
+        return DriverInfo(self.NAME, bs.decode('ascii', 'ignore').strip())
 
     @property
     def metadata(self):
@@ -467,12 +465,10 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         """Raise an error to indicate that ``binpath`` cannot be found."""
         raise ValueError("{} binary not found (bin={}).".format(cls.NAME, binpath))
 
-    @classmethod
-    def resolve_driver(cls, binpath: str) -> str:
-        assert cls.BIN
-        path: Optional[str] = which(binpath or cls.BIN)
+    def resolve_driver(self) -> str:
+        path: Optional[str] = which(self.binpath)
         if path is None:
-            cls.driver_not_found(binpath)
+            self.driver_not_found(self.binpath)
         return path
 
     @staticmethod
@@ -484,7 +480,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         return p.stderr
 
     def run_cli(self, working_directory=None, capture_output=True, more_args=()):
-        cmd = [self.resolve_driver(self.binpath),
+        cmd = [self.resolve_driver(),
                *self.CLI_ARGS, *self.user_args, *more_args]
         self._debug_start(cmd)
         p = subprocess.run(cmd, cwd=working_directory,
@@ -537,7 +533,7 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
                 self.repl.wait()
 
     def _start(self, stdin: _FILE=PIPE, stderr: _FILE=PIPE, stdout: _FILE=PIPE, more_args=()):
-        cmd = [self.resolve_driver(self.binpath),
+        cmd = [self.resolve_driver(),
                *self.REPL_ARGS, *self.user_args, *self.instance_args, *more_args]
         self._debug_start(cmd)
         return subprocess.Popen(cmd, stdin=stdin, stderr=stderr, stdout=stdout)

@@ -63,12 +63,15 @@ def rst_to_code(rst, fpath, point, marker, backend):
     lang = LANGUAGES[backend.replace("+rst", "")]
     return _catch_parsing_errors(fpath, rst2code_marked, lang, rst, point, marker)
 
+def init_driver(input_language, driver_name, driver_args, fpath):
+    driver_cls = core.resolve_driver(input_language, driver_name)
+    return driver_cls(driver_args, fpath=fpath)
+
 def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
                     input_language, driver_name, driver_args, exit_code):
     from .core import StderrObserver
     from .json import CacheSet
-    driver_cls = core.resolve_driver(input_language, driver_name)
-    driver = driver_cls(driver_args, fpath=fpath)
+    driver = init_driver(input_language, driver_name, driver_args, fpath)
     with CacheSet(cache_directory, fpath, cache_compression) as caches:
         annotated = caches[input_language].update(chunks, driver)
         assert isinstance(driver.observer, StderrObserver)
@@ -293,7 +296,8 @@ def copy_assets(state, assets: List[Tuple[str, Union[str, core.Asset]]],
 
 def dump_html_standalone(snippets, fname, webpage_style,
                          html_minification, include_banner, include_vernums,
-                         assets, html_classes, input_language, driver_name):
+                         assets, html_classes, input_language,
+                         driver_name, driver_args, fpath):
     from dominate import tags, document
     from dominate.util import raw
     from . import GENERATOR
@@ -326,7 +330,7 @@ def dump_html_standalone(snippets, fname, webpage_style,
     cls = wrap_classes(webpage_style, *html_classes)
     root = doc.body.add(tags.article(cls=cls))
     if include_banner:
-        driver = core.resolve_driver(input_language, driver_name)
+        driver = init_driver(input_language, driver_name, driver_args, fpath)
         root.add(raw(gen_banner([driver.version_info()], include_vernums)))
     for snippet in snippets:
         root.add(snippet)
