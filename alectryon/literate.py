@@ -51,13 +51,15 @@ class StringView:
     def __repr__(self):
         return repr(str(self))
 
-    def split(self, sep, nsplits=None):
+    def split(self, sep, nsplits=None, keepsep=False):
         beg, chunks = self.beg, []
         while beg <= self.end:
             end = self.s.find(sep, beg, self.end)
             if end < 0 or nsplits and len(chunks) == nsplits:
-                end = self.end
-            chunks.append(StringView(self.s, beg, end))
+                end = sep_end = self.end
+            else:
+                sep_end = end + len(sep)
+            chunks.append(StringView(self.s, beg, sep_end if keepsep else end))
             beg = end + len(sep)
         return chunks
 
@@ -67,12 +69,12 @@ class StringView:
     def search(self, regexp: re.Pattern) -> Optional[re.Match]:
         return regexp.search(self.s, self.beg, self.end)
 
-    def trim(self, beg, end):
+    def trim(self, beg=None, end=None):
         v = self
-        b = v.match(beg)
+        b = beg and v.match(beg)
         if b:
             v = v[len(b.group()):]
-        e = v.search(end)
+        e = end and v.search(end)
         if e:
             v = v[:-len(e.group())]
         return v
@@ -283,6 +285,27 @@ class BlockParser(Parser):
                 break
         return self.spans
 
+class LineParser(Parser):
+    LINE_COMMENT_RE: re.Pattern
+
+    @classmethod
+    def _classify(cls, lines: List[StringView]) -> Iterator[Union[Code, Comment]]:
+        for line in lines:
+            yield Comment(line) if line.match(cls.LINE_COMMENT_RE) else Code(line)
+
+    def partition(self):
+        last = None
+        for line in self._classify(StringView(self.doc).split("\n", keepsep=True)):
+            if type(last) is type(line):
+                assert last
+                last = last._replace(v = last.v + line.v)
+            else:
+                if last and last.v:
+                    yield last
+                last = line
+        if last and last.v:
+            yield last
+
 def partition(lang, code):
     return list(lang.parser(code).partition())
 
@@ -362,6 +385,33 @@ class BlockLangDef(LangDef):
     def unquote(self, line: T_LineOrStr) -> T_LineOrStr:
         return Line.replacen(line, self.unquote_pairs)
 
+class LineLangDef(LangDef):
+    def __init__(self, name: str, parser: Type[Parser],
+                 lit_header: str, lit_header_re: str):
+        super().__init__(name, parser)
+        self.lit_header = lit_header
+        self.lit_header_re = re.compile(lit_header_re, re.MULTILINE)
+
+    @property
+    def lit_empty(self) -> str:
+        return self.lit_header
+
+    def is_literate_comment(self, block: StringView) -> bool:
+        return True
+
+    def wrap_literate(self, lines: Iterable[LineOrStr]) -> Iterable[LineOrStr]:
+        for line in lines:
+            yield self.lit_header + (" " if line else "") + line
+
+    def unwrap_literate(self, block: StringView) -> Iterable[StringView]:
+        for l in split_lines(block):
+            yield l.trim(self.lit_header_re, None)
+
+    def quote(self, line: T_LineOrStr) -> T_LineOrStr:
+        return line
+
+    def unquote(self, line: T_LineOrStr) -> T_LineOrStr:
+        return line
 
 class CoqParser(BlockParser):
     TRANSITIONS = {
