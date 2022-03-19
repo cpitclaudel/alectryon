@@ -31,10 +31,15 @@ A custom Coq lexer for pygments.
 Rewritten from the one in pygments.lexers.theorem.
 """
 
-from pygments.lexer import RegexLexer, default, words, bygroups, include
+from pygments.filter import apply_filters
+from pygments.lexer import Lexer, RegexLexer, default, words, bygroups, include
 from pygments.regexopt import regex_opt, regex_opt_inner
 from pygments.token import \
-    Text, Comment, Operator, Keyword, Name, String, Number
+    Token, Text, Comment, Operator, Keyword, Name, String, Number
+
+# FIXME: See dotnet.py and `from pygments import unistring as uni` for unicode
+# identifiers.
+
 
 class CoqLexer(RegexLexer):
     """
@@ -523,4 +528,39 @@ class CoqLexer(RegexLexer):
         ],
     }
 
-__all__ = ["CoqLexer"]
+import functools # pylint: disable=wrong-import-position, wrong-import-order
+from .tokens import TokenizedStr # pylint: disable=wrong-import-position
+
+class TokenizedStrLexer(Lexer):
+    """A ``Lexer`` for externally-tokenized strings.
+
+    This lexer expects its inputs to be instances of ``TokenizedStr`` whose
+    ``typ`` attributes are names of Pygments tokens.
+    """
+    name = 'Pre-tokenized string lexer'
+    aliases = ['tokstr']
+    filenames = []
+    mimetypes = ['text/x-pretok']
+
+    def get_tokens(self, text, unfiltered=False):
+        stream = ((t, v) for _, t, v in self.get_tokens_unprocessed(text))
+        if not unfiltered:
+            stream = apply_filters(stream, self.filters, self)
+        return stream
+
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def _resolve_typestr(typestr: str):
+        typ = Token
+        for ts in typestr.split('.'):
+            typ = getattr(typ, ts)
+        return typ
+
+    def get_tokens_unprocessed(self, text):
+        if not isinstance(text, TokenizedStr):
+            yield 0, Text, text
+            return
+        for tok in text.tokens.iter_contiguous("Token.Text", ()):
+            yield tok.start, self._resolve_typestr(tok.typ), tok.value(text)
+
+__all__ = ["CoqLexer", "TokenizedStrLexer"]
