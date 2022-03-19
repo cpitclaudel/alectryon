@@ -29,15 +29,14 @@ from .html import ASSETS as HTML_ASSETS
 from .latex import ASSETS as LATEX_ASSETS
 from .pygments import LatexFormatter
 
-# Export here so config files can refer to just this module
-RSTCoqParser = docutils.RSTCoqParser
-
 # Setup
 # =====
 
-def register_coq_parser(app: "Sphinx"):
-    app.add_source_parser(RSTCoqParser)
-    app.add_source_suffix('.v', 'coq')
+def register_code_parsers(app: "Sphinx"):
+    for parser in docutils.CODE_PARSERS_BY_LANGUAGE.values():
+        app.add_source_parser(parser)
+        for suffix in parser.SOURCE_SUFFIXES:
+            app.add_source_suffix(suffix, parser.LANG, override=True)
 
 def add_assets(app: "Sphinx"):
     app.config.html_static_path.append(HTML_ASSETS.PATH)
@@ -53,7 +52,7 @@ def add_assets(app: "Sphinx"):
 
 def setup(app: "Sphinx"):
     """Register Alectryon's directives, transforms, etc."""
-    register_coq_parser(app)
+    register_code_parsers(app)
 
     for role in docutils.ROLES:
         app.add_role(role.name, role)

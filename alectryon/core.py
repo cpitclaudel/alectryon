@@ -592,13 +592,12 @@ DEFAULT_DRIVERS = {lang: next(iter(drivers)) for lang, drivers in DRIVERS_BY_LAN
 
 EXTENSIONS_BY_LANGUAGE = {
     "coq": (".v",),
-    "lean4": (".lean",),
     "lean3": (".lean3", ".lean"),
+    "lean4": (".lean",),
 }
 """A map from language identifiers to file extensions.
 
-Extensions past the first one are only used for stripping file names (so
-``.lean`` is Lean4, but ``xyz.lean`` in ``lean3`` still becomes ``xyz.html``).
+Later entries take precedence over previous ones.
 """
 assert EXTENSIONS_BY_LANGUAGE.keys() == ALL_LANGUAGES
 

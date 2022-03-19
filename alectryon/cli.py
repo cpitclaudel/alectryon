@@ -518,25 +518,25 @@ def _language_frontends_by_extension(ext, lang):
         (ext + '.io.json', lang + '.io.json'),
     ]
 
-FRONTENDS_BY_EXTENSION = [
-    *(pair
-      for lang, (ext, *_) in core.EXTENSIONS_BY_LANGUAGE.items()
-      for pair in _language_frontends_by_extension(ext, lang)),
+FRONTENDS_BY_EXTENSION = {
+    **{ext: frontend
+       for lang, exts in core.EXTENSIONS_BY_LANGUAGE.items() for ext in exts
+       for ext, frontend in _language_frontends_by_extension(ext, lang)},
 
-    ('.rst', 'rst'),
-    ('.md', 'md'),
+    '.rst': 'rst',
+    '.md': 'md',
 
-    ('.json', 'json'), # LATER: Remove
-]
+    '.json': 'json', # LATER: Remove
+}
 
-BACKENDS_BY_EXTENSION = [
-    *((ext, lang)
-      for lang, (ext, *_) in core.EXTENSIONS_BY_LANGUAGE.items()),
-    ('.rst', 'rst'),
-    ('.lint.json', 'lint'), ('.json', 'json'),
-    ('.snippets.html', 'snippets-html'), ('.snippets.tex', 'snippets-latex'),
-    ('.html', 'webpage'), ('.tex', 'latex')
-]
+BACKENDS_BY_EXTENSION = {
+    **{ext: lang
+       for lang, exts in core.EXTENSIONS_BY_LANGUAGE.items() for ext in exts},
+    '.rst': 'rst',
+    '.lint.json': 'lint', '.json': 'json',
+    '.snippets.html': 'snippets-html', '.snippets.tex': 'snippets-latex',
+    '.html': 'webpage', '.tex': 'latex'
+}
 
 def _default_language_backends(lang):
     return {
@@ -572,7 +572,7 @@ INPUT_LANGUAGE_BY_FRONTEND = {
 }
 
 def infer_mode(fpath, kind, arg, table):
-    for (ext, mode) in table:
+    for (ext, mode) in table.items():
         if fpath.endswith(ext):
             return mode
     MSG = """{}: Not sure what to do with {!r}.
@@ -704,7 +704,7 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
 
     FRONTEND_HELP = "Choose a frontend. Defaults: "
     FRONTEND_HELP += "; ".join("{!r} → {}".format(ext, frontend)
-                               for ext, frontend in FRONTENDS_BY_EXTENSION)
+                               for ext, frontend in FRONTENDS_BY_EXTENSION.items())
     FRONTEND_CHOICES = sorted(PIPELINES.keys())
     in_.add_argument("--frontend", default=None, choices=FRONTEND_CHOICES,
                      help=FRONTEND_HELP)
