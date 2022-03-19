@@ -18,11 +18,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Iterable, List
+
 import tempfile
 import re
 from pathlib import Path
 
-from .core import CLIDriver, EncodedDocument, Positioned, Position, Sentence, Text
+from .core import CLIDriver, EncodedDocument, Positioned, Position, Sentence, Text, Fragment
 from .serapi import CoqIdents
 
 class CoqcTime(CLIDriver):
@@ -48,7 +50,7 @@ class CoqcTime(CLIDriver):
     def partition(self, contents):
         return EncodedDocument.intersperse_text_fragments(contents, self._find_sentences(contents))
 
-    def annotate(self, chunks):
+    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
         r"""Use ``coqc -time`` to fragment multiple chunks of Coq code.
 
         >>> CoqcTime().annotate(["Check 1. (* … *) ", "Print nat."])
