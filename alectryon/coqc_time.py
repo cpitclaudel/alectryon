@@ -38,7 +38,7 @@ class CoqcTime(CLIDriver):
     COQ_TIME_RE = re.compile(r"^Chars (?P<beg>[0-9]+) - (?P<end>[0-9]+) ",
                              re.MULTILINE)
 
-    def _find_sentences(self, document):
+    def _find_sentences(self, document: EncodedDocument):
         with tempfile.TemporaryDirectory(prefix="alectryon_coqc-time") as wd:
             source = Path(wd) / CoqIdents.topfile_of_fpath(self.fpath)
             source.write_bytes(document.contents)
@@ -47,8 +47,8 @@ class CoqcTime(CLIDriver):
             beg, end = int(m.group("beg")), int(m.group("end"))
             yield Positioned(beg, end, Sentence(document[beg:end], [], []))
 
-    def partition(self, contents):
-        return EncodedDocument.intersperse_text_fragments(contents, self._find_sentences(contents))
+    def partition(self, document: EncodedDocument):
+        return document.intersperse_text_fragments(self._find_sentences(document))
 
     def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
         r"""Use ``coqc -time`` to fragment multiple chunks of Coq code.
