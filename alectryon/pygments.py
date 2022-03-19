@@ -38,7 +38,7 @@ from pygments.lexers import get_lexer_by_name # pylint: disable=no-name-in-modul
 
 from dominate.util import raw as dom_raw
 
-from .pygments_lexer import CoqLexer
+from .pygments_lexer import CoqLexer, TokenizedStrLexer
 from .pygments_style import AlectryonStyle
 
 def resolve_token(kind):
@@ -48,13 +48,17 @@ def resolve_token(kind):
         raise ValueError("Unknown token kind: {}".format(kind))
     return tokentype
 
-CUSTOM_LEXERS = {'CoqLexer': CoqLexer}
+CUSTOM_LEXERS = {
+    'CoqLexer': CoqLexer,
+    'TokenizedStrLexer': TokenizedStrLexer,
+}
 CUSTOM_LEXER_ALIASES: Dict[str, str] = {
     "lean3": "lean",
     "lean4": "lean"
 }
-
-CUSTOM_LEXERS_BY_ALIAS = {alias: Lx for Lx in CUSTOM_LEXERS.values() for alias in Lx.aliases}
+CUSTOM_LEXERS_BY_ALIAS = {
+    alias: Lx for Lx in CUSTOM_LEXERS.values() for alias in Lx.aliases
+}
 
 @lru_cache(maxsize=None)
 def get_lexer(lang):
@@ -276,14 +280,14 @@ def replace_builtin_lexers():
     from pygments.lexers import _lexer_cache
     from pygments.lexers._mapping import LEXERS
 
-    for dst, src in CUSTOM_LEXER_ALIASES.items():
-        for key, (mod, name, aliases, fnames, mimes) in LEXERS.items():
-            if src.lower() in aliases:
-                LEXERS[key] = (mod, name, aliases + (dst,), fnames, mimes)
-                _lexer_cache.pop(name, None)
-
     for nm, Lx in CUSTOM_LEXERS.items():
         dflt = (None, Lx.name, tuple(Lx.aliases), tuple(Lx.filenames), tuple(Lx.mimetypes))
         meta = ("alectryon.pygments_lexer", *LEXERS.get(nm, dflt)[1:])
         LEXERS[nm] = meta
         _lexer_cache.pop(meta[1], None)
+
+    for dst, src in CUSTOM_LEXER_ALIASES.items():
+        for key, (mod, name, aliases, fnames, mimes) in LEXERS.items():
+            if src.lower() in aliases:
+                LEXERS[key] = (mod, name, aliases + (dst,), fnames, mimes)
+                _lexer_cache.pop(name, None)
