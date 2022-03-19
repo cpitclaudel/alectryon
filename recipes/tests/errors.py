@@ -84,7 +84,7 @@ class coqc_time(unittest.TestCase):
         from alectryon.coqc_time import CoqcTime
 
         with self.assertRaisesRegex(ValueError, "not found"):
-            CoqcTime.resolve_driver(binpath="\0")
+            CoqcTime(binpath="\0").resolve_driver()
 
         api = CoqcTime()
         with redirected_std() as (_, err):
@@ -113,7 +113,7 @@ class serapi(unittest.TestCase):
         from alectryon.serapi import SerAPI, PrettyPrinted
 
         with self.assertRaisesRegex(ValueError, "not found"):
-            SerAPI.resolve_driver(binpath="\0")
+            SerAPI(binpath="\0").resolve_driver()
 
         api = SerAPI()
         with redirected_std() as (_, err):
