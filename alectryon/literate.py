@@ -604,40 +604,7 @@ def code2rst_lines(lang: LangDef, code):
     return gen_rst(lang, partition_literate(lang, code))
 
 def code2rst(lang: LangDef, code):
-    """Translate a fragment of `code` in `lang` to reST.
-
-    >>> print(code2rst(COQ, '''
-    ... (*|
-    ... Example:
-    ... |*)
-    ...
-    ... Goal True.
-    ...
-    ... (*|
-    ... Second example:
-    ...
-    ... .. coq::
-    ...    :name:
-    ...       snd
-    ... |*)
-    ...
-    ... exact I. Qed.
-    ... '''))
-    Example:
-    <BLANKLINE>
-    .. coq::
-    <BLANKLINE>
-       Goal True.
-    <BLANKLINE>
-    Second example:
-    <BLANKLINE>
-    .. coq::
-       :name:
-          snd
-    <BLANKLINE>
-       exact I. Qed.
-    <BLANKLINE>
-    """
+    """Translate a fragment of `code` in `lang` to reST."""
     return join_lines(code2rst_lines(lang, code))
 
 def mark_rst_lines(rst_lines, point, marker):
@@ -675,7 +642,6 @@ def rst_partition(lang: LangDef, s):
                             Line(num=2, parts=['  Goal True.']),
                             Line(num=3, parts=['    exact I. Qed.'])]),
                indent=0)]
-    <BLANKLINE>
     """
     beg, linum = 0, 0
     for m in lang.rst_block.finditer(s):
@@ -757,9 +723,64 @@ def rst2code_lines(lang: LangDef, rst):
     return gen_code(lang, rst_partition(lang, rst))
 
 def rst2code(lang: LangDef, rst):
-    """Translate a fragment of a reST document `rst` to code in `lang`.
+    """Translate a fragment of a reST document `rst` to code in `lang`."""
+    return join_lines(rst2code_lines(lang, rst))
 
-    >>> print(rst2code(COQ, '''
+def rst2code_marked(lang: LangDef, rst, point, marker):
+    return join_lines(mark_point(rst2code_lines(lang, rst), point, marker))
+
+# Language definitions
+# ====================
+
+COQ = LangDef(
+    "coq",
+    CoqParser,
+    lit_open="(*|", lit_close="|*)",
+    lit_open_re=r"[(][*][|][ \t]*", lit_close_re=r"[ \t]*[|]?[*][)]\Z",
+    quote_pairs=[("(*", r"(\ *"), ("*)", r"*\ )")]
+)
+
+def coq2rst(code):
+    """Convert from Coq to reStructuredText.
+
+    >>> print(coq2rst('''
+    ... (*|
+    ... Example:
+    ... |*)
+    ...
+    ... Goal True.
+    ...
+    ... (*|
+    ... Second example:
+    ...
+    ... .. coq::
+    ...    :name:
+    ...       snd
+    ... |*)
+    ...
+    ... exact I. Qed.
+    ... '''))
+    Example:
+    <BLANKLINE>
+    .. coq::
+    <BLANKLINE>
+       Goal True.
+    <BLANKLINE>
+    Second example:
+    <BLANKLINE>
+    .. coq::
+       :name:
+          snd
+    <BLANKLINE>
+       exact I. Qed.
+    <BLANKLINE>
+    """
+    return code2rst(COQ, code)
+
+def rst2coq(rst):
+    """Convert from reStructuredText to Coq.
+
+    >>> print(rst2coq('''
     ... Example:
     ...
     ... .. coq::
@@ -790,7 +811,25 @@ def rst2code(lang: LangDef, rst):
     <BLANKLINE>
     exact I. Qed.
     <BLANKLINE>
-    >>> print(rst2code(LEAN3, '''
+    """
+    return rst2code(COQ, rst)
+
+LEAN3 = LangDef(
+    "lean3",
+    LeanParser,
+    lit_open=r"/-!", lit_close=r"-/",
+    lit_open_re=r"[/][-][!][ \t]*", lit_close_re=r"[ \t]*[-][/]\Z",
+    quote_pairs=[("/-", r"/\ -"), ("-/", r"-\ /")]
+)
+
+def lean32rst(code):
+    """Convert from Lean3 to reStructuredText."""
+    return code2rst(LEAN3, code)
+
+def rst2lean3(rst):
+    """Convert from reStructuredText to Lean3.
+
+    >>> print(rst2lean3('''
     ... Example:
     ...
     ... .. lean3::
@@ -822,44 +861,6 @@ def rst2code(lang: LangDef, rst):
       1 + 1
     <BLANKLINE>
     """
-    return join_lines(rst2code_lines(lang, rst))
-
-def rst2code_marked(lang: LangDef, rst, point, marker):
-    return join_lines(mark_point(rst2code_lines(lang, rst), point, marker))
-
-# Language definitions
-# ====================
-
-COQ = LangDef(
-    "coq",
-    CoqParser,
-    lit_open="(*|", lit_close="|*)",
-    lit_open_re=r"[(][*][|][ \t]*", lit_close_re=r"[ \t]*[|]?[*][)]\Z",
-    quote_pairs=[("(*", r"(\ *"), ("*)", r"*\ )")]
-)
-
-def coq2rst(coq):
-    """Convert from Coq to reStructuredText."""
-    return code2rst(COQ, coq)
-
-def rst2coq(rst):
-    """Convert from reStructuredText to Coq."""
-    return rst2code(COQ, rst)
-
-LEAN3 = LangDef(
-    "lean3",
-    LeanParser,
-    lit_open=r"/-!", lit_close=r"-/",
-    lit_open_re=r"[/][-][!][ \t]*", lit_close_re=r"[ \t]*[-][/]\Z",
-    quote_pairs=[("/-", r"/\ -"), ("-/", r"-\ /")]
-)
-
-def lean32rst(lean):
-    """Convert from Lean3 to reStructuredText."""
-    return code2rst(LEAN3, lean)
-
-def rst2lean3(rst):
-    """Convert from reStructuredText to Lean3."""
     return rst2code(LEAN3, rst)
 
 LEAN4 = LangDef(
@@ -901,7 +902,7 @@ def parse_arguments():
     converters = {"--{}".format(fn.__name__): fn for fn in CONVERTERS}
     for opt, fn in converters.items():
         group.add_argument(opt, dest="fn", action="store_const",
-                           const=fn, help=fn.__doc__)
+                           const=fn, help=fn.__doc__.split("\n", 1)[0])
     parser.add_argument("input", nargs="?", default="-")
 
     args = parser.parse_args()
