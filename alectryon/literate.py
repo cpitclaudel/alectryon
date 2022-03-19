@@ -286,12 +286,12 @@ class BlockParser(Parser):
         return self.spans
 
 class LineParser(Parser):
-    LINE_COMMENT_RE: re.Pattern
+    LIT_HEADER_RE: re.Pattern
 
     @classmethod
     def _classify(cls, lines: List[StringView]) -> Iterator[Union[Code, Comment]]:
         for line in lines:
-            yield Comment(line) if line.match(cls.LINE_COMMENT_RE) else Code(line)
+            yield Comment(line) if line.match(cls.LIT_HEADER_RE) else Code(line)
 
     def partition(self):
         last = None
@@ -390,7 +390,7 @@ class LineLangDef(LangDef):
                  lit_header: str, lit_header_re: str):
         super().__init__(name, parser)
         self.lit_header = lit_header
-        self.lit_header_re = re.compile(lit_header_re, re.MULTILINE)
+        self.lit_header_re = re.compile(lit_header_re)
 
     @property
     def lit_empty(self) -> str:
@@ -606,6 +606,15 @@ class LeanParser(BlockParser):
             assert False
         return True
 
+class DafnyParser(LineParser):
+    r"""Line-based parser for Dafny
+
+    >>> list(DafnyParser("/// A\nB").partition())
+    [Comment(v='/// A\n'), Code(v='B')]
+    >>> list(DafnyParser("/// A\n/// A\nB\nB\n/// A\n").partition())
+    [Comment(v='/// A\n/// A\n'), Code(v='B\nB\n'), Comment(v='/// A\n')]
+    """
+    LIT_HEADER_RE = re.compile("^[ \t]*///[ ]?", re.MULTILINE)
 
 # Conversion
 # ----------
@@ -1016,6 +1025,100 @@ def rst2lean4(rst):
     """Convert from reStructuredText to Lean4."""
     return rst2code(LEAN4, rst)
 
+DAFNY = LineLangDef(
+    "dafny",
+    DafnyParser,
+    lit_header="///",
+    lit_header_re=DafnyParser.LIT_HEADER_RE
+)
+
+def dafny2rst(code):
+    """Convert from Dafny to reStructuredText.
+
+    >>> print(dafny2rst('''
+    ... /// Example:
+    ... /// .. dafny::
+    ...
+    ... method m() { print "hi"; }
+    ...
+    ... /// Second example:
+    ... ///
+    ... /// .. dafny::
+    ... ///    :name:
+    ... ///       snd
+    ...
+    ... function f(): int { 1 }
+    ...
+    ... /// Third example:
+    ...
+    ... datatype T = T(t: int)
+    ... '''))
+    Example:
+    <BLANKLINE>
+    .. dafny::
+    <BLANKLINE>
+       method m() { print "hi"; }
+    <BLANKLINE>
+    Second example:
+    <BLANKLINE>
+    .. dafny::
+       :name:
+          snd
+    <BLANKLINE>
+       function f(): int { 1 }
+    <BLANKLINE>
+    Third example:
+    <BLANKLINE>
+    .. dafny::
+    <BLANKLINE>
+       datatype T = T(t: int)
+    <BLANKLINE>
+    """
+    return code2rst(DAFNY, code)
+
+def rst2dafny(rst):
+    """Convert from reStructuredText to Dafny.
+
+    >>> print(rst2dafny('''
+    ... Example:
+    ...
+    ... .. dafny::
+    ...
+    ...    method m() { print "hi"; }
+    ...
+    ... Second example:
+    ...
+    ... .. dafny::
+    ...    :name:
+    ...       snd
+    ...
+    ...    function f(): int { 1 }
+    ...
+    ... Third example:
+    ...
+    ... .. dafny::
+    ...
+    ...    datatype T = T(t: int)
+    ... '''))
+    /// Example:
+    <BLANKLINE>
+    method m() { print "hi"; }
+    <BLANKLINE>
+    /// Second example:
+    ///
+    /// .. dafny::
+    ///    :name:
+    ///       snd
+    <BLANKLINE>
+    function f(): int { 1 }
+    <BLANKLINE>
+    /// Third example:
+    <BLANKLINE>
+    datatype T = T(t: int)
+    <BLANKLINE>
+    """
+    return rst2code(DAFNY, rst)
+
 LANGUAGES = {
     "coq": COQ,
     "lean3": LEAN3,
@@ -1025,7 +1128,10 @@ LANGUAGES = {
 # CLI
 # ===
 
-CONVERTERS = (coq2rst, rst2coq, lean32rst, rst2lean3, lean42rst, rst2lean4)
+CONVERTERS = (coq2rst, rst2coq,
+              lean32rst, rst2lean3,
+              lean42rst, rst2lean4,
+              dafny2rst, rst2dafny)
 
 def parse_arguments():
     import argparse
@@ -1048,7 +1154,7 @@ def parse_arguments():
             parser.error("Reading from standard input requires one of {}.".format(available))
     else:
         _, ext = path.splitext(args.input)
-        ext_fn = {".v": coq2rst, ".lean3": lean32rst, ".lean": lean42rst, ".rst": rst2coq}
+        ext_fn = {".v": coq2rst, ".lean3": lean32rst, ".lean": lean42rst, ".dfy": dafny2rst, ".rst": rst2coq}
         args.fn = ext_fn.get(ext)
         if not args.fn:
             expected = ", ".join(repr(k) for k in ext_fn)
