@@ -785,14 +785,6 @@ def DriverDirective(lang: str):
 
 DRIVER_DIRECTIVES = [DriverDirective(lang) for lang in core.ALL_LANGUAGES]
 
-class Lean3Directive(ProverDirective):
-    """Highlight and annotate a Lean 3 snippet."""
-    name = "lean3"
-
-class Lean4Directive(ProverDirective):
-    """Highlight and annotate a Lean 4 snippet."""
-    name = "lean4"
-
 class AlectryonToggleDirective(Directive):
     """Display a checkbox allowing readers to show all output at once."""
     name = "alectryon-toggle"
@@ -1175,7 +1167,9 @@ class JsErrorObserver:
 class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
     """A wrapper around the reStructuredText parser for literate files."""
 
-    LANG = ""
+    LANG = "" # Needed by Sphinx
+    SOURCE_SUFFIXES = ()
+
     supported: ClassVar[Tuple[str, ...]] = ()
     config_section = 'Literate parser'
     config_section_dependencies: ClassVar[Tuple[str, ...]] = ('parsers',)
@@ -1233,17 +1227,11 @@ class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
             roles._roles.pop('', None) # Reset the default role
         self.finish_parse()
 
-class RSTCoqParser(RSTLiterateParser):
-    LANG = "coq"
-    supported = ("coq",)
-
-class RSTLean3Parser(RSTLiterateParser):
-    LANG = "lean3"
-    supported = ("lean3",)
-
-class RSTLean4Parser(RSTLiterateParser):
-    LANG = "lean4"
-    supported = ("lean4", "lean")
+def make_RSTLiterateParser(lang: str) -> Type[RSTLiterateParser]:
+    return type("{}RstLiterateParser".format(lang.capitalize()),
+                (RSTLiterateParser,),
+                {"LANG": lang, "supported": (lang,),
+                 "SOURCE_SUFFIXES": core.EXTENSIONS_BY_LANGUAGE[lang]})
 
 # Writer
 # ------
@@ -1439,12 +1427,16 @@ class LintingWriter(docutils.writers.UnfilteredWriter):
 
 Pipeline = namedtuple("Pipeline", "reader parser translator writer")
 
+CODE_PARSERS_BY_LANGUAGE = {
+    lang: make_RSTLiterateParser(lang)
+    for lang in core.ALL_LANGUAGES
+}
+
 PARSERS = {
-    "coq+rst": (__name__, "RSTCoqParser"),
-    "lean3+rst": (__name__, "RSTLean3Parser"),
-    "lean4+rst": (__name__, "RSTLean4Parser"),
     "rst": ("docutils.parsers.rst", "Parser"),
     "md": ("alectryon.myst", "Parser"),
+    **{"{}+rst".format(lang): parser
+       for lang, parser in CODE_PARSERS_BY_LANGUAGE.items()}
 }
 
 BACKENDS = {
