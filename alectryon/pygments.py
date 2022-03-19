@@ -123,8 +123,8 @@ def _highlight(code, lexer, formatter):
     with munged_dict(STANDARD_TYPES, {Name: '', Operator: ''}):
         # Pygments' HTML formatter adds an unconditional newline, so we pass it only
         # the code, and we restore the spaces after highlighting.
-        before, code, after = WHITESPACE_RE.match(code).groups()
-        return before, pygments.highlight(code, lexer, formatter).strip(), after
+        beg, end = WHITESPACE_RE.match(code).span(2) # Preserve subclass of ``code``
+        return code[:beg], pygments.highlight(code[beg:end], lexer, formatter).strip(), code[end:]
 
 def validate_style(name):
     if isinstance(name, str):
