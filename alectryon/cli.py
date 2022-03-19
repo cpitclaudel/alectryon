@@ -380,16 +380,9 @@ def write_file(ext, strip):
         write_output(ext, contents, fname, output,
                      output_directory, strip_re=strip_re)
 
-# Extensions past the first one are only used for stripping file names (so
-# ``.lean`` is Lean4, but ``xyz.lean`` in ``lean3`` still becomes ``xyz.html``).
-EXTENSIONS_BY_LANGUAGE = {
-    "coq": (".v",),
-    "lean4": (".lean",),
-    "lean3": (".lean3", ".lean"),
+CODE_EXTENSIONS = {
+    ext for exts in core.EXTENSIONS_BY_LANGUAGE.values() for ext in exts
 }
-
-assert EXTENSIONS_BY_LANGUAGE.keys() == core.ALL_LANGUAGES
-CODE_EXTENSIONS = {ext for exts in EXTENSIONS_BY_LANGUAGE.values() for ext in exts}
 
 # No ‘apply_transforms’ in JSON pipelines: we save the prover output without
 # modifications.
@@ -481,7 +474,7 @@ def _add_docutils_pipelines(pipelines, lang, *exts):
 
 def _add_transliteration_pipelines(pipelines):
     exts = (*CODE_EXTENSIONS, ".rst")
-    for lang, (ext, *_) in EXTENSIONS_BY_LANGUAGE.items():
+    for lang, (ext, *_) in core.EXTENSIONS_BY_LANGUAGE.items():
         pipelines['rst'][lang] = pipelines['rst'][lang + '+rst'] = \
             (read_plain, rst_to_code, write_file(ext, strip=exts))
         pipelines[lang]['rst'] = \
@@ -502,7 +495,7 @@ def _add_compatibility_pipelines(pipelines):
     }
 
 def _add_pipelines(pipelines):
-    for lang, exts in EXTENSIONS_BY_LANGUAGE.items():
+    for lang, exts in core.EXTENSIONS_BY_LANGUAGE.items():
         _add_code_pipelines(pipelines, lang, *exts)
     _add_coqdoc_pipeline(pipelines)
     _add_docutils_pipelines(pipelines, "rst", ".rst")
@@ -527,7 +520,7 @@ def _language_frontends_by_extension(ext, lang):
 
 FRONTENDS_BY_EXTENSION = [
     *(pair
-      for lang, (ext, *_) in EXTENSIONS_BY_LANGUAGE.items()
+      for lang, (ext, *_) in core.EXTENSIONS_BY_LANGUAGE.items()
       for pair in _language_frontends_by_extension(ext, lang)),
 
     ('.rst', 'rst'),
@@ -538,7 +531,7 @@ FRONTENDS_BY_EXTENSION = [
 
 BACKENDS_BY_EXTENSION = [
     *((ext, lang)
-      for lang, (ext, *_) in EXTENSIONS_BY_LANGUAGE.items()),
+      for lang, (ext, *_) in core.EXTENSIONS_BY_LANGUAGE.items()),
     ('.rst', 'rst'),
     ('.lint.json', 'lint'), ('.json', 'json'),
     ('.snippets.html', 'snippets-html'), ('.snippets.tex', 'snippets-latex'),
