@@ -25,8 +25,8 @@ from collections import deque
 from pathlib import Path
 from typing import Any, Iterable, List, Optional, Tuple, TypedDict
 
-from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, Message, Sentence, \
-    Text, cwd
+from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, \
+    Message, Sentence, Text, Fragment, cwd
 
 class _AstNode(TypedDict):
     kind: str
@@ -300,7 +300,7 @@ class Lean3(TextREPLDriver):
     def _proc_out(cls, p):
         return p.stdout + "\n" + p.stderr
 
-    def annotate(self, chunks):
+    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
         """Annotate multiple ``chunks`` of Lean 3 code.
 
         >>> lean3 = Lean3()

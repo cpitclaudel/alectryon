@@ -58,14 +58,14 @@ CUSTOM_LEXERS_BY_ALIAS = {alias: Lx for Lx in CUSTOM_LEXERS.values() for alias i
 
 @lru_cache(maxsize=None)
 def get_lexer(lang):
-    lang = CUSTOM_LEXER_ALIASES.get(lang, lang)
+    alias = CUSTOM_LEXER_ALIASES.get(lang, lang)
     # LATER: Upstream Coq lexer, remove this branch
-    if lang in CUSTOM_LEXERS_BY_ALIAS:
-        lexer = CUSTOM_LEXERS_BY_ALIAS[lang](ensurenl=False)
+    if alias in CUSTOM_LEXERS_BY_ALIAS:
+        lexer = CUSTOM_LEXERS_BY_ALIAS[alias](ensurenl=False)
         # Custom lexers only, since some lexers report plenty of errors
         lexer.add_filter(WarnOnErrorTokenFilter())
     else:
-        lexer = get_lexer_by_name(lang, ensurenl=False)
+        lexer = get_lexer_by_name(alias, ensurenl=False)
         lexer.add_filter(StripErrorsTokenFilter())
     lexer.add_filter(TokenMergeFilter())
     return lexer
