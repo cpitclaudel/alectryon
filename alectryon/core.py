@@ -569,12 +569,15 @@ DRIVERS_BY_LANGUAGE = {
         "sertop": (".serapi", "SerAPI"),
         "sertop_noexec": (".serapi", "SerAPI_noexec"),
         "coqc_time": (".coqc_time", "CoqcTime"),
+        "noop": (".noop", "NoOp")
     },
     "lean3": {
-        "lean3_repl": (".lean3", "Lean3")
+        "lean3_repl": (".lean3", "Lean3"),
+        "noop": (".noop", "NoOp")
     },
     "lean4": {
-        "leanInk": (".lean4", "Lean4")
+        "leanInk": (".lean4", "Lean4"),
+        "noop": (".noop", "NoOp")
     },
 }
 """A map from language identifiers to dictionaries of drivers.
