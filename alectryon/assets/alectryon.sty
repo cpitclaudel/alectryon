@@ -279,5 +279,8 @@
   {{\alectryon@inline@copymacros%
     \begin{alectryon@inline}#1\end{alectryon@inline}}}
 
-\providecommand{\DUrolecode}{\def\DUrole{\PY}}
+\ifcsname DUrolecode\endcsname
+  % Must be a robust command to be usable in section titles
+  \DeclareRobustCommand{\DUrolecode}{\def\DUrole{\PY}}
+\fi
 \makeatother
