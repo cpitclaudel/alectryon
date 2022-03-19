@@ -233,7 +233,7 @@ class HtmlGenerator(Backend):
 
     def gen_fragment(self, fr):
         if isinstance(fr, Text):
-            tags.span(self.highlight(fr.contents), cls="alectryon-wsp")
+            tags.span(self.highlight(fr.contents), cls="alectryon-txt")
         else:
             assert isinstance(fr, RichSentence)
             self.gen_sentence(fr)
