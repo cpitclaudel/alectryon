@@ -2,7 +2,7 @@ $PYTHON -m alectryon.literate -; echo $?
 literate.py: error: Reading from standard input requires one of --coq2rst, --rst2coq, --lean32rst, --rst2lean3, --lean42rst, --rst2lean4, --dafny2rst, --rst2dafny.
 2
 $PYTHON -m alectryon.literate xyz.unsupported; echo $?
-literate.py: error: Unexpected file extension: expected '.v', '.lean3', '.lean', '.dfy', '.rst', got '.unsupported'.
+literate.py: error: Not sure how to translate xyz.unsupported: use one of --coq2rst, --rst2coq, --lean32rst, --rst2lean3, --lean42rst, --rst2lean4, --dafny2rst, --rst2dafny
 2
 $ALECTRYON xyz.unsupported; echo $?
 Exiting early due to an error; use --traceback to diagnose:

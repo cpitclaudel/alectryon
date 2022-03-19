@@ -147,7 +147,7 @@ _output/literate_reST.v: literate_reST.rst
 recipes_targets += _output/literate_reST.v
 # Minimal reST → Coq
 _output/literate_reST.min.v: literate_reST.rst | _output/
-	cd ..; $(PYTHON) -m alectryon.literate recipes/$< > recipes/$@
+	cd ..; $(PYTHON) -m alectryon.literate --rst2coq recipes/$< > recipes/$@
 recipes_targets += _output/literate_reST.min.v
 # Minimal reST → Coq
 _output/literate_reST.min.stdin.v: literate_reST.rst | _output/
