@@ -421,8 +421,16 @@ class StderrObserver(Observer):
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
 class Driver():
-    def __init__(self):
+    ID: str
+
+    def __init__(self, args: Tuple[str, ...]=(), fpath: str="-"):
         self.observer: Observer = StderrObserver()
+        self.fpath = Path(fpath)
+        self.user_args = args
+
+    @property
+    def metadata(self):
+        return {"args": self.user_args}
 
     def version_info(self) -> DriverInfo:
         raise NotImplementedError()
@@ -447,18 +455,12 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
     CLI_ENCODING = "utf-8"
 
     def __init__(self, args=(), fpath="-", binpath=None):
-        super().__init__()
-        self.fpath = Path(fpath)
-        self.user_args = args
+        super().__init__(args, fpath)
         self.binpath: str = binpath or self.BIN
 
     def version_info(self) -> DriverInfo:
         bs = subprocess.check_output([self.resolve_driver(), *self.VERSION_ARGS])
         return DriverInfo(self.NAME, bs.decode('ascii', 'ignore').strip())
-
-    @property
-    def metadata(self):
-        return {"args": self.user_args}
 
     @classmethod
     def driver_not_found(cls, binpath) -> NoReturn:
