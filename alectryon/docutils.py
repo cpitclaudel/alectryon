@@ -351,7 +351,7 @@ class DocutilsObserver(core.Observer):
         end = dict(end_line=loc.end.line, end_column=loc.end.col) if loc and loc.end else {}
         self.document.reporter.system_message(n.level, n.message, **beg, **end)
 
-def by_lang(pending_nodes):
+def by_lang(pending_nodes: Iterable[nodes.Node]) -> Dict[str, List[nodes.Node]]:
     partitioned = {}
     for node in pending_nodes:
         partitioned.setdefault(node.details["lang"], []).append(node)
@@ -1210,8 +1210,9 @@ class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
 
     @property
     def lang(self):
-        from .literate import LANGUAGES
-        return LANGUAGES[self.LANG]
+        from . import literate
+        assert set(literate.LANGUAGES) == set(core.ALL_LANGUAGES)
+        return literate.LANGUAGES[self.LANG]
 
     def parse(self, inputstring, document):
         """Parse `inputstring` and populate `document`, a document tree."""

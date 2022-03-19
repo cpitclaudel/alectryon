@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, DefaultDict, Dict, Iterable, IO, \
+from typing import Any, DefaultDict, Dict, Iterable, IO, List, \
     NamedTuple, NoReturn, Optional, Tuple, Union
 
 from collections import deque, namedtuple, defaultdict
@@ -49,7 +49,7 @@ def indent(text, prefix):
     text = re.sub("^(?!$)", prefix, text, flags=re.MULTILINE)
     return re.sub("^$", prefix.rstrip(), text, flags=re.MULTILINE)
 
-def debug(v, prefix):
+def debug(v: Any, prefix: str):
     if isinstance(v, (bytes, bytearray)):
         v = v.decode("utf-8", errors="replace")
     if DEBUG:
@@ -428,7 +428,7 @@ class Driver():
     def version_info(cls, binpath=None):
         raise NotImplementedError()
 
-    def annotate(self, chunks):
+    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
         """Annotate multiple `chunks` of code.
 
         All fragments are executed in the same (fresh) prover instance.  The
@@ -514,11 +514,13 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
         return False
 
     def _read(self):
+        assert self.repl and self.repl.stdout
         response = self.repl.stdout.readline()
         debug(response, '<< ')
         return response
 
     def _write(self, s, end):
+        assert self.repl and self.repl.stdin
         debug(s, '>> ')
         self.repl.stdin.write(s + end)  # type: ignore
         self.repl.stdin.flush()
@@ -528,6 +530,7 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
         if self.repl:
             self.repl.kill()
             try:
+                assert self.repl and self.repl.stdin and self.repl.stdout
                 self.repl.stdin.close()
                 self.repl.stdout.close()
             finally:
@@ -567,6 +570,11 @@ DRIVERS_BY_LANGUAGE = {
         "leanInk": (".lean4", "Lean4")
     },
 }
+"""A map from language identifiers to dictionaries of drivers.
+
+Keys in the driver dictionary are driver names; values are pairs of module names
+and class names.  In other words, each driver is a class within a module.
+"""
 
 DEFAULT_DRIVERS = {lang: next(iter(drivers)) for lang, drivers in DRIVERS_BY_LANGUAGE.items()}
 ALL_LANGUAGES = DEFAULT_DRIVERS.keys()
