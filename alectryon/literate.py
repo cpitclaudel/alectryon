@@ -1150,18 +1150,20 @@ def parse_arguments():
     parser.add_argument("input", nargs="?", default="-")
 
     args = parser.parse_args()
+    available_converters = ", ".join(converters)
+
     if args.input == "-":
         if not args.fn:
-            available = ", ".join(converters)
-            parser.error("Reading from standard input requires one of {}.".format(available))
+            parser.error("Reading from standard input requires one of {}."
+                         .format(available_converters))
     else:
-        _, ext = path.splitext(args.input)
-        ext_fn = {".v": coq2rst, ".lean3": lean32rst, ".lean": lean42rst, ".dfy": dafny2rst, ".rst": rst2coq}
-        args.fn = ext_fn.get(ext)
         if not args.fn:
-            expected = ", ".join(repr(k) for k in ext_fn)
-            parser.error("Unexpected file extension: "
-                         "expected {}, got '{}'.".format(expected, ext))
+            _, ext = path.splitext(args.input)
+            ext_fn = {".v": coq2rst, ".lean3": lean32rst, ".lean": lean42rst, ".dfy": dafny2rst}
+            args.fn = ext_fn.get(ext)
+        if not args.fn:
+            parser.error("Not sure how to translate {}: use one of {}"
+                         .format(args.input, available_converters))
 
     return args
 
