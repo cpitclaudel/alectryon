@@ -56,7 +56,7 @@ class cli(unittest.TestCase):
 class docutils(unittest.TestCase):
     def test_errors(self):
         from alectryon.docutils import CounterStyle, get_pipeline, \
-            RSTCoqParser, set_default_role
+            CODE_PARSERS_BY_LANGUAGE, set_default_role
         from docutils.utils import new_document, SystemMessage
 
         with self.assertRaisesRegex(ValueError, "Invalid"):
@@ -72,11 +72,12 @@ class docutils(unittest.TestCase):
             _ = get_pipeline("coq+rst", "latex", "!dialect")
 
         with self.assertRaisesRegex(ValueError, "Unsupported language"):
-            _ = set_default_role("\0")
+            set_default_role("\0")
 
         with redirected_std():
+            coq_parser = CODE_PARSERS_BY_LANGUAGE["coq"]()
             with self.assertRaisesRegex(SystemMessage, "SEVERE"):
-                RSTCoqParser().parse("(*", new_document("<string>"))
+                coq_parser.parse("(*", new_document("<string>"))
 
 class coqc_time(unittest.TestCase):
     def test_warnings_and_errors(self):
