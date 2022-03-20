@@ -46,36 +46,59 @@ LSP_NOTIFICATIONS = set(n.value for n in LSPNotification)
 JSON = Dict[str, Any]
 LSPMethod = Union[LSPRequest, LSPNotification, str]
 
-class LSPError(ValueError):
+class LSPException(ValueError):
     pass
 
-class LSPMessage(NamedTuple):
+class LSPError(NamedTuple):
+    idx: int
+    code: int
+    message: str
+
+    def json(self) -> JSON:
+        return {
+            "jsonrpc": "2.0",
+            "id": self.idx,
+            "error": { "code": self.code, "message": self.message },
+        }
+
+class LSPResponse(NamedTuple):
+    idx: int
+    result: JSON
+
+    def json(self) -> JSON:
+        return {
+            "jsonrpc": "2.0",
+            "id": self.idx,
+            "result": self.result,
+        }
+
+class LSPQuery(NamedTuple):
     idx: Optional[int]
     method: LSPMethod
     params: JSON
 
     @property
-    def is_method(self):
-        if isinstance(self.method, LSPRequest):
-            assert self.idx is not None
-            return True
-        assert isinstance(self.method, LSPNotification)
-        return False
+    def is_request(self):
+        return self.idx is not None
 
     def json(self) -> JSON:
         return {
             "jsonrpc": "2.0",
             "method": getattr(self.method, "value", self.method),
             "params": self.params,
-            **({"id": self.idx} if self.is_method else {})
+            **({"id": self.idx} if self.is_request else {})
         }
 
-    def jsonrpc(self) -> bytes:
-        js = json.dumps(self.json(), indent=1).replace("\n", "\r\n") + "\r\n"
+LSPMessage = Union[LSPError, LSPResponse, LSPQuery]
+
+class LSPParser:
+    JRPC_HEADER_RE = re.compile(r"Content-Length: (?P<len>[0-9]+)\r\n")
+
+    @staticmethod
+    def serialize(msg: LSPMessage) -> bytes:
+        js = json.dumps(msg.json(), indent=1).replace("\n", "\r\n") + "\r\n"
         header = "Content-Length: {}\r\n\r\n".format(len(js))
         return header.encode("utf-8") + js.encode("utf-8")
-
-    JRPC_HEADER_RE = re.compile(r"Content-Length: (?P<len>[0-9]+)\r\n")
 
     @staticmethod
     def parse_lsp_method(m: str) -> LSPMethod:
@@ -86,25 +109,23 @@ class LSPMessage(NamedTuple):
         return m
 
     @staticmethod
-    def from_json(js: JSON, id2method: Dict[int, LSPMethod]) -> "LSPMessage":
+    def from_json(js: JSON) -> "LSPMessage":
         idx = int(js["id"]) if "id" in js else None
         method = js.get("method")
-        if method is not None: # Notification
-            assert method
-            method = LSPMessage.parse_lsp_method(method)
-            return LSPMessage(idx, method, js["params"])
-        assert idx is not None
+        if method is not None:
+            return LSPQuery(idx, LSPParser.parse_lsp_method(method), js["params"])
         if "result" not in js:
-            raise LSPError("LSP Error: {!r}".format(js["error"]))
-        return LSPMessage(idx, id2method[idx], js["result"])
+            raise LSPException("LSP Error: {!r}".format(js["error"]))
+        assert idx is not None
+        return LSPResponse(idx, js["result"])
 
     @staticmethod
-    def from_stream(stream: IO[bytes], id2method: Dict[int, LSPMethod]) -> "LSPMessage":
+    def from_stream(stream: IO[bytes]) -> "LSPMessage":
         line, length = None, None
         while line not in ("", "\r\n"):
             line = stream.readline().decode("utf-8")
             debug(repr(line), '<< ')
-            header = LSPMessage.JRPC_HEADER_RE.match(line)
+            header = LSPParser.JRPC_HEADER_RE.match(line)
             if header:
                 length = int(header.group("len"))
         if line == "":
@@ -112,13 +133,13 @@ class LSPMessage(NamedTuple):
         if length is None:
             MSG = ("Unexpected output: {!r}, use --debug for a trace.".format(line) +
                    "If --debug doesn't help, check the LSP server's logs.")
-            raise LSPError(MSG)
+            raise LSPException(MSG)
         response: bytes = stream.read(length)
         if len(response) != length:
-            raise LSPError(f"Truncated response: {response!r}")
+            raise LSPException(f"Truncated response: {response!r}")
         resp = response.decode("utf-8")
         debug(resp, "<< ")
-        return LSPMessage.from_json(json.loads(resp), id2method)
+        return LSPParser.from_json(json.loads(resp))
 
 class LSPTokenLegend:
     def __init__(self, doc: Document, lsp_legend: JSON):
@@ -235,55 +256,70 @@ class LSPAdapter:
         yield from self._iter_lsp_shutdown()
 
     @staticmethod
-    def _iter_lsp(transcript: Iterable[Tuple[LSPMethod, JSON]]) -> Iterator[LSPMessage]:
+    def _iter_lsp(transcript: Iterable[Tuple[LSPMethod, JSON]]) -> Iterator[LSPQuery]:
         for idx, (method, params) in enumerate(transcript):
-            yield LSPMessage(idx, method, params)
+            yield LSPQuery(idx if isinstance(method, LSPRequest) else None, method, params)
 
     @staticmethod
-    def _run_lsp(repl: Popen, trace: Iterable[LSPMessage]) -> Iterator[LSPMessage]:
+    def _write_lsp(repl: Popen, msg: LSPMessage) -> None:
+        assert repl.stdin
+        bs = LSPParser.serialize(msg)
+        debug(bs, '>> ')
+        repl.stdin.write(bs)  # type: ignore
+        repl.stdin.flush()
+
+    @staticmethod
+    def _unsupported(idx: int) -> LSPError:
+        return LSPError(idx, code=-32601, # Method not found
+                        message="This client does not support server requests.")
+
+    @staticmethod
+    def _run_lsp(repl: Popen, trace: Iterable[LSPQuery]) -> Iterator[Tuple[LSPMethod, LSPResponse]]:
         """Collect responses to LSP messages in `trace`."""
-        assert repl.stdin and repl.stdout
-        trace, id2method = list(trace), {}
+        assert repl.stdout
+        trace = list(trace)
         for msg in trace:
-            bs = msg.jsonrpc()
-            debug(bs, '>> ')
-            repl.stdin.write(bs)  # type: ignore
-            repl.stdin.flush()
-            if msg.is_method:
-                id2method[msg.idx] = msg.method
+            LSPAdapter._write_lsp(repl, msg)
+            if msg.is_request:
                 while True:
-                    resp = LSPMessage.from_stream(repl.stdout, id2method)
-                    if resp.idx == msg.idx:
-                        yield resp
+                    resp = LSPParser.from_stream(repl.stdout)
+                    if isinstance(resp, LSPResponse) and resp.idx == msg.idx:
+                        yield (msg.method, resp)
                         break
+                    if isinstance(resp, LSPQuery) and resp.is_request:
+                        assert resp.idx
+                        LSPAdapter._write_lsp(repl, LSPAdapter._unsupported(resp.idx))
 
     @staticmethod
-    def _assert_nonoverlapping(tokens: List[Token]) -> List[Token]:
-        for i in range(len(tokens) - 1):
-            assert tokens[i].end <= tokens[i].start
-        return tokens
+    def _assert_nonoverlapping(tokens: Iterable[Token]) -> Iterable[Token]:
+        prev = None
+        for tok in tokens: # FIXME
+            # assert tokens[i].end <= tokens[i + 1].start
+            if prev is None or prev.end <= tok.start:
+                yield tok
+                prev = tok
 
     def collect_semantic_tokens(self, repl: Popen, uri: str, doc: Document) -> Tokens:
         messages = self._iter_lsp(self._lsp_query_tokens(uri, doc.contents))
         token_options, tokens = None, None
-        for response in self._run_lsp(repl, messages):
-            if response.method is LSPRequest.INITIALIZE:
-                token_options = response.params["capabilities"].get("semanticTokensProvider")
-            if response.method is LSPRequest.SEMANTIC_TOKENS_FULL:
+        for (method, response) in self._run_lsp(repl, messages):
+            if method is LSPRequest.INITIALIZE:
+                token_options = response.result["capabilities"].get("semanticTokensProvider")
+            if method is LSPRequest.SEMANTIC_TOKENS_FULL:
                 if token_options is None or not token_options.get("full"):
-                    raise LSPError("This LSP server does not support semantic tokens")
+                    raise LSPException("This LSP server does not support semantic tokens")
                 # No early return: must exhaust iterator
                 legend = LSPTokenLegend(doc, token_options["legend"])
-                tokens = legend.resolve(response.params["data"])
+                tokens = legend.resolve(response.result["data"])
         assert tokens
-        toks = self._assert_nonoverlapping(list(tokens))
+        toks = list(self._assert_nonoverlapping(sorted(tokens)))
         return Tokens(toks, 0, len(toks), 0, len(doc))
 
     def read_driver_info(self, repl: Popen) -> Optional[DriverInfo]:
         messages = self._iter_lsp(self._lsp_query_version())
-        for response in self._run_lsp(repl, messages):
-            if response.method is LSPRequest.INITIALIZE:
-                info = response.params.get("serverInfo")
+        for (method, response) in self._run_lsp(repl, messages):
+            if method is LSPRequest.INITIALIZE:
+                info = response.result.get("serverInfo")
                 return DriverInfo(info["name"], info.get("version", "?")) if info else None
         assert False
 
@@ -294,6 +330,8 @@ class LSPDriver(REPLDriver):
 
     LSP_CLIENT_NAME: str = "Alectryon"
     LSP_LANGUAGE_ID: Optional[str] = None
+
+    LSP_TYPE_MAP = {(typ,): tok for (typ, tok) in LSPAdapter.TOKEN_TYPES.items()}
 
     @property
     def adapter(self):
@@ -317,8 +355,9 @@ class LSPDriver(REPLDriver):
         try:
             doc = Document(chunks, "\n")
             tokens = self.collect_semantic_tokens(doc)
-            tokenized = TokenizedStr(doc.contents, tokens)
+            type_map = {**self.LSP_TYPE_MAP, ("_",): "Text"}
+            tokenized = TokenizedStr(doc.contents, tokens, type_map)
             return list(doc.recover_chunks([Text(tokenized)]))
-        except LSPError as e:
+        except LSPException as e:
             self.observer.notify(None, str(e), Position(self.fpath, 0, 1).as_range(), level=3)
             return [[Text(c)] for c in chunks]
