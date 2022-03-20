@@ -135,6 +135,7 @@ ONE_IO_ANNOT_RE = re.compile(
 _IO_ANNOTS_IN_COMMENT = r"\s+(?:{}\s+)+".format(ONE_IO_ANNOT)
 _IO_COMMENT_RE = {
     "coq": r"[ \t]*[(][*]{}[*][)]",
+    "dafny": r"[ \t]*[/][*]{}[*][/]",
     "lean3": r"[ \t]*[/][-]{}[-][/]",
     "lean4": r"[ \t]*[/][-]{}[-][/]"
 }
@@ -828,6 +829,11 @@ DEFAULT_TRANSFORMS = {
         process_io_annots,
         strip_coq_failures,
         dedent,
+    ],
+    "dafny": [
+        coalesce_text,
+        read_io_comments("dafny"),
+        process_io_annots,
     ],
     "lean3": [
         lean3_attach_commas,
