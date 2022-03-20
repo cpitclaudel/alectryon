@@ -91,7 +91,7 @@ Here's an \emph{inductive specification} of evenness:
     \begin{input}
       \PY{k+kn}{Inductive}~\PY{n+nf}{Even}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{Prop}~\PY{o}{:=}\nl
       \PY{o}{|}~\PY{n}{EvenO}~\PY{o}{:}~\PY{n}{Even}~\PY{n}{O}\nl
-      \PY{o}{|}~\PY{n}{EvenS}~\PY{o}{:}~\PY{k+kr}{forall}~\PY{n+nv}{n}\PY{o}{,}~\PY{n}{Even}~\PY{n}{n}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)).}
+      \PY{o}{|}~\PY{n}{EvenS}~\PY{o}{:}~\PY{k}{forall}~\PY{n+nv}{n}\PY{o}{,}~\PY{n}{Even}~\PY{n}{n}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)).}
     \end{input}
   \end{sentence}
 \end{alectryon}
@@ -104,11 +104,11 @@ Here's an \emph{inductive specification} of evenness:
   \begin{sentence}
     \begin{input}
       \PY{k+kn}{Fixpoint}~\PY{n+nf}{even}~\PY{o}{(}\PY{n+nv}{n}\PY{o}{:}~\PY{n}{nat}\PY{o}{):}~\PY{n}{bool}~\PY{o}{:=}\nl
-      ~~\PY{k+kr}{match}~\PY{n}{n}~\PY{k+kr}{with}\nl
+      ~~\PY{k}{match}~\PY{n}{n}~\PY{k}{with}\nl
       ~~\PY{o}{|}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}~\PY{n}{true}\nl
       ~~\PY{o}{|}~\PY{l+m+mi}{1}~\PY{o}{=\PYZgt{}}~\PY{n}{false}\nl
       ~~\PY{o}{|}~\PY{n}{S}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=\PYZgt{}}~\PY{n}{even}~\PY{n}{n}\nl
-      ~~\PY{k+kr}{end}\PY{o}{.}\nl
+      ~~\PY{k}{end}\PY{o}{.}\nl
     \end{input}
   \end{sentence}
   \sep
@@ -132,7 +132,7 @@ Can we prove it correct?
   \begin{sentence}
     \begin{input}
       \PY{k+kn}{Lemma}~\PY{n+nf}{even\PYZus{}Even}~\PY{o}{:}\nl
-      ~~\PY{k+kr}{forall}~\PY{n+nv}{n}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{.}
+      ~~\PY{k}{forall}~\PY{n+nv}{n}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{.}
     \end{input}
     \sep
     \begin{output}
@@ -143,7 +143,7 @@ Can we prove it correct?
           \infrule{}
           \sep
           \begin{conclusion}
-            \PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}
+            \PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}
           \end{conclusion}
         \end{goal}
       \end{goals}
@@ -163,7 +163,7 @@ Can we prove it correct?
           \infrule{}
           \sep
           \begin{conclusion}
-            \PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}
+            \PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}
           \end{conclusion}
         \end{goal}
       \end{goals}
@@ -335,7 +335,7 @@ Can we prove it correct?
           \PY{n}{In}~\PY{n}{environment}\nl
           \PY{n}{n}~\PY{o}{:}~\PY{n}{nat}\nl
           \PY{n}{IHn}~\PY{o}{:}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\nl
-          \PY{n}{Unable}~\PY{n}{to}~\PY{n+nb}{unify}~\PY{l+s+s2}{\PYZdq{}even~n~=~true~\PYZlt{}\PYZhy{}\PYZgt{}~Even~n\PYZdq{}}~\PY{k+kr}{with}\nl
+          \PY{n}{Unable}~\PY{n}{to}~\PY{n+nb}{unify}~\PY{l+s+s2}{\PYZdq{}even~n~=~true~\PYZlt{}\PYZhy{}\PYZgt{}~Even~n\PYZdq{}}~\PY{k}{with}\nl
           ~\PY{l+s+s2}{\PYZdq{}even~(S~n)~=~true~\PYZlt{}\PYZhy{}\PYZgt{}~Even~(S~n)\PYZdq{}}\PY{o}{.}
         \end{message}
       \end{messages}
@@ -464,7 +464,7 @@ The usual approach is to strengthen the spec to work around the weakness of the 
   \begin{sentence}
     \begin{input}
       \PY{k+kn}{Lemma}~\PY{n+nf}{even\PYZus{}Even}~\PY{o}{:}\nl
-      ~~\PY{k+kr}{forall}~\PY{n+nv}{n}\PY{o}{,}~\PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}\nl
+      ~~\PY{k}{forall}~\PY{n+nv}{n}\PY{o}{,}~\PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}\nl
       ~~~~~~~\PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)).}
     \end{input}
     \sep
@@ -476,7 +476,7 @@ The usual approach is to strengthen the spec to work around the weakness of the 
           \infrule{}
           \sep
           \begin{conclusion}
-            \PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}\nl
             \PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}
           \end{conclusion}
@@ -498,7 +498,7 @@ The usual approach is to strengthen the spec to work around the weakness of the 
           \infrule{}
           \sep
           \begin{conclusion}
-            \PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}\nl
             \PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}
           \end{conclusion}
@@ -671,7 +671,7 @@ The usual approach is to strengthen the spec to work around the weakness of the 
   \sep
   \begin{sentence}
     \begin{input}
-      ~~~~\PY{n+nb}{destruct}~\PY{n}{IHn}~\PY{k+kr}{as}~\PY{o}{((}\PY{n}{Hne}~\PY{o}{\PYZam{}}~\PY{n}{HnE}\PY{o}{)}~\PY{o}{\PYZam{}}~\PY{o}{(}\PY{n}{HSne}~\PY{o}{\PYZam{}}~\PY{n}{HSnE}\PY{o}{)).}
+      ~~~~\PY{n+nb}{destruct}~\PY{n}{IHn}~\PY{k}{as}~\PY{o}{((}\PY{n}{Hne}~\PY{o}{\PYZam{}}~\PY{n}{HnE}\PY{o}{)}~\PY{o}{\PYZam{}}~\PY{o}{(}\PY{n}{HSne}~\PY{o}{\PYZam{}}~\PY{n}{HSnE}\PY{o}{)).}
     \end{input}
     \sep
     \begin{output}
@@ -840,7 +840,7 @@ The usual approach is to strengthen the spec to work around the weakness of the 
   \label{writing-a-fixpoint}%
 }
 
-But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{kn}{Fixpoint}}}}} command or with the \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{kr}{fix}}}}} tactic) is much nicer:
+But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{kn}{Fixpoint}}}}} command or with the \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{k}{fix}}}}} tactic) is much nicer:
 
 \begin{alectryon}
   % Generator: Alectryon
@@ -855,7 +855,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \sep
             \hyp{n}{\PY{n}{nat}}
@@ -880,7 +880,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \sep
             \hyp{n}{\PY{n}{nat}}
@@ -898,14 +898,14 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
   \sep
   \begin{sentence}
     \begin{input}
-      ~~\PY{n+nb}{destruct}~\PY{n}{n}~\PY{k+kr}{as}~\PY{o}{[}~\PY{o}{|}~\PY{o}{[}~\PY{o}{|}~\PY{n}{n}~\PY{o}{]}~\PY{o}{];}~\PY{n+nb}{cbn}\PY{o}{.}
+      ~~\PY{n+nb}{destruct}~\PY{n}{n}~\PY{k}{as}~\PY{o}{[}~\PY{o}{|}~\PY{o}{[}~\PY{o}{|}~\PY{n}{n}~\PY{o}{]}~\PY{o}{];}~\PY{n+nb}{cbn}\PY{o}{.}
     \end{input}
     \sep
     \begin{output}
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
           \end{hyps}
           \sep
@@ -919,7 +919,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+              \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
               \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \end{hyps}
             \sep
@@ -932,7 +932,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
           \sep
           \begin{goal}
             \begin{hyps}
-              \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+              \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
               \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
               \sep
               \hyp{n}{\PY{n}{nat}}
@@ -958,7 +958,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
           \end{hyps}
           \sep
@@ -987,7 +987,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
           \end{hyps}
           \sep
@@ -1016,7 +1016,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \sep
             \hyp{n}{\PY{n}{nat}}
@@ -1041,7 +1041,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \sep
             \hyp{n}{\PY{n}{nat}}
@@ -1057,7 +1057,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
         \begin{extragoals}
           \begin{goal}
             \begin{hyps}
-              \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+              \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
               \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
               \sep
               \hyp{n}{\PY{n}{nat}}
@@ -1083,7 +1083,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \sep
             \hyp{n}{\PY{n}{nat}}
@@ -1114,7 +1114,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{goals}
         \begin{goal}
           \begin{hyps}
-            \hyp{even\char`\_Even\char`\_fp}{\PY{k+kr}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
+            \hyp{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\nl
             \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \sep
             \hyp{n}{\PY{n}{nat}}
