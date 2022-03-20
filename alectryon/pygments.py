@@ -53,6 +53,7 @@ CUSTOM_LEXERS = {
     'TokenizedStrLexer': TokenizedStrLexer,
 }
 CUSTOM_LEXER_ALIASES: Dict[str, str] = {
+    "dafny": "tokstr",
     "lean3": "lean",
     "lean4": "lean"
 }

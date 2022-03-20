@@ -571,6 +571,10 @@ DRIVERS_BY_LANGUAGE = {
         "coqc_time": (".coqc_time", "CoqcTime"),
         "noop": (".noop", "NoOp")
     },
+    "dafny": {
+        "dafny_lsp": (".dafny", "DafnyLSP"),
+        "noop": (".noop", "NoOp")
+    },
     "lean3": {
         "lean3_repl": (".lean3", "Lean3"),
         "noop": (".noop", "NoOp")
@@ -592,6 +596,7 @@ DEFAULT_DRIVERS = {lang: next(iter(drivers)) for lang, drivers in DRIVERS_BY_LAN
 
 EXTENSIONS_BY_LANGUAGE = {
     "coq": (".v",),
+    "dafny": (".dfy",),
     "lean3": (".lean3", ".lean"),
     "lean4": (".lean",),
 }
