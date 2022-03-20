@@ -728,6 +728,70 @@ I do not work on the following tasks, but it would be very useful to complete th
 
 - Add support for quoting parts of another file, including its proof states: (1) design a mini-language to specify where to start and end, either in term of which definitions to select, or in terms of strings of text or regular expressions, or a combination (“definition of ``x`` within module ``A``” or “from ``induction …`` to ``solve [eauto]`` in proof of ``foo``”); (2) load documents that these directives refer to and embed the corresponding parts, compiling (with caching) as needed.
 
+Adding support for new languages
+========================================
+
+Alectryon can be extended to support new languages.  Here is a rough blueprint on adding support for a fictional language `foo` (the variables mentioned below typically have docstrings offering further details):
+
+1. Start in ``core.py`` and add your language to ``core.DRIVERS_BY_LANGUAGE``::
+
+      "foo": {
+          "foo_driver": (".foo", "Foo")
+      },
+
+   From here on and until support for your language is complete, running Alectryon will produce assertion failures; you can use these to guide your implementation or follow the guide below.
+
+2. Add you language's file extensions to ``core.EXTENSIONS_BY_LANGUAGE``::
+
+      "foo": (".foo", ".Foo")
+
+3. Create a driver ``Foo`` for your language in file ``alectryon/foo.py`` (this is what ``.foo`` and ``Foo`` refer to in the snippet above)::
+
+      from typing import Iterable, List, Optional
+      from .core import DriverInfo, Driver, Text, Fragment
+
+      class Foo(Driver):
+          ID = "foo"
+          def version_info(self) -> DriverInfo:
+              return DriverInfo(name="Foo", version="1.0")
+          def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
+              return [[Text(c)] for c in chunks]
+
+   The implementation given here does nothing; you'll want to replace it with one that actually runs code and records its output.  Alectryon has many helper classes for this purpose; refer to existing drivers and the docstrings of the base classes for more information.
+
+4. Add transforms for your language to ``transforms.DEFAULT_TRANSFORMS``::
+
+      "foo": [
+          coalesce_text,
+          read_io_comments("foo"),
+          process_io_annots,
+      ],
+
+5. Add an entry to ``transforms._IO_COMMENT_RE`` to tell Alectryon how to identify IO annotations::
+
+      "foo": r"[ \t]*[/][*]{}[*][/]",
+
+6. Set up argument parsing for your language: add necessary flags in function ``build_parser`` of ``cli.py``, any required post-processing in ``post_process_arguments``, and add your language to ``DRIVER_ARGS_BY_NAME``::
+
+      "foo": None,
+
+7. Set up syntax highlighting (only if your language ID is unknown to Pygments) by adding an entry to ``pygments.CUSTOM_LEXER_ALIASES`` (``"text"`` is a no-op lexer)::
+
+      "foo": "text",
+
+8. Add literate support for your language by creating a language definition in ``literate.py``::
+
+      class FooParser(LineParser):
+          LIT_HEADER_RE = re.compile("^[ \t]*///[ ]?", re.MULTILINE)
+
+      FOO = LineLangDef("foo", FooParser,
+                        lit_header="///",
+                        lit_header_re=FooParser.LIT_HEADER_RE)
+
+   Tell Alectryon about your language by adding an entry to ``literate.LANGUAGES``::
+
+      "foo": Foo,
+
 .. _gallery:
 
 Gallery
