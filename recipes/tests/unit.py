@@ -75,6 +75,22 @@ class json(unittest.TestCase):
                 self.cache(chunks, driver, cache_root, docpath, "coq", "xz")
                 self.assertRegex(out.getvalue().strip(), r"\ARecompression requested.*\Z")
 
+class lsp(unittest.TestCase):
+    def test_styles(self):
+        from alectryon.dafny import DafnyLSP
+        from alectryon.pygments_style import AlectryonStyle
+        from alectryon.pygments_lexer import TokenizedStrLexer
+
+        toks_by_style = {}
+        for tokstr in set(DafnyLSP.LSP_TYPE_MAP.values()):
+            tok = TokenizedStrLexer.resolve_pygments_token(tokstr)
+            style = AlectryonStyle.styles[tok]
+            toks_by_style.setdefault(style, []).append(tokstr)
+
+        collisions = {style: types for (style, types) in toks_by_style.items()
+                      if len(types) > 1}
+        self.assertEqual(collisions, {})
+
 if __name__ == '__main__':
     sys.stderr = sys.stdout
     unittest.main(verbosity=2)
