@@ -326,9 +326,9 @@ class CoqLexer(RegexLexer):
     TOKEN_TYPES = {
         'cmd': Keyword.Namespace,
         'gallina-constants': Keyword.Type,
-        'gallina-keywords': Keyword.Reserved,
+        'gallina-keywords': Keyword,
         'ltac-builtins': Keyword.Pseudo,
-        'ltac-keywords': Keyword.Reserved,
+        'ltac-keywords': Keyword,
         'tacn': Name.Builtin,
         'tacn-solve': Name.Builtin.Pseudo,
     }
@@ -482,9 +482,9 @@ class CoqLexer(RegexLexer):
         'binders': binders(r":=|[.]", name_re),
 
         '_keywords': [
-            (r"\bforall\b|\bexists\b|∀|∃", Keyword.Reserved, 'quantifier args'),
-            (r"\bfun\b|λ", Keyword.Reserved, 'fun args'),
-            (let_binder_re, Keyword.Reserved, 'let args'),
+            (r"\bforall\b|\bexists\b|∀|∃", Keyword, 'quantifier args'),
+            (r"\bfun\b|λ", Keyword, 'fun args'),
+            (let_binder_re, Keyword, 'let args'),
             (ws(kwds['ltac-keywords']), TOKEN_TYPES['ltac-keywords']),
             (ws(kwds['ltac-builtins']), TOKEN_TYPES['ltac-builtins']),
             (ws(kwds['gallina-keywords']), TOKEN_TYPES['gallina-keywords']),
