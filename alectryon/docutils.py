@@ -1522,11 +1522,9 @@ def register():
 
 def set_default_role(lang="coq"):
     """Set the default role (the one used with single backticks) to :``lang``:."""
-    for role in ROLES:
-        if role.name == lang:
-            roles.DEFAULT_INTERPRETED_ROLE = CODE_ROLES["coq"].name # type: ignore
-            return
-    raise ValueError("Unsupported language: {}".format(lang))
+    if lang not in CODE_ROLES:
+        raise ValueError("Unsupported language: {}".format(lang))
+    roles.DEFAULT_INTERPRETED_ROLE = CODE_ROLES[lang].name # type: ignore
 
 def setup(lang="coq"):
     """Prepare docutils for writing documents with Alectryon.
