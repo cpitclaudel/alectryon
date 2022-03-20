@@ -35,7 +35,7 @@ Orange:     #fcaf3e     #f57900     #ce5c00
 Chocolate:  #e9b96e     #c17d11     #8f5902
 Chameleon:  #8ae234     #73d216     #4e9a06
 Sky Blue:   #729fcf     #3465a4     #204a87
-Plum:       #ad7fa8     #75507b     #5c35cc
+Plum:       #ad7fa8     #75507b     #5c3566
 Scarlet Red:#ef2929     #cc0000     #a40000
 Aluminium:  #eeeeec     #d3d7cf     #babdb6
             #888a85     #555753     #2e3436
@@ -71,10 +71,10 @@ class AlectryonStyle(Style):
 
         Keyword:                   "#8f5902",                # class: 'k'
         Keyword.Constant:          "bold #204a87",           # class: 'kc'
-        Keyword.Declaration:       "bold #4e9a06",           # class: 'kd'
+        Keyword.Declaration:       "#4e9a06",                # class: 'kd'
         Keyword.Namespace:         "bold #4e9a06",           # class: 'kn'
         Keyword.Pseudo:            "#204a87",                # class: 'kp'
-        Keyword.Reserved:          "#8f5902",                # class: 'kr'
+        Keyword.Reserved:          "#75507b",                # class: 'kr'
         Keyword.Type:              "#204a87",                # class: 'kt'
 
         Operator:                  "#000000",                # class: 'o'
@@ -84,29 +84,29 @@ class AlectryonStyle(Style):
 
         Name:                      "#000000",                # class: 'n'
         Name.Attribute:            "#c4a000",                # class: 'na'
-        Name.Builtin:              "#75507b",                # class: 'nb'
-        Name.Builtin.Pseudo:       "#5c35cc",                # class: 'bp'
-        Name.Class:                "#204a87",                # class: 'nc'
-        Name.Constant:             "#ce5c00",                # class: 'no'
+        Name.Builtin:              "#5c3566",                # class: 'nb'
+        Name.Builtin.Pseudo:       "#c4a000",                # class: 'bp'
+        Name.Class:                "#3465a4",                # class: 'nc'
+        Name.Constant:             "bold #ce5c00",           # class: 'no'
         Name.Decorator:            "bold #3465a4",           # class: 'nd'
-        Name.Entity:               "underline #c4a000",      # class: 'ni'
+        Name.Entity:               "bold #c4a000",           # class: 'ni'
         Name.Exception:            "#cc0000",                # class: 'ne'
         Name.Function:             "#a40000",                # class: 'nf'
         Name.Label:                "bold #3465a4",           # class: 'nl'
-        Name.Namespace:            "#000000",                # class: 'nn'
+        Name.Namespace:            "bold #204a87",           # class: 'nn'
         Name.Other:                "#000000",                # class: 'nx'
         Name.Tag:                  "#a40000",                # class: 'nt'
         Name.Variable:             "#ce5c00",                # class: 'nv'
-        Name.Variable.Class:       "#ce5c00",                # class: 'vc'
+        Name.Variable.Class:       "underline #ce5c00",      # class: 'vc'
         Name.Variable.Global:      "underline #ce5c00",      # class: 'vg'
-        Name.Variable.Instance:    "#ce5c00",                # class: 'vi'
+        Name.Variable.Instance:    "italic #ce5c00",         # class: 'vi'
 
-        Number:                    "#2e3436",                # class: 'm'
-        Number.Float:              "#2e3436",                # class: 'mf'
-        Number.Hex:                "#2e3436",                # class: 'mh'
-        Number.Integer:            "#2e3436",                # class: 'mi'
-        Number.Integer.Long:       "#2e3436",                # class: 'il'
-        Number.Oct:                "#2e3436",                # class: 'mo'
+        Number:                    "#555753",                # class: 'm'
+        Number.Float:              "#555753",                # class: 'mf'
+        Number.Hex:                "#555753",                # class: 'mh'
+        Number.Integer:            "#555753",                # class: 'mi'
+        Number.Integer.Long:       "#555753",                # class: 'il'
+        Number.Oct:                "#555753",                # class: 'mo'
 
         Literal:                   "#2e3436",                # class: 'l'
         Literal.Date:              "#2e3436",                # class: 'ld'
@@ -114,13 +114,13 @@ class AlectryonStyle(Style):
         String:                    "#ad7fa8",                # class: 's'
         String.Backtick:           "#ad7fa8",                # class: 'sb'
         String.Char:               "bold #ad7fa8",           # class: 'sc'
-        String.Doc:                "#ad7fa8",                # class: 'sd'
+        String.Doc:                "italic #ad7fa8",         # class: 'sd'
         String.Double:             "#ad7fa8",                # class: 's2'
         String.Escape:             "bold #ad7fa8",           # class: 'se'
         String.Heredoc:            "underline #ad7fa8",      # class: 'sh'
         String.Interpol:           "#ce5c00",                # class: 'si'
         String.Other:              "#ad7fa8",                # class: 'sx'
-        String.Regex:              "#ad7fa8",                # class: 'sr'
+        String.Regex:              "bold #ad7fa8",           # class: 'sr'
         String.Single:             "#ad7fa8",                # class: 's1'
         String.Symbol:             "#8f5902",                # class: 'ss'
 

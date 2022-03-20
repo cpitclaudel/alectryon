@@ -24,49 +24,49 @@ alectryon syntax_highlighting.v
 </pre>
 <!--  -->
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">a</span> : nat :=
-  <span class="kr">let</span> &#39;(x, y) := (<span class="mi">1</span>, <span class="mi">2</span>) <span class="kr">in</span>
-  <span class="kr">let</span> &#39; (z, t) := (x, y) <span class="kr">in</span>
-  <span class="kr">let</span> <span class="nv">&#39;tt</span> := tt <span class="kr">in</span>
-  <span class="kr">let fix</span> <span class="nv">f</span> (<span class="nv">x</span>: nat) {<span class="nv">struct</span> <span class="nv">x</span>} : nat := x <span class="kr">in</span>
-  (<span class="kr">fun</span> &#39; (f, x, y) =&gt; f (x + y)) (f, t, y).</span><span class="alectryon-wsp">
+  <span class="k">let</span> &#39;(x, y) := (<span class="mi">1</span>, <span class="mi">2</span>) <span class="k">in</span>
+  <span class="k">let</span> &#39; (z, t) := (x, y) <span class="k">in</span>
+  <span class="k">let</span> <span class="nv">&#39;tt</span> := tt <span class="k">in</span>
+  <span class="k">let fix</span> <span class="nv">f</span> (<span class="nv">x</span>: nat) {<span class="nv">struct</span> <span class="nv">x</span>} : nat := x <span class="k">in</span>
+  (<span class="k">fun</span> &#39; (f, x, y) =&gt; f (x + y)) (f, t, y).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="syntax-highlighting-v-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="syntax-highlighting-v-chk0"><span class="kn">Print</span> a.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">a =
-<span class="kr">let</span>
-&#39;(x, y) := (<span class="mi">1</span>, <span class="mi">2</span>) <span class="kr">in</span>
- <span class="kr">let</span>
- &#39;(_, t) := (x, y) <span class="kr">in</span>
-  <span class="kr">let</span>
-  <span class="nv">&#39;tt</span> := tt <span class="kr">in</span>
-   <span class="kr">let fix</span> <span class="nv">f</span> (<span class="nv">x0</span> : nat) : nat := x0 <span class="kr">in</span>
-   (<span class="kr">fun</span> &#39;(f0, x0, y1) =&gt; f0 (x0 + y1)) (f, t, y)
+<span class="k">let</span>
+&#39;(x, y) := (<span class="mi">1</span>, <span class="mi">2</span>) <span class="k">in</span>
+ <span class="k">let</span>
+ &#39;(_, t) := (x, y) <span class="k">in</span>
+  <span class="k">let</span>
+  <span class="nv">&#39;tt</span> := tt <span class="k">in</span>
+   <span class="k">let fix</span> <span class="nv">f</span> (<span class="nv">x0</span> : nat) : nat := x0 <span class="k">in</span>
+   (<span class="k">fun</span> &#39;(f0, x0, y1) =&gt; f0 (x0 + y1)) (f, t, y)
      : nat</blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">test</span> (<span class="nv">as&#39;</span> <span class="nv">is&#39;</span> <span class="nv">with&#39;</span>: nat) :=
-  <span class="kr">match</span> <span class="kr">match</span> <span class="mi">1</span> <span class="kr">with</span>
+  <span class="k">match</span> <span class="k">match</span> <span class="mi">1</span> <span class="k">with</span>
         | S is&#39; =&gt; <span class="mi">0</span>
         | <span class="mi">0</span> =&gt; <span class="mi">1</span>
-        <span class="kr">end</span> <span class="kr">with</span>
+        <span class="k">end</span> <span class="k">with</span>
   | S with&#39; =&gt; None
   | <span class="mi">0</span> =&gt; Some <span class="mi">1</span>
-  <span class="kr">end</span>.</span><span class="alectryon-wsp">
+  <span class="k">end</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="syntax-highlighting-v-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="syntax-highlighting-v-chk1"><span class="kn">Print</span> test.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">test =
-<span class="kr">fun</span> <span class="nv">_</span> <span class="nv">_</span> <span class="nv">_</span> : nat =&gt;
-<span class="kr">match</span> <span class="kr">match</span> <span class="mi">1</span> <span class="kr">with</span>
+<span class="k">fun</span> <span class="nv">_</span> <span class="nv">_</span> <span class="nv">_</span> : nat =&gt;
+<span class="k">match</span> <span class="k">match</span> <span class="mi">1</span> <span class="k">with</span>
       | <span class="mi">0</span> =&gt; <span class="mi">1</span>
       | S _ =&gt; <span class="mi">0</span>
-      <span class="kr">end</span> <span class="kr">with</span>
+      <span class="k">end</span> <span class="k">with</span>
 | <span class="mi">0</span> =&gt; Some <span class="mi">1</span>
 | S _ =&gt; None
-<span class="kr">end</span>
+<span class="k">end</span>
      : nat -&gt; nat -&gt; nat -&gt; option nat
 
 <span class="kn">Arguments</span> test (as&#39; is&#39; with&#39;)%nat_scope</blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;$0&quot;</span> := (<span class="mi">0</span>, <span class="mi">0</span>).</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Infix</span> <span class="s2">&quot;$+&quot;</span> := (<span class="kr">fun</span> &#39;(u, a) &#39;(_, b) =&gt; (u, a + b)) (<span class="kn">at level</span> <span class="mi">39</span>).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Infix</span> <span class="s2">&quot;$+&quot;</span> := (<span class="k">fun</span> &#39;(u, a) &#39;(_, b) =&gt; (u, a + b)) (<span class="kn">at level</span> <span class="mi">39</span>).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">b</span> := <span class="kr">fun</span> &#39;(x, y) &#39;(pair x&#39; y&#39;) =&gt; (x + x&#39;, y + y&#39;).</span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">b</span> := <span class="k">fun</span> &#39;(x, y) &#39;(pair x&#39; y&#39;) =&gt; (x + x&#39;, y + y&#39;).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="syntax-highlighting-v-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="syntax-highlighting-v-chk2"><span class="kn">Print</span> b.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">b =
-<span class="kr">fun</span> &#39;(x, y) &#39;(x&#39;, y&#39;) =&gt; (x + x&#39;, y + y&#39;)
+<span class="k">fun</span> &#39;(x, y) &#39;(x&#39;, y&#39;) =&gt; (x + x&#39;, y + y&#39;)
      : nat * nat -&gt; nat * nat -&gt; nat * nat
 
 <span class="kn">Arguments</span> b pat pat</blockquote></div></div></small><span class="alectryon-wsp">
