@@ -1,7 +1,8 @@
 test_backend_gen (__main__.core) ... ok
 test_validation (__main__.json) ... ok
+test_styles (__main__.lsp) ... ok
 
 ----------------------------------------------------------------------
-Ran 2 tests
+Ran 3 tests
 
 OK
