@@ -30,3 +30,31 @@ class DafnyLSP(LSPDriver):
 
     ID = "dafny_lsp"
     LSP_LANGUAGE_ID = LANGUAGE = "dafny"
+
+    LSP_TYPE_MAP = {
+        **LSPDriver.LSP_TYPE_MAP,
+        ("string", "documentation"): "String.Doc",
+        ("comment", "documentation"): "Comment.Special",
+        ("macro",): "Name.Builtin.Pseudo", # Special
+        ("modifier",): "Keyword.Declaration",
+        ("keyword", "declaration"): "Keyword.Declaration", # Declaration
+        ("keyword", "documentation"): "Keyword.Reserved", # Specification
+        ("keyword", "defaultLibrary", "documentation"): "Keyword.Reserved", # Assertion
+        ("function", "defaultLibrary"): "Name.Builtin", # Builtin
+        ("macro", "defaultLibrary"): "Name.Function.Magic", # Macro
+        ("number", "defaultLibrary"): "Literal", # Constant
+
+        ("class", "declaration"): "Name.Class", # Value types an reference types are ≠ colors
+        ("type", "declaration"): "Keyword.Type",
+        ("type", "defaultLibrary"): "Keyword.Type", # Comprehension
+
+        ("parameter", "declaration", "readonly"): "Name.Variable", # FIXME
+        ("parameter", "readonly"): "Name.Variable",
+
+        ("function", "definition"): "Name.Function",
+        ("function", "declaration"): "Name.Function",
+        ("method", "definition"): "Name.Function",
+        ("method", "declaration"): "Name.Function",
+        ("property", "definition"): "Name.Variable.Instance",
+        ("property", "declaration"): "Name.Variable.Instance",
+    }
