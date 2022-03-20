@@ -31,11 +31,13 @@ A custom Coq lexer for pygments.
 Rewritten from the one in pygments.lexers.theorem.
 """
 
+from typing import Dict
+
 from pygments.filter import apply_filters
 from pygments.lexer import Lexer, RegexLexer, default, words, bygroups, include
 from pygments.regexopt import regex_opt, regex_opt_inner
 from pygments.token import \
-    Token, Text, Comment, Operator, Keyword, Name, String, Number
+    Token, Text, Comment, Operator, Keyword, Name, String, Number, _TokenType
 
 # FIXME: See dotnet.py and `from pygments import unistring as uni` for unicode
 # identifiers.
@@ -550,17 +552,32 @@ class TokenizedStrLexer(Lexer):
 
     @staticmethod
     @functools.lru_cache(maxsize=None)
-    def _resolve_typestr(typestr: str):
+    def resolve_pygments_token(fqn: str):
         typ = Token
-        for ts in typestr.split('.'):
+        for ts in fqn.split('.'):
             typ = getattr(typ, ts)
         return typ
+
+    @staticmethod
+    def make_pygments_resolver(type_map):
+        def _resolve(typ, mods):
+            tokstr = type_map.get((typ, *mods))
+            if tokstr is None:
+                tokstr = type_map.get((typ,))
+                if tokstr is None:
+                    MSG = "!! Unexpected pre-tokenized token type {!r} with modes {!r}\n"
+                    warnings.warn(MSG.format(typ, mods))
+                    return Token.Error
+            return TokenizedStrLexer.resolve_pygments_token(tokstr)
+        return _resolve
 
     def get_tokens_unprocessed(self, text):
         if not isinstance(text, TokenizedStr):
             yield 0, Text, text
             return
-        for tok in text.tokens.iter_contiguous("Token.Text", ()):
-            yield tok.start, self._resolve_typestr(tok.typ), tok.value(text)
+
+        _map = self.make_pygments_resolver(text.type_map)
+        for tok in text.tokens.iter_contiguous("_", ()):
+            yield tok.start, _map(tok.typ, tok.mods), tok.value(text)
 
 __all__ = ["CoqLexer", "TokenizedStrLexer"]

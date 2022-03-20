@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 import bisect
-from typing import Iterator, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, Iterator, List, NamedTuple, Optional, Tuple
 
 class Token(NamedTuple):
     start: int
@@ -76,10 +76,11 @@ class TokenizedStr(str):
     def __new__(cls, s, *_args):
         return super().__new__(cls, s)
 
-    def __init__(self, _s, tokens: Tokens=None):
-        assert tokens
+    def __init__(self, _s, tokens: Tokens=None, type_map: Dict[str, Any]=None):
+        assert tokens and type_map
         super().__init__()
         self.tokens = tokens
+        self.type_map = type_map
 
     @staticmethod
     def _wrapidx(idx: Optional[int], dflt: int, mod: int):
@@ -91,4 +92,4 @@ class TokenizedStr(str):
         s = super().__getitem__(index)
         start = self._wrapidx(index.start, 0, len(self))
         stop = self._wrapidx(index.stop, len(self), len(self))
-        return TokenizedStr(s, self.tokens.filter(start, stop))
+        return TokenizedStr(s, self.tokens.filter(start, stop), self.type_map)
