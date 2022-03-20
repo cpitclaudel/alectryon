@@ -1123,6 +1123,7 @@ def rst2dafny(rst):
 
 LANGUAGES = {
     "coq": COQ,
+    "dafny": DAFNY,
     "lean3": LEAN3,
     "lean4": LEAN4
 }
