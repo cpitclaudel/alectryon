@@ -121,20 +121,20 @@ class LSPMessage(NamedTuple):
         return LSPMessage.from_json(json.loads(resp), id2method)
 
 class LSPTokenLegend:
-    def __init__(self, doc: Document, lsp_legend: JSON, type_map: Dict[str, str]):
+    def __init__(self, doc: Document, lsp_legend: JSON):
         self.doc = doc
-        self.types = [type_map.get(typ, "Error") for typ in lsp_legend["tokenTypes"]]
+        self.types = lsp_legend["tokenTypes"]
         self.modifiers = lsp_legend["tokenModifiers"]
         self.modifiers_dict: Dict[int, Tuple[str, ...]] = {}
 
     def resolve_mods(self, imods: int) -> Tuple[str, ...]:
         mods: Optional[Tuple[str, ...]] = self.modifiers_dict.get(imods)
         if mods is None:
-            mods = self.modifiers_dict[imods] = tuple(
+            mods = self.modifiers_dict[imods] = tuple(sorted(
                 self.modifiers[i]
                 for i, c in enumerate(bin(imods)[:1:-1], 0)
                 if c == '1'
-            )
+            ))
         return mods
 
     def resolve_one(self, l: int, c: int, length: int, itype: int, imods: int) -> Token:
@@ -157,22 +157,22 @@ class LSPAdapter:
 
     TOKEN_TYPES = {
         "namespace": "Name.Namespace",
-        "type": "Keyword.Type", #!
+        "type": "Keyword.Type",
         "class": "Name.Class",
         "enum": "Name.Class",
         "interface": "Name.Class",
         "struct": "Name.Class",
-        "typeParameter": "Name.Entity", #!
-        "parameter": "Name.Variable.", #!
+        "typeParameter": "Name.Entity",
+        "parameter": "Name.Variable",
         "variable": "Name.Variable",
         "property": "Name.Variable.Instance",
         "enumMember": "Name.Constant", #!
-        "event": "Name.Class", #!
+        "event": "Name.Class",
         "function": "Name.Function",
         "method": "Name.Function",
-        "macro": "Name.Function.Magic", #!
+        "macro": "Name.Function",
         "keyword": "Keyword",
-        "modifier": "Keyword.Reserved", #!
+        "modifier": "Keyword",
         "comment": "Comment",
         "string": "String",
         "number": "Number",
@@ -273,7 +273,7 @@ class LSPAdapter:
                 if token_options is None or not token_options.get("full"):
                     raise LSPError("This LSP server does not support semantic tokens")
                 # No early return: must exhaust iterator
-                legend = LSPTokenLegend(doc, token_options["legend"], self.TOKEN_TYPES)
+                legend = LSPTokenLegend(doc, token_options["legend"])
                 tokens = legend.resolve(response.params["data"])
         assert tokens
         toks = self._assert_nonoverlapping(list(tokens))
