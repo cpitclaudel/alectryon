@@ -1,6 +1,8 @@
+PYTHON ?= python3
 python_venv := deps/.venv
 python_bin := $(python_venv)/bin
 export PATH := $(abspath $(python_bin)):$(PATH)
+export PYTHONIOENCODING =? "utf-8"
 
 binaries := $(python_bin)/pip
 dependencies := $(binaries)
@@ -28,7 +30,7 @@ recipes/%: FORCE
 ifeq ($(MAKECMDGOALS), init)
 
 $(python_venv):
-	python3 -m venv $(python_venv)
+	$(PYTHON) -m venv $(python_venv)
 
 init: $(python_venv)
 	pip install -r deps/requirements.txt
