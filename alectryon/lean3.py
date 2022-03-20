@@ -23,17 +23,23 @@ import re
 import tempfile
 from collections import deque
 from pathlib import Path
-from typing import Any, Iterable, List, Optional, Tuple, TypedDict
+from typing import Any, Iterable, List, Optional, Tuple
 
 from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, \
     Message, Sentence, Text, Fragment, cwd
 
-class _AstNode(TypedDict):
-    kind: str
-class AstNode(_AstNode, total=False):
-    start: List[int]
-    end: List[int]
-    children: List[int]
+try:
+    from typing import TypedDict # novm
+
+    class _AstNode(TypedDict):
+        kind: str
+
+    class AstNode(_AstNode, total=False):
+        start: List[int]
+        end: List[int]
+        children: List[int]
+except ImportError:
+    AstNode = _AstNode = Any
 
 AstData = List[AstNode]
 Pos = Tuple[int, int]
