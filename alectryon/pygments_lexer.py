@@ -578,6 +578,6 @@ class TokenizedStrLexer(Lexer):
 
         _map = self.make_pygments_resolver(text.type_map)
         for tok in text.tokens.iter_contiguous("_", ()):
-            yield tok.start, _map(tok.typ, tok.mods), tok.value(text)
+            yield tok.rng.start, _map(tok.typ, tok.mods), tok.value(text)
 
 __all__ = ["CoqLexer", "TokenizedStrLexer"]
