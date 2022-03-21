@@ -29,7 +29,7 @@ from pathlib import Path
 from subprocess import Popen
 
 from .core import debug, Document, DriverInfo, Position, REPLDriver, Text, Fragment
-from .tokens import Token, Tokens, TokenizedStr
+from .tokens import Range, Token, Tokens, TokenizedStr
 
 class LSPRequest(Enum):
     INITIALIZE = "initialize"
@@ -162,7 +162,7 @@ class LSPTokenLegend:
         typ = self.types[itype]
         mods = self.resolve_mods(imods)
         start = self.doc.pos2offset(l, c)
-        return Token(start, start + length, typ, mods)
+        return Token(Range(start, start + length), typ, mods)
 
     def resolve(self, tokens: Iterable[int]) -> Iterator[Token]:
         l, c = 1, 0
@@ -291,13 +291,19 @@ class LSPAdapter:
                         LSPAdapter._write_lsp(repl, LSPAdapter._unsupported(resp.idx))
 
     @staticmethod
-    def _assert_nonoverlapping(tokens: Iterable[Token]) -> Iterable[Token]:
-        prev = None
+    def _remove_overlapping(tokens: Iterable[Token]) -> List[Token]:
+        """Remove overlapping token from a list of `tokens`.
+
+        Later tokens are preferred over earlier ones, so if two overlapping
+        tokens are found the first one is discarded.
+        """
+        filtered: List[Token] = []
+        tokens = sorted(tokens, key=lambda t: t.rng)
         for tok in tokens: # FIXME
-            # assert tokens[i].end <= tokens[i + 1].start
-            if prev is None or prev.end <= tok.start:
-                yield tok
-                prev = tok
+            while filtered and tok.rng.start < filtered[-1].rng.end:
+                filtered.pop()
+            filtered.append(tok)
+        return filtered
 
     def collect_semantic_tokens(self, repl: Popen, uri: str, doc: Document) -> Tokens:
         messages = self._iter_lsp(self._lsp_query_tokens(uri, doc.contents))
@@ -311,9 +317,9 @@ class LSPAdapter:
                 # No early return: must exhaust iterator
                 legend = LSPTokenLegend(doc, token_options["legend"])
                 tokens = legend.resolve(response.result["data"])
-        assert tokens
-        toks = list(self._assert_nonoverlapping(sorted(tokens)))
-        return Tokens(toks, 0, len(toks), 0, len(doc))
+        assert tokens is not None
+        toks = self._remove_overlapping(tokens)
+        return Tokens(toks, slice(0, len(toks), None), Range(0, len(doc)))
 
     def read_driver_info(self, repl: Popen) -> Optional[DriverInfo]:
         messages = self._iter_lsp(self._lsp_query_version())
