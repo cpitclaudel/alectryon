@@ -19,29 +19,34 @@
 # SOFTWARE.
 
 import bisect
-from typing import Any, Dict, Iterator, List, NamedTuple, Optional, Tuple
+from typing import Any, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union
 
-class Token(NamedTuple):
+class Range(NamedTuple):
     start: int
     end: int
+
+    @property
+    def slice(self):
+        return slice(self.start, self.end, None)
+
+class Token(NamedTuple):
+    rng: Range
     typ: str
     mods: Tuple[str, ...]
 
     def value(self, s: str) -> str:
         # Avoid overrides by calling ``__getitem__`` directly
-        return str.__getitem__(s, slice(self.start, self.end, None))
+        return str.__getitem__(s, self.rng.slice)
 
     def reposition(self, startpos: int, endpos: int) -> "Token":
         return self._replace(  # pylint: disable=no-member
-            start=max(self.start, startpos) - startpos,
-            end=min(self.end, endpos) - startpos)
+            rng=Range(start=max(self.rng.start, startpos) - startpos,
+                      end=min(self.rng.end, endpos) - startpos))
 
 class Tokens(NamedTuple):
     toks: List[Token]
-    start: int
-    end: int
-    startpos: int
-    endpos: int
+    view: slice
+    rng: Range
 
     @staticmethod
     def bisect_right(a, x, lo, hi, key):
@@ -53,30 +58,33 @@ class Tokens(NamedTuple):
         return lo
 
     def filter(self, startpos: int, endpos: int) -> "Tokens":
-        startpos, endpos = self.startpos + startpos, self.startpos + endpos
-        start = self.bisect_right(self.toks, startpos, self.start, self.end, key=lambda t: t.end)
-        end = bisect.bisect_left(self.toks, (endpos,), self.start, self.end)
-        return Tokens(self.toks, start, end, startpos, endpos)
+        startpos, endpos = self.rng.start + startpos, self.rng.start + endpos
+        start = self.bisect_right(self.toks, startpos, self.view.start, self.view.stop,
+                                  key=lambda t: t.rng.end)
+        end = bisect.bisect_left(self.toks, ((endpos,),), self.view.start, self.view.stop)
+        return Tokens(self.toks, slice(start, end, None), Range(startpos, endpos))
 
     def __iter__(self) -> Iterator[Token]:
-        for idx in range(self.start, self.end):
-            yield self.toks[idx].reposition(self.startpos, self.endpos)
+        for idx in range(self.view.start, self.view.stop):
+            yield self.toks[idx].reposition(self.rng.start, self.rng.end)
 
     def iter_contiguous(self, typ: str, mods: Tuple[str, ...]) -> Iterator[Token]:
         pos = 0
-        for tok in self:
-            if tok.start > pos:
-                yield Token(pos, tok.start, typ, mods)
+        it: Iterable[Token] = self # type: ignore # LATER (≥ 3.10): Inherit
+        for tok in it:
+            if tok.rng.start > pos:
+                yield Token(Range(pos, tok.rng.start), typ, mods)
             yield tok
-            pos = tok.end
-        if pos < self.endpos:
-            yield Token(pos, self.endpos, typ, mods)
+            pos = tok.rng.end
+        if pos < self.rng.end:
+            yield Token(Range(pos, self.rng.end), typ, mods)
 
 class TokenizedStr(str):
     def __new__(cls, s, *_args):
         return super().__new__(cls, s)
 
-    def __init__(self, _s, tokens: Tokens=None, type_map: Dict[str, Any]=None):
+    def __init__(self, _s, tokens: Tokens=None,
+                 type_map: Dict[Tuple[str, ...], Any]=None):
         assert tokens and type_map
         super().__init__()
         self.tokens = tokens
@@ -87,9 +95,12 @@ class TokenizedStr(str):
         idx = dflt if idx is None else idx
         return idx if idx >= 0 else idx + mod
 
-    def __getitem__(self, index: slice):
-        assert index.step is None
+    def __getitem__(self, index: Union[int, slice]):
         s = super().__getitem__(index)
+        if index is int:
+            return s
+        assert isinstance(index, slice)
+        assert index.step is None
         start = self._wrapidx(index.start, 0, len(self))
         stop = self._wrapidx(index.stop, len(self), len(self))
         return TokenizedStr(s, self.tokens.filter(start, stop), self.type_map)
