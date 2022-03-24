@@ -18,7 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Tuple
+import typing
+from typing import Iterable, Tuple, Union, cast
 
 import re
 import unicodedata
@@ -51,11 +52,11 @@ class CoqIdents:
     )
 
     @staticmethod
-    def valid_char(c, allowed):
+    def valid_char(c: str, allowed: Iterable[Union[str, typing.Pattern[str]]]):
         for pattern in allowed:
             if isinstance(pattern, str) and unicodedata.category(c).lower() == pattern:
                 return True
-            if isinstance(pattern, Pattern) and pattern.match(c):
+            if isinstance(pattern, Pattern) and cast(typing.Pattern[str], pattern).match(c):
                 return True
         return False
 

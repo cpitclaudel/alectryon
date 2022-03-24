@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
 
-from typing import Any, Dict, Deque, Iterable, Iterator, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Callable, Deque, Dict, Iterable, Iterator, List, Match, \
+    MutableSequence, Optional, Pattern, Tuple, Type, TypeVar, Union, \
+    NamedTuple, Sequence, cast
 
 import re
 from enum import Enum
+from itertools import groupby
 from collections import namedtuple, deque
 
 ## Utilities
 ## =========
 
 class StringView:
-    def __init__(self, s, beg=0, end=None):
+    def __init__(self, s: str, beg=0, end=None):
+        assert isinstance(s, str)
         end = end if end is not None else len(s)
         self.s, self.beg, self.end = s, beg, end
         assert self.beg <= len(s)
@@ -22,7 +26,7 @@ class StringView:
     def __bool__(self):
         return len(self) > 0
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx) -> "StringView":
         if isinstance(idx, slice):
             beg = min(self.beg + (idx.start or 0), self.end)
             if idx.stop is None:
@@ -32,9 +36,9 @@ class StringView:
             else:
                 end = self.beg + idx.stop
             return StringView(self.s, beg, end)
-        return self.s[self.beg + idx]
+        return StringView(self.s[self.beg + idx])
 
-    def __add__(self, other):
+    def __add__(self, other) -> "StringView":
         if self.s is not other.s:
             raise ValueError("Cannot concatenate {!r} and {!r}".format(self, other))
         if self.end != other.beg:
@@ -45,14 +49,15 @@ class StringView:
     def __contains__(self, other):
         return self.s.find(other, self.beg, self.end) >= 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.s[self.beg:self.end]
 
     def __repr__(self):
         return repr(str(self))
 
-    def split(self, sep, nsplits=None, keepsep=False):
-        beg, chunks = self.beg, []
+    def split(self, sep: str, nsplits=None, keepsep=False) -> List["StringView"]:
+        beg = self.beg
+        chunks: List[StringView] = []
         while beg <= self.end:
             end = self.s.find(sep, beg, self.end)
             if end < 0 or nsplits and len(chunks) == nsplits:
@@ -63,10 +68,10 @@ class StringView:
             beg = end + len(sep)
         return chunks
 
-    def match(self, regexp: re.Pattern) -> Optional[re.Match]:
+    def match(self, regexp: Pattern[str]) -> Optional[re.Match]:
         return regexp.match(self.s, self.beg, self.end)
 
-    def search(self, regexp: re.Pattern) -> Optional[re.Match]:
+    def search(self, regexp: Pattern[str]) -> Optional[re.Match]:
         return regexp.search(self.s, self.beg, self.end)
 
     def trim(self, beg=None, end=None):
@@ -79,14 +84,33 @@ class StringView:
             v = v[:-len(e.group())]
         return v
 
-    BLANKS = re.compile(r"\s*\Z")
+    SPACES = re.compile(r"\s*\Z")
     def isspace(self):
-        return bool(self.match(StringView.BLANKS))
+        return bool(self.match(StringView.SPACES))
 
-class Line(namedtuple("Line", "num parts")):
+class Line:
+    def __init__(self, num: int, parts: List[StringView]):
+        self.num = num
+        self.parts = parts
+
+    def __repr__(self):
+        return "Line({}, {!r})".format(self.num, self.parts)
+
+    @staticmethod
+    def of_parts(l: List[StringView]):
+        return Line(-1, l)
+
+    @staticmethod
+    def of_view(v: StringView):
+        return Line.of_parts([v])
+
+    @staticmethod
+    def of_str(s: str):
+        return Line.of_view(StringView(s))
+
     def __len__(self):
         """Compute the number of characters in `self`.
-        >>> len(Line(0, ("a", "bc", "def")))
+        >>> len(Line(0, ["a", "bc", "def"]))
         6
         """
         return sum(len(p) for p in self.parts)
@@ -101,64 +125,65 @@ class Line(namedtuple("Line", "num parts")):
     def isspace(self):
         return all(p.isspace() for p in self.parts)
 
-    def dedent(self, n):
+    def dedent(self, n: int):
         for idx, p in enumerate(self.parts):
             if n < 0:
                 break
             self.parts[idx] = p[n:]
             n -= len(p)
-        return Line(self.num, self.parts)
+        return self
 
-    def __radd__(self, other: Any) -> "Line":
+    def __radd__(self, other: str) -> "Line":
         if not isinstance(other, str):
             return NotImplemented
-        return self._replace(parts = [other] + self.parts)
+        s = StringView(other, 0, len(other))
+        return self._replace_parts(parts = [s] + self.parts)
+
+    def __iadd__(self, other: str) -> "Line":
+        if not isinstance(other, str):
+            return NotImplemented
+        self.parts.append(StringView(other))
+        return self
 
     def replace(self, src: str, dst: str) -> "Line":
-        parts = []
+        parts: List[StringView] = []
         for part in self.parts:
             for idx, p in enumerate(part.split(src)):
                 if idx > 0:
-                    parts.append(dst)
+                    parts.append(StringView(dst))
                 parts.append(p)
-        return self._replace(parts=parts)
+        return self._replace_parts(parts=parts)
 
     @staticmethod
-    def replacen(line: "T_LineOrStr", pairs) -> "T_LineOrStr":
+    def replacen(line: "Line", pairs) -> "Line":
         for src, dst in pairs:
             line = line.replace(src, dst) # type: ignore
         return line
 
-    def match(self, regex):
+    def match(self, regex: Pattern[str]) -> Optional[Match]:
         assert len(self.parts) == 1
         return self.parts[0].match(regex)
 
-    # Overload needed because of __len__ above
-    def _replace(self, **kwds) -> "Line": # pylint: disable=arguments-differ
-        line = Line(*map(kwds.pop, self._fields, self))
-        assert not kwds
-        return line
+    # _replace from NamedTuple doesn't work because of __len__ above
+    def _replace_parts(self, parts: List[StringView]) -> "Line": # pylint: disable=arguments-differ
+        return type(self)(self.num, parts)
 
-def strip_block(lines, beg, end):
-    while beg < len(lines) and lines[beg].isspace():
-        beg += 1
-    while end > beg and lines[end - 1].isspace():
-        end -= 1
-    return (beg, end)
+class EmptyLine(Line):
+    """A subclass used to track empty lines added by Alectryon."""
+    def __init__(self, num=-1):
+        super().__init__(num, [])
 
-def strip_deque(lines):
-    beg, end = strip_block(lines, 0, len(lines))
-    before, after = [], []
-    for _ in range(end, len(lines)):
-        after.append(lines.pop())
-    for _ in range(beg):
-        before.append(lines.popleft())
-    after.reverse()
-    return before, after
+def strip_deque(lines: Deque[Line]) -> Deque[Line]:
+    while lines and lines[0].isspace():
+        lines.popleft()
+    while lines and lines[-1].isspace():
+        lines.pop()
+    return lines
 
-def sliding_window(seq, n):
+T = TypeVar("T")
+def sliding_window(seq: Iterable[T], n) -> Iterable[Tuple[T, ...]]:
     seq = iter(seq)
-    window = deque(maxlen=n)
+    window: Deque[T] = deque(maxlen=n)
     for item in seq:
         if len(window) == n:
             yield tuple(window)
@@ -167,16 +192,16 @@ def sliding_window(seq, n):
         yield tuple(window) + (None,) * (n - len(window))
         window.popleft()
 
-def mark_point(lines, point, marker):
+def mark_point(lines: Iterable[Line], point: Optional[int], marker: str) -> Iterable[Line]:
     for l, nextl in sliding_window(lines, 2):
         last_line = nextl is None
         if point is not None:
             if isinstance(l, Line):
-                parts = []
+                parts: List[StringView] = []
                 for p in l.parts:
                     if point is not None and isinstance(p, StringView) and p.end >= point:
                         cutoff = max(0, min(point - p.beg, len(p)))
-                        parts.extend((p[:cutoff], marker, p[cutoff:]))
+                        parts.extend((p[:cutoff], StringView(marker), p[cutoff:]))
                         point = None
                     else:
                         parts.append(p)
@@ -186,19 +211,35 @@ def mark_point(lines, point, marker):
                 point = None
         yield l
     if point is not None:
-        yield marker # Reached if no lines
+        yield Line.of_str(marker) # Reached if no lines
 
-def join_lines(lines):
-    return "\n".join(str(l) for l in lines)
+def remove_consecutive_empty_lines(lines: Iterable[Line]):
+    """Remove consecutive ``EmptyLine`` objects from `lines`.
 
-# Code → reST
-# ===========
+    The converters below use ``EmptyLine`` instances to ensure that blocks are
+    property separated from each other.  Extraneous blank lines are not an issue
+    for the reST parser, but when generating user-facing markup or code it looks
+    better to remove them.
+    """
+    prev: Optional[Line] = None
+    for line in strip_deque(deque(lines)):
+        if isinstance(prev, EmptyLine) and isinstance(line, EmptyLine):
+            continue
+        yield line
+        prev = line
+
+def join_lines(lines: Iterable[Line]) -> str:
+    return "".join(str(l) + "\n" for l in remove_consecutive_empty_lines(lines))
+
+# Code → Markup
+# =============
 
 # Partitioning
 # ------------
 
 Code = namedtuple("Code", "v")
 Comment = namedtuple("Comment", "v")
+Classified = Union[Code, Comment]
 
 class Token(str, Enum):
     ESCAPE = "ESCAPE"
@@ -233,7 +274,7 @@ class ParsingError(ValueError):
 
     def line_col_of_pos(self, pos):
         assert pos >= 0
-        # FIXME use the binary search code from core
+        # TODO use the binary search code from core
         # Lines and columns are 1-based
         bol = self.document.rfind("\n", 0, pos) + 1 # 0 if not found
         line = 1 + self.document.count("\n", 0, pos)
@@ -253,7 +294,7 @@ class Parser:
     def __init__(self, doc: str):
         self.doc = doc
 
-    def partition(self) -> Iterable[Union[Code, Comment]]:
+    def partition(self) -> Iterable[Classified]:
         """Partition `self.doc` into runs of ``Code`` and ``Comment`` objects."""
         raise NotImplementedError
 
@@ -264,13 +305,13 @@ class BlockParser(Parser):
     def __init__(self, doc: str):
         super().__init__(doc)
         self.pos = 0
-        self.spans: List[Union[Code, Comment]] = []
+        self.spans: List[Classified] = []
         self.stack: List[Tuple[int, int, State]] = [(0, 0, State.CODE)]
 
     def step(self, state: State, start: int, tok: Token, mstart: int):
         raise NotImplementedError()
 
-    def partition(self) -> List[Union[Code, Comment]]:
+    def partition(self) -> List[Classified]:
         """Partition `self.doc` into runs of ``Code`` and ``Comment`` objects."""
         scanners = {state: regexp_opt(tokens, self.TOKEN_REGEXPS)
                     for (state, tokens) in self.TRANSITIONS.items()}
@@ -286,14 +327,14 @@ class BlockParser(Parser):
         return self.spans
 
 class LineParser(Parser):
-    LIT_HEADER_RE: re.Pattern
+    LIT_HEADER_RE: Pattern[str]
 
     @classmethod
-    def _classify(cls, lines: List[StringView]) -> Iterator[Union[Code, Comment]]:
+    def _classify(cls, lines: List[StringView]) -> Iterator[Classified]:
         for line in lines:
             yield Comment(line) if line.match(cls.LIT_HEADER_RE) else Code(line)
 
-    def partition(self):
+    def partition(self) -> Iterator[Classified]:
         last = None
         for line in self._classify(StringView(self.doc).split("\n", keepsep=True)):
             if type(last) is type(line):
@@ -306,111 +347,88 @@ class LineParser(Parser):
         if last and last.v:
             yield last
 
-def partition(lang, code):
+def partition(lang: "LangDef", code: str) -> Iterable[Classified]:
     return list(lang.parser(code).partition())
 
 # Language definitions
 # --------------------
 
-LineOrStr = Union[Line, str]
-T_LineOrStr = TypeVar("T_LineOrStr", bound=LineOrStr)
-
 class LangDef:
     def __init__(self, name: str, parser: Type[Parser]):
         self.name = name
         self.parser = parser
-        self.header = ".. {}::".format(name)
-        self.directive = re.compile(r"(?P<indent>[ \t]*)([.][.] {}::.*)".format(name))
-        self.rst_block = re.compile(r"""
-           (?P<directive>
-            ^(?P<indent>[ ]*)
-             [.][.][ ]{}::.*
-             (?P<options>
-              (?:\n
-                (?P=indent)[ ][ ][ ] [ \t]*[^ \t].*$)*))
-           (?P<body>
-              (?:\n
-                (?:[ \t]*\n)*
-                (?P=indent)[ ][ ][ ] .*$)*)
-        """.format(name), re.VERBOSE | re.MULTILINE)
-
-    @property
-    def lit_empty(self) -> str:
-        raise NotImplementedError
 
     def is_literate_comment(self, block: StringView) -> bool:
         raise NotImplementedError
 
-    def wrap_literate(self, lines: Iterable[LineOrStr]) -> Iterable[LineOrStr]:
+    def wrap_literate(self, lines: Sequence[Line]) -> Iterable[Line]:
         raise NotImplementedError
 
     def unwrap_literate(self, block: StringView) -> Iterable[StringView]:
         raise NotImplementedError
 
-    def quote(self, line: T_LineOrStr) -> T_LineOrStr:
+    def escape(self, line: Line) -> Line:  # FIXME depends on the markup
         raise NotImplementedError
 
-    def unquote(self, line: T_LineOrStr) -> T_LineOrStr:
+    def unescape(self, line: Line) -> Line:
         raise NotImplementedError
 
 class BlockLangDef(LangDef):
     def __init__(self, name: str, parser: Type[Parser],
                  lit_open: str, lit_close: str,
                  lit_open_re: str, lit_close_re: str,
-                 quote_pairs: List[Tuple[str, str]]):
+                 escape_pairs: List[Tuple[str, str]]):
         super().__init__(name, parser)
         self.lit_open, self.lit_close = lit_open, lit_close
         self.lit_open_re, self.lit_close_re = re.compile(lit_open_re), re.compile(lit_close_re)
-        self.quote_pairs = list(quote_pairs)
-        self.unquote_pairs = [(dst, src) for (src, dst) in self.quote_pairs]
-
-    @property
-    def lit_empty(self) -> str:
-        return self.lit_open + self.lit_close
+        self.escape_pairs = list(escape_pairs)
+        self.unescape_pairs = [(dst, src) for (src, dst) in self.escape_pairs]
 
     def is_literate_comment(self, block: StringView) -> bool:
         return bool(block.match(self.lit_open_re))
 
-    def wrap_literate(self, lines: Iterable[LineOrStr]) -> Iterable[LineOrStr]:
-        yield self.lit_open
-        yield from lines
-        yield self.lit_close
+    def wrap_literate(self, lines: Sequence[Line]) -> Iterable[Line]:
+        if lines:
+            yield Line.of_str(self.lit_open)
+            yield from lines
+            yield Line.of_str(self.lit_close)
+        else:
+            yield Line.of_str(self.lit_open + self.lit_close)
 
     def unwrap_literate(self, block: StringView) -> Iterable[StringView]:
         return split_lines(block.trim(self.lit_open_re, self.lit_close_re))
 
-    def quote(self, line: T_LineOrStr) -> T_LineOrStr:
-        return Line.replacen(line, self.quote_pairs)
+    def escape(self, line: Line) -> Line:
+        return Line.replacen(line, self.escape_pairs)
 
-    def unquote(self, line: T_LineOrStr) -> T_LineOrStr:
-        return Line.replacen(line, self.unquote_pairs)
+    def unescape(self, line: Line) -> Line:
+        return Line.replacen(line, self.unescape_pairs)
 
 class LineLangDef(LangDef):
     def __init__(self, name: str, parser: Type[Parser],
-                 lit_header: str, lit_header_re: re.Pattern[str]):
+                 lit_header: str, lit_header_re: Pattern[str]):
         super().__init__(name, parser)
         self.lit_header = lit_header
         self.lit_header_re = lit_header_re
 
-    @property
-    def lit_empty(self) -> str:
-        return self.lit_header
-
     def is_literate_comment(self, block: StringView) -> bool:
         return True
 
-    def wrap_literate(self, lines: Iterable[LineOrStr]) -> Iterable[LineOrStr]:
-        for line in lines:
-            yield self.lit_header + (" " if line else "") + line
+    def wrap_literate(self, lines: Sequence[Line]) -> Iterable[Line]:
+        if lines:
+            for line in lines:
+                yield self.lit_header + (" " if line else "") + line
+        else:
+            yield Line.of_str(self.lit_header)
 
     def unwrap_literate(self, block: StringView) -> Iterable[StringView]:
         for l in split_lines(block):
             yield l.trim(self.lit_header_re, None)
 
-    def quote(self, line: T_LineOrStr) -> T_LineOrStr:
+    def escape(self, line: Line) -> Line:
         return line
 
-    def unquote(self, line: T_LineOrStr) -> T_LineOrStr:
+    def unescape(self, line: Line) -> Line:
         return line
 
 class CoqParser(BlockParser):
@@ -502,8 +520,8 @@ class CoqParser(BlockParser):
         return True
 
 class LeanParser(BlockParser):
-    # FIXME: Add support for char (``'"'``) syntax
-    # FIXME: Technically doc comments don't support nesting
+    # TODO: Add support for char (``'"'``) syntax
+    # TODO: Technically doc comments don't support nesting
     TRANSITIONS = {
         State.CODE: (Token.LINE_COMMENT_OPEN,
                      Token.COMMENT_OPEN,
@@ -616,76 +634,287 @@ class DafnyParser(LineParser):
     """
     LIT_HEADER_RE = re.compile("^[ \t]*///[ ]?", re.MULTILINE)
 
+INDENTATION_RE = re.compile(" *")
+def measure_indentation(line: Line) -> int:
+    m = line.match(INDENTATION_RE)
+    assert m
+    return m.end() - m.start()
+
 # Conversion
 # ----------
 
-INDENT = re.compile(r"(?P<indent>[ ]*)")
+class LitBlock(NamedTuple):
+    lines: Deque[Line]
+    indent: int
+class CodeBlock(NamedTuple):
+    directive: Sequence[Line]
+    lines: Deque[Line]
+    footer: Sequence[Line]
+    indent: int
+Block = Union[LitBlock, CodeBlock]
+"""Blocks are a halfway point between the code and markup views of a document.
 
-Lit = namedtuple("Lit", "lines directive_lines indent")
-CodeBlock = namedtuple("CodeBlock", "lines indent")
+Once abstracted from its original syntax (code or prose), a document is just a
+sequence of blocks, with all redundant directives removed, the code dedented,
+comment markers removed, and literate comments unescaped.  Blocks are
+constructed from ``ParsedLitBlock`` and ``ParsedCodeBlock`` objects, which are
+generated either from prose or from code.
 
-def _last_directive(lang: LangDef, lines: List[Line]):
-    r"""Scan backwards across `lines` to find the beginning of the Coq directive.
+"""
 
-    >>> _, ls = split_lines_numbered(StringView('''\
-    ... Text.
-    ... .. coq:: unfold
-    ...    :name: nm
-    ... '''), 6)
-    >>> _last_directive(COQ, ls) # doctest: +ELLIPSIS
-    (...[Line(num=6, parts=['Text.'])]...,
-        <re.Match ...'.. coq:: unfold'>,
-     ...[Line(num=7, parts=['.. coq:: unfold']),
-         Line(num=8, parts=['   :name: nm']),
-         Line(num=9, parts=[''])]...)
+class ParsedLitBlock(NamedTuple):
+    footer: MutableSequence[Line]
+    lines: Deque[Line]
+    directive: Sequence[Line]
+    body_indent: int
+    directive_indent: int
 
-    >>> _, ls = split_lines_numbered(StringView('''\
-    ... Text.
-    ...    .. coq:: unfold
-    ...    Text.
-    ... '''), 6)
-    >>> _last_directive(COQ, ls) # doctest: +ELLIPSIS
-    (...[Line(num=6, parts=['Text.']),
-         Line(num=7, parts=['   .. coq:: unfold']),
-         Line(num=8, parts=['   Text.']),
-         Line(num=9, parts=[''])]...)
-
-    >>> _, ls = split_lines_numbered(StringView('Text.\n   Text.'), 6)
-    >>> _last_directive(COQ, ls) # doctest: +ELLIPSIS
-    (...[Line(num=6, parts=['Text.']),
-         Line(num=7, parts=['   Text.'])]...)
-
-    """
-    directive: Deque[Line] = deque()
-    expected_indent = float("+inf")
-    while lines:
-        line = lines.pop()
-        directive.appendleft(line)
-        indent = measure_indentation(line)
-        m = line.match(lang.directive)
-        if m:
-            if indent <= expected_indent:
-                return lines, m, directive
-            break # pragma: no cover # coverage.py bug
-        if not line.isspace():
-            expected_indent = min(expected_indent, indent - 3)
-            if expected_indent < 0:
-                break # No need to keep looping
-    lines.extend(directive)
-    return lines, None, None
-
-def lit(lang: LangDef, lines, indent):
-    strip_deque(lines)
-    lines, m, directive_lines = _last_directive(lang, lines)
-    if directive_lines:
-        assert m
-        indent = m.group("indent")
+    @staticmethod
+    def of_lines(footer: MutableSequence[Line], lines: Deque[Line],
+                 directive: Sequence[Line], last_indent: int) -> "ParsedLitBlock":
         strip_deque(lines)
-    else:
         if lines:
-            indent = lines[-1].match(INDENT).group("indent")
-        directive_lines = [indent + lang.header]
-    return Lit(lines, directive_lines=directive_lines, indent=indent)
+            last_indent = measure_indentation(lines[-1])
+        directive_indent = measure_indentation(directive[0]) if directive else last_indent
+        return ParsedLitBlock(footer, lines, directive, last_indent, directive_indent)
+
+class ParsedCodeBlock(NamedTuple):
+    lines: Deque[Line]
+ParsedBlock = Union[ParsedLitBlock, ParsedCodeBlock]
+
+class MarkupParseState(NamedTuple):
+    span: Tuple[int, int]
+    directive: StringView
+    code: StringView
+    footer: StringView
+
+class MarkupDef:
+    name: str
+    header: str
+
+    def __init__(self, lang: LangDef):
+        self.lang = lang
+
+    def scan_markup(self, txt: str) \
+        -> Iterator[MarkupParseState]:
+        raise NotImplementedError
+
+    def parse_lit(self, lines: Deque[Line], last_indent: int) \
+        -> ParsedLitBlock:
+        raise NotImplementedError
+
+    def has_redundant_directive(self, block: ParsedLitBlock):
+        raise NotImplementedError
+
+    def indent_code(self, block: CodeBlock) -> Iterable[Line]:
+        raise NotImplementedError
+
+    def dedent_code(self, block: CodeBlock) -> Iterable[Line]:
+        raise NotImplementedError
+
+    def code_as_markup(self, block: CodeBlock) -> Iterable[Line]:
+        raise NotImplementedError
+
+    def wrap_code(self, block: CodeBlock) -> Iterable[Classified]:
+        raise NotImplementedError
+
+class RegexMarkup(MarkupDef):
+    CODE_INDENT: int
+    header_re: Pattern[str]
+    directive_re: Pattern[str]
+
+    def scan_markup(self, txt: str) -> Iterator[MarkupParseState]:
+        for m in self.directive_re.finditer(txt):
+            directive = StringView(txt, *m.span('directive'))
+            code = StringView(txt, *m.span('code'))
+            footer = StringView(txt, *m.span('footer'))
+            yield MarkupParseState(m.span(), directive, code, footer)
+
+    def code_as_markup(self, block: CodeBlock) -> Iterable[Line]:
+        raise NotImplementedError
+
+    def indent_code(self, block: CodeBlock) -> Iterable[Line]:
+        for line in block.lines:
+            yield " " * (self.CODE_INDENT + block.indent) + line
+
+    def dedent_code(self, block: CodeBlock) -> Iterable[Line]:
+        for line in block.lines:
+            yield line.dedent(self.CODE_INDENT + block.indent)
+
+class IndentedMarkup(RegexMarkup):
+    def parse_lit(self, lines: Deque[Line], last_indent: int) -> ParsedLitBlock:
+        r"""Parse a literate block.
+
+        >>> _, ls = split_lines_numbered(StringView('''\
+        ... Text.
+        ... .. coq:: unfold
+        ...    :name: nm
+        ... '''), 6)
+        >>> scan = RST(COQ).parse_lit
+        >>> scan(ls, 2) # doctest: +ELLIPSIS
+        ParsedLitBlock(footer=[],
+                       lines=...[Line(6, ['Text.'])]...,
+                       directive=...[Line(7, ['.. coq:: unfold']),
+                                     Line(8, ['   :name: nm'])]..., ...)
+        >>> _, ls = split_lines_numbered(StringView('''\
+        ... Text.
+        ...    .. coq:: unfold
+        ...    Text.
+        ... '''), 6)
+        >>> scan(ls, 2) # doctest: +ELLIPSIS
+        ParsedLitBlock(footer=[],
+                       lines=...[Line(6, ['Text.']),
+                                 Line(7, ['   .. coq:: unfold']),
+                                 Line(8, ['   Text.'])]...,
+                       directive=...[]..., ...)
+        >>> _, ls = split_lines_numbered(StringView('Text.\n   Text.'), 6)
+        >>> scan(ls, 2) # doctest: +ELLIPSIS
+        ParsedLitBlock(footer=[],
+                       lines=...[Line(6, ['Text.']),
+                                 Line(7, ['   Text.'])]...,
+                       directive=...[]..., body_indent=3, ...)
+        """
+        strip_deque(lines)
+        directive: Deque[Line] = deque()
+        expected_indent = float("+inf")
+        while lines:
+            line =  lines.pop()
+            directive.appendleft(line)
+            indent = measure_indentation(line)
+            if line.match(self.header_re):
+                if indent <= expected_indent:
+                    return ParsedLitBlock.of_lines([], lines, directive, last_indent)
+                break # pragma: no cover # coverage.py bug
+            if not line.isspace():
+                expected_indent = min(expected_indent, indent - self.CODE_INDENT)
+                if expected_indent < 0:
+                    break # No need to keep looping
+        lines.extend(directive)
+        return ParsedLitBlock.of_lines([], lines, [], last_indent)
+
+    def wrap_code(self, block: CodeBlock) -> Iterable[Classified]:
+        assert not block.footer
+        if block.directive:
+            yield Comment(EmptyLine())
+            yield from (Comment(l) for l in block.directive)
+        else:
+            yield Code(EmptyLine())
+        yield Code(EmptyLine())
+        yield from (Code(l) for l in block.lines)
+
+    def code_as_markup(self, block: CodeBlock) -> Iterable[Line]:
+        block = block._replace(
+            directive=block.directive or [Line.of_str(" " * block.indent + self.header)],
+            lines=deque(self.indent_code(block)))
+        for c in self.wrap_code(block):
+            yield c.v
+
+    def has_redundant_directive(self, block: ParsedLitBlock):
+        return (
+            len(block.directive) == 1 and
+            str(block.directive[0]).strip() == self.header
+            and block.directive_indent == block.body_indent
+        )
+
+class BracketedMarkup(RegexMarkup):
+    CODE_INDENT: int = 0
+    footer: str
+    footer_re: Pattern[str]
+
+    def parse_lit(self, lines: Deque[Line], last_indent: int) -> ParsedLitBlock:
+        strip_deque(lines)
+
+        directive: Deque[Line] = deque()
+        footer = [lines.popleft()] if lines and lines[0].match(self.footer_re) else []
+
+        while lines: # Look for header
+            directive.appendleft(lines.pop())
+            if directive[0].match(self.header_re):
+                strip_deque(lines)
+                break
+        else:
+            lines, directive = directive, deque()
+
+        # Block based: ignore last_indent
+        indent = measure_indentation(directive[0]) if directive else 0
+        return ParsedLitBlock(footer, lines, directive, 0, indent)
+
+    def wrap_code(self, block: CodeBlock) -> Iterable[Classified]:
+        assert bool(block.directive) == bool(block.footer)
+        if block.directive:
+            yield Comment(EmptyLine())
+            yield from (Comment(l) for l in block.directive)
+        else:
+            yield Code(EmptyLine())
+        yield from (Code(l) for l in block.lines)
+        if block.footer:
+            yield from (Comment(l) for l in block.footer)
+            yield Comment(EmptyLine())
+        else:
+            yield Code(EmptyLine())
+
+    def code_as_markup(self, block: CodeBlock) -> Iterable[Line]:
+        block = block._replace(
+            directive=block.directive or [Line.of_str(self.header)],
+            footer=block.footer or [Line.of_str(self.footer)],
+            lines=deque(self.indent_code(block)))
+        for c in self.wrap_code(block):
+            yield c.v
+
+    def has_redundant_directive(self, block: ParsedLitBlock):
+        return (
+            len(block.directive) == 1 and
+            str(block.directive[0]).strip() == self.header
+            and block.directive_indent == 0 # Block based: ignore last_indent
+        )
+
+class RST(IndentedMarkup):
+    name = "rst"
+    CODE_INDENT = 3
+
+    def __init__(self, lang: LangDef):
+        super().__init__(lang)
+        self.header = ".. {}::".format(lang.name)
+        self.header_re = re.compile(
+            r"(?P<indent>[ \t]*)([.][.] {}::.*)".format(lang.name))
+        self.directive_re = re.compile(r"""
+           (?P<directive>
+            ^(?P<indent>[ ]*)[.][.][ ]{}::.*
+             (?P<options>
+              (?:\n
+                (?P=indent)[ ][ ][ ] [ \t]*[^ \t].*$)*))
+           (?P<code>
+              (?:\n
+                (?:[ \t]*\n)*
+                (?P=indent)[ ][ ][ ] .*$)*)
+           (?P<footer>)
+        """.format(lang.name), re.VERBOSE | re.MULTILINE)
+
+class MYST(BracketedMarkup):
+    name = "md"
+
+    def __init__(self, lang: LangDef):
+        super().__init__(lang)
+        self.header = "```{{{}}}".format(lang.name)
+        self.footer = "```"
+        self.footer_re = re.compile(
+            "[ \t]*```[ \t]*$", re.MULTILINE)
+        self.header_re = re.compile(
+            r"(?P<indent>[ \t]*)(```+{{{}}}.*)".format(lang.name))
+        self.directive_re = re.compile(r"""
+           (?P<directive>
+            ^(?P<indent>[ ]*)
+             (?P<ticks>```){{{}}}.*
+             (?P<options>
+              \n(?P=indent)---
+              (?:\n(?P=indent).*$)*
+              \n(?P=indent)---)?)
+           (?P<code>
+              (?:\n
+                (?:[ \t]*\n)*
+                (?P=indent).*$)*?) # Minimal match
+         \n(?P<footer>(?P=indent)(?P=ticks))
+        """.format(lang.name), re.VERBOSE | re.MULTILINE)
 
 def number_lines(lines: Iterable[StringView], start: int) \
     -> Tuple[int, Deque[Line]]:
@@ -697,28 +926,51 @@ def split_lines(text: StringView) -> Iterable[StringView]:
 
 def split_lines_numbered(text: StringView, start: int) \
     -> Tuple[int, Deque[Line]]:
-    return number_lines(split_lines(text), start)
+    return number_lines(split_lines(text), start) if text else (start, deque([]))
 
-def gen_rst(lang: LangDef, spans):
-    linum, indent, prefix = 0, "", [lang.header]
+def parsed_blocks_of_partition(md: MarkupDef, spans: Iterable[Classified]) -> Iterable[ParsedBlock]:
+    linum = 0
+    last: Optional[ParsedLitBlock] = None
     for span in spans:
         if isinstance(span, Comment):
-            linestrs = lang.unwrap_literate(span.v)
+            linestrs = md.lang.unwrap_literate(span.v)
             linum, lines = number_lines(linestrs, linum)
-            litspan = lit(lang, lines, indent)
-            indent, prefix = litspan.indent, litspan.directive_lines
-            if litspan.lines:
-                yield from (lang.unquote(l) for l in litspan.lines)
-                yield ""
+            lines = deque(map(md.lang.unescape, lines))
+            last = md.parse_lit(lines, last.directive_indent if last else 0)
+            yield last
         else:
             linum, lines = split_lines_numbered(span.v, linum)
-            strip_deque(lines)
-            if lines:
-                yield from prefix
-                yield ""
-                for line in lines:
-                    yield indent + "   " + line
-                yield ""
+            yield ParsedCodeBlock(lines)
+
+def blocks_of_parsed_blocks(md: MarkupDef, parsed: List[ParsedBlock]):
+    for idx, span in enumerate(parsed):
+        strip_deque(span.lines)
+        if isinstance(span, ParsedLitBlock):
+            if idx - 2 >= 0 and not cast(ParsedLitBlock, parsed[idx - 2]).directive:
+                while span.footer: # A marker is a real footer only if it matches a directive.
+                    span.lines.appendleft(span.footer.pop())
+            yield LitBlock(span.lines, span.body_indent)
+        else:
+            redundant_directive, indent = False, 0
+            directive: Sequence[Line] = []
+            footer: Sequence[Line] = []
+            if idx - 1 >= 0:
+                prev = cast(ParsedLitBlock, parsed[idx - 1])
+                redundant_directive = md.has_redundant_directive(prev)
+                directive, indent = prev.directive, prev.directive_indent
+            if idx + 1 < len(parsed):
+                footer = cast(ParsedLitBlock, parsed[idx + 1]).footer
+            if redundant_directive:
+                directive = footer = []
+            yield CodeBlock(directive, span.lines, footer, indent)
+
+def gen_markup(md: MarkupDef, blocks: Iterable[Block]):
+    for b in blocks:
+        if isinstance(b, LitBlock):
+            yield from b.lines
+        elif b.lines:
+            yield from md.code_as_markup(b)
+        yield EmptyLine()
 
 def _partition_literate(code, spans, literate_matcher):
     """Fold non-literate ``Comment`` spans into ``Code`` ones.
@@ -738,28 +990,32 @@ def _partition_literate(code, spans, literate_matcher):
     if code_acc:
         yield Code(code_acc)
 
-def partition_literate(lang: LangDef, code, opener=None):
-    matcher = (lambda s: s.match(opener)) if opener else lang.is_literate_comment
+def _make_matcher(p: Pattern) -> Callable[[StringView], bool]:
+    return lambda s: bool(s.match(p))
+
+def partition_literate(lang: LangDef, code: str,
+                       opener: Optional[Pattern]=None) -> Iterable[Classified]:
+    matcher = _make_matcher(opener) if opener else lang.is_literate_comment
     return _partition_literate(code, partition(lang, code), matcher)
 
-def code2rst_lines(lang: LangDef, code):
-    return gen_rst(lang, partition_literate(lang, code))
+def code2markup_lines(md: MarkupDef, code: str):
+    spans = partition_literate(md.lang, code)
+    parsed = list(parsed_blocks_of_partition(md, spans))
+    blocks = blocks_of_parsed_blocks(md, parsed)
+    return gen_markup(md, blocks)
 
-def code2rst(lang: LangDef, code):
-    """Translate a fragment of `code` in `lang` to reST."""
-    return join_lines(code2rst_lines(lang, code))
+def code2markup(md: MarkupDef, code: str) -> str:
+    """Translate a fragment of `code` in `lang` to markup `md`."""
+    return join_lines(code2markup_lines(md, code))
 
-def mark_rst_lines(rst_lines, point, marker):
-    return join_lines(mark_point(rst_lines, point, marker))
+def code2markup_marked(md: MarkupDef, code, point, marker):
+    return join_lines(mark_point(code2markup_lines(md, code), point, marker))
 
-def code2rst_marked(lang: LangDef, code, point, marker):
-    return mark_rst_lines(code2rst_lines(lang, code), point, marker)
+# Markup → Code
+# =============
 
-# reStructuredText → Code
-# =======================
-
-# reST parsing
-# ------------
+# Markup parsing
+# --------------
 
 # A previous version of this code used the docutils parsers directly.  This
 # would be a better approach in theory, but in practice it doesn't work well,
@@ -767,114 +1023,89 @@ def code2rst_marked(lang: LangDef, code, point, marker):
 # malformed text (maybe a configuration issue?).  Hence the approach below, but
 # note that it detects *all* ‘.. coq::’ blocks, including quoted ones.
 
-def rst_partition(lang: LangDef, s):
-    """Identify ``.. lang::`` blocks in reST sources.
+def markup_parse(md: MarkupDef, s: str) -> Iterator[ParsedBlock]:
+    """Identify code blocks in text sources.
 
-    >>> print(list(rst_partition(COQ, '''\\
+    >>> print(list(markup_parse(RST(COQ), '''\\
     ... .. coq::
     ...
     ...      Goal True.
     ...        exact I. Qed.\\
     ... ''')))
-    [Lit(lines=deque([Line(num=0, parts=[''])]),
-         directive_lines=deque([Line(num=0, parts=['.. coq::'])]),
-         indent=0),
-     CodeBlock(lines=deque([Line(num=0, parts=['']),
-                            Line(num=1, parts=['']),
-                            Line(num=2, parts=['  Goal True.']),
-                            Line(num=3, parts=['    exact I. Qed.'])]),
-               indent=0)]
+    [ParsedLitBlock(footer=[],
+                    lines=deque([]),
+                    directive=deque([Line(0, ['.. coq::'])]),
+                    body_indent=0, directive_indent=0),
+     ParsedCodeBlock(lines=deque([Line(0, ['']),
+                                  Line(1, ['']),
+                                  Line(2, ['  Goal True.']),
+                                  Line(3, ['    exact I. Qed.'])]))]
     """
-    beg, linum = 0, 0
-    for m in lang.rst_block.finditer(s):
-        indent = len(m.group("indent"))
-        rst = StringView(s, beg, m.start())
-        directive = StringView(s, *m.span('directive'))
-        body = StringView(s, *m.span('body'))
-
-        linum, rst_lines = split_lines_numbered(rst, linum)
-        linum, directive_lines = split_lines_numbered(directive, linum)
-        linum, body_lines = split_lines_numbered(body, linum)
-
-        # body_lines.popleft() # Discard initial blank
-
-        yield Lit(rst_lines, directive_lines=directive_lines, indent=indent)
-        yield CodeBlock(body_lines, indent=indent)
-        beg = m.end()
-    if beg < len(s):
+    beg, linum, last_indent = 0, 0, 0
+    last_footer: MutableSequence[Line] = []
+    for (start, end), directive_v, code_v, footer_v in md.scan_markup(s):
+        markup_v = StringView(s, beg, start)
+        linum, markup = split_lines_numbered(markup_v, linum)
+        linum, directive = split_lines_numbered(directive_v, linum)
+        linum, code = split_lines_numbered(code_v, linum)
+        linum, footer = split_lines_numbered(footer_v, linum)
+        lit = ParsedLitBlock.of_lines(last_footer, markup, directive, last_indent)
+        yield lit
+        yield ParsedCodeBlock(code)
+        last_indent, last_footer, beg = lit.directive_indent, footer, end
+    if beg < len(s) or last_footer:
         rst = StringView(s, beg, len(s))
-        linum, lines = split_lines_numbered(rst, linum)
-        yield Lit(lines, directive_lines=None, indent=None)
+        linum, markup = split_lines_numbered(rst, linum)
+        yield ParsedLitBlock.of_lines(last_footer, markup, [], last_indent)
 
 # Conversion
 # ----------
 
-INDENTATION_RE = re.compile(" *")
-def measure_indentation(line: Line):
-    m = line.match(INDENTATION_RE)
-    return m.end() - m.start()
+def dedent_code(md: MarkupDef, blocks: Iterable[Block]) -> Iterable[Block]:
+    for block in blocks:
+        if isinstance(block, CodeBlock):
+            block = block._replace(lines=deque(md.dedent_code(block)))
+        yield block
 
-def redundant_directive(lang: LangDef, directive_lines, directive_indent, last_indent):
-    return (
-        directive_lines and
-        len(directive_lines) == 1 and
-        str(directive_lines[0]).strip() == lang.header
-        and directive_indent == last_indent
-    )
-
-def concat_line_blocks(*blocks: List[Line]) -> Iterator[LineOrStr]:
-    prev = None
-    for b in blocks:
-        if not b:
-            continue
-        if prev:
-            yield ""
-        yield from b
-        prev = b
-
-def trim_rst_block(lang: LangDef, block, last_indent, keep_empty):
-    strip_deque(block.lines)
-    last_indent = measure_indentation(block.lines[-1]) if block.lines else last_indent
-
-    directive_lines = block.directive_lines
-    keep_empty = keep_empty and directive_lines
-    if redundant_directive(lang, directive_lines, block.indent, last_indent):
-        directive_lines = []
-
-    if not block.lines and not directive_lines:
-        if keep_empty:
-            yield lang.lit_empty
-            yield ""
-    else:
-        lines = concat_line_blocks(block.lines, directive_lines)
-        yield from lang.wrap_literate(lang.quote(l) for l in lines)
-        yield ""
-
-def trim_code_block(block):
-    strip_deque(block.lines)
-    for line in block.lines:
-        yield line.dedent(block.indent + 3)
-    if block.lines:
-        yield ""
-
-def gen_code(lang: LangDef, blocks):
-    last_indent = 0
+def blocks_as_code(md: MarkupDef, blocks: Iterable[Block]) -> Iterable[Classified]:
+    # Lines of literate comments come from literate blocks (prose) and from code
+    # blocks (directives), so we first create a mixed stream and then wrap
+    # consecutive groups.
+    blocks = list(blocks)
     for idx, block in enumerate(blocks):
-        if isinstance(block, Lit):
-            yield from trim_rst_block(lang, block, last_indent, idx > 0)
+        if isinstance(block, LitBlock):
+            if block.lines:
+                for line in block.lines:
+                    yield Comment(md.lang.escape(line))
+            elif 0 < idx < len(blocks) - 1:
+                yield Comment(EmptyLine())
         elif isinstance(block, CodeBlock):
-            yield from trim_code_block(block)
-        last_indent = block.indent
+            yield from md.wrap_code(block)
 
-def rst2code_lines(lang: LangDef, rst):
-    return gen_code(lang, rst_partition(lang, rst))
+def gen_code(md: MarkupDef, blocks: Iterable[Block]) -> Iterable[Line]:
+    classified = blocks_as_code(md, blocks)
+    for typ, group in groupby(classified, key=type):
+        # Stripping is crucial here, as it allows wrap_literate to special-case
+        # empty blocks.
+        lines = strip_deque(deque(cl.v for cl in group))
+        if typ is Comment:
+            yield from md.lang.wrap_literate(lines)
+        elif typ is Code:
+            yield from lines
+        yield EmptyLine()
 
-def rst2code(lang: LangDef, rst):
-    """Translate a fragment of a reST document `rst` to code in `lang`."""
-    return join_lines(rst2code_lines(lang, rst))
+def markup2code_lines(md: MarkupDef, txt: str):
+    parsed = list(markup_parse(md, txt))
+    blocks = blocks_of_parsed_blocks(md, parsed)
+    blocks = dedent_code(md, blocks)
+    return gen_code(md, blocks)
 
-def rst2code_marked(lang: LangDef, rst, point, marker):
-    return join_lines(mark_point(rst2code_lines(lang, rst), point, marker))
+def markup2code(md: MarkupDef, txt: str):
+    """Translate a fragment of a text document `txt` to code in `lang`."""
+    return join_lines(markup2code_lines(md, txt))
+
+def markup2code_marked(md: MarkupDef, txt: str, point: int, marker: str):
+    return join_lines(mark_point(markup2code_lines(md, txt), point, marker))
 
 # Language definitions
 # ====================
@@ -884,13 +1115,21 @@ COQ = BlockLangDef(
     CoqParser,
     lit_open="(*|", lit_close="|*)",
     lit_open_re=r"[(][*][|][ \t]*", lit_close_re=r"[ \t]*[|]?[*][)]\Z",
-    quote_pairs=[("(*", r"(\ *"), ("*)", r"*\ )")]
+    escape_pairs=[("(*", r"(\ *"), ("*)", r"*\ )")]
 )
+
+def docprint(s: str) -> None:
+    """Replace blank lines with ``{BLANKLINE}``.
+
+    This makes it possible t check for blank lines while asking doctest to
+    ignore spaces.
+    """
+    print(re.sub("^$", "{BLANKLINE}", s, flags=re.MULTILINE))
 
 def coq2rst(code):
     """Convert from Coq to reStructuredText.
 
-    >>> print(coq2rst('''
+    >>> docprint(coq2rst('''
     ... (*|
     ... Example:
     ... |*)
@@ -908,26 +1147,26 @@ def coq2rst(code):
     ... exact I. Qed.
     ... '''))
     Example:
-    <BLANKLINE>
+    {BLANKLINE}
     .. coq::
-    <BLANKLINE>
+    {BLANKLINE}
        Goal True.
-    <BLANKLINE>
+    {BLANKLINE}
     Second example:
-    <BLANKLINE>
+    {BLANKLINE}
     .. coq::
        :name:
           snd
-    <BLANKLINE>
+    {BLANKLINE}
        exact I. Qed.
-    <BLANKLINE>
+    {BLANKLINE}
     """
-    return code2rst(COQ, code)
+    return code2markup(RST(COQ), code)
 
 def rst2coq(rst):
     """Convert from reStructuredText to Coq.
 
-    >>> print(rst2coq('''
+    >>> docprint(rst2coq('''
     ... Example:
     ...
     ... .. coq::
@@ -945,38 +1184,38 @@ def rst2coq(rst):
     (*|
     Example:
     |*)
-    <BLANKLINE>
+    {BLANKLINE}
     Goal True.
-    <BLANKLINE>
+    {BLANKLINE}
     (*|
     Second example:
-    <BLANKLINE>
+    {BLANKLINE}
     .. coq::
        :name:
           snd
     |*)
-    <BLANKLINE>
+    {BLANKLINE}
     exact I. Qed.
-    <BLANKLINE>
+    {BLANKLINE}
     """
-    return rst2code(COQ, rst)
+    return markup2code(RST(COQ), rst)
 
 LEAN3 = BlockLangDef(
     "lean3",
     LeanParser,
     lit_open=r"/-!", lit_close=r"-/",
     lit_open_re=r"[/][-][!][ \t]*", lit_close_re=r"[ \t]*[-][/]\Z",
-    quote_pairs=[("/-", r"/\ -"), ("-/", r"-\ /")]
+    escape_pairs=[("/-", r"/\ -"), ("-/", r"-\ /")]
 )
 
 def lean32rst(code):
     """Convert from Lean3 to reStructuredText."""
-    return code2rst(LEAN3, code)
+    return code2markup(RST(LEAN3), code)
 
 def rst2lean3(rst):
     """Convert from reStructuredText to Lean3.
 
-    >>> print(rst2lean3('''
+    >>> docprint(rst2lean3('''
     ... Example:
     ...
     ... .. lean3::
@@ -994,21 +1233,21 @@ def rst2lean3(rst):
     /-!
     Example:
     -/
-    <BLANKLINE>
+    {BLANKLINE}
     def x :=
-    <BLANKLINE>
+    {BLANKLINE}
     /-!
     Second example:
-    <BLANKLINE>
+    {BLANKLINE}
     .. lean3::
        :name:
           snd
     -/
-    <BLANKLINE>
+    {BLANKLINE}
       1 + 1
-    <BLANKLINE>
+    {BLANKLINE}
     """
-    return rst2code(LEAN3, rst)
+    return markup2code(RST(LEAN3), rst)
 
 LEAN4 = BlockLangDef(
     "lean4",
@@ -1016,16 +1255,16 @@ LEAN4 = BlockLangDef(
                 # comments has not changed between the versions.
     lit_open=r"/-!", lit_close=r"-/",
     lit_open_re=r"[/][-][!][ \t]*", lit_close_re=r"[ \t]*[-][/]\Z",
-    quote_pairs=[("/-", r"/\ -"), ("-/", r"-\ /")]
+    escape_pairs=[("/-", r"/\ -"), ("-/", r"-\ /")]
 )
 
-def lean42rst(lean):
+def lean42rst(code: str):
     """Convert from Lean4 to reStructuredText."""
-    return code2rst(LEAN4, lean)
+    return code2markup(RST(LEAN4), code)
 
-def rst2lean4(rst):
+def rst2lean4(rst: str):
     """Convert from reStructuredText to Lean4."""
-    return rst2code(LEAN4, rst)
+    return markup2code(RST(LEAN4), rst)
 
 DAFNY = LineLangDef(
     "dafny",
@@ -1034,10 +1273,10 @@ DAFNY = LineLangDef(
     lit_header_re=DafnyParser.LIT_HEADER_RE
 )
 
-def dafny2rst(code):
+def dafny2rst(code: str):
     """Convert from Dafny to reStructuredText.
 
-    >>> print(dafny2rst('''
+    >>> docprint(dafny2rst('''
     ... /// Example:
     ... /// .. dafny::
     ...
@@ -1056,32 +1295,32 @@ def dafny2rst(code):
     ... datatype T = T(t: int)
     ... '''))
     Example:
-    <BLANKLINE>
+    {BLANKLINE}
     .. dafny::
-    <BLANKLINE>
+    {BLANKLINE}
        method m() { print "hi"; }
-    <BLANKLINE>
+    {BLANKLINE}
     Second example:
-    <BLANKLINE>
+    {BLANKLINE}
     .. dafny::
        :name:
           snd
-    <BLANKLINE>
+    {BLANKLINE}
        function f(): int { 1 }
-    <BLANKLINE>
+    {BLANKLINE}
     Third example:
-    <BLANKLINE>
+    {BLANKLINE}
     .. dafny::
-    <BLANKLINE>
+    {BLANKLINE}
        datatype T = T(t: int)
-    <BLANKLINE>
+    {BLANKLINE}
     """
-    return code2rst(DAFNY, code)
+    return code2markup(RST(DAFNY), code)
 
-def rst2dafny(rst):
+def rst2dafny(rst: str):
     """Convert from reStructuredText to Dafny.
 
-    >>> print(rst2dafny('''
+    >>> docprint(rst2dafny('''
     ... Example:
     ...
     ... .. dafny::
@@ -1103,38 +1342,128 @@ def rst2dafny(rst):
     ...    datatype T = T(t: int)
     ... '''))
     /// Example:
-    <BLANKLINE>
+    {BLANKLINE}
     method m() { print "hi"; }
-    <BLANKLINE>
+    {BLANKLINE}
     /// Second example:
     ///
     /// .. dafny::
     ///    :name:
     ///       snd
-    <BLANKLINE>
+    {BLANKLINE}
     function f(): int { 1 }
-    <BLANKLINE>
+    {BLANKLINE}
     /// Third example:
-    <BLANKLINE>
+    {BLANKLINE}
     datatype T = T(t: int)
-    <BLANKLINE>
+    {BLANKLINE}
     """
-    return rst2code(DAFNY, rst)
+    return markup2code(RST(DAFNY), rst)
 
-LANGUAGES = {
-    "coq": COQ,
-    "dafny": DAFNY,
-    "lean3": LEAN3,
-    "lean4": LEAN4
-}
+def dafny2md(code):
+    """Convert from Dafny to Markdown.
+
+    >>> docprint(dafny2md('''
+    ... /// Example:
+    ...
+    ... method m() { print "hi"; }
+    ...
+    ... /// - Second example:
+    ... ///
+    ... ///   ```{dafny}
+    ... ///   ---
+    ... ///   name: snd
+    ... ///   ---
+    ...
+    ... function f(): int { 1 }
+    ...
+    ... ///   ```
+    ... /// Third example:
+    ...
+    ... datatype T = T(t: int)
+    ... '''))
+    Example:
+    {BLANKLINE}
+    ```{dafny}
+    method m() { print "hi"; }
+    ```
+    {BLANKLINE}
+    - Second example:
+    {BLANKLINE}
+      ```{dafny}
+      ---
+      name: snd
+      ---
+      function f(): int { 1 }
+      ```
+    {BLANKLINE}
+    Third example:
+    {BLANKLINE}
+    ```{dafny}
+    datatype T = T(t: int)
+    ```
+    {BLANKLINE}
+    """
+    return code2markup(MYST(DAFNY), code)
+
+def md2dafny(md: str):
+    """Convert from Markdown to Dafny.
+    >>> docprint(md2dafny('''
+    ... Example:
+    ...
+    ... ```{dafny}
+    ... method m() { print "hi"; }
+    ... ```
+    ...
+    ... - Second example:
+    ...
+    ...   ```{dafny}
+    ...   ---
+    ...   name: snd
+    ...   ---
+    ...   function f(): int { 1 }
+    ...   ```
+    ...
+    ... Third example:
+    ...
+    ... ```{dafny}
+    ... datatype T = T(t: int)
+    ... ```
+    ... '''))
+    /// Example:
+    {BLANKLINE}
+    method m() { print "hi"; }
+    {BLANKLINE}
+    /// - Second example:
+    ///
+    ///   ```{dafny}
+    ///   ---
+    ///   name: snd
+    ///   ---
+    {BLANKLINE}
+    function f(): int { 1 }
+    {BLANKLINE}
+    ///   ```
+    ///
+    /// Third example:
+    {BLANKLINE}
+    datatype T = T(t: int)
+    {BLANKLINE}
+    """
+    return markup2code(MYST(DAFNY), md)
+
+LANGUAGES = {L.name: L for L in (COQ, DAFNY, LEAN3, LEAN4)}
+MARKUPS = {M.name: M for M in (MYST, RST)}
+
+def get_markup(markup: str, lang: str) -> MarkupDef:
+    if lang not in LANGUAGES:
+        raise ValueError("Unsupported literate language: {}".format(lang))
+    if markup not in MARKUPS:
+        raise ValueError("Unsupported markup format: {}".format(markup))
+    return MARKUPS[markup](LANGUAGES[lang])
 
 # CLI
 # ===
-
-CONVERTERS = (coq2rst, rst2coq,
-              lean32rst, rst2lean3,
-              lean42rst, rst2lean4,
-              dafny2rst, rst2dafny)
 
 def parse_arguments():
     import argparse
@@ -1143,28 +1472,29 @@ def parse_arguments():
     DESCRIPTION = "Convert between reStructuredText and literate code."
     parser = argparse.ArgumentParser(description=DESCRIPTION)
 
-    group = parser.add_mutually_exclusive_group()
-    converters = {"--{}".format(fn.__name__): fn for fn in CONVERTERS}
-    for opt, fn in converters.items():
-        group.add_argument(opt, dest="fn", action="store_const",
-                           const=fn, help=fn.__doc__.split("\n", 1)[0])
+    CHOICES = (*MARKUPS, *LANGUAGES)
+    parser.add_argument("--from", choices=CHOICES, dest="src")
+    parser.add_argument("--to", choices=CHOICES, required=True, dest="dst")
     parser.add_argument("input", nargs="?", default="-")
 
     args = parser.parse_args()
-    available_converters = ", ".join(converters)
 
-    if args.input == "-":
-        if not args.fn:
-            parser.error("Reading from standard input requires one of {}."
-                         .format(available_converters))
+    if args.src is None:
+        if args.input == "-":
+            parser.error("Flag --from is required when reading from standard input.")
+        _, ext = path.splitext(args.input)
+        args.src = {".v": "coq", ".lean3": "lean3", ".dfy": "dafny",
+                    ".md": "md", ".rst": "rst"}.get(ext)
+        if args.src is None:
+            parser.error("Not sure how to translate {}: use --from.".format(args.input))
+
+    assert args.src
+    if args.src in MARKUPS and args.dst in LANGUAGES:
+        args.mdef, args.fn = get_markup(args.src, args.dst), markup2code
+    elif args.src in LANGUAGES and args.dst in MARKUPS:
+        args.mdef, args.fn = get_markup(args.dst, args.src), code2markup
     else:
-        if not args.fn:
-            _, ext = path.splitext(args.input)
-            ext_fn = {".v": coq2rst, ".lean3": lean32rst, ".lean": lean42rst, ".dfy": dafny2rst}
-            args.fn = ext_fn.get(ext)
-        if not args.fn:
-            parser.error("Not sure how to translate {}: use one of {}"
-                         .format(args.input, available_converters))
+        parser.error("Unsupported conversion: {} → {}".format(args.src, args.dst))
 
     return args
 
@@ -1177,7 +1507,7 @@ def main():
     else:
         with open(args.input, encoding="utf-8") as fstream:
             contents = fstream.read()
-    sys.stdout.write(args.fn(contents))
+    sys.stdout.write(args.fn(args.mdef, contents))
 
 if __name__ == '__main__':
     main()

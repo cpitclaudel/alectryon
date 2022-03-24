@@ -12,10 +12,10 @@ Alectryon supports literate programs and documents (combinations of code and pro
    alectryon literate_coq.v --backend rst
        # Coq+reST → reST;  produces ‘literate_coq.v.rst’
 
-   $ cd ..; python -m alectryon.literate \
+   $ cd ..; python -m alectryon.literate --from coq --to rst \
        recipes/literate_coq.v > recipes/literate_coq.min.rst
      # Minimal Coq → reST; produces ‘literate_coq.min.rst’
-   $ cd ..; python -m alectryon.literate --coq2rst - \
+   $ cd ..; python -m alectryon.literate --from coq --to rst - \
        < recipes/literate_coq.v > recipes/literate_coq.min.stdin.rst
      # Minimal Coq → reST; produces ‘literate_coq.min.stdin.rst’
 
