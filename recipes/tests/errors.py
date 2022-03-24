@@ -164,7 +164,7 @@ class literate(unittest.TestCase):
             _ = self.sa + self.sa
 
     def test_features(self):
-        self.assertEqual(self.sa[3:6][0], "b")
+        self.assertEqual(str(self.sa[3:6][0]), "b")
         self.assertEqual(str(self.ln.dedent(2)), "  line")
 
 class myst(unittest.TestCase):

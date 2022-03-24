@@ -1180,9 +1180,9 @@ class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
 
     @staticmethod
     def rst_lines(lang, code):
-        from .literate import code2rst_lines, Line
+        from .literate import RST, code2markup_lines, Line
         last_line = 0
-        for line in code2rst_lines(lang, code):
+        for line in code2markup_lines(RST(lang), code):
             if isinstance(line, Line):
                 yield (str(line), line.num)
                 last_line = line.num
