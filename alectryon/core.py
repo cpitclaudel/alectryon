@@ -474,7 +474,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
     @classmethod
     def driver_not_found(cls, binpath) -> NoReturn:
         """Raise an error to indicate that ``binpath`` cannot be found."""
-        raise ValueError("{} binary not found (bin={}).".format(cls.NAME, binpath))
+        raise ValueError("{} binary not found (bin={!r}).".format(cls.NAME, binpath))
 
     def resolve_driver(self) -> str:
         path: Optional[str] = which(self.binpath)
