@@ -32,7 +32,7 @@ from typing import Type
 import docutils.parsers
 
 try:
-    from myst_parser.docutils_ import Parser as MystParser
+    from myst_parser.docutils_ import Parser as MystParser # type: ignore
 
     # https://github.com/executablebooks/MyST-Parser/issues/347
     # https://github.com/executablebooks/MyST-Parser/pull/419
