@@ -145,15 +145,24 @@ def _record_assets(assets, path, names):
     for name in names:
         assets.append((path, name))
 
+class DocutilsException(Exception):
+    pass
+
 def gen_docutils(src, frontend, backend, fpath, dialect,
                  docutils_settings_overrides, assets, exit_code):
     from .docutils import get_pipeline, alectryon_state
+    from docutils.utils import SystemMessage
 
     pipeline = get_pipeline(frontend, backend, dialect)
-    text, pub, exit_code.val = \
-        _gen_docutils(src, fpath,
-                      pipeline.parser, pipeline.reader, pipeline.writer,
-                      docutils_settings_overrides)
+    try:
+        text, pub, exit_code.val = \
+            _gen_docutils(src, fpath,
+                          pipeline.parser, pipeline.reader, pipeline.writer,
+                          docutils_settings_overrides)
+    except SystemMessage as e:
+        MSG = ("Exiting early due to a level-{} Docutils message.\n"
+               "Use docutils setting `halt_level` to change this behavior.")
+        raise DocutilsException(MSG.format(e.level)) from e
 
     embedded_assets = alectryon_state(pub.document).embedded_assets
     _record_assets(assets,
@@ -943,6 +952,8 @@ def main():
     try:
         args = parse_arguments()
         sys.exit(max(process_pipelines(args), default=0))
+    except DocutilsException as e:
+        print(e, file=sys.stderr)
     except (ValueError, FileNotFoundError, ImportError, argparse.ArgumentTypeError) as e:
         if core.TRACEBACK:
             raise e
