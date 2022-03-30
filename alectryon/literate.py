@@ -1499,6 +1499,11 @@ def get_markup(markup: str, lang: str) -> MarkupDef:
 # CLI
 # ===
 
+def diff(before: str, after: str) -> str:
+    import difflib
+    s0, s1 = before.splitlines(keepends=True), after.splitlines(keepends=True)
+    return "".join(difflib.unified_diff(s0, s1))
+
 def parse_arguments():
     import argparse
     from os import path
@@ -1509,6 +1514,7 @@ def parse_arguments():
     CHOICES = (*MARKUPS, *LANGUAGES)
     parser.add_argument("--from", choices=CHOICES, dest="src")
     parser.add_argument("--to", choices=CHOICES, required=True, dest="dst")
+    parser.add_argument("--roundtrip", action="store_true", default=False)
     parser.add_argument("input", nargs="?", default="-")
 
     args = parser.parse_args()
@@ -1524,11 +1530,18 @@ def parse_arguments():
 
     assert args.src
     if args.src in MARKUPS and args.dst in LANGUAGES:
-        args.mdef, args.fn = get_markup(args.src, args.dst), markup2code
+        mdef = get_markup(args.src, args.dst)
+        fw, bw = markup2code, code2markup
     elif args.src in LANGUAGES and args.dst in MARKUPS:
-        args.mdef, args.fn = get_markup(args.dst, args.src), code2markup
+        mdef = get_markup(args.dst, args.src)
+        fw, bw = code2markup, markup2code
     else:
         parser.error("Unsupported conversion: {} → {}".format(args.src, args.dst))
+
+    if args.roundtrip:
+        args.fn = lambda s: diff(s, bw(mdef, fw(mdef, s)))
+    else:
+        args.fn = lambda s: fw(mdef, s)
 
     return args
 
@@ -1541,7 +1554,7 @@ def main():
     else:
         with open(args.input, encoding="utf-8") as fstream:
             contents = fstream.read()
-    sys.stdout.write(args.fn(args.mdef, contents))
+    sys.stdout.write(args.fn(contents))
 
 if __name__ == '__main__':
     main()
