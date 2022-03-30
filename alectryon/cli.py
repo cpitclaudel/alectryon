@@ -656,8 +656,8 @@ def post_process_arguments(parser, args):
     }
 
     args.language_drivers = {
-        **core.DEFAULT_DRIVERS,
-        "coq": args.coq_driver
+        language: getattr(args, "{}_driver".format(language))
+        for language in core.ALL_LANGUAGES
     }
 
     coq_args = []
@@ -730,11 +730,12 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
     in_.add_argument("--frontend", default=None, choices=FRONTEND_CHOICES,
                      help=FRONTEND_HELP)
 
-    COQ_DRIVER_HELP = "Choose which driver to use to execute Coq proofs."
-    COQ_DRIVER_CHOICES = sorted(core.DRIVERS_BY_LANGUAGE["coq"])
-    in_.add_argument("--coq-driver", default="sertop",
-                     choices=COQ_DRIVER_CHOICES,
-                     help=COQ_DRIVER_HELP)
+    for language, drivers in core.DRIVERS_BY_LANGUAGE.items():
+        DRIVER_HELP = "Choose which driver to use to execute {} proofs.".format(language)
+        DRIVER_CHOICES = sorted(drivers)
+        in_.add_argument("--{}-driver".format(language),
+                         default=core.DEFAULT_DRIVERS[language],
+                         choices=DRIVER_CHOICES, help=DRIVER_HELP)
 
     out = parser.add_argument_group("Output configuration")
 
