@@ -1,4 +1,4 @@
-/-|
+/-!
 ==================================================
  Literate programming with Alectryon (Lean4 input)
 ==================================================
@@ -27,13 +27,13 @@ Alectryon captures the results of `#check`, `#eval`, and the like:
 def x : Nat := 5
 #reduce 5 + x
 
-/-|
+/-!
 By default, these results are folded and are displayed upon hovering or clicking.  We can unfold them by default using annotations or directives:
 -/
 
 #check Nat /- .unfold -/
 
-/-|
+/-!
 .. lean4:: unfold
 -/
 
@@ -44,7 +44,7 @@ By default, these results are folded and are displayed upon hovering or clicking
 
 #print Iff /- .unfold .no-in -/
 
-/-|
+/-!
 Documenting proofs
 ==================
 
