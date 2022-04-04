@@ -488,11 +488,11 @@ Other proof assistants
 Lean 4
 ------
 
-Alectryon has support for the Lean 4. LeanInk (`LeanInk <https://github.com/insightmind/LeanInk>`_) is required to use Alectryon with Lean 4 files.
+Alectryon has support for Lean 4. LeanInk (`LeanInk <https://github.com/leanprover/LeanInk>`_) is required to use Alectryon with Lean 4 files.
 HTML and LaTeX output is supported from plain ``.lean`` source files and from ``.rst`` files.
-The reStructuredText directive for Lean 4 is ``.. lean4::``, for Markdown/MyST files it is ``{lean4}``. The literate delimiter is ``/-|``.
+The reStructuredText directive for Lean 4 is ``.. lean4::``, for Markdown/MyST files it is ``{lean4}``. The literate delimiter is ``/-!``:
 
-- Lean 4 code in reStructuredText files, like this:
+- Include Lean 4 code in reStructuredText files like this:
 
   .. code-block:: rst
 
@@ -508,9 +508,9 @@ The reStructuredText directive for Lean 4 is ``.. lean4::``, for Markdown/MyST f
 
      … some Lean 4 code
 
-     /-|
+     /-!
      Some reST prose.
-     |-/
+     -/
 
 See `<recipes/plain-lean4.lean>`__, `<recipes/lean4-tactics.rst>`__, `<recipes/lean4-tactics-myst.md>`__ and `<recipes/literate-lean4.lean>`__  for examples.
 
@@ -521,9 +521,9 @@ Lean 3
 
 Alectryon has preliminary support for Lean 3.
 
-Recording Lean's output and generating HTML or LaTeX is supported, from plain ``.lean`` files and from ``.rst`` files using the ``.. lean3::`` directive (as well as Markdown/MyST files using the ``{lean3}`` directive).  Language-agnostic features like caching work.  The literate delimiter is ``/-|``; in other words, you may write:
+Recording Lean's output and generating HTML or LaTeX is supported, from plain ``.lean`` files and from ``.rst`` files using the ``.. lean3::`` directive (as well as Markdown/MyST files using the ``{lean3}`` directive).  Language-agnostic features like caching work.  The literate delimiter is ``/-!``; in other words, you may write:
 
-- Lean 3 code in reStructuredText files, like this:
+- Include Lean 3 code in reStructuredText files like this:
 
   .. code-block:: rst
 
@@ -533,15 +533,15 @@ Recording Lean's output and generating HTML or LaTeX is supported, from plain ``
 
         … some Lean 3 code
 
-- reStructuredText prose in Lean3 files, like this:
+- reStructuredText prose in Lean 3 files, like this:
 
   .. code-block:: lean
 
      … some Lean 3 code
 
-     /-|
+     /-!
      Some reST prose.
-     |-/
+     -/
 
 See `<recipes/plain-lean3.lean>`__ and `<recipes/lean3-tutorial.rst>`__ for examples.
 
