@@ -379,7 +379,7 @@ def write_file(ext, strip):
 EXTENSIONS_BY_LANGUAGE = {
     "coq": (".v",),
     "lean4": (".lean",),
-    "lean3": (".lean", ".lean3"),
+    "lean3": (".lean3",),
 }
 
 assert EXTENSIONS_BY_LANGUAGE.keys() == core.ALL_LANGUAGES
