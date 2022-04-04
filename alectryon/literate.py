@@ -805,19 +805,19 @@ def rst2code(lang: LangDef, rst):
     ...
     ...      1 + 1
     ... '''))
-    /-|
+    /-!
     Example:
-    |-/
+    -/
     <BLANKLINE>
     def x :=
     <BLANKLINE>
-    /-|
+    /-!
     Second example:
     <BLANKLINE>
     .. lean3::
        :name:
           snd
-    |-/
+    -/
     <BLANKLINE>
       1 + 1
     <BLANKLINE>
@@ -849,8 +849,8 @@ def rst2coq(rst):
 LEAN3 = LangDef(
     "lean3",
     LeanParser,
-    lit_open=r"/-|", lit_close=r"|-/",
-    lit_open_re=r"[/][-][|][ \t]*", lit_close_re=r"[ \t]*[|]?[-][/]\Z",
+    lit_open=r"/-!", lit_close=r"-/",
+    lit_open_re=r"[/][-][!][ \t]*", lit_close_re=r"[ \t]*[-][/]\Z",
     quote_pairs=[("/-", r"/\ -"), ("-/", r"-\ /")]
 )
 
@@ -866,7 +866,7 @@ LEAN4 = LangDef(
     "lean4",
     LeanParser, # We can use the same parser as Lean 3, because the syntax for comments has not changed between the versions.
     lit_open=r"/-!", lit_close=r"-/",
-    lit_open_re=r"[/][-][!][ \t]*", lit_close_re=r"[ \t]*?[-][/]\Z",
+    lit_open_re=r"[/][-][!][ \t]*", lit_close_re=r"[ \t]*[-][/]\Z",
     quote_pairs=[("/-", r"/\ -"), ("-/", r"-\ /")]
 )
 
