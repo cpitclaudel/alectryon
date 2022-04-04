@@ -40,7 +40,7 @@ By default, these results are folded and are displayed upon hovering or clicking
 #check Bool
 #eval 1 + 1
 
-/-| Other flags can be used to control display, like ``.no-in``: -/
+/-! Other flags can be used to control display, like ``.no-in``: -/
 
 #print Iff /- .unfold .no-in -/
 
