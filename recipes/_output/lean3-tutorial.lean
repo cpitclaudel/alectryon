@@ -1,4 +1,4 @@
-/-|
+/-!
 An Introduction to Lean
 =======================
 
@@ -22,11 +22,11 @@ This introduction offers a tour of Lean and its features, with a number
 of examples for you to play around with and explore. If you are reading
 this in our online tutorial system, you can run examples like the one
 below by clicking the button that says “try it yourself.”
-|-/
+-/
 
  #check "hello world!"
 
-/-|
+/-!
 The response from Lean appears in the small window underneath the editor
 text, and also in popup windows that you can read when you hover over
 the indicators in the left margin. Alternatively, if you have installed
@@ -61,14 +61,14 @@ theory is expressive enough to allow us to define and reason about all
 sorts of objects. For example, Lean’s standard library defines the
 natural numbers to be the structure generated freely and inductively by
 a constant, *zero*, and a unary function *succ*:
-|-/
+-/
 
 namespace hidden
   inductive nat : Type
   | zero : nat
   | succ : nat → nat
 
-/-|
+/-!
 If you copy this definition into the editor window at right you will see
 that we have wrapped it in a *namespace* to avoid conflicting with the
 standard definition, which is loaded by default. Even so, choosing the
@@ -78,14 +78,14 @@ sparingly, for purposes of illustration.
 
 Having specified this data type, we can go on to define addition by
 recursion on the second argument:
-|-/
+-/
 
   def add : nat → nat → nat
   | m nat.zero     := m
   | m (nat.succ n) := nat.succ (add m n)
 end hidden
 
-/-|
+/-!
 Lean compiles definitions like these down to a single axiomatic
 primitive that governs use of both induction and recursion on
 inductively defined structures. The library defines notation for the
@@ -98,11 +98,11 @@ editor by writing ``\nat``.
 
 Of course, we can also define non-recursive functions by giving an
 explicit definition:
-|-/
+-/
 
 def double (n : ℕ) : ℕ := n + n
 
-/-|
+/-!
 We can then go on to define other data types like the integers, the
 rationals, and the real numbers, the booleans, characters and strings,
 lists, products, disjoint sums, and so on. We can also define algebraic
@@ -114,12 +114,12 @@ This points to a first intended use of Lean: it serves as a
 *specification language*, that is, a means to specify and define
 mathematical objects in precise terms. With these specifications, Lean
 can interpret basic objects and infer their types:
-|-/
+-/
 
 #check (27 + 9) * 33
 #check [(1, 2), (3, 4), (5, 6)] ++ [(7, 8), (9, 10)]
 
-/-|
+/-!
 When there is no other information present to constrain the type of a
 numeral, Lean assumes it denotes a natural, by default. Thus Lean can
 recognize that the first expression denotes a natural number, and that
@@ -127,18 +127,18 @@ the second, a concatenation of two lists of pairs of natural numbers, is
 again a list of pairs. It also remembers that ``double`` is a function
 from the natural numbers to the natural numbers, and can print out the
 definition when requested to do so:
-|-/
+-/
 
 #check double
 #print double
 
-/-|
+/-!
 Lean can reason about abstract objects as well as it can reason about
 concrete ones. In the following example, we declare a type ``G`` with a
 group structure, and variables ``g₁`` and ``g₂`` that range over ``G``.
 With those declarations, Lean knows that the expression
 ``g₂⁻¹ * g₁ * g₂`` denotes an element of ``G``.
-|-/
+-/
 
 section
   variables (G : Type) [has_mul G] [has_inv G]
@@ -148,7 +148,7 @@ section
   #check g₂⁻¹ * g₁ * g₂
 end
 
-/-|
+/-!
 Putting the declarations in a ``section``, as we do here, delimits their
 scope. In this case, the section declaration is not needed, and no harm
 would be done if we had declared these variables at the top level.
@@ -161,11 +161,11 @@ to *values* in the way you would expect. For example, assuming the
 definition does not depend on nonconstructive components in an essential
 way, every closed term of type ``ℕ`` evaluates to a numeral. Lean’s
 kernel can carry out this evaluation:
-|-/
+-/
 
 #eval (27 + 9) * 33
 
-/-|
+/-!
 As part of the kernel, the results of this evaluation can be highly
 trusted. The evaluator is not very efficient, however, and is not
 intended to be used for substantial computational tasks. For that
@@ -173,14 +173,14 @@ purpose, Lean also generates bytecode for every definition of a
 computable object, and can evaluate it on demand. To process the
 bytecode quickly, it uses an efficient *virtual machine*, similar to the
 ones used to interpret OCaml and Python.
-|-/
+-/
 
 #eval (27 + 9) * 33
 #eval (2227 + 9999) * 33
 #eval double 9999
 #eval [(1, 2), (3, 4), (5, 6)] ++ [(7, 8), (9, 10)]
 
-/-|
+/-!
 Relying on results from the bytecode evaluator requires a higher level
 of trust than relying on the kernel. For example, for efficiency, the
 bytecode evaluator uses the GNU multiple precision library to carry out
@@ -197,7 +197,7 @@ With just a few lines of code, we can write a generic sort procedure
 that sorts elements of a list according to a specified binary relation
 ``r`` on an arbitrary type ``α``, assuming only that we can determine
 computationally when ``r`` holds.
-|-/
+-/
 
 section sort
   universe u
@@ -213,27 +213,27 @@ section sort
   | (b :: l) := ordered_insert b (insertion_sort l)
 end sort
 
-/-|
+/-!
 For foundational reasons, types in Lean have to be stratified into a
 hierarchy of *type universes*, and the definitions above work for any
 type ``α`` in any such universe. We can run the procedure above on a
 list of natural numbers, using the usual ordering:
-|-/
+-/
 
 #eval insertion_sort (λ m n : ℕ, m ≤ n) [5, 27, 221, 95, 17, 43, 7, 2]
 
-/-|
+/-!
 Substantial programs can be written in Lean and run by the bytecode
 interpreter. In fact, a full-blown `resolution theorem
 prover <https://github.com/leanprover/super>`__ for Lean has been
 written in Lean itself.
 
 You can profile your code by setting the relevant options:
-|-/
+-/
 
 set_option profiler true set_option profiler.freq 10
 
-/-|
+/-!
 The second option determines the frequency that the virtual machine is
 polled with. Be careful: if the task you profile is too short, there
 won’t be any output! You can even implement your own
@@ -247,24 +247,24 @@ assertions about the objects we define and then go on to prove those
 assertions. We can do this because the language of dependent type theory
 is rich enough to encode such assertions and proofs. For example, we can
 express the property that a natural number is even:
-|-/
+-/
 
 def even (n : ℕ) : Prop := ∃ m, n = 2 * m
 
-/-|
+/-!
 As presented, it is not clear that the property of being even is
 decidable, since we cannot in general test every natural number to
 determine whether any of them serves as a witness to the given
 existential statement. But we can nonetheless use this definition to
 form compound statements:
-|-/
+-/
 
 #check even 10
 #check even 11
 #check ∀ n, even n ∨ even (n + 1)
 #check ∀ n m, even n → even m → even (n + m)
 
-/-|
+/-!
 In each case, the expression has type ``Prop``, indicating that Lean
 recognizes it as an assertion.
 
@@ -283,11 +283,11 @@ used, if ``p`` is any proposition, a proof of ``p`` is just an
 expression ``e`` of type ``p``. Thus, in Lean, checking a proof is just
 a special case of checking that an expression is well-formed and has a
 given type. We can prove that 10 is even as follows:
-|-/
+-/
 
 example : even 10 := ⟨5, rfl⟩
 
-/-|
+/-!
 In general, to prove an existential statement, it is enough to present a
 witness to the existential quantifier and then show that the subsequent
 claim is true of that witness. The Unicode angle brackets just package
@@ -304,7 +304,7 @@ mathematical foundation, so that any conventional mathematical assertion
 can be reasonably expressed, and any theorem that can be proved using
 conventional mathematical means can be carried out formally, with enough
 effort. Here is a proof that the sum of two even numbers is even:
-|-/
+-/
 
 -- theorem even_add : ∀ m n, even m → even n → even (n + m) :=
 --   take m n,
@@ -315,7 +315,7 @@ effort. Here is a proof that the sum of two even numbers is even:
 --   show even (n + m),
 --     from ⟨_, this⟩
 
-/-|
+/-!
 Again, we emphasize that the proof is really just an expression in
 dependent type theory, presented with syntactic sugar that makes it look
 somewhat like any informal mathematical proof. There is also a tiny bit
@@ -328,7 +328,7 @@ Lean supports another style of writing proofs, namely, using *tactics*.
 These are instructions, or procedures, that tell Lean how to construct
 the requisite expression. Here is a tactic-style proof of the theorem
 above:
-|-/
+-/
 
 axiom mul_add: ∀ m n p: nat, m * (n + p) = m * n + m * p
 axiom add_sym: ∀ m n: nat, n + m = m + n
@@ -343,7 +343,7 @@ begin
   simp [hk, hl, mul_add, add_sym]
 end
 
-/-|
+/-!
 Just as we can prove statements about the natural numbers, we can also
 reason about computer programs written in Lean, because these, too, are
 no different from any other definitions. This enables us to specify
@@ -394,7 +394,7 @@ tactic proof, in search of a pair of the form ``h₁ : p`` and
 ``h₂ : ¬ p``. When it finds such a pair, it uses it to produce a proof
 of the resulting theorem. The procedure ``contra`` then applies
 ``contra_aux`` to the hypotheses in the local context.
-|-/
+-/
 
 open expr tactic
 
@@ -414,14 +414,14 @@ meta def contra : tactic unit :=
 do ctx ← local_context,
    contra_aux ctx ctx
 
-/-|
+/-!
 Having defined this procedure, we can then use it to prove theorems:
-|-/
+-/
 
 example (p q r : Prop) (h₁ : p ∧ q) (h₂ : q → r) (h₃ : ¬ (p ∧ q)) : r :=
   by contra
 
-/-|
+/-!
 The results of such a tactic are always checked by the Lean kernel, so
 they can be trusted, even if the code itself is buggy. If the kernel
 fails to type check the resulting term, it raises an error, and the
@@ -463,4 +463,4 @@ from here, to either of the following more expansive introductions:
 The first focuses on the use of Lean as a theorem prover, whereas the
 second focuses on aspects of Lean related to programming and
 metaprogramming.
-|-/
+-/
