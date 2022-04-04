@@ -502,7 +502,7 @@ The reStructuredText directive for Lean 4 is ``.. lean4::``, for Markdown/MyST f
 
         … some Lean 4 code
 
-- reStructuredText prose in Lean 4 files, like this:
+- Include reStructuredText prose in Lean 4 files like this:
 
   .. code-block:: lean
 
@@ -533,7 +533,7 @@ Recording Lean's output and generating HTML or LaTeX is supported, from plain ``
 
         … some Lean 3 code
 
-- reStructuredText prose in Lean 3 files, like this:
+- Include reStructuredText prose in Lean 3 files like this:
 
   .. code-block:: lean
 
