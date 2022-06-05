@@ -60,7 +60,7 @@ To work around this issue we use a writer-dependent transform on the docutils
 side, and a doctree-resolved event on the Sphinx side.
 """
 
-from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Tuple, Type
+from typing import Any, ClassVar, DefaultDict, Dict, Iterable, List, Tuple, Type
 
 import re
 import os.path
@@ -881,7 +881,7 @@ class DirectiveDirective(Directive): # pragma: no cover
                 options['class'] = directives.class_option(new_name)
             except ValueError as detail:
                 error = self.state_machine.reporter.error(
-                    u'Invalid argument for "%s" directive:\n%s.'
+                    'Invalid argument for "%s" directive:\n%s.'
                     % (self.name, detail), nodes.literal_block(
                     self.block_text, self.block_text), line=self.lineno)
                 return messages + [error]
@@ -1176,9 +1176,9 @@ class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
     """A wrapper around the reStructuredText parser for literate files."""
 
     LANG = ""
-    supported = ()
+    supported: ClassVar[Tuple[str, ...]] = ()
     config_section = 'Literate parser'
-    config_section_dependencies = ('parsers',)
+    config_section_dependencies: ClassVar[Tuple[str, ...]] = ('parsers',)
 
     @staticmethod
     def rst_lines(lang, code):

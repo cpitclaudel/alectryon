@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Any, List
+
 import tempfile
 import os
 import subprocess
@@ -25,7 +27,7 @@ from pathlib import Path
 from alectryon import json
 
 from alectryon.json import PlainSerializer
-from .core import CLIDriver, EncodedDocument, Text
+from .core import CLIDriver, EncodedDocument, Text, Fragment
 
 class Lean4(CLIDriver):
     BIN = "leanInk"
@@ -48,7 +50,7 @@ class Lean4(CLIDriver):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
         self.lake_file_path = None
 
-    def run_leanInk_document(self, encoded_document: EncodedDocument):
+    def run_leanInk_document(self, encoded_document: EncodedDocument) -> List[Any]:
         """Run LeanInk with encoded_document file."""
         with tempfile.TemporaryDirectory(prefix=self.TMP_PREFIX) as temp_directory:
             input_file_name = self.fpath.with_suffix(self.LEAN_FILE_EXT)
@@ -69,6 +71,7 @@ class Lean4(CLIDriver):
             content = output_file.read_text(encoding="utf-8")
             json_result = json.loads(content)
             tuple_result = PlainSerializer.decode(json_result)
+            assert isinstance(tuple_result, list)
             return tuple_result
 
     def resolve_lake_arg(self):
@@ -86,15 +89,13 @@ class Lean4(CLIDriver):
     def annotate(self, chunks):
         document = EncodedDocument(chunks, "\n", encoding="utf-8")
         self.resolve_lake_arg()
-        result = self.run_leanInk_document(document)
+        result: List[Fragment] = self.run_leanInk_document(document)
 
         if not result:
             return list([])
 
-        last = result[-1]
-
         # Sometimes we require an additonal \n and sometimes not. I wasn't really able to
         # find out exactly when, but this workaround seems to work for almost all cases.
-        if last.contents.endswith("\n"):
-            return list(document.recover_chunks(result))
-        return list(document.recover_chunks(result + [Text(contents="\n")]))
+        if not result[-1].contents.endswith("\n"):
+            result = result + [Text(contents="\n")]
+        return list(document.recover_chunks(result))

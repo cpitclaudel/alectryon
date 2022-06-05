@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Iterator, List, Tuple, Union
+from typing import Any, Dict, Iterator, List, Tuple, Union
 
 from collections import namedtuple
 import sys
@@ -62,12 +62,12 @@ class SerAPI(REPLDriver):
     def __init__(self, args=(),
                  fpath="-",
                  binpath=None,
-                 pp_args=DEFAULT_PP_ARGS):
+                 pp_args: Dict[str, Any]=DEFAULT_PP_ARGS):
         """Prepare to run ``sertop``."""
         super().__init__(args=args, fpath=fpath, binpath=binpath)
         self.instance_args = ("--topfile={}".format(self.topfile),)
         self.next_qid = 0
-        self.pp_args = {**SerAPI.DEFAULT_PP_ARGS, **pp_args}
+        self.pp_args: Dict[str, Any] = {**SerAPI.DEFAULT_PP_ARGS, **pp_args}
         self.last_response = None
 
     @classmethod

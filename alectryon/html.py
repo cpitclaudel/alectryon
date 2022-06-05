@@ -109,8 +109,7 @@ class HtmlGenerator(Backend):
         self.highlight_enriched(code)
         self.gen_mrefs(code)
 
-    @staticmethod
-    def gen_names(names):
+    def gen_names(self, names):
         tags.var(", ".join(names))
 
     @deduplicate(".goal-hyps > span")
@@ -212,8 +211,7 @@ class HtmlGenerator(Backend):
                     assert output.goals, "transforms.commit_io_annotations"
                     self.gen_goals(output.goals)
 
-    @staticmethod
-    def gen_txt(s):
+    def gen_txt(self, s):
         return txt(s)
 
     @staticmethod

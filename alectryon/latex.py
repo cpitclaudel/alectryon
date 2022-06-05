@@ -190,8 +190,7 @@ class LatexGenerator(Backend):
             self.gen_mrefs(code)
             return block
 
-    @staticmethod
-    def gen_names(names):
+    def gen_names(self, names):
         return PlainText(", ".join(names))
 
     def gen_hyp(self, hyp):
@@ -223,8 +222,7 @@ class LatexGenerator(Backend):
                 for goal in more:
                     self.gen_goal(goal)
 
-    @staticmethod
-    def gen_txt(s):
+    def gen_txt(self, s):
         return PlainText(s)
 
     @staticmethod

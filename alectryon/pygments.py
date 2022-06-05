@@ -31,7 +31,8 @@ import pygments
 import pygments.styles
 import pygments.formatters
 from pygments.token import Error, STANDARD_TYPES, Name, Operator, Text
-from pygments.filters import Filter, TokenMergeFilter, NameHighlightFilter
+from pygments.filter import Filter
+from pygments.filters import TokenMergeFilter, NameHighlightFilter
 from pygments.formatter import Formatter
 from pygments.lexers import get_lexer_by_name # pylint: disable=no-name-in-module
 
@@ -49,7 +50,7 @@ def resolve_token(kind):
 
 CUSTOM_LEXERS = {'CoqLexer': CoqLexer}
 CUSTOM_LEXER_ALIASES: Dict[str, str] = {
-    "lean3": "lean", 
+    "lean3": "lean",
     "lean4": "lean"
 }
 

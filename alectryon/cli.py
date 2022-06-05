@@ -275,7 +275,7 @@ def copy_assets(state, assets: List[Tuple[str, Union[str, core.Asset]]],
         dst = os.path.join(output_directory, asset)
 
         if isinstance(asset, core.Asset):
-            with open(dst, mode="w") as f:
+            with open(dst, mode="w", encoding="utf-8") as f:
                 f.write(asset.gen(ctx or {}))
             continue
 

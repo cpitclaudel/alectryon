@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, DefaultDict, Dict, Iterable, \
+from typing import Any, DefaultDict, Dict, Iterable, IO, \
     NamedTuple, NoReturn, Optional, Tuple, Union
 
 from collections import deque, namedtuple, defaultdict
@@ -34,6 +34,8 @@ import re
 import subprocess
 import sys
 import textwrap
+
+_FILE = Union[None, int, IO[Any]]
 
 DEBUG = False
 TRACEBACK = False
@@ -420,7 +422,7 @@ PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
 class Driver():
     def __init__(self):
-        self.observer : Observer = StderrObserver()
+        self.observer: Observer = StderrObserver()
 
     @classmethod
     def version_info(cls, binpath=None):
@@ -530,11 +532,10 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
             finally:
                 self.repl.wait()
 
-    def _start(self, stdin=PIPE, stderr=PIPE, stdout=PIPE, more_args=()):
+    def _start(self, stdin: _FILE=PIPE, stderr: _FILE=PIPE, stdout: _FILE=PIPE, more_args=()):
         cmd = [self.resolve_driver(self.binpath),
                *self.REPL_ARGS, *self.user_args, *self.instance_args, *more_args]
         self._debug_start(cmd)
-        # pylint: disable=consider-using-with
         return subprocess.Popen(cmd, stdin=stdin, stderr=stderr, stdout=stdout)
 
     def reset(self):
@@ -544,7 +545,7 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
 class TextREPLDriver(REPLDriver): # pylint: disable=abstract-method
     REPL_ENCODING = "utf-8"
 
-    def _start(self, *args, **kwargs):
+    def _start(self, *args, **kwargs): # pylint: disable=signature-differs
         repl = super()._start(*args, **kwargs)
         repl.stdin = TextIOWrapper( #type: ignore
             repl.stdin, write_through=True, encoding=self.REPL_ENCODING) #type: ignore
