@@ -5,6 +5,8 @@
 Unreleased
 ==========
 
+- Alectryon now supports Lean 4. [GH-76]
+
 - **EXPERIMENTAL** Alectryon now has partial support for Lean 3. [GH-64]
 
 Version 1.4.0
