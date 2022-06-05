@@ -851,6 +851,7 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
     TRACEBACK_HELP = "Print error traces."
     debug.add_argument("--traceback", action="store_true",
                        default=False, help=TRACEBACK_HELP)
+
     return parser
 
 def parse_arguments():

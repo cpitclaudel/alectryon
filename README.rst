@@ -2,9 +2,7 @@
  Alectryon
 ===========
 
-A library to process Coq and Lean snippets embedded in text documents, showing goals and messages for each input sentence.  Also a literate programming toolkit.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix interactive proofs and prose.
-
-Alectryon originally supported Coq only. Both `Lean 4 <lean4_>`__ and `Lean 3 <lean3_>`__ are supported. `Lean 3 <lean3_>`__ support is preliminary.
+A library to process Coq and Lean 4 snippets embedded in text documents, showing goals and messages for each input sentence.  Also a literate programming toolkit.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix interactive proofs and prose.
 
 .. image:: etc/screenshot.svg
    :width: 100%
@@ -514,6 +512,8 @@ The reStructuredText directive for Lean 4 is ``.. lean4::``, for Markdown/MyST f
 
 See `<recipes/plain-lean4.lean>`__, `<recipes/lean4-tactics.rst>`__, `<recipes/lean4-tactics-myst.md>`__ and `<recipes/literate-lean4.lean>`__  for examples.
 
+Lean 4 support was contributed by Niklas Bülow (@insightmind).
+
 .. _lean3:
 
 Lean 3
@@ -553,7 +553,7 @@ The following features are missing:
 Support for quoting snippets and displaying or hiding sentences is partial.
 
 For a more detailed TODO list, see the header of `<alectryon/lean3.py>`__.
- 
+
 Polyglot documents
 ------------------
 
