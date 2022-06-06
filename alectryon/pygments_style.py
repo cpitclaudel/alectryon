@@ -58,7 +58,7 @@ class AlectryonStyle(Style):
     default_style = ""
 
     styles = {
-        Whitespace:                "underline #d3d7cf",      # class: 'w'
+        # Whitespace:              "underline #d3d7cf",      # class: 'w'
         Error:                     "#a40000 border:#cc0000", # class: 'err'
         Other:                     "#2e3436",                # class 'x'
 

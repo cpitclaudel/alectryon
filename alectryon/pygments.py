@@ -201,9 +201,11 @@ def highlight_latex(code, lang,
     Like ``highlight_html``, but return a plain LaTeX string.
     """
     before, tex, after = _highlight(code, get_lexer(lang), get_formatter("latex", style))
-    assert tex.startswith(PYGMENTS_LATEX_PREFIX) and tex.endswith(PYGMENTS_LATEX_SUFFIX), tex
-    body = tex[len(PYGMENTS_LATEX_PREFIX):-len(PYGMENTS_LATEX_SUFFIX)]
-    return prefix + before + body + after + suffix
+    if tex.startswith(r"\begin"):
+        # LATER: Remove (Pygments 2.12.0+ / 231366c7 recognizes nowrap for LaTeX)
+        assert tex.startswith(PYGMENTS_LATEX_PREFIX) and tex.endswith(PYGMENTS_LATEX_SUFFIX), tex
+        tex = tex[len(PYGMENTS_LATEX_PREFIX):-len(PYGMENTS_LATEX_SUFFIX)]
+    return prefix + before + tex + after + suffix
 
 HIGHLIGHTERS = {"html": highlight_html, "latex": highlight_latex}
 

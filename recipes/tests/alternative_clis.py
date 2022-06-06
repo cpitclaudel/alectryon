@@ -12,7 +12,7 @@ from io import BytesIO, TextIOWrapper
 from alectryon import cli, literate
 
 def run(cmd, args, stdin):
-    sys.argv = ["({})".format(cmd.__name__), "-", *args]
+    sys.argv = ["({})".format(cmd.__name__), "-", "--traceback", *args]
     sys.stdin = TextIOWrapper(BytesIO(stdin.encode("utf-8")))
     print("== {} ==".format(cmd.__name__))
     try:
