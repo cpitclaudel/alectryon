@@ -29,12 +29,14 @@
 \usepackage{pygments}
 
 %%% Fallback definitions for Docutils-specific commands
+
 % basic code highlight:
 \providecommand*\DUrolecomment[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
 \providecommand*\DUroledeleted[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
 \providecommand*\DUrolekeyword[1]{\textbf{#1}}
 \providecommand*\DUrolestring[1]{\textit{#1}}
-% numeric or symbol footnotes with hyperlinks
+
+% numerical or symbol footnotes with hyperlinks and backlinks
 \providecommand*{\DUfootnotemark}[3]{%
   \raisebox{1em}{\hypertarget{#1}{}}%
   \hyperlink{#2}{\textsuperscript{#3}}%
@@ -48,20 +50,12 @@
   \endgroup%
 }
 
-% inline markup (custom roles)
-% \DUrole{#1}{#2} tries \DUrole#1{#2}
+% custom inline roles: \DUrole{#1}{#2} tries \DUrole#1{#2}
 \providecommand*{\DUrole}[2]{%
   \ifcsname DUrole#1\endcsname%
     \csname DUrole#1\endcsname{#2}%
-  \else
-    % backwards compatibility: try \docutilsrole#1{#2}
-    \ifcsname docutilsrole#1\endcsname%
-      \PackageWarningNoLine{docutils}{Command prefix "docutilsrole" is
-         deprecated, \MessageBreak use `\protect\DUrole #1`}
-      \csname docutilsrole#1\endcsname{#2}%
-    \else%
-      #2%
-    \fi%
+  \else%
+    #2%
   \fi%
 }
 % hyperlinks:
@@ -426,7 +420,7 @@ The following commands print information about an identifier \hyperref[reference
           \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\nl
           \nl
           \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{k+kr}{is}~\PY{n}{not}~\PY{n}{universe}~\PY{n}{polymorphic}\nl
-          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{\PYZus{}}~\PY{n}{\PYZus{}}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}\nl
+          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}\nl
           \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{k+kr}{is}~\PY{n}{transparent}\nl
           \PY{n}{Expands}~\PY{n}{to}\PY{o}{:}~\PY{n}{Constant}~\PY{n}{Coq}\PY{o}{.}\PY{n}{Init}\PY{o}{.}\PY{n}{Nat}\PY{o}{.}\PY{n}{add}
         \end{message}
@@ -450,7 +444,7 @@ The following commands print information about an identifier \hyperref[reference
           ~~\PY{k+kr}{end}\nl
           ~~~~~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\nl
           \nl
-          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{\PYZus{}}~\PY{n}{\PYZus{}}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}
+          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}
         \end{message}
       \end{messages}
     \end{output}
@@ -634,11 +628,11 @@ These properties can then be used within custom transforms.  Out of the box, Ale
     \begin{output}
       \begin{messages}
         \begin{message}
-          \PY{n+nf}{add}~\PY{o+ow}{::}~\PY{k+kt}{Nat}~\PY{o+ow}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{Nat}~\PY{o+ow}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{Nat}\nl
-          \PY{n+nf}{add}~\PY{n}{n}~\PY{n}{m}~\PY{o+ow}{=}\nl
-          ~~\PY{k+kr}{case}~\PY{n}{n}~\PY{k+kr}{of}~\PY{p}{\PYZob{}}\nl
-          ~~~\PY{k+kt}{O}~\PY{o+ow}{\PYZhy{}\PYZgt{}}~\PY{n}{m}\PY{p}{;}\nl
-          ~~~\PY{k+kt}{S}~\PY{n}{p}~\PY{o+ow}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{S}~\PY{p}{(}\PY{n}{add}~\PY{n}{p}~\PY{n}{m}\PY{p}{)\PYZcb{}}\nl
+          \PY{n+nf}{add}\PY{+w}{~}\PY{o+ow}{::}\PY{+w}{~}\PY{k+kt}{Nat}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{k+kt}{Nat}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{k+kt}{Nat}\nl
+          \PY{n+nf}{add}\PY{+w}{~}\PY{n}{n}\PY{+w}{~}\PY{n}{m}\PY{+w}{~}\PY{o+ow}{=}\nl
+          \PY{+w}{~~}\PY{k+kr}{case}\PY{+w}{~}\PY{n}{n}\PY{+w}{~}\PY{k+kr}{of}\PY{+w}{~}\PY{p}{\PYZob{}}\nl
+          \PY{+w}{~~~}\PY{k+kt}{O}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{n}{m}\PY{p}{;}\nl
+          \PY{+w}{~~~}\PY{k+kt}{S}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{k+kt}{S}\PY{+w}{~}\PY{p}{(}\PY{n}{add}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{n}{m}\PY{p}{)\PYZcb{}}\nl
           \nl
         \end{message}
       \end{messages}
@@ -798,10 +792,10 @@ Finally, you may chose a different Pygments lexer to highlight a quote.  For exa
 \begin{quote}
 \begin{alectryon}
   \begin{message}
-    \PY{p}{(}\PY{k}{define~}\PY{n+nv}{add}~\PY{p}{(}\PY{n+nf}{lambdas}~\PY{p}{(}\PY{n+nf}{n}~\PY{n+nv}{m}\PY{p}{)}\nl
-    ~~\PY{p}{(}\PY{n+nf}{match}~\PY{n+nv}{n}\nl
-    ~~~~~\PY{p}{((}\PY{n+nf}{O}\PY{p}{)}~\PY{n+nv}{m}\PY{p}{)}\nl
-    ~~~~~\PY{p}{((}\PY{n+nf}{S}~\PY{n+nv}{p}\PY{p}{)}~\PY{o}{`}\PY{p}{(}\PY{n+nf}{S}~\PY{o}{,}\PY{p}{(}\PY{n+nf}{@}~\PY{n+nv}{add}~\PY{n+nv}{p}~\PY{n+nv}{m}\PY{p}{))))))}\nl
+    \PY{p}{(}\PY{k}{define}\PY{+w}{~}\PY{n+nv}{add}\PY{+w}{~}\PY{p}{(}\PY{n+nf}{lambdas}\PY{+w}{~}\PY{p}{(}\PY{n+nf}{n}\PY{+w}{~}\PY{n+nv}{m}\PY{p}{)}\nl
+    \PY{+w}{~~}\PY{p}{(}\PY{k}{match}\PY{+w}{~}\PY{n+nv}{n}\nl
+    \PY{+w}{~~~~~}\PY{p}{((}\PY{n+nf}{O}\PY{p}{)}\PY{+w}{~}\PY{n+nv}{m}\PY{p}{)}\nl
+    \PY{+w}{~~~~~}\PY{p}{((}\PY{n+nf}{S}\PY{+w}{~}\PY{n+nv}{p}\PY{p}{)}\PY{+w}{~}\PY{o}{`}\PY{p}{(}\PY{n+nf}{S}\PY{+w}{~}\PY{o}{,}\PY{p}{(}\PY{k}{@}\PY{+w}{~}\PY{n+nv}{add}\PY{+w}{~}\PY{n+nv}{p}\PY{+w}{~}\PY{n+nv}{m}\PY{p}{))))))}\nl
     \nl
   \end{message}
 \end{alectryon}
@@ -975,7 +969,7 @@ To show the recursive definition of addition.   But as Coq's standard library go
           ~~\PY{k+kr}{end}\nl
           ~~~~~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\nl
           \nl
-          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{\PYZus{}}~\PY{n}{\PYZus{}}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}
+          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}
         \end{message}
       \end{messages}
     \end{output}

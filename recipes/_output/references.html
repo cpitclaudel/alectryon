@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 <title>Using the marker-placement mini-language</title>
 <link rel="stylesheet" href="alectryon.css" type="text/css" />
 <link rel="stylesheet" href="docutils_basic.css" type="text/css" />
@@ -72,7 +72,7 @@ In the first case (<a class="alectryon-mref reference internal" href="#reference
 <pre class="alectryon-io highlight" id="cp"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="references-rst-chk9" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chk9" id="references-rst-io-cp-s-about-0"><span class="kn">About</span> Nat.add.<span class="alectryon-mref-marker">α</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">Nat.add : nat -&gt; nat -&gt; nat
 
 Nat.add <span class="kr">is</span> not universe polymorphic
-<span class="kn">Arguments</span> Nat.add (_ _)%nat_scope
+<span class="kn">Arguments</span> Nat.add (n m)%nat_scope
 Nat.add <span class="kr">is</span> transparent
 Expands to: Constant Coq.Init.Nat.add</blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="references-rst-chka" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chka" id="references-rst-io-cp-s-print-0"><span class="kn">Print</span> Nat.add.<span class="alectryon-mref-marker">β</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">Nat.add = 
@@ -83,7 +83,7 @@ Expands to: Constant Coq.Init.Nat.add</blockquote></div></div></small><span clas
   <span class="kr">end</span>
      : nat -&gt; nat -&gt; nat
 
-<span class="kn">Arguments</span> Nat.add (_ _)%nat_scope</blockquote></div></div></small><span class="alectryon-wsp">
+<span class="kn">Arguments</span> Nat.add (n m)%nat_scope</blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="references-rst-chkb" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chkb" id="references-rst-io-cp-s-check-0"><span class="kn">Check</span> Nat.add <span class="mi">2</span> <span class="mi">3</span>.<span class="alectryon-mref-marker">γ</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="mi">2</span> + <span class="mi">3</span>
      : nat</blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="references-rst-chkc" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chkc" id="references-rst-io-cp-s-compute-0"><span class="kn">Compute</span> Nat.add <span class="mi">2</span> <span class="mi">3</span>.<span class="alectryon-mref-marker">δ</span></label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">= <span class="mi">5</span>
@@ -114,11 +114,11 @@ Expands to: Constant Coq.Init.Nat.add</blockquote></div></div></small><span clas
 <p>These properties can then be used within custom transforms.  Out of the box, Alectryon only recognizes the <tt class="docutils literal">[lang]</tt> annotation; if it is found, the corresponding code is highlighted using the Pygments lexer for that language.</p>
 <blockquote>
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Extraction Language Haskell</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="references-rst-chk14" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chk14"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="nf">add</span> <span class="ow">::</span> <span class="kt">Nat</span> <span class="ow">-&gt;</span> <span class="kt">Nat</span> <span class="ow">-&gt;</span> <span class="kt">Nat</span>
-<span class="nf">add</span> n m <span class="ow">=</span>
-  <span class="kr">case</span> n <span class="kr">of</span> <span class="p">{</span>
-   <span class="kt">O</span> <span class="ow">-&gt;</span> m<span class="p">;</span>
-   <span class="kt">S</span> p <span class="ow">-&gt;</span> <span class="kt">S</span> <span class="p">(</span>add p m<span class="p">)}</span>
+</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="references-rst-chk14" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chk14"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="nf">add</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Nat</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Nat</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Nat</span><span class="w"></span>
+<span class="nf">add</span><span class="w"> </span>n<span class="w"> </span>m<span class="w"> </span><span class="ow">=</span><span class="w"></span>
+<span class="w">  </span><span class="kr">case</span><span class="w"> </span>n<span class="w"> </span><span class="kr">of</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="kt">O</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span>m<span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="kt">S</span><span class="w"> </span>p<span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">S</span><span class="w"> </span><span class="p">(</span>add<span class="w"> </span>p<span class="w"> </span>m<span class="p">)}</span>
 
 </blockquote></div></div></small></span></pre></blockquote>
 </div>
@@ -179,10 +179,10 @@ The two permutation hypotheses are <samp class="alectryon-inline highlight mq-pr
 <pre class="alectryon-block highlight mq-pr"><!-- Generator: Alectryon --><span><var>H</var><span class="hyp-type"><b>: </b><span>Permutation l l&#39;</span></span></span></pre><pre class="alectryon-block highlight mq-pr"><!-- Generator: Alectryon --><span><var>H0</var><span class="hyp-type"><b>: </b><span>Permutation l&#39; l&#39;&#39;</span></span></span></pre></blockquote>
 <p>Finally, you may chose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by <tt class="docutils literal">Extraction</tt>:</p>
 <blockquote>
-<pre class="alectryon-block highlight"><!-- Generator: Alectryon --><span class="p">(</span><span class="k">define </span><span class="nv">add</span> <span class="p">(</span><span class="nf">lambdas</span> <span class="p">(</span><span class="nf">n</span> <span class="nv">m</span><span class="p">)</span>
-  <span class="p">(</span><span class="nf">match</span> <span class="nv">n</span>
-     <span class="p">((</span><span class="nf">O</span><span class="p">)</span> <span class="nv">m</span><span class="p">)</span>
-     <span class="p">((</span><span class="nf">S</span> <span class="nv">p</span><span class="p">)</span> `<span class="p">(</span><span class="nf">S</span> ,<span class="p">(</span><span class="nf">@</span> <span class="nv">add</span> <span class="nv">p</span> <span class="nv">m</span><span class="p">))))))</span>
+<pre class="alectryon-block highlight"><!-- Generator: Alectryon --><span class="p">(</span><span class="k">define</span><span class="w"> </span><span class="nv">add</span><span class="w"> </span><span class="p">(</span><span class="nf">lambdas</span><span class="w"> </span><span class="p">(</span><span class="nf">n</span><span class="w"> </span><span class="nv">m</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">match</span><span class="w"> </span><span class="nv">n</span><span class="w"></span>
+<span class="w">     </span><span class="p">((</span><span class="nf">O</span><span class="p">)</span><span class="w"> </span><span class="nv">m</span><span class="p">)</span><span class="w"></span>
+<span class="w">     </span><span class="p">((</span><span class="nf">S</span><span class="w"> </span><span class="nv">p</span><span class="p">)</span><span class="w"> </span>`<span class="p">(</span><span class="nf">S</span><span class="w"> </span>,<span class="p">(</span><span class="k">@</span><span class="w"> </span><span class="nv">add</span><span class="w"> </span><span class="nv">p</span><span class="w"> </span><span class="nv">m</span><span class="p">))))))</span>
 
 </pre></blockquote>
 </div>
@@ -214,7 +214,7 @@ The two permutation hypotheses are <samp class="alectryon-inline highlight mq-pr
   <span class="kr">end</span>
      : nat -&gt; nat -&gt; nat
 
-<span class="kn">Arguments</span> Nat.add (_ _)%nat_scope</blockquote></div></div></small></span></pre></blockquote>
+<span class="kn">Arguments</span> Nat.add (n m)%nat_scope</blockquote></div></div></small></span></pre></blockquote>
 </div>
 </div>
 </div></body>

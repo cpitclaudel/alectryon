@@ -1,4 +1,5 @@
-Coq: 8.12.2
-Pygments: 2.9.0
-Docutils: 0.16
-Sphinx: 3.5.4
+Coq: 8.15.1
+Pygments: 2.12.0
+Docutils: 0.17.1
+Sphinx: 4.5.0
+MyST: 0.17.2

@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 <title>Custom highlighting</title>
 <link rel="stylesheet" href="alectryon.css" type="text/css" />
 <link rel="stylesheet" href="docutils_basic.css" type="text/css" />
@@ -47,17 +47,17 @@ alectryon custom_highlighting.v # Coq → HTML, produces ‘custom_highlighting.
 <h1>Using a different lexer</h1>
 <p>You can use the marker-placement mini-language to select a message and set its <tt class="docutils literal">lang</tt> property:</p>
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Extraction Language Haskell</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="custom-highlighting-v-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk3"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="nf">add</span> <span class="ow">::</span> <span class="kt">Nat</span> <span class="ow">-&gt;</span> <span class="kt">Nat</span> <span class="ow">-&gt;</span> <span class="kt">Nat</span>
-<span class="nf">add</span> n m <span class="ow">=</span>
-  <span class="kr">case</span> n <span class="kr">of</span> <span class="p">{</span>
-   <span class="kt">O</span> <span class="ow">-&gt;</span> m<span class="p">;</span>
-   <span class="kt">S</span> p <span class="ow">-&gt;</span> <span class="kt">S</span> <span class="p">(</span>add p m<span class="p">)}</span>
+</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="custom-highlighting-v-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk3"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="nf">add</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Nat</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Nat</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Nat</span><span class="w"></span>
+<span class="nf">add</span><span class="w"> </span>n<span class="w"> </span>m<span class="w"> </span><span class="ow">=</span><span class="w"></span>
+<span class="w">  </span><span class="kr">case</span><span class="w"> </span>n<span class="w"> </span><span class="kr">of</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">   </span><span class="kt">O</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span>m<span class="p">;</span><span class="w"></span>
+<span class="w">   </span><span class="kt">S</span><span class="w"> </span>p<span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">S</span><span class="w"> </span><span class="p">(</span>add<span class="w"> </span>p<span class="w"> </span>m<span class="p">)}</span>
 
 </blockquote></div></div></small></span></pre><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Extraction Language Scheme</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="custom-highlighting-v-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk4"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="p">(</span><span class="k">define </span><span class="nv">add</span> <span class="p">(</span><span class="nf">lambdas</span> <span class="p">(</span><span class="nf">n</span> <span class="nv">m</span><span class="p">)</span>
-  <span class="p">(</span><span class="nf">match</span> <span class="nv">n</span>
-     <span class="p">((</span><span class="nf">O</span><span class="p">)</span> <span class="nv">m</span><span class="p">)</span>
-     <span class="p">((</span><span class="nf">S</span> <span class="nv">p</span><span class="p">)</span> `<span class="p">(</span><span class="nf">S</span> ,<span class="p">(</span><span class="nf">@</span> <span class="nv">add</span> <span class="nv">p</span> <span class="nv">m</span><span class="p">))))))</span>
+</span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="custom-highlighting-v-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk4"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="p">(</span><span class="k">define</span><span class="w"> </span><span class="nv">add</span><span class="w"> </span><span class="p">(</span><span class="nf">lambdas</span><span class="w"> </span><span class="p">(</span><span class="nf">n</span><span class="w"> </span><span class="nv">m</span><span class="p">)</span><span class="w"></span>
+<span class="w">  </span><span class="p">(</span><span class="k">match</span><span class="w"> </span><span class="nv">n</span><span class="w"></span>
+<span class="w">     </span><span class="p">((</span><span class="nf">O</span><span class="p">)</span><span class="w"> </span><span class="nv">m</span><span class="p">)</span><span class="w"></span>
+<span class="w">     </span><span class="p">((</span><span class="nf">S</span><span class="w"> </span><span class="nv">p</span><span class="p">)</span><span class="w"> </span>`<span class="p">(</span><span class="nf">S</span><span class="w"> </span>,<span class="p">(</span><span class="k">@</span><span class="w"> </span><span class="nv">add</span><span class="w"> </span><span class="nv">p</span><span class="w"> </span><span class="nv">m</span><span class="p">))))))</span>
 
 </blockquote></div></div></small></span></pre><p>You can read more about the marker-placement mini-language in <tt class="docutils literal">recipes/references.rst</tt>.</p>
 </div>

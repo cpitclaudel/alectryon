@@ -87,7 +87,7 @@ Missing search pattern for key ``.s`` in expression ``.s.g``. (maybe an invalid 
 tests/errors.rst:5: (WARNING/2) In `:alectryon/pygments/tacn:`: Missing language name (did you mean `:alectryon/pygments/coq/tacn:`?).
 tests/errors.rst:6: (ERROR/3) In `:alectryon/pygments/coq/xyz:`: Unknown token kind: xyz
 tests/errors.rst:146: (ERROR/3) Coq raised an exception:
-  > Syntax error: '.' expected after [vernac:syntax_command] (in [vernac_aux]).
+  > Syntax error: '.' expected after [syntax_command] (in [vernac_aux]).
 The offending chunk is delimited by >>>…<<< below:
   > Notation "'🆄🄽🅘ⓒ⒪𝖉∈' α ⊕ ⤋ β" := α >>>++<<< β. (* Bytes vs. str *)
 Results past this point may be unreliable.

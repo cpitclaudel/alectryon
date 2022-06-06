@@ -34,7 +34,7 @@ tests_targets += _output/tests/cli_flags.txt
 
 # ReST → HTML
 _output/tests/coqc_time_error.out: tests/coqc_time_error.rst
-	$(alectryon) --coq-driver=coqc_time $< > $@ 2>&1; echo "exit: $$?" >> $@
+	$(alectryon) --coq-driver=coqc_time --backend webpage -o /dev/null $< > $@ 2>&1; echo "exit: $$?" >> $@; sed -i 's/in file [^:]*//' $@
 tests_targets += _output/tests/coqc_time_error.out
 
 # Lean → HTML

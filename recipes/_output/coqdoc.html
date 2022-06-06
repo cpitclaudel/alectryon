@@ -66,8 +66,7 @@ Can we prove it correct?
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="coqdoc-v-chk8" style="display: none" type="checkbox"><label class="alectryon-input" for="coqdoc-v-chk8">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>n</var><span class="hyp-type"><b>: </b><span>nat</span></span></span><br><span><var>IHn</var><span class="hyp-type"><b>: </b><span>even n = true &lt;-&gt; Even n</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">even (S n) = true &lt;-&gt; Even (S n)</div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="coqdoc-v-chk9" style="display: none" type="checkbox"><label class="alectryon-input alectryon-failed" for="coqdoc-v-chk9"><span class="nb">apply</span> IHn.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">In environment
 n : nat
 IHn : even n = true &lt;-&gt; Even n
-H : even n = true -&gt; Even n
-Unable to <span class="nb">unify</span> <span class="s2">&quot;Even n&quot;</span> <span class="kr">with</span>
+Unable to <span class="nb">unify</span> <span class="s2">&quot;even n = true &lt;-&gt; Even n&quot;</span> <span class="kr">with</span>
  <span class="s2">&quot;even (S n) = true &lt;-&gt; Even (S n)&quot;</span>.</blockquote></div></div></small></span></pre><div class="doc">
 The induction hypothesis doesn't apply — maybe we need to destruct ``n``?
 

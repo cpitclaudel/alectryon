@@ -29,25 +29,18 @@
 % \end{DUclass}{spam} tries \endDUCLASSspam
 \ifx\DUclass\undefined % poor man's "provideenvironment"
  \newenvironment{DUclass}[1]%
-  {\def\DocutilsClassFunctionName{DUCLASS#1}% arg cannot be used in end-part of environment.
+  {% "#1" does not work in end-part of environment.
+   \def\DocutilsClassFunctionName{DUCLASS#1}
      \csname \DocutilsClassFunctionName \endcsname}%
   {\csname end\DocutilsClassFunctionName \endcsname}%
 \fi
 
-% inline markup (custom roles)
-% \DUrole{#1}{#2} tries \DUrole#1{#2}
+% custom inline roles: \DUrole{#1}{#2} tries \DUrole#1{#2}
 \providecommand*{\DUrole}[2]{%
   \ifcsname DUrole#1\endcsname%
     \csname DUrole#1\endcsname{#2}%
-  \else
-    % backwards compatibility: try \docutilsrole#1{#2}
-    \ifcsname docutilsrole#1\endcsname%
-      \PackageWarningNoLine{docutils}{Command prefix "docutilsrole" is
-         deprecated, \MessageBreak use `\protect\DUrole #1`}
-      \csname docutilsrole#1\endcsname{#2}%
-    \else%
-      #2%
-    \fi%
+  \else%
+    #2%
   \fi%
 }
 % hyperlinks:

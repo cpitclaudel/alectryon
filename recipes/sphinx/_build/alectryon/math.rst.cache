@@ -5,7 +5,7 @@
   "&coq": {
     "driver": [
       "Coq+SerAPI",
-      "8.12.0+0.12.0"
+      "8.15.0+0.15.0"
     ],
     "metadata": {
       "sertop_args": []
@@ -32,7 +32,7 @@
           "messages": [
             {
               "_type": "message",
-              "contents": "Inductive nat : Set :=\n    O : \\mathbb{N} | S : \\mathbb{N} -> \\mathbb{N}\n\nArguments S _%nat_scope"
+              "contents": "Inductive nat : Set :=\n    O : \\mathbb{N} | S : \\mathbb{N} -> \\mathbb{N}.\n\nArguments S _%nat_scope"
             }
           ],
           "goals": []
@@ -59,7 +59,7 @@
           "messages": [
             {
               "_type": "message",
-              "contents": "Inductive bool : Set :=\n    true : \\mathbb{B} | false : \\mathbb{B}"
+              "contents": "Inductive bool : Set :=\n    true : \\mathbb{B} | false : \\mathbb{B}."
             }
           ],
           "goals": []

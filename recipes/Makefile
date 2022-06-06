@@ -32,6 +32,7 @@ _output/.version-info: | _output/
 	@echo "Pygments: $(shell $(PYTHON) -c 'import pygments; print(pygments.__version__)')" >> $@
 	@echo "Docutils: $(shell $(PYTHON) -c 'import docutils; print(docutils.__version__)')" >> $@
 	@echo "Sphinx: $(shell $(PYTHON) -c 'import sphinx; print(sphinx.__version__)')" >> $@
+	@echo "MyST: $(shell $(PYTHON) -c 'import myst_parser; print(myst_parser.__version__)')" >> $@
 
 ifeq (, $(COVERAGE))
 other += _output/.version-info

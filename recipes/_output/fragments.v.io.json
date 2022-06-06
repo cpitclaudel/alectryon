@@ -86,7 +86,7 @@
             "messages": [
                 {
                     "_type": "message",
-                    "contents": "xyz = fun _ : False => I\n     : False -> True"
+                    "contents": "xyz = fun _ : False => I\n     : False -> True\n\nArguments xyz H"
                 }
             ],
             "goals": []

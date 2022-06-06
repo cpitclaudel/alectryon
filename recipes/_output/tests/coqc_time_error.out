@@ -1,4 +1,5 @@
-tests/coqc_time_error.rst:14: (ERROR/3) Driver Coq+coqc-time (coqc) exited with code 1:
-   Error: There are pending proofs: Unnamed_thm.
+tests/coqc_time_error.rst:16: (ERROR/3) Driver Coq+coqc-time (coqc) exited with code 1:
+   Error:
+   There are pending proofs : Unnamed_thm.
 
 exit: 13

@@ -4,8 +4,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
-<title>None</title>
+<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<title>docutils document without title</title>
 <link rel="stylesheet" href="alectryon.css" type="text/css" />
 <link rel="stylesheet" href="docutils_basic.css" type="text/css" />
 <link rel="stylesheet" href="pygments.css" type="text/css" />
@@ -18,7 +18,7 @@
 <div class="alectryon-root alectryon-centered"><div class="document">
 
 
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="none-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="none-chk0"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="chk0"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
      : <span class="kt">Set</span></blockquote></div></div></small></span></pre>
 </div>
 </div></body>
@@ -31,8 +31,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
-<title>None</title>
+<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<title>docutils document without title</title>
 <link rel="stylesheet" href="alectryon.css" type="text/css" />
 <link rel="stylesheet" href="docutils_basic.css" type="text/css" />
 <link rel="stylesheet" href="pygments.css" type="text/css" />
@@ -45,7 +45,7 @@
 <div class="alectryon-root alectryon-centered"><div class="document">
 
 
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="none-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="none-chk1"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="chk1"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
      : <span class="kt">Set</span></blockquote></div></div></small></span></pre>
 </div>
 </div></body>

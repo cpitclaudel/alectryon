@@ -25,29 +25,22 @@
 % \end{DUclass}{spam} tries \endDUCLASSspam
 \ifx\DUclass\undefined % poor man's "provideenvironment"
  \newenvironment{DUclass}[1]%
-  {\def\DocutilsClassFunctionName{DUCLASS#1}% arg cannot be used in end-part of environment.
+  {% "#1" does not work in end-part of environment.
+   \def\DocutilsClassFunctionName{DUCLASS#1}
      \csname \DocutilsClassFunctionName \endcsname}%
   {\csname end\DocutilsClassFunctionName \endcsname}%
 \fi
 
-% inline markup (custom roles)
-% \DUrole{#1}{#2} tries \DUrole#1{#2}
+% custom inline roles: \DUrole{#1}{#2} tries \DUrole#1{#2}
 \providecommand*{\DUrole}[2]{%
   \ifcsname DUrole#1\endcsname%
     \csname DUrole#1\endcsname{#2}%
-  \else
-    % backwards compatibility: try \docutilsrole#1{#2}
-    \ifcsname docutilsrole#1\endcsname%
-      \PackageWarningNoLine{docutils}{Command prefix "docutilsrole" is
-         deprecated, \MessageBreak use `\protect\DUrole #1`}
-      \csname docutilsrole#1\endcsname{#2}%
-    \else%
-      #2%
-    \fi%
+  \else%
+    #2%
   \fi%
 }
 
-% transition (break, fancybreak, anonymous section)
+% transition (break / fancybreak / anonymous section)
 \providecommand*{\DUtransition}{%
   \hspace*{\fill}\hrulefill\hspace*{\fill}
   \vskip 0.5\baselineskip
@@ -1752,8 +1745,18 @@ Showing outputs may still introduce line breaks:
           ~~~~~~~~\PY{o}{(}\PY{n}{n0}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{[]}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
           ~~~~~~~~~\PY{n}{skipn}~\PY{n}{n0}~\PY{o}{([]}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{n}{n0}~\PY{o}{[]}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}\nl
           ~~~~\PY{k+kr}{with}\nl
-          ~~~~\PY{o}{|}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}~\PY{k+kr}{fun}~\PY{n+nv}{\PYZus{}}~\PY{o}{:}~\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}~\PY{n}{eq\PYZus{}refl}\nl
-          ~~~~\PY{o}{|}~\PY{n}{S}~\PY{n}{n0}~\PY{o}{=\PYZgt{}}~\PY{n+nl}{?Goal0}\PY{o}{@\PYZob{}}\PY{n}{n}\PY{o}{:=}\PY{n}{n0}\PY{o}{\PYZcb{}}\nl
+          ~~~~\PY{o}{|}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}\nl
+          ~~~~~~~~\PY{o}{(}\PY{k+kr}{fun}~\PY{n+nv}{\PYZus{}}~\PY{o}{:}~\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}~\PY{n}{eq\PYZus{}refl}\PY{o}{)}\nl
+          ~~~~~~~~\PY{o}{:}\nl
+          ~~~~~~~~\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{[]}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+          ~~~~~~~~\PY{n}{skipn}~\PY{l+m+mi}{0}~\PY{o}{([]}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}~\PY{n}{skipn}~\PY{l+m+mi}{0}~\PY{o}{[]}~\PY{o}{++}~\PY{n}{l2}\nl
+          ~~~~\PY{o}{|}~\PY{n}{S}~\PY{n}{n0}~\PY{o}{=\PYZgt{}}\nl
+          ~~~~~~~~\PY{o}{(}\PY{k+kr}{fun}~\PY{n+nv}{n1}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{=\PYZgt{}}\nl
+          ~~~~~~~~~\PY{n+nl}{?Goal0}\PY{o}{@\PYZob{}}\PY{n}{n}\PY{o}{:=}\PY{n}{n1}\PY{o}{\PYZcb{}}\nl
+          ~~~~~~~~~\PY{o}{:}\nl
+          ~~~~~~~~~\PY{n}{S}~\PY{n}{n1}~\PY{o}{\PYZlt{}=}~\PY{n}{length}~\PY{o}{[]}~\PY{o}{\PYZhy{}\PYZgt{}}\nl
+          ~~~~~~~~~\PY{n}{skipn}~\PY{o}{(}\PY{n}{S}~\PY{n}{n1}\PY{o}{)}~\PY{o}{([]}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{o}{=}\nl
+          ~~~~~~~~~\PY{n}{skipn}~\PY{o}{(}\PY{n}{S}~\PY{n}{n1}\PY{o}{)}~\PY{o}{[]}~\PY{o}{++}~\PY{n}{l2}\PY{o}{)}~\PY{n}{n0}\nl
           ~~~~\PY{k+kr}{end}\PY{o}{)}\nl
           ~~~\PY{o}{(}\PY{k+kr}{fun}~\PY{o}{(}\PY{n+nv}{a}~\PY{o}{:}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{l2}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}\nl
           ~~~~~~\PY{o}{(}\PY{n+nv}{IHl1}~\PY{o}{:}~\PY{k+kr}{forall}~\PY{o}{(}\PY{n+nv}{l3}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{),}\nl

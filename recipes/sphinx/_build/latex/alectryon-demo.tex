@@ -4,6 +4,11 @@
 \ifdefined\pdfpxdimen
    \let\sphinxpxdimen\pdfpxdimen\else\newdimen\sphinxpxdimen
 \fi \sphinxpxdimen=.75bp\relax
+\ifdefined\pdfimageresolution
+    \pdfimageresolution= \numexpr \dimexpr1in\relax/\sphinxpxdimen\relax
+\fi
+%% let collapsible pdf bookmarks panel have high depth per default
+\PassOptionsToPackage{bookmarksdepth=5}{hyperref}
 
 \PassOptionsToPackage{warn}{textcomp}
 \usepackage[utf8]{inputenc}
@@ -28,34 +33,16 @@
 
 
 
-\usepackage{times}
-\expandafter\ifx\csname T@LGR\endcsname\relax
-\else
-% LGR was declared as font encoding
-  \substitutefont{LGR}{\rmdefault}{cmr}
-  \substitutefont{LGR}{\sfdefault}{cmss}
-  \substitutefont{LGR}{\ttdefault}{cmtt}
-\fi
-\expandafter\ifx\csname T@X2\endcsname\relax
-  \expandafter\ifx\csname T@T2A\endcsname\relax
-  \else
-  % T2A was declared as font encoding
-    \substitutefont{T2A}{\rmdefault}{cmr}
-    \substitutefont{T2A}{\sfdefault}{cmss}
-    \substitutefont{T2A}{\ttdefault}{cmtt}
-  \fi
-\else
-% X2 was declared as font encoding
-  \substitutefont{X2}{\rmdefault}{cmr}
-  \substitutefont{X2}{\sfdefault}{cmss}
-  \substitutefont{X2}{\ttdefault}{cmtt}
-\fi
+\usepackage{tgtermes}
+\usepackage{tgheros}
+\renewcommand{\ttdefault}{txtt}
+
 
 
 \usepackage[Bjarne]{fncychap}
 \usepackage{sphinx}
 
-\fvset{fontsize=\small}
+\fvset{fontsize=auto}
 \usepackage{geometry}
 
 \usepackage{alectryon}
@@ -91,6 +78,8 @@
 \phantomsection\label{\detokenize{index::doc}}
 
 
+\sphinxstepscope
+
 
 \chapter{A chapter stored as a Coq file}
 \label{\detokenize{coqchapter:a-chapter-stored-as-a-coq-file}}\label{\detokenize{coqchapter::doc}}
@@ -113,6 +102,8 @@
     \end{output}
   \end{sentence}
 \end{alectryon}
+
+\sphinxstepscope
 
 
 \chapter{MathJax in Sphinx}
@@ -145,7 +136,7 @@ Use a custom mathjax config script (see the discussion in \sphinxcode{\sphinxupq
       \begin{messages}
         \begin{message}
           \PYG{k+kn}{Inductive}~\PYG{+nf}{nat}~\PYG{o}{:}~\PYG{k+kt}{Set}~\PYG{o}{:=}\nl
-          ~~~~O~\PYG{o}{:}~\PYG{o}{\PYGZbs{}}mathbb\PYG{o}{\PYGZob{}}N\PYG{o}{\PYGZcb{}}~\PYG{o}{|}~S~\PYG{o}{:}~\PYG{o}{\PYGZbs{}}mathbb\PYG{o}{\PYGZob{}}N\PYG{o}{\PYGZcb{}}~\PYG{o}{\PYGZhy{}\PYGZgt{}}~\PYG{o}{\PYGZbs{}}mathbb\PYG{o}{\PYGZob{}}N\PYG{o}{\PYGZcb{}}\nl
+          ~~~~O~\PYG{o}{:}~\PYG{o}{\PYGZbs{}}mathbb\PYG{o}{\PYGZob{}}N\PYG{o}{\PYGZcb{}}~\PYG{o}{|}~S~\PYG{o}{:}~\PYG{o}{\PYGZbs{}}mathbb\PYG{o}{\PYGZob{}}N\PYG{o}{\PYGZcb{}}~\PYG{o}{\PYGZhy{}\PYGZgt{}}~\PYG{o}{\PYGZbs{}}mathbb\PYG{o}{\PYGZob{}}N\PYG{o}{\PYGZcb{}.}\nl
           \nl
           \PYG{k+kn}{Arguments}~S~\PYGZus{}\PYG{o}{\PYGZpc{}}nat\PYGZus{}scope
         \end{message}
@@ -178,7 +169,7 @@ Use a custom script on a single page; this works best if you need MathJax on jus
       \begin{messages}
         \begin{message}
           \PYG{k+kn}{Inductive}~\PYG{+nf}{bool}~\PYG{o}{:}~\PYG{k+kt}{Set}~\PYG{o}{:=}\nl
-          ~~~~true~\PYG{o}{:}~\PYG{o}{\PYGZbs{}}mathbb\PYG{o}{\PYGZob{}}B\PYG{o}{\PYGZcb{}}~\PYG{o}{|}~false~\PYG{o}{:}~\PYG{o}{\PYGZbs{}}mathbb\PYG{o}{\PYGZob{}}B\PYG{o}{\PYGZcb{}}
+          ~~~~true~\PYG{o}{:}~\PYG{o}{\PYGZbs{}}mathbb\PYG{o}{\PYGZob{}}B\PYG{o}{\PYGZcb{}}~\PYG{o}{|}~false~\PYG{o}{:}~\PYG{o}{\PYGZbs{}}mathbb\PYG{o}{\PYGZob{}}B\PYG{o}{\PYGZcb{}.}
         \end{message}
       \end{messages}
     \end{output}
@@ -186,6 +177,8 @@ Use a custom script on a single page; this works best if you need MathJax on jus
 \end{alectryon}
 
 \end{itemize}
+
+\sphinxstepscope
 
 
 \chapter{Integration with MyST}
@@ -211,7 +204,7 @@ That’s enough to run Coq fragments and link to identifiers:
     \begin{output}
       \begin{messages}
         \begin{message}
-          \PYG{k+kn}{Inductive}~\PYG{+nf}{nat}~\PYG{o}{:}~\PYG{k+kt}{Set}~\PYG{o}{:=}~~O~\PYG{o}{:}~nat~\PYG{o}{|}~S~\PYG{o}{:}~nat~\PYG{o}{\PYGZhy{}\PYGZgt{}}~nat\nl
+          \PYG{k+kn}{Inductive}~\PYG{+nf}{nat}~\PYG{o}{:}~\PYG{k+kt}{Set}~\PYG{o}{:=}~~O~\PYG{o}{:}~nat~\PYG{o}{|}~S~\PYG{o}{:}~nat~\PYG{o}{\PYGZhy{}\PYGZgt{}}~nat\PYG{o}{.}\nl
           \nl
           \PYG{k+kn}{Arguments}~S~\PYGZus{}\PYG{o}{\PYGZpc{}}nat\PYGZus{}scope
         \end{message}
