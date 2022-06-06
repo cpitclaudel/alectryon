@@ -29,11 +29,13 @@ class Checker(doctest.OutputChecker):
         want = self.COMMENTS.sub("", want)
         return super().check_output(want, got, optionflags)
 
-class DocFileCase(doctest.DocFileCase):
-    """Like ``doctest.DocFileCase``, but don't print absolute paths."""
-    def __repr__(self):
-        return Path(self._dt_test.filename).name
-doctest.DocFileCase = DocFileCase
+def overwrite_docfilecase():
+    """Replace ``doctest.DocFileCase`` with a custom class that prints relative paths."""
+    class DocFileCase(doctest.DocFileCase):
+        def __repr__(self):
+            return Path(self._dt_test.filename).name
+    doctest.DocFileCase = DocFileCase
+overwrite_docfilecase()
 
 def suite(loader):
     s = unittest.TestSuite()
