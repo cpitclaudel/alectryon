@@ -5,6 +5,9 @@
 Unreleased
 ==========
 
+- Alectryon is now compatible with Python 3.10, Sphinx 4.5, Docutils 1.17, and
+  Pygments 2.12 (other reasonably recent versions should still work).
+
 - Alectryon now supports Lean 4. [GH-76]
 
 - **EXPERIMENTAL** Alectryon now has partial support for Lean 3. [GH-64]
