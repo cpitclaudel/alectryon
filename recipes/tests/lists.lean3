@@ -1,6 +1,6 @@
 /- To compile:
-     alectryon lists.lean -o lists.lean.html
-       # Lean → HTML; produces ‘lists.lean.html’ -/
+     alectryon lists.lean3 -o lists.lean3.html
+       # Lean → HTML; produces ‘lists.lean3.html’ -/
 
 variables {α β : Type*}
 

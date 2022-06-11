@@ -24,30 +24,23 @@
 \usepackage{pygments}
 
 %%% Fallback definitions for Docutils-specific commands
+
 % basic code highlight:
 \providecommand*\DUrolecomment[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
 \providecommand*\DUroledeleted[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
 \providecommand*\DUrolekeyword[1]{\textbf{#1}}
 \providecommand*\DUrolestring[1]{\textit{#1}}
 
-% inline markup (custom roles)
-% \DUrole{#1}{#2} tries \DUrole#1{#2}
+% custom inline roles: \DUrole{#1}{#2} tries \DUrole#1{#2}
 \providecommand*{\DUrole}[2]{%
   \ifcsname DUrole#1\endcsname%
     \csname DUrole#1\endcsname{#2}%
-  \else
-    % backwards compatibility: try \docutilsrole#1{#2}
-    \ifcsname docutilsrole#1\endcsname%
-      \PackageWarningNoLine{docutils}{Command prefix "docutilsrole" is
-         deprecated, \MessageBreak use `\protect\DUrole #1`}
-      \csname docutilsrole#1\endcsname{#2}%
-    \else%
-      #2%
-    \fi%
+  \else%
+    #2%
   \fi%
 }
 
-% transition (break, fancybreak, anonymous section)
+% transition (break / fancybreak / anonymous section)
 \providecommand*{\DUtransition}{%
   \hspace*{\fill}\hrulefill\hspace*{\fill}
   \vskip 0.5\baselineskip
@@ -75,14 +68,14 @@ Alectryon supports literate programs and documents (combinations of code and pro
 
 \begin{quote}
 \begin{alltt}
-alectryon literate_lean3.lean
+alectryon --frontend lean3+rst literate_lean3.lean
     # Coq+reST → HTML;  produces ‘literate_lean3.html’
-alectryon literate_lean3.lean --backend latex \textbackslash{}
+alectryon --frontend lean3+rst literate_lean3.lean --backend latex \textbackslash{}
      --latex-dialect xelatex \textbackslash{}
      -o literate_lean3.xe.tex
     # Coq+reST → LaTeX; produces ‘literate_lean3.xe.tex’
-alectryon literate_lean3.lean --backend rst
-    # Coq+reST → reST;  produces ‘literate_lean3.lean.rst’
+alectryon --frontend lean3+rst literate_lean3.lean --backend rst
+    # Coq+reST → reST;  produces ‘literate_lean3.lean3.rst’
 \end{alltt}
 \end{quote}
 

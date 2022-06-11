@@ -376,14 +376,16 @@ def write_file(ext, strip):
         write_output(ext, contents, fname, output,
                      output_directory, strip_re=strip_re)
 
+# Extensions past the first one are only used for stripping file names (so
+# ``.lean`` is Lean4, but ``xyz.lean`` in ``lean3`` still becomes ``xyz.html``).
 EXTENSIONS_BY_LANGUAGE = {
     "coq": (".v",),
     "lean4": (".lean",),
-    "lean3": (".lean3",),
+    "lean3": (".lean3", ".lean"),
 }
 
 assert EXTENSIONS_BY_LANGUAGE.keys() == core.ALL_LANGUAGES
-CODE_EXTENSIONS = [ext for exts in EXTENSIONS_BY_LANGUAGE.values() for ext in exts]
+CODE_EXTENSIONS = {ext for exts in EXTENSIONS_BY_LANGUAGE.values() for ext in exts}
 
 # No ‘apply_transforms’ in JSON pipelines: we save the prover output without
 # modifications.
@@ -521,7 +523,7 @@ def _language_frontends_by_extension(ext, lang):
 
 FRONTENDS_BY_EXTENSION = [
     *(pair
-      for lang, exts in EXTENSIONS_BY_LANGUAGE.items() for ext in exts
+      for lang, (ext, *_) in EXTENSIONS_BY_LANGUAGE.items()
       for pair in _language_frontends_by_extension(ext, lang)),
 
     ('.rst', 'rst'),
@@ -532,7 +534,7 @@ FRONTENDS_BY_EXTENSION = [
 
 BACKENDS_BY_EXTENSION = [
     *((ext, lang)
-      for (lang, exts) in EXTENSIONS_BY_LANGUAGE.items() for ext in exts),
+      for lang, (ext, *_) in EXTENSIONS_BY_LANGUAGE.items()),
     ('.rst', 'rst'),
     ('.lint.json', 'lint'), ('.json', 'json'),
     ('.snippets.html', 'snippets-html'), ('.snippets.tex', 'snippets-latex'),

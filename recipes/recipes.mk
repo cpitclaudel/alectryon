@@ -77,9 +77,9 @@ _output/lean3-tutorial.html: lean3-tutorial.rst
 	$(alectryon) $<
 recipes_targets += _output/lean3-tutorial.html
 # reST+Lean → Lean
-_output/lean3-tutorial.lean: lean3-tutorial.rst
+_output/lean3-tutorial.lean3: lean3-tutorial.rst
 	$(alectryon) $< -o $@
-recipes_targets += _output/lean3-tutorial.lean
+recipes_targets += _output/lean3-tutorial.lean3
 
 # MyST → HTML
 _output/literate_MyST.html: literate_MyST.md
@@ -109,16 +109,16 @@ recipes_targets += _output/literate_coq.min.stdin.rst
 
 # Coq+reST → HTML
 _output/literate_lean3.html: literate_lean3.lean
-	$(alectryon) $<
+	$(alectryon) --frontend lean3+rst $<
 recipes_targets += _output/literate_lean3.html
 # Coq+reST → LaTeX
 _output/literate_lean3.xe.tex: literate_lean3.lean
-	$(alectryon) $< --backend latex --latex-dialect xelatex -o $@
+	$(alectryon) --frontend lean3+rst $< --backend latex --latex-dialect xelatex -o $@
 recipes_targets += _output/literate_lean3.xe.tex
 # Coq+reST → reST
-_output/literate_lean3.lean.rst: literate_lean3.lean
-	$(alectryon) $< --backend rst
-recipes_targets += _output/literate_lean3.lean.rst
+_output/literate_lean3.lean3.rst: literate_lean3.lean
+	$(alectryon) --frontend lean3+rst $< --backend rst
+recipes_targets += _output/literate_lean3.lean3.rst
 
 # Lean4+reST → HTML
 _output/literate_lean4.html: literate_lean4.lean

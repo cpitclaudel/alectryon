@@ -8,8 +8,8 @@ To compile::
 
    alectryon lean3-tutorial.rst
        # reST+Lean → HTML; produces ‘lean3-tutorial.html’
-   alectryon lean3-tutorial.rst -o lean3-tutorial.lean
-       # reST+Lean → Lean; produces ‘lean3-tutorial.lean’
+   alectryon lean3-tutorial.rst -o lean3-tutorial.lean3
+       # reST+Lean → Lean; produces ‘lean3-tutorial.lean3’
 
 .. note::
 

@@ -1,6 +1,6 @@
 /- To compile:
-     alectryon corner_cases.lean -o corner_cases.lean.html
-       # Lean → HTML; produces ‘corner_cases.lean.html’ -/
+     alectryon corner_cases.lean3 -o corner_cases.lean3.html
+       # Lean → HTML; produces ‘corner_cases.lean3.html’ -/
 
 example : true := begin
   trivial

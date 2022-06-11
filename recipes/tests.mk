@@ -38,9 +38,9 @@ _output/tests/coqc_time_error.out: tests/coqc_time_error.rst
 tests_targets += _output/tests/coqc_time_error.out
 
 # Lean → HTML
-_output/tests/corner_cases.lean.html: tests/corner_cases.lean
+_output/tests/corner_cases.lean3.html: tests/corner_cases.lean3
 	$(alectryon) $< -o $@
-tests_targets += _output/tests/corner_cases.lean.html
+tests_targets += _output/tests/corner_cases.lean3.html
 
 # Coq → HTML
 _output/tests/corner_cases.html: tests/corner_cases.rst
@@ -146,9 +146,9 @@ _output/tests/lean3_error.out: tests/lean3_error.rst
 tests_targets += _output/tests/lean3_error.out
 
 # Lean → HTML
-_output/tests/lists.lean.html: tests/lists.lean
+_output/tests/lists.lean3.html: tests/lists.lean3
 	$(alectryon) $< -o $@
-tests_targets += _output/tests/lists.lean.html
+tests_targets += _output/tests/lists.lean3.html
 
 # reST → Coq
 _output/tests/literate.v: tests/literate.rst

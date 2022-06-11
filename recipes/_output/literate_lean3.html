@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.16: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 <title>Literate programming with Alectryon (Lean3 input)</title>
 <link rel="stylesheet" href="alectryon.css" type="text/css" />
 <link rel="stylesheet" href="docutils_basic.css" type="text/css" />
@@ -19,14 +19,14 @@
 
 <p>Alectryon supports literate programs and documents (combinations of code and prose) written in Lean3 and reStructuredText.  Here is an example written in Lean3.  It can be converted to reST, HTML, or LaTeX using the following commands:</p>
 <pre class="literal-block">
-alectryon literate_lean3.lean
+alectryon --frontend lean3+rst literate_lean3.lean
     # Coq+reST → HTML;  produces ‘literate_lean3.html’
-alectryon literate_lean3.lean --backend latex \
+alectryon --frontend lean3+rst literate_lean3.lean --backend latex \
      --latex-dialect xelatex \
      -o literate_lean3.xe.tex
     # Coq+reST → LaTeX; produces ‘literate_lean3.xe.tex’
-alectryon literate_lean3.lean --backend rst
-    # Coq+reST → reST;  produces ‘literate_lean3.lean.rst’
+alectryon --frontend lean3+rst literate_lean3.lean --backend rst
+    # Coq+reST → reST;  produces ‘literate_lean3.lean3.rst’
 </pre>
 <hr class="docutils" />
 <div class="section" id="running-queries">
