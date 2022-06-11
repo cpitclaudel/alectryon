@@ -192,11 +192,6 @@ _output/tests/plain_cli.stdin.html: tests/plain_cli.rst | _output/tests/
 	echo "Check nat." | $(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage - > $@
 tests_targets += _output/tests/plain_cli.stdin.html
 
-# reST+* → HTML
-_output/tests/polyglot.html: tests/polyglot.rst
-	$(alectryon) $<
-tests_targets += _output/tests/polyglot.html
-
 # Coq → JSON
 _output/tests/recording.v.io.json: tests/recording.v
 	$(alectryon) $< --frontend coq --backend json
