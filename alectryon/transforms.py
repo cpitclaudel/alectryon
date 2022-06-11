@@ -833,6 +833,7 @@ DEFAULT_TRANSFORMS = {
         coalesce_text,
         enrich_sentences,
         lean3_truncate_vernacs,
+        coalesce_text,
         # attach_comments_to_code("lean3"),
         read_io_comments("lean3"),
         process_io_annots
