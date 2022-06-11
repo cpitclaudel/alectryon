@@ -1,6 +1,7 @@
 MathJax = {
     options: {
-        processHtmlClass: 'mathjax_process|alectryon-io'
+        // Added alectryon-io
+        processHtmlClass: 'tex2jax_process|mathjax_process|math|output_area|alectryon-io'
     },
     startup: {
         pageReady: function () {

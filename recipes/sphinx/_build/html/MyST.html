@@ -10,14 +10,14 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <link rel="stylesheet" type="text/css" href="_static/alectryon.css" />
-    <script src="_static/mathjax_config.js"></script>
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/alectryon.js"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script src="_static/mathjax_config.js"></script>
+    <script defer="defer" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="MathJax in Sphinx" href="math.html" />
@@ -37,7 +37,7 @@
 
           <div class="body" role="main">
             
-  <div class="tex2jax_ignore mathjax_ignore section" id="integration-with-myst">
+  <section class="tex2jax_ignore mathjax_ignore" id="integration-with-myst">
 <h1>Integration with MyST<a class="headerlink" href="#integration-with-myst" title="Permalink to this headline">¶</a></h1>
 <p>To combine Alectryon and MyST (a Markdown parser with support for docutils/Sphinx directives), just load both plugins in your Sphinx configuration:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>extensions = [&quot;alectryon.sphinx&quot;, &quot;myst_parser&quot;]
@@ -46,9 +46,9 @@
 <p>That’s enough to run Coq fragments and link to identifiers:</p>
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="myst-md-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="myst-md-chk0"><span class="kn">Print</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kn">Inductive</span> <span class="nf">nat</span> : <span class="kt">Set</span> :=  O : nat | S : nat -&gt; nat.
 
-<span class="kn">Arguments</span> S _%nat_scope</blockquote></div></div></small></span></pre><p>For roles use <code class="docutils literal notranslate"><span class="pre">{role}`argument`</span></code> syntax: <em><a class="reference external" href="https://coq.inria.fr/library/Coq.Init.Nat.html#even">like this</a></em>.  For math use either the <code class="docutils literal notranslate"><span class="pre">{math}</span></code> role (<span class="mathjax_process math notranslate nohighlight">\(e^{i\pi} = -1\)</span>) or <code class="docutils literal notranslate"><span class="pre">$</span></code> signs: (<span class="mathjax_process math notranslate nohighlight">\(\cos(\pi) = -1\)</span>).</p>
-<p>Note that MyST disables MathJax’s heuristics for finding text to process (by marking the root of the document with <code class="docutils literal notranslate"><span class="pre">mathjax_ignore</span></code>), so any math outside of <code class="docutils literal notranslate"><span class="pre">{math}</span></code> or <code class="docutils literal notranslate"><span class="pre">$</span></code> delimiters is not processed: \(this is not math\); use the <code class="docutils literal notranslate"><span class="pre">mathjax_process</span></code> class to revert that.</p>
-</div>
+<span class="kn">Arguments</span> S _%nat_scope</blockquote></div></div></small></span></pre><p>For roles use <code class="docutils literal notranslate"><span class="pre">{role}`argument`</span></code> syntax: <em><a class="reference external" href="https://coq.inria.fr/library/Coq.Init.Nat.html#even">like this</a></em>.  For math use either the <code class="docutils literal notranslate"><span class="pre">{math}</span></code> role (<span class="mathjax_process math notranslate nohighlight">\(e^{i\pi} = -1\)</span>) or <code class="docutils literal notranslate"><span class="pre">$</span></code> signs (with the <code class="docutils literal notranslate"><span class="pre">dollarmath</span></code> extension, see <code class="docutils literal notranslate"><span class="pre">conf.py</span></code>): (<span class="mathjax_process math notranslate nohighlight">\(\cos(\pi) = -1\)</span>).</p>
+<p>Note that MyST disables MathJax’s heuristics for finding text to process (by marking the root of the document with <code class="docutils literal notranslate"><span class="pre">mathjax_ignore</span></code>), so any math outside of <code class="docutils literal notranslate"><span class="pre">{math}</span></code> or <code class="docutils literal notranslate"><span class="pre">$</span></code> delimiters is not processed: \(this is not math\); use the <code class="docutils literal notranslate"><span class="pre">mathjax_process</span></code> HTML class to revert that.</p>
+</section>
 
 
           </div>

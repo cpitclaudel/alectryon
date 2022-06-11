@@ -14,7 +14,7 @@ If you want to highlight pieces of code with MathJax, too, then you can either:
      Notation "\mathbb{N}" := nat.
      Print nat. (* .unfold *)
 
-- Use a custom script on a single page; this works best if you need MathJax on just one page and you do not need to customize MathJax further.  Math in the following Coq snippet is highlighted that way (view the source of this page to see the custom script):
+- Use a custom script to add class ``mathjax_process`` to each ``.alectryon-io`` block, on a single page.  This works best if you need MathJax on just one page and you do not need to customize MathJax further.  Math in the following Coq snippet is highlighted that way (view the source of this page to see the custom script):
 
   .. raw:: html
 

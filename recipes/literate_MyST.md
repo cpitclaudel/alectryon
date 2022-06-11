@@ -22,4 +22,4 @@ Goal exists x, x * x = 49 /\ x < 10.
   repeat constructor.
 ```
 
-Math is written either in Docutils math roles ({math}`e^{i\pi} = -1`) or in `$` signs ($\cos(\pi) = -1$).  And unlike in reST, *built-in inline markup **nests**, including `code` and other roles like `coqid` {coqid}`references <Coq.Init.Nat#even>` or [links](https://myst-parser.readthedocs.io/en/latest/syntax/reference.html#extended-block-tokens)*.
+Math is written either in Docutils math roles ({math}`e^{i\pi} = -1`) or in `$` signs with option ``dollarmath`` (see ``docutils.conf`` in this directory: $\cos(\pi) = -1$).  And unlike in reST, *built-in inline markup **nests**, including `code` and other roles like `coqid` {coqid}`references <Coq.Init.Nat#even>` or [links](https://myst-parser.readthedocs.io/en/latest/syntax/reference.html#extended-block-tokens)*.

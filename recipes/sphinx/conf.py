@@ -22,6 +22,7 @@ try:
     extensions.append("myst_parser")
 except ImportError:
     print("/!\\ `myst_parser` not found, skipping MyST tests /!\\", file=sys.stderr)
+myst_enable_extensions = ["dollarmath"]
 
 pygments_style = "emacs"
 
@@ -37,6 +38,7 @@ alectryon.docutils.CACHE_DIRECTORY = "_build/alectryon/"
 
 # -- MathJax configuration ---------------------------------------------------
 
+import sphinx
 from sphinx.ext import mathjax
 mathjax.MATHJAX_URL = alectryon.docutils.HtmlTranslator.MATHJAX_URL # MathJax 3
 
@@ -46,16 +48,20 @@ mathjax.MATHJAX_URL = alectryon.docutils.HtmlTranslator.MATHJAX_URL # MathJax 3
 html_js_files = ['mathjax_config.js']
 mathjax_options = { "priority": 1000 }
 
-# or this (but inline the configuration instead of open(…).read()):
+# or this (but inline the configuration instead of Path(…).read_text()):
 
 from pathlib import Path
 html_js_files = [
     (None, {
         "body": Path("_static/mathjax_config.js").read_text(),
-        "priority": 0
+        # The required priority depends on the version of Sphinx
+        "priority": 0 if sphinx.version_info < (4,) else 1000
     })
 ]
 
 # or this:
 
-html_js_files = [('mathjax_config.js', { "priority": 0 })]
+priority = 0 if sphinx.version_info < (4,) else 1000
+html_js_files = [('mathjax_config.js',
+                  # The required priority depends on the version of Sphinx
+                  { "priority": 0 if sphinx.version_info < (4,) else 1000 })]
