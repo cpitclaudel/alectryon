@@ -126,7 +126,7 @@ class Line(namedtuple("Line", "num parts")):
     @staticmethod
     def replacen(line: "T_LineOrStr", pairs) -> "T_LineOrStr":
         for src, dst in pairs:
-            line = line.replace(src, dst)
+            line = line.replace(src, dst) # type: ignore
         return line
 
     def match(self, regex):
@@ -313,7 +313,7 @@ def partition(lang, code):
 # --------------------
 
 LineOrStr = Union[Line, str]
-T_LineOrStr = TypeVar("T", bound=LineOrStr)
+T_LineOrStr = TypeVar("T_LineOrStr", bound=LineOrStr)
 
 class LangDef:
     def __init__(self, name: str, parser: Type[Parser]):
@@ -387,10 +387,10 @@ class BlockLangDef(LangDef):
 
 class LineLangDef(LangDef):
     def __init__(self, name: str, parser: Type[Parser],
-                 lit_header: str, lit_header_re: str):
+                 lit_header: str, lit_header_re: re.Pattern[str]):
         super().__init__(name, parser)
         self.lit_header = lit_header
-        self.lit_header_re = re.compile(lit_header_re)
+        self.lit_header_re = lit_header_re
 
     @property
     def lit_empty(self) -> str:
@@ -624,7 +624,7 @@ INDENT = re.compile(r"(?P<indent>[ ]*)")
 Lit = namedtuple("Lit", "lines directive_lines indent")
 CodeBlock = namedtuple("CodeBlock", "lines indent")
 
-def _last_directive(lang: LangDef, lines):
+def _last_directive(lang: LangDef, lines: List[Line]):
     r"""Scan backwards across `lines` to find the beginning of the Coq directive.
 
     >>> _, ls = split_lines_numbered(StringView('''\
@@ -656,7 +656,7 @@ def _last_directive(lang: LangDef, lines):
          Line(num=7, parts=['   Text.'])]...)
 
     """
-    directive = deque()
+    directive: Deque[Line] = deque()
     expected_indent = float("+inf")
     while lines:
         line = lines.pop()
@@ -696,15 +696,15 @@ def split_lines(text: StringView) -> Iterable[StringView]:
     return text.split("\n")
 
 def split_lines_numbered(text: StringView, start: int) \
-    -> Tuple[int, Iterable[Line]]:
+    -> Tuple[int, Deque[Line]]:
     return number_lines(split_lines(text), start)
 
 def gen_rst(lang: LangDef, spans):
     linum, indent, prefix = 0, "", [lang.header]
     for span in spans:
         if isinstance(span, Comment):
-            lines = lang.unwrap_literate(span.v)
-            linum, lines = number_lines(lines, linum)
+            linestrs = lang.unwrap_literate(span.v)
+            linum, lines = number_lines(linestrs, linum)
             litspan = lit(lang, lines, indent)
             indent, prefix = litspan.indent, litspan.directive_lines
             if litspan.lines:

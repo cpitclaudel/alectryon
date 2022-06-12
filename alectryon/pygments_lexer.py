@@ -31,13 +31,11 @@ A custom Coq lexer for pygments.
 Rewritten from the one in pygments.lexers.theorem.
 """
 
-from typing import Dict
-
 from pygments.filter import apply_filters
 from pygments.lexer import Lexer, RegexLexer, default, words, bygroups, include
 from pygments.regexopt import regex_opt, regex_opt_inner
 from pygments.token import \
-    Token, Text, Comment, Operator, Keyword, Name, String, Number, _TokenType
+    Token, Text, Comment, Operator, Keyword, Name, String, Number
 
 # FIXME: See dotnet.py and `from pygments import unistring as uni` for unicode
 # identifiers.
@@ -541,7 +539,6 @@ class TokenizedStrLexer(Lexer):
     """
     name = 'Pre-tokenized string lexer'
     aliases = ['tokstr']
-    filenames = []
     mimetypes = ['text/x-pretok']
 
     def get_tokens(self, text, unfiltered=False):
