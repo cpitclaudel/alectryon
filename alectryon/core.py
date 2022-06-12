@@ -481,11 +481,11 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
     def _proc_out(cls, p):
         return p.stderr
 
-    def run_cli(self, working_directory=None, capturesOutput=True, more_args=()):
+    def run_cli(self, working_directory=None, capture_output=True, more_args=()):
         cmd = [self.resolve_driver(self.binpath),
                *self.CLI_ARGS, *self.user_args, *more_args]
         self._debug_start(cmd)
-        p = subprocess.run(cmd, cwd=working_directory, capture_output=capturesOutput, check=False, encoding=self.CLI_ENCODING)
+        p = subprocess.run(cmd, cwd=working_directory, capture_output=capture_output, check=False, encoding=self.CLI_ENCODING)
         if p.returncode != 0:
             MSG = "Driver {} ({}) exited with code {}:\n{}"
             raise ValueError(MSG.format(self.NAME, self.binpath, p.returncode,
