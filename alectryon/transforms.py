@@ -20,7 +20,7 @@
 
 """Post-process annotated fragments of source code."""
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, TypeVar
 
 import re
 import textwrap
@@ -397,11 +397,16 @@ def strip_ids_and_props(obj, props):
 LEADING_BLANKS_RE = re.compile(r'\A([ \t]*(?:\n|\Z))?(.*?)([ \t]*)\Z',
                                flags=re.DOTALL)
 
+T = TypeVar("T")
+def _assert(t: Optional[T]) -> T:
+    assert t
+    return t
+
 def isolate_blanks(txt) -> Tuple[int, int]:
     """Split `txt` into blanks and an optional newline, text, and blanks.
     Returns the positions of the two splits.
     """
-    return LEADING_BLANKS_RE.match(txt).span(2)
+    return _assert(LEADING_BLANKS_RE.match(txt)).span(2)
 
 def group_whitespace_with_code(fragments):
     r"""Attach spaces to neighboring sentences.

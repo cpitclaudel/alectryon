@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Dict, Tuple
+
 from .lsp import LSPDriver
 
 class DafnyLSP(LSPDriver):
@@ -31,7 +33,7 @@ class DafnyLSP(LSPDriver):
     ID = "dafny_lsp"
     LSP_LANGUAGE_ID = LANGUAGE = "dafny"
 
-    LSP_TYPE_MAP = {
+    LSP_TYPE_MAP: Dict[Tuple[str, ...], str] = {
         **LSPDriver.LSP_TYPE_MAP,
         ("string", "documentation"): "String.Doc",
         ("comment", "documentation"): "Comment.Special",

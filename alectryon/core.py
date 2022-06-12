@@ -274,7 +274,7 @@ class Document:
     def bol_offsets(self):
         if self._bol_offsets is None:
             bol = "^" if isinstance(self.contents, str) else b"^"
-            matches = re.finditer(bol, self.contents, re.MULTILINE)
+            matches = re.finditer(bol, self.contents, re.MULTILINE) # type: ignore
             self._bol_offsets = [m.start() for m in matches]
         return self._bol_offsets
 
@@ -410,18 +410,18 @@ class Notification(NamedTuple):
     level: int
 
 class Observer:
-    def _notify(self, n: Notification):
-        raise NotImplementedError()
-
-    def notify(self, obj: Any, message: str, location: Optional[Range], level: int):
-        self._notify(Notification(obj, message, location, level))
-
-class StderrObserver(Observer):
     def __init__(self):
         self.exit_code = 0
 
     def _notify(self, n: Notification):
-        self.exit_code = max(self.exit_code, n.level)
+        raise NotImplementedError()
+
+    def notify(self, obj: Any, message: str, location: Optional[Range], level: int):
+        self.exit_code = max(self.exit_code, level)
+        self._notify(Notification(obj, message, location, level))
+
+class StderrObserver(Observer):
+    def _notify(self, n: Notification):
         header = n.location.as_header() if n.location else "!!"
         message = n.message.rstrip().replace("\n", "\n   ")
         level_name = {2: "WARNING", 3: "ERROR"}.get(n.level, "??")
@@ -459,7 +459,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
     NAME: str = "cli-driver"
 
     CLI_ARGS: Tuple[str, ...] = ()
-    VERSION_ARGS = ("--version",)
+    VERSION_ARGS: Tuple[str, ...] = ("--version",)
 
     CLI_ENCODING = "utf-8"
 
