@@ -39,8 +39,6 @@ AstData = List[AstNode]
 Pos = Tuple[int, int]
 
 # TODO:
-# - Implement Lean comment parsing in literate.py (use code from fslit)
-# - Implement support for Lean ↔ reST
 # - Use comment support to split comments into their own ``Text`` fragments
 #   (currently they are treated as part of the preceding fragment; do this in
 #    transforms.py's ``convert_text_to_sentences``)
