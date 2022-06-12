@@ -22,7 +22,6 @@ from typing import Any, List
 
 import tempfile
 import os
-import subprocess
 from pathlib import Path
 from alectryon import json
 

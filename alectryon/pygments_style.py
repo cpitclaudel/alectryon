@@ -46,7 +46,7 @@ Pygments, this theme attempts to assign different styles to most tokens.
 
 from pygments.style import Style
 from pygments.token import Keyword, Name, Comment, String, Error, \
-     Number, Operator, Generic, Whitespace, Punctuation, Other, Literal
+     Number, Operator, Generic, Punctuation, Other, Literal
 
 class AlectryonStyle(Style):
     """A style inspired by the color palette of the Tango icon theme.
