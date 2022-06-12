@@ -60,7 +60,8 @@ To work around this issue we use a writer-dependent transform on the docutils
 side, and a doctree-resolved event on the Sphinx side.
 """
 
-from typing import Any, ClassVar, DefaultDict, Dict, Iterable, List, Tuple, Type
+from typing import Any, ClassVar, DefaultDict, Dict, Iterable, \
+    List, Tuple, Type, Union
 
 import re
 import os.path
@@ -144,7 +145,7 @@ def _node_error(document, node, msg):
 def _format_errors(src, *errs):
     msg = "\n".join(map(str, errs))
     msg = "\n" + core.indent(msg, "   ") if len(errs) > 1 else  " " + msg
-    if isinstance(src, nodes.Node):
+    if isinstance(src, nodes.Element):
         src = getattr(src, "text", src.rawsource)
     return "In {}:{}".format(src, msg)
 
@@ -343,6 +344,7 @@ class ActivateMathJaxTransform(OneTimeTransform):
 
 class DocutilsObserver(core.Observer):
     def __init__(self, document):
+        super().__init__()
         self.document = document
 
     def _notify(self, n: core.Notification):
@@ -351,8 +353,8 @@ class DocutilsObserver(core.Observer):
         end = dict(end_line=loc.end.line, end_column=loc.end.col) if loc and loc.end else {}
         self.document.reporter.system_message(n.level, n.message, **beg, **end)
 
-def by_lang(pending_nodes: Iterable[nodes.Node]) -> Dict[str, List[nodes.Node]]:
-    partitioned = {}
+def by_lang(pending_nodes: Iterable[nodes.pending]) -> Dict[str, List[nodes.pending]]:
+    partitioned: Dict[str, List[nodes.pending]] = {}
     for node in pending_nodes:
         partitioned.setdefault(node.details["lang"], []).append(node)
     return dict(sorted(partitioned.items()))
@@ -923,6 +925,7 @@ def _role_error(inliner, rawtext, msg, lineno):
 
 def _parse_ref(text):
     mid = COQ_ID_RE.match(text)
+    assert mid
     title, target = mid.group("title"), mid.group("target")
     return title, target
 
@@ -1168,7 +1171,7 @@ class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
     """A wrapper around the reStructuredText parser for literate files."""
 
     LANG = "" # Needed by Sphinx
-    SOURCE_SUFFIXES = ()
+    SOURCE_SUFFIXES: Tuple[str, ...] = ()
 
     supported: ClassVar[Tuple[str, ...]] = ()
     config_section = 'Literate parser'
@@ -1391,6 +1394,7 @@ class DummyTranslator:
 class EarlyTransformer(docutils.transforms.Transformer):
     """A transformer that only applies transforms below a certain threshold."""
     PRIORITY_THRESHOLD = "700-000"
+    transforms: Iterable[Tuple[str, docutils.transforms.Transform, Any, Any]] # LATER
 
     def apply_transforms(self):
         self.transforms = [t for t in self.transforms if t[0] < self.PRIORITY_THRESHOLD]
@@ -1432,7 +1436,7 @@ CODE_PARSERS_BY_LANGUAGE = {
     for lang in core.ALL_LANGUAGES
 }
 
-PARSERS = {
+PARSERS: Dict[str, Union[Tuple[str, str], Type[RSTLiterateParser]]] = {
     "rst": ("docutils.parsers.rst", "Parser"),
     "md": ("alectryon.myst", "Parser"),
     **{"{}+rst".format(lang): parser
