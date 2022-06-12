@@ -1,5 +1,5 @@
 tests/lean3_error.rst:: (ERROR/3) Lean raised an exception:
-Driver Lean3 (lean) exited with code 1:
+Driver Lean3 (lean3) exited with code 1:
    ....lean:1:0: error: command expected
 
 

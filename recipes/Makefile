@@ -13,7 +13,8 @@ PYTHON := $(PYTHON) -m coverage run --source=$(abspath ../alectryon) --parallel-
 endif
 
 PYTHONPATH ?=
-export PYTHONPATH:=$(realpath ../):$(PYTHONPATH)
+# tests/sitecustomize/ sets a custom Lean3 binary
+export PYTHONPATH:=$(realpath ../):$(realpath tests/sitecustomize/):$(PYTHONPATH)
 
 ALECTRYON_OPTS ?=
 
