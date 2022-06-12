@@ -176,7 +176,7 @@ class LSPAdapter:
         self.language_id = language_id
         self.client_name = client_name
 
-    TOKEN_TYPES = {
+    TOKEN_TYPES: Dict[str, str] = {
         "namespace": "Name.Namespace",
         "type": "Keyword.Type",
         "class": "Name.Class",
@@ -187,7 +187,7 @@ class LSPAdapter:
         "parameter": "Name.Variable",
         "variable": "Name.Variable",
         "property": "Name.Variable.Instance",
-        "enumMember": "Name.Constant", #!
+        "enumMember": "Name.Constant",
         "event": "Name.Class",
         "function": "Name.Function",
         "method": "Name.Function",
@@ -332,12 +332,13 @@ class LSPAdapter:
 class LSPDriver(REPLDriver):
     """An base class for Alectryon Drivers talking to an LSP server."""
     ID = "lsp"
-    LANGUAGE = None
+    LANGUAGE = "unset!"
 
-    LSP_CLIENT_NAME: str = "Alectryon"
-    LSP_LANGUAGE_ID: Optional[str] = None
+    LSP_CLIENT_NAME = "Alectryon"
+    LSP_LANGUAGE_ID = "unset!"
 
-    LSP_TYPE_MAP = {(typ,): tok for (typ, tok) in LSPAdapter.TOKEN_TYPES.items()}
+    LSP_TYPE_MAP: Dict[Tuple[str, ...], str] = \
+        {(typ,): tok for (typ, tok) in LSPAdapter.TOKEN_TYPES.items()}
 
     @property
     def adapter(self):
@@ -361,7 +362,7 @@ class LSPDriver(REPLDriver):
         try:
             doc = Document(chunks, "\n")
             tokens = self.collect_semantic_tokens(doc)
-            type_map = {**self.LSP_TYPE_MAP, ("_",): "Text"}
+            type_map: Dict[Tuple[str, ...], str] = {**self.LSP_TYPE_MAP, ("_",): "Text"}
             tokenized = TokenizedStr(doc.contents, tokens, type_map)
             return list(doc.recover_chunks([Text(tokenized)]))
         except LSPException as e:

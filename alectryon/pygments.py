@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Dict, Optional
+from typing import Dict, Optional, Type
 
 import re
 import warnings
@@ -30,6 +30,7 @@ from functools import lru_cache
 import pygments
 import pygments.styles
 import pygments.formatters
+from pygments.lexer import Lexer
 from pygments.token import Error, STANDARD_TYPES, Name, Operator, Text
 from pygments.filter import Filter
 from pygments.filters import TokenMergeFilter, NameHighlightFilter
@@ -48,7 +49,7 @@ def resolve_token(kind):
         raise ValueError("Unknown token kind: {}".format(kind))
     return tokentype
 
-CUSTOM_LEXERS = {
+CUSTOM_LEXERS: Dict[str, Type[Lexer]] = {
     'CoqLexer': CoqLexer,
     'TokenizedStrLexer': TokenizedStrLexer,
 }

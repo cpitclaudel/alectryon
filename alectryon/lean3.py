@@ -39,7 +39,7 @@ try:
         end: List[int]
         children: List[int]
 except ImportError:
-    AstNode = _AstNode = Any
+    AstNode = _AstNode = Any # type: ignore
 
 AstData = List[AstNode]
 Pos = Tuple[int, int]

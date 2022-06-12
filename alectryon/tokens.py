@@ -83,8 +83,8 @@ class TokenizedStr(str):
     def __new__(cls, s, *_args):
         return super().__new__(cls, s)
 
-    def __init__(self, _s, tokens: Tokens=None,
-                 type_map: Dict[Tuple[str, ...], Any]=None):
+    def __init__(self, _s, tokens: Optional[Tokens]=None,
+                 type_map: Optional[Dict[Tuple[str, ...], Any]]=None):
         assert tokens and type_map
         super().__init__()
         self.tokens = tokens
@@ -95,7 +95,7 @@ class TokenizedStr(str):
         idx = dflt if idx is None else idx
         return idx if idx >= 0 else idx + mod
 
-    def __getitem__(self, index: Union[int, slice]):
+    def __getitem__(self, index: Union[int, slice]): # type: ignore # 3.6
         s = super().__getitem__(index)
         if index is int:
             return s

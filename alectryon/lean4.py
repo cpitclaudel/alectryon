@@ -60,7 +60,7 @@ class Lean4(CLIDriver):
             try:
                 lakefile_idx = self.user_args.index("--lake") + 1
             except ValueError:
-                self.user_args += ["--lake", self.LAKE_TMP_FILE_PATH]
+                self.user_args += ("--lake", self.LAKE_TMP_FILE_PATH)
                 lakefile_idx = -1
             working_directory = os.path.dirname(
                 os.path.realpath(self.user_args[lakefile_idx])
