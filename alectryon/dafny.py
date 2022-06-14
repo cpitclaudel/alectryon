@@ -23,11 +23,11 @@ from typing import Dict, Tuple
 from .lsp import LSPDriver
 
 class DafnyLSP(LSPDriver):
-    BIN = "c:/Program Files/LLVM/bin/clangd.exe"
+    BIN = "DafnyLanguageServer"
     NAME = "Dafny LSP Server"
 
     CLI_ARGS = ()
-    REPL_ARGS = () # ("--stdio",) # ("--documents:verify=never", "--verifier:timelimit=30")
+    REPL_ARGS = ()
     VERSION_ARGS = ()
 
     ID = "dafny_lsp"
