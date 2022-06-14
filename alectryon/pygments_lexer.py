@@ -1,5 +1,5 @@
 # Original implementation Copyright 2006-2019 by the Pygments team.
-# Modifications Copyright © 2019 Clément Pit-Claudel.
+# Modifications Copyright © 2019-2022 Clément Pit-Claudel.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -557,14 +557,10 @@ class TokenizedStrLexer(Lexer):
 
     @staticmethod
     def make_pygments_resolver(type_map):
-        def _resolve(typ, mods):
-            tokstr = type_map.get((typ, *mods))
-            if tokstr is None:
-                tokstr = type_map.get((typ,))
-                if tokstr is None:
-                    MSG = "!! Unexpected pre-tokenized token type {!r} with modes {!r}\n"
-                    warnings.warn(MSG.format(typ, mods))
-                    return Token.Error
+        def _resolve(tok):
+            if tok.typ == ():
+                return Text
+            tokstr = tok.resolve(type_map) or "Error"
             return TokenizedStrLexer.resolve_pygments_token(tokstr)
         return _resolve
 
@@ -574,7 +570,7 @@ class TokenizedStrLexer(Lexer):
             return
 
         _map = self.make_pygments_resolver(text.type_map)
-        for tok in text.tokens.iter_contiguous("_", ()):
-            yield tok.rng.start, _map(tok.typ, tok.mods), tok.value(text)
+        for tok in text.tokens.iter_contiguous():
+            yield tok.rng.start, _map(tok), tok.value(text)
 
 __all__ = ["CoqLexer", "TokenizedStrLexer"]

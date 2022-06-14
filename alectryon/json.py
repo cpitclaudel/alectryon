@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Dict, Any
+from typing import Dict, Any, Optional, Tuple
 
 import json
 import pickle
@@ -28,7 +28,7 @@ from functools import wraps
 from importlib import import_module
 from os import path, makedirs, unlink, fspath
 
-from . import core
+from . import core, tokens
 
 COMMENTS_RE = re.compile(r"^\s*//.*$", re.MULTILINE)
 def uncomment(s):
@@ -46,7 +46,7 @@ TYPE_OF_ALIASES = {
     "sentence": core.Sentence,
     "goals": core.Goals,
     "messages": core.Messages,
-    "rich_sentence": core.RichSentence,
+    "tstr": tokens.TokenizedStr
 }
 
 ALIASES_OF_TYPE = {
@@ -55,43 +55,61 @@ ALIASES_OF_TYPE = {
 
 TYPES = tuple(TYPE_OF_ALIASES.values())
 
+class CacheState:
+    def __init__(self, persistent: Optional[Dict[str, Dict[str, Any]]]=None):
+        self.persistent: Dict[str, Dict[str, Any]] = persistent or {}
+        self.ephemeral: Dict[str, Dict[str, Any]] = {}
+
+    def specialize(self, key: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+        return (self.persistent.setdefault(key, {}),
+                self.ephemeral.setdefault(key, {}))
+
 class PlainSerializer:
     """Convert arrays and dictionaries of namedtuples to and from JSON.
 
     >>> from .core import Text as T
     >>> obj = {'a': [[1, T('A')], [1, T('A')], {'c': 3}], 'b': {'c': 3}}
-    >>> enc = PlainSerializer.encode(obj); enc
+    >>> enc = PlainSerializer.encode(obj, CacheState()); enc
     {'a': [[1, {'_type': 'text', 'contents': 'A'}],
            [1, {'_type': 'text', 'contents': 'A'}],
            {'c': 3}], 'b': {'c': 3}}
-    >>> dec = PlainSerializer.decode(enc); dec
+    >>> dec = PlainSerializer.decode(enc, CacheState()); dec
     {'a': [[1, Text(contents='A')], [1, Text(contents='A')], {'c': 3}], 'b': {'c': 3}}
     """
     @staticmethod
-    def encode(obj) -> Any:
+    def encode(obj: Any, memo: Optional[CacheState]=None) -> Any:
+        memo = memo or CacheState()
         if isinstance(obj, list):
-            return [PlainSerializer.encode(x) for x in obj]
+            return [PlainSerializer.encode(x, memo) for x in obj]
         if isinstance(obj, dict):
             assert "_type" not in obj
-            return {k: PlainSerializer.encode(v) for k, v in obj.items()}
+            return {k: PlainSerializer.encode(v, memo) for k, v in obj.items()}
         type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
         if type_name:
             d: Dict[str, Any] = {"_type": type_name} # Put _type first
-            for k, v in zip(obj._fields, obj):
-                d[k] = PlainSerializer.encode(v)
+            if hasattr(obj, "js_encode"):
+                obj.js_encode(PlainSerializer, d, *memo.specialize(type_name))
+            elif hasattr(obj, "_fields"):
+                for k, v in zip(obj._fields, obj):
+                    d[k] = PlainSerializer.encode(v, memo)
             return d
         assert obj is None or isinstance(obj, (int, str))
         return obj
 
     @staticmethod
-    def decode(js):
+    def decode(js, memo: Optional[CacheState]=None):
+        memo = memo or CacheState()
         if isinstance(js, list):
-            return [PlainSerializer.decode(x) for x in js]
+            return [PlainSerializer.decode(x, memo) for x in js]
         if isinstance(js, dict):
-            obj = {k: PlainSerializer.decode(v) for k, v in js.items()}
+            obj = {k: PlainSerializer.decode(v, memo) for k, v in js.items()}
             type_name = obj.pop("_type", None) # Avoid mutating `js`
             if type_name:
-                return TYPE_OF_ALIASES[type_name](**obj)
+                typ = TYPE_OF_ALIASES[type_name]
+                if hasattr(typ, "js_decode"):
+                    return typ.js_decode(PlainSerializer, obj, # type: ignore
+                                         *memo.specialize(type_name))
+                return typ(**obj)
             return obj
         return js
 
@@ -201,18 +219,24 @@ class FullyDeduplicatingSerializer:
             return js
         return decode(js)
 
-def deprecated(fn, old_name):
-    @wraps(fn)
-    def _fn(*args, **kwargs):
-        import warnings
-        MSG = "Function {} deprecated; use {} instead."
-        warnings.warn(MSG.format(old_name, fn.__name__),
-                      category=DeprecationWarning, stacklevel=2)
-        return fn(*args, **kwargs)
-    return _fn
+def deprecated(old_name):
+    def _wrap(fn):
+        @wraps(fn)
+        def _fn(*args, **kwargs):
+            import warnings
+            MSG = "Function {} deprecated; use {} instead."
+            warnings.warn(MSG.format(old_name, fn.__name__),
+                          category=DeprecationWarning, stacklevel=2)
+            return fn(*args, **kwargs)
+        return _fn
+    return _wrap
 
-json_of_annotated = deprecated(PlainSerializer.encode, "json_of_annotated")
-annotated_of_json = deprecated(PlainSerializer.decode, "annotated_of_json")
+@deprecated
+def json_of_annotated(obj):
+    return PlainSerializer.encode(obj, CacheState())
+@deprecated
+def annotated_of_json(obj):
+    return PlainSerializer.decode(obj, CacheState())
 
 def validate_metadata(metadata, reference, cache_file):
     if metadata != reference:
@@ -255,17 +279,20 @@ class Cache:
     def get(self, chunks, metadata):
         if not self._validate(self.normalize(chunks), self.normalize(metadata)):
             return None
-        return self.serializer.decode(self.data.get("annotated"))
+        return self.serializer.decode(self.data.get("annotated"),
+                                      CacheState(self.data.get("memo", {})))
 
     @property
     def driver_info(self):
         return core.DriverInfo(*self.data.get("driver", ("Coq+SerAPI", "??")))
 
     def put(self, chunks, metadata, annotated, driver):
+        memo = CacheState()
         self.data = {"driver": self.normalize(driver),
                      "metadata": self.normalize(metadata),
                      "chunks": list(chunks),
-                     "annotated": self.serializer.encode(annotated)}
+                     "annotated": self.serializer.encode(annotated, memo),
+                     "memo": memo.persistent}
 
     def update(self, chunks, driver):
         annotated = self.get(chunks, driver.metadata)
