@@ -258,8 +258,8 @@ class Config:
             lang, token = name.split("/", maxsplit=1)
             resolve_token(token) # Check that this is a valid token
             # LATER: It would be nice to support multi-words tokens.  Using
-            # ``shlex.split(body)`` instead of ``body.split()`` would work find
-            # here, but the filter added by ``added_tokens`` processes words
+            # ``shlex.split(body)`` instead of ``body.split()`` would work fine
+            # here, but the filter added by Pygment's ``added_tokens`` processes words
             # (“names”) one by one, so multi-word tokens would never match.
             self.tokens_by_lang[lang][token].extend(body.split())
         elif name == "alectryon/serapi/args":
