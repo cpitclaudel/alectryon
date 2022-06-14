@@ -116,7 +116,7 @@ class PlainSerializer:
 class DeduplicatingSerializer:
     """Like `PlainSerializer`, but deduplicate references to objects in `TYPES`.
     Specifically, deduplication works by replacing repeated objects with a
-    special dictionary ``{"&": N}``, where ``N`` is an index into the list of
+    special dictionary ``{"*": N}``, where ``N`` is an index into the list of
     all objects encoded up to that point.
 
     >>> from .core import Text as T
