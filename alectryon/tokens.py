@@ -19,7 +19,8 @@
 # SOFTWARE.
 
 import bisect
-from typing import Any, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union
+import warnings
+from typing import Any, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union, cast
 
 class Range(NamedTuple):
     start: int
@@ -31,8 +32,7 @@ class Range(NamedTuple):
 
 class Token(NamedTuple):
     rng: Range
-    typ: str
-    mods: Tuple[str, ...]
+    typ: Tuple[str, ...]
 
     def value(self, s: str) -> str:
         # Avoid overrides by calling ``__getitem__`` directly
@@ -43,10 +43,17 @@ class Token(NamedTuple):
             rng=Range(start=max(self.rng.start, startpos) - startpos,
                       end=min(self.rng.end, endpos) - startpos))
 
+    def resolve(self, type_map: Dict[Tuple[str, ...], str]) -> Optional[str]:
+        tokstr = type_map.get(self.typ) or type_map.get((self.typ[0],))
+        if tokstr is None:
+            MSG = "!! Unexpected pre-tokenized token type {!r} with modifiers {!r}\n"
+            warnings.warn(MSG.format(self.typ[0], self.typ[1:]))
+        return tokstr
+
 class Tokens(NamedTuple):
     toks: List[Token]
-    view: slice
-    rng: Range
+    view: slice # Slice of `toks`
+    rng: Range # Since of the original string
 
     @staticmethod
     def bisect_right(a, x, lo, hi, key):
@@ -68,16 +75,16 @@ class Tokens(NamedTuple):
         for idx in range(self.view.start, self.view.stop):
             yield self.toks[idx].reposition(self.rng.start, self.rng.end)
 
-    def iter_contiguous(self, typ: str, mods: Tuple[str, ...]) -> Iterator[Token]:
+    def iter_contiguous(self) -> Iterator[Token]:
         pos = 0
         it: Iterable[Token] = self # type: ignore # LATER (≥ 3.10): Inherit
         for tok in it:
             if tok.rng.start > pos:
-                yield Token(Range(pos, tok.rng.start), typ, mods)
+                yield Token(Range(pos, tok.rng.start), ())
             yield tok
             pos = tok.rng.end
         if pos < self.rng.end:
-            yield Token(Range(pos, self.rng.end), typ, mods)
+            yield Token(Range(pos, self.rng.end), ())
 
 class TokenizedStr(str):
     def __new__(cls, s, *_args):
@@ -104,3 +111,53 @@ class TokenizedStr(str):
         start = self._wrapidx(index.start, 0, len(self))
         stop = self._wrapidx(index.stop, len(self), len(self))
         return TokenizedStr(s, self.tokens.filter(start, stop), self.type_map)
+
+    CACHE_TYPE_MAP_KEY = "type_map"
+    CACHE_TYPES_KEY = "types"
+
+    def js_encode(self, target: Dict[str, Any],
+                  persistent: Dict[str, Any], ephemeral: Dict[str, Any]):
+        # All strings in the cache must have the same ``type_map``; check that
+        assert ephemeral.setdefault(self.CACHE_TYPE_MAP_KEY, self.type_map) == self.type_map
+
+        # Build a table to retrieve indices quickly
+        revmap: Optional[Dict[Tuple[str, ...], int]] = \
+            ephemeral.get(self.CACHE_TYPES_KEY)
+        if revmap is None:
+            types = persistent[self.CACHE_TYPES_KEY] = \
+                [(), *((typ,) for typ in self.type_map.values())]
+            revmap = ephemeral[self.CACHE_TYPES_KEY] = \
+                {typ: idx for (idx, typ) in enumerate(types)}
+
+        # Serialize the tokens
+        toks: List[int]
+        target["str"] = str(self)
+        target["toks"] = toks = []
+        for tok in self.tokens:
+            assert isinstance(tok, Token)
+            rng, typ = tok.rng, tok.resolve(self.type_map)
+            ttyp: Tuple[str, ...] = (typ,) if typ else ()
+            toks.extend((rng.start, rng.end, revmap[ttyp]))
+
+    @classmethod
+    def js_decode(cls, source: Dict[str, Any],
+                  persistent: Dict[str, Any], ephemeral: Dict[str, Any]):
+        types: List[Tuple[str, ...]] = persistent[cls.CACHE_TYPES_KEY]
+        type_map: Optional[Dict[Tuple[str, ...], Any]] = \
+            ephemeral.get(cls.CACHE_TYPE_MAP_KEY)
+
+        # Rebuild a dummy type map
+        if type_map is None:
+            types[:] = [tuple(typ) for typ in types]
+            type_map = ephemeral[cls.CACHE_TYPES_KEY] = \
+                {tuple(typ): (typ[0] if typ else None) for typ in types}
+
+        # Reconstruct tokens
+        toks, enc = [], source["toks"]
+        for i in range(0, len(enc), 3):
+            start, end, typidx = enc[i], enc[i+1], enc[i+2]
+            toks.append(Token(Range(start, end), types[typidx]))
+
+        s = source["str"]
+        tokens = Tokens(toks, slice(0, len(toks)), Range(0, len(s)))
+        return TokenizedStr(s, tokens, type_map)
