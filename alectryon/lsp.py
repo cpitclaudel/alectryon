@@ -162,7 +162,7 @@ class LSPTokenLegend:
         typ = self.types[itype]
         mods = self.resolve_mods(imods)
         start = self.doc.pos2offset(l, c)
-        return Token(Range(start, start + length), typ, mods)
+        return Token(Range(start, start + length), (typ, *mods))
 
     def resolve(self, tokens: Iterable[int]) -> Iterator[Token]:
         l, c = 1, 0
@@ -286,6 +286,7 @@ class LSPAdapter:
                     if isinstance(resp, LSPResponse) and resp.idx == msg.idx:
                         yield (msg.method, resp)
                         break
+                    # TODO: Implement the diagnostic request in the server, use it from here.
                     if isinstance(resp, LSPQuery) and resp.is_request:
                         assert resp.idx
                         LSPAdapter._write_lsp(repl, LSPAdapter._unsupported(resp.idx))
@@ -299,22 +300,25 @@ class LSPAdapter:
         """
         filtered: List[Token] = []
         tokens = sorted(tokens, key=lambda t: t.rng)
-        for tok in tokens: # FIXME
+        for tok in tokens:
             while filtered and tok.rng.start < filtered[-1].rng.end:
                 filtered.pop()
             filtered.append(tok)
         return filtered
 
-    def collect_semantic_tokens(self, repl: Popen, uri: str, doc: Document) -> Tokens:
+    def collect_lsp_info(self, repl: Popen, uri: str, doc: Document) -> Tokens:
         messages = self._iter_lsp(self._lsp_query_tokens(uri, doc.contents))
-        token_options, tokens = None, None
+        tokens: Optional[Iterable[Token]] = None
+        token_options: Optional[Dict[str, Any]] = None
         for (method, response) in self._run_lsp(repl, messages):
             if method is LSPRequest.INITIALIZE:
                 token_options = response.result["capabilities"].get("semanticTokensProvider")
-            if method is LSPRequest.SEMANTIC_TOKENS_FULL:
+            # TODO add a case for diagnostics.
+            elif method is LSPRequest.SEMANTIC_TOKENS_FULL:
                 if token_options is None or not token_options.get("full"):
                     raise LSPException("This LSP server does not support semantic tokens")
                 # No early return: must exhaust iterator
+                # pylint: disable=unsubscriptable-object
                 legend = LSPTokenLegend(doc, token_options["legend"])
                 tokens = legend.resolve(response.result["data"])
         assert tokens is not None
@@ -351,19 +355,20 @@ class LSPDriver(REPLDriver):
             return self.adapter.read_driver_info(api.repl) \
                 or DriverInfo(self.LANGUAGE, "?")
 
-    def collect_semantic_tokens(self, doc: Document) -> Tokens:
+    def collect_lsp_info(self, doc: Document) -> Tokens:
         with self as api:
             assert api.repl
             uri = api.fpath.absolute().as_uri()
-            return self.adapter.collect_semantic_tokens(api.repl, uri, doc)
+            return self.adapter.collect_lsp_info(api.repl, uri, doc)
 
     def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
         """Annotate chunks using the ``symbols`` command."""
         try:
             doc = Document(chunks, "\n")
-            tokens = self.collect_semantic_tokens(doc)
-            type_map: Dict[Tuple[str, ...], str] = {**self.LSP_TYPE_MAP, ("_",): "Text"}
+            tokens = self.collect_lsp_info(doc)
+            type_map: Dict[Tuple[str, ...], str] = self.LSP_TYPE_MAP
             tokenized = TokenizedStr(doc.contents, tokens, type_map)
+
             return list(doc.recover_chunks([Text(tokenized)]))
         except LSPException as e:
             self.observer.notify(None, str(e), Position(self.fpath, 0, 1).as_range(), level=3)
