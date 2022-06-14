@@ -56,13 +56,6 @@ Missing search pattern for key ``.s`` in expression ``.s.i``. (maybe an invalid 
 .. role:: mq2(mquote)
    :prefix: .s.i
 
-tests/errors.rst:99: (ERROR/3) Error in "exercise" directive:
-Missing required option ':difficulty:'
-
-.. exercise:: Title
-
-   (Missing :difficulty: flag.)
-
 tests/errors.rst:107: (ERROR/3) Error in "coq" directive:
 Unknown flag `unknown`.
 
