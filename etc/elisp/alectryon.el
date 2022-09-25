@@ -405,6 +405,18 @@ Current document must have a file name."
 
 (defvar flyspell-prog-text-faces)
 
+(defun alectryon--flyspell-hook ()
+  "Hook run when Flyspell is loaded in this buffer."
+  (when (bound-and-true-p flyspell-mode)
+    (make-local-variable 'flyspell-prog-text-faces)
+    (cl-pushnew 'alectryon-comment flyspell-prog-text-faces)))
+
+(defun alectryon--flyspell-unhook ()
+  "Remove Flyspell customizations."
+  (when (bound-and-true-p flyspell-mode)
+    (setq-local flyspell-prog-text-faces
+                (remq 'alectryon-comment flyspell-prog-text-faces))))
+
 ;;;###autoload
 (define-minor-mode alectryon-mode
   "Mode for Literate Coq files.
@@ -419,8 +431,8 @@ In reST mode:
     (alectryon--record-original-mode)
     (alectryon--invoke 'flycheck-mode)
     (add-hook 'write-contents-functions #'alectryon--save t t)
-    (make-local-variable 'flyspell-prog-text-faces)
-    (cl-pushnew 'alectryon-comment flyspell-prog-text-faces)
+    (add-hook 'flyspell-mode-hook #'alectryon--flyspell-hook)
+    (alectryon--flyspell-hook)
     (alectryon--mode-case (alectryon--coq-mode 1) (alectryon--rst-mode 1)))
    (t
     (unless (alectryon--in-original-mode)
@@ -428,7 +440,8 @@ In reST mode:
       (message "Reverted to %s mode." mode-name))
     (kill-local-variable 'alectryon--original-mode)
     (remove-hook 'write-contents-functions #'alectryon--save t)
-    (setq-local flyspell-prog-text-faces (remq 'alectryon-comment flyspell-prog-text-faces))
+    (remove-hook 'flyspell-mode-hook #'alectryon--flyspell-hook)
+    (alectryon--flyspell-unhook)
     (alectryon--mode-case (alectryon--coq-mode -1) (alectryon--rst-mode -1))))
   (alectryon--refontify))
 
