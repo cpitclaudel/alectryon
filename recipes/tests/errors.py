@@ -56,7 +56,7 @@ class cli(unittest.TestCase):
 class docutils(unittest.TestCase):
     def test_errors(self):
         from alectryon.docutils import CounterStyle, get_pipeline, \
-            CODE_PARSERS_BY_LANGUAGE, set_default_role
+            get_parser, set_default_role
         from docutils.utils import new_document, SystemMessage
 
         with self.assertRaisesRegex(ValueError, "Invalid"):
@@ -75,7 +75,7 @@ class docutils(unittest.TestCase):
             set_default_role("\0")
 
         with redirected_std():
-            coq_parser = CODE_PARSERS_BY_LANGUAGE["coq"]()
+            coq_parser = get_parser("coq+rst")()
             with self.assertRaisesRegex(SystemMessage, "SEVERE"):
                 coq_parser.parse("(*", new_document("<string>"))
 

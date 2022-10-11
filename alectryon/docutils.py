@@ -73,6 +73,7 @@ import docutils
 import docutils.frontend
 import docutils.transforms
 import docutils.utils
+import docutils.parsers
 import docutils.writers
 from docutils import nodes
 
@@ -84,6 +85,7 @@ from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import core, transforms, html, latex, markers
+from .myst import Parser as MySTParser
 from .core import Gensym, Position, PosStr
 from .pygments import make_highlighter, added_tokens, validate_style, \
     get_lexer, resolve_token, replace_builtin_lexers
@@ -1166,32 +1168,33 @@ class JsErrorObserver:
 # Parser
 # ------
 
-class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
+class LiterateParser:
+    LANG: ClassVar[str]
+    MARKUP: ClassVar[str]
+
+class RSTLiterateParser(docutils.parsers.rst.Parser, LiterateParser): # type: ignore
     """A wrapper around the reStructuredText parser for literate files."""
 
-    LANG = "" # Needed by Sphinx
-    SOURCE_SUFFIXES: Tuple[str, ...] = ()
-
+    MARKUP = "rst"
     supported: ClassVar[Tuple[str, ...]] = ()
     config_section = 'Literate parser'
     config_section_dependencies: ClassVar[Tuple[str, ...]] = ('parsers',)
 
     @staticmethod
-    def rst_lines(lang, code):
-        from .literate import RST, code2markup_lines, Line
-        last_line = 0
-        for line in code2markup_lines(RST(lang), code):
-            if isinstance(line, Line):
-                yield (str(line), line.num)
-                last_line = line.num
-            else:
-                assert isinstance(line, str)
-                yield (line, last_line)
+    def markup_lines(lang: str, markup: str, code):
+        from . import literate
+        assert set(literate.LANGUAGES) == set(core.ALL_LANGUAGES)
+        assert set(literate.MARKUPS) == set(core.ALL_MARKUPS)
+        linum = 0
+        for line in literate.code2markup_lines(literate.get_markup(markup, lang), code):
+            if not isinstance(line, literate.EmptyLine):
+                linum = line.num
+            yield (str(line), linum)
 
     @classmethod
-    def input_lines(cls, lang, code, source):
+    def input_lines(cls, code, source):
         from docutils.statemachine import StringList
-        lines = cls.rst_lines(lang, code)
+        lines = cls.markup_lines(cls.LANG, cls.MARKUP, code)
         initlist, items = [], []
         # Don't use zip(): we need lists, not tuples, and the input can be empty
         for (line, i) in lines:
@@ -1204,12 +1207,6 @@ class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
             e.message, line=e.line, column=e.column,
             end_line=e.end_line, end_column=e.end_column))
 
-    @property
-    def lang(self):
-        from . import literate
-        assert set(literate.LANGUAGES) == set(core.ALL_LANGUAGES)
-        return literate.LANGUAGES[self.LANG]
-
     def parse(self, inputstring, document):
         """Parse `inputstring` and populate `document`, a document tree."""
         from .literate import ParsingError
@@ -1221,7 +1218,7 @@ class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
             initial_state=self.initial_state,
             debug=document.reporter.debug_flag)
         try:
-            lines = self.input_lines(self.lang, inputstring, document['source'])
+            lines = self.input_lines(inputstring, document['source'])
             self.statemachine.run(lines, document, inliner=self.inliner)
         except ParsingError as e:
             self.report_parsing_error(e)
@@ -1229,11 +1226,28 @@ class RSTLiterateParser(docutils.parsers.rst.Parser): # type: ignore
             roles._roles.pop('', None) # Reset the default role
         self.finish_parse()
 
-def make_RSTLiterateParser(lang: str) -> Type[RSTLiterateParser]:
-    return type("{}RstLiterateParser".format(lang.capitalize()),
-                (RSTLiterateParser,),
-                {"LANG": lang, "supported": (lang,),
-                 "SOURCE_SUFFIXES": core.EXTENSIONS_BY_LANGUAGE[lang]})
+class MySTLiterateParser(MySTParser, LiterateParser):
+    MARKUP = "md"
+
+    def parse(self, inputstring, document):
+        from .literate import get_markup, code2markup
+        # TODO: Keep line info to map errors
+        mdstring = code2markup(get_markup(self.MARKUP, self.LANG), inputstring)
+        super().parse(mdstring, document)
+
+PARSER_TYPES = Union[Type[RSTLiterateParser], Type[MySTLiterateParser]]
+BASE_PARSER_BY_MARKUP: Dict[str, PARSER_TYPES] = {
+    "rst": RSTLiterateParser,
+    "md": MySTLiterateParser,
+}
+assert BASE_PARSER_BY_MARKUP.keys() == core.ALL_MARKUPS
+
+def make_LiterateParser(lang: str, markup: str) -> PARSER_TYPES:
+    name = "{}{}LiterateParser".format(lang.capitalize(), markup.capitalize())
+    supported = ("{}+{}".format(lang, markup),)
+    base = BASE_PARSER_BY_MARKUP[markup]
+    return type(name, (base,), # type: ignore
+                {"LANG": lang, "MARKUP": markup, "supported": supported})
 
 # Writer
 # ------
@@ -1430,16 +1444,16 @@ class LintingWriter(docutils.writers.UnfilteredWriter):
 
 Pipeline = namedtuple("Pipeline", "reader parser translator writer")
 
-CODE_PARSERS_BY_LANGUAGE = {
-    lang: make_RSTLiterateParser(lang)
+CUSTOM_PARSERS = {
+    "{}+{}".format(lang, markup): make_LiterateParser(lang, markup)
     for lang in core.ALL_LANGUAGES
+    for markup in core.ALL_MARKUPS
 }
 
-PARSERS: Dict[str, Union[Tuple[str, str], Type[RSTLiterateParser]]] = {
+PARSERS: Dict[str, Union[Tuple[str, str], Type[docutils.parsers.Parser]]] = {
     "rst": ("docutils.parsers.rst", "Parser"),
     "md": ("alectryon.myst", "Parser"),
-    **{"{}+rst".format(lang): parser
-       for lang, parser in CODE_PARSERS_BY_LANGUAGE.items()}
+    **CUSTOM_PARSERS
 }
 
 BACKENDS = {
