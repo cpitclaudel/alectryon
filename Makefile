@@ -59,6 +59,6 @@ coverage: $(dependencies)
 develop: $(dependencies)
 	(which opam || { echo "OPAM not found; please install it"; exit 1; })
 	eval $$(opam env); opam install coq-serapi
+	pip install mypy coverage[toml]
 	python -m mypy --install-types alectryon/
-	pip install coverage[toml]
 	pip install -e .[full]
