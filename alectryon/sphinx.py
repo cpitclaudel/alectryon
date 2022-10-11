@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from sphinx.application import Sphinx
 
-from . import docutils
+from . import core, docutils
 from .html import ASSETS as HTML_ASSETS
 from .latex import ASSETS as LATEX_ASSETS
 from .pygments import LatexFormatter
@@ -32,11 +32,25 @@ from .pygments import LatexFormatter
 # Setup
 # =====
 
+# FIXME: Test
+
+def register_source_suffixes(app: "Sphinx", lang: str, markup: str):
+    for markup_ext in core.EXTENSIONS_BY_MARKUP[markup]:
+        for lang_ext in core.EXTENSIONS_BY_LANGUAGE[lang]:
+            suffix = "{}{}".format(markup_ext, lang_ext)
+            app.add_source_suffix(suffix, lang, override=True)
+
+def register_default_source_suffixes(app: "Sphinx"):
+    for lang, lang_exts in core.EXTENSIONS_BY_LANGUAGE.items():
+        for suffix in lang_exts:
+            supported = "{}+{}".format(lang, core.DEFAULT_MARKUP)
+            app.add_source_suffix(suffix, supported, override=True)
+
 def register_code_parsers(app: "Sphinx"):
-    for parser in docutils.CODE_PARSERS_BY_LANGUAGE.values():
+    for parser in docutils.CUSTOM_PARSERS.values():
         app.add_source_parser(parser)
-        for suffix in parser.SOURCE_SUFFIXES:
-            app.add_source_suffix(suffix, parser.LANG, override=True)
+        register_source_suffixes(app, parser.LANG, parser.MARKUP)
+    register_default_source_suffixes(app)
 
 def add_assets(app: "Sphinx"):
     app.config.html_static_path.append(HTML_ASSETS.PATH)
