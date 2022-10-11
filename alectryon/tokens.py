@@ -20,7 +20,7 @@
 
 import bisect
 import warnings
-from typing import Any, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union, cast
+from typing import Any, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union
 
 class Range(NamedTuple):
     start: int
