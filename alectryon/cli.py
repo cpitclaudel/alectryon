@@ -393,11 +393,6 @@ CODE_EXTENSIONS = {
     ext for exts in core.EXTENSIONS_BY_LANGUAGE.values() for ext in exts
 }
 
-EXTENSIONS_BY_MARKUP = {
-    "md": (".md",),
-    "rst": (".rst",),
-}
-
 # No ‘apply_transforms’ in JSON pipelines: we save the prover output without
 # modifications.
 def _add_code_pipelines(pipelines, lang, *exts):
@@ -452,7 +447,7 @@ def _add_code_pipelines(pipelines, lang, *exts):
         (read_plain, parse_plain, annotate_chunks, encode_json, dump_json,
          write_file(".io.json", strip=()))
     }
-    for markup, mexts in EXTENSIONS_BY_MARKUP.items():
+    for markup, mexts in core.EXTENSIONS_BY_MARKUP.items():
         strip = (*exts, *mexts)
         pipelines["{}+{}".format(lang, markup)] = {
             'webpage':
@@ -489,7 +484,7 @@ def _add_docutils_pipelines(pipelines, lang, *exts):
     }
 
 def _add_transliteration_pipelines(pipelines):
-    for markup, mexts in EXTENSIONS_BY_MARKUP.items():
+    for markup, mexts in core.EXTENSIONS_BY_MARKUP.items():
         exts = (*CODE_EXTENSIONS, *mexts)
         for lang, (ext, *_) in core.EXTENSIONS_BY_LANGUAGE.items():
             lang_plus = "{}+{}".format(lang, markup)
@@ -518,7 +513,7 @@ def _add_pipelines(pipelines):
     for lang, exts in core.EXTENSIONS_BY_LANGUAGE.items():
         _add_code_pipelines(pipelines, lang, *exts)
     _add_coqdoc_pipeline(pipelines)
-    for markup, exts in EXTENSIONS_BY_MARKUP.items():
+    for markup, exts in core.EXTENSIONS_BY_MARKUP.items():
         _add_docutils_pipelines(pipelines, markup, *exts)
     _add_transliteration_pipelines(pipelines)
     _add_compatibility_pipelines(pipelines)
@@ -563,6 +558,7 @@ def _default_language_backends(lang):
         lang: 'webpage',
         lang + '.json': 'json',
         lang + '.io.json': 'webpage',
+        lang + '+md': 'webpage',
         lang + '+rst': 'webpage',
     }
 

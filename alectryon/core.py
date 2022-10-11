@@ -590,6 +590,7 @@ Keys in the driver dictionary are driver names; values are pairs of module names
 and class names.  In other words, each driver is a class within a module.
 """
 
+ALL_MARKUPS = {"md", "rst"}
 ALL_LANGUAGES = DRIVERS_BY_LANGUAGE.keys()
 ALL_DRIVERS = {d for ds in DRIVERS_BY_LANGUAGE.values() for d in ds}
 DEFAULT_DRIVERS = {lang: next(iter(drivers)) for lang, drivers in DRIVERS_BY_LANGUAGE.items()}
@@ -605,6 +606,16 @@ EXTENSIONS_BY_LANGUAGE = {
 Later entries take precedence over previous ones.
 """
 assert EXTENSIONS_BY_LANGUAGE.keys() == ALL_LANGUAGES
+
+EXTENSIONS_BY_MARKUP = {
+    "md": (".md",),
+    "rst": (".rst",),
+}
+"""A map from markup language identifiers to file extensions."""
+assert EXTENSIONS_BY_MARKUP.keys() == ALL_MARKUPS
+
+DEFAULT_MARKUP = "rst"
+"""The default markup, assumed when the extension of a file doesn't allow us to guess."""
 
 def resolve_driver(input_language, driver_name):
     if input_language not in DRIVERS_BY_LANGUAGE:
