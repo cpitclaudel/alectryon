@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import Dict, List, Tuple, Type
+from typing import Dict, List, Optional, Tuple, Type
 
 import re
 from enum import Enum
@@ -58,10 +58,10 @@ class StringView:
             beg = end + len(sep)
         return chunks
 
-    def match(self, regexp):
+    def match(self, regexp: re.Pattern) -> Optional[re.Match]:
         return regexp.match(self.s, self.beg, self.end)
 
-    def search(self, regexp):
+    def search(self, regexp: re.Pattern) -> Optional[re.Match]:
         return regexp.search(self.s, self.beg, self.end)
 
     def trim(self, beg, end):
@@ -702,7 +702,7 @@ def rst_partition(lang: LangDef, s):
 # ----------
 
 INDENTATION_RE = re.compile(" *")
-def measure_indentation(line):
+def measure_indentation(line: Line):
     m = line.match(INDENTATION_RE)
     return m.end() - m.start()
 
