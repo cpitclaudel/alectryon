@@ -998,7 +998,7 @@ def blocks_of_parsed_blocks(md: MarkupDef, parsed: List[ParsedBlock]):
                 directive = footer = []
             yield CodeBlock(directive, span.lines, footer, indent)
 
-def gen_markup(md: MarkupDef, blocks: Iterable[Block]):
+def gen_markup(md: MarkupDef, blocks: Iterable[Block]) -> Iterable[Line]:
     for b in blocks:
         if isinstance(b, LitBlock):
             yield from b.lines
@@ -1032,7 +1032,7 @@ def partition_literate(lang: LangDef, code: str,
     matcher = _make_matcher(opener) if opener else lang.is_literate_comment
     return _partition_literate(code, partition(lang, code), matcher)
 
-def code2markup_lines(md: MarkupDef, code: str):
+def code2markup_lines(md: MarkupDef, code: str) -> Iterable[Line]:
     spans = partition_literate(md.lang, code)
     parsed = list(parsed_blocks_of_partition(md, spans))
     blocks = blocks_of_parsed_blocks(md, parsed)
@@ -1489,12 +1489,16 @@ def md2dafny(md: str):
 LANGUAGES = {L.name: L for L in (COQ, DAFNY, LEAN3, LEAN4)}
 MARKUPS = {M.name: M for M in (MYST, RST)}
 
-def get_markup(markup: str, lang: str) -> MarkupDef:
+def get_language(lang: str) -> LangDef:
     if lang not in LANGUAGES:
         raise ValueError("Unsupported literate language: {}".format(lang))
+    return LANGUAGES[lang]
+
+def get_markup(markup: str, lang: str) -> MarkupDef:
+    ldef = get_language(lang)
     if markup not in MARKUPS:
         raise ValueError("Unsupported markup format: {}".format(markup))
-    return MARKUPS[markup](LANGUAGES[lang])
+    return MARKUPS[markup](ldef)
 
 # CLI
 # ===

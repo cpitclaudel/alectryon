@@ -56,7 +56,7 @@ class cli(unittest.TestCase):
 class docutils(unittest.TestCase):
     def test_errors(self):
         from alectryon.docutils import CounterStyle, get_pipeline, \
-            CODE_PARSERS_BY_LANGUAGE, set_default_role
+            get_parser, set_default_role
         from docutils.utils import new_document, SystemMessage
 
         with self.assertRaisesRegex(ValueError, "Invalid"):
@@ -75,7 +75,7 @@ class docutils(unittest.TestCase):
             set_default_role("\0")
 
         with redirected_std():
-            coq_parser = CODE_PARSERS_BY_LANGUAGE["coq"]()
+            coq_parser = get_parser("coq+rst")()
             with self.assertRaisesRegex(SystemMessage, "SEVERE"):
                 coq_parser.parse("(*", new_document("<string>"))
 
@@ -176,14 +176,16 @@ class myst(unittest.TestCase):
             return __import(arg, *args)
 
         with unittest.mock.patch("builtins.__import__", new=fake_import):
-            from alectryon.myst import Parser, FallbackParser
+            import importlib
+            import alectryon.myst
             from docutils.utils import new_document, SystemMessage
 
-            self.assertEqual(Parser, FallbackParser)
+            myst = importlib.reload(alectryon.myst)
+            self.assertEqual(myst.Parser, myst.FallbackParser)
 
             with redirected_std():
                 with self.assertRaisesRegex(SystemMessage, "SEVERE"):
-                    Parser().parse("*xyz*", new_document("<string>"))
+                    myst.Parser().parse("*xyz*", new_document("<string>"))
 
 if __name__ == '__main__':
     sys.stderr = sys.stdout

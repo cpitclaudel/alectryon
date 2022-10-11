@@ -24,7 +24,7 @@ This file extends ``docutils.py`` to expose a convenient interface for
 connecting with MyST.
 
 This is mostly useful through Alectryon's command line.  For integration with
-Sphinx, use the ``myst_parser`` and the ``alectryon.sphinx`` plugins.
+Sphinx, use the ``myst_parser`` and ``alectryon.sphinx`` plugins.
 """
 
 from typing import Type
