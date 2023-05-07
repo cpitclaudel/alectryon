@@ -733,6 +733,7 @@ I do not work on the following tasks, but it would be very useful to complete th
 Gallery
 =======
 
+- Arpan Agrawal, Emily First, Zhanna Kaufman, Tom Reichel, Shizhuo Zhang, Timothy Zhou, Alex Sanchez-Stern, Talia Ringer, Yuriy Brun, `Proofster: Automated Formal Verification <https://proofster.cs.umass.edu/>`__.
 - Ana de Almeida Borges, `QRC1 in Coq — Formalizing a quantified modal logic <https://gitlab.com/ana-borges/QRC1-Coq/-/blob/ProofSociety/docs/slides/202112_ProofSocietyWorkshop/QRC1-Coq.pdf>`__
 - Pierre Castéran, `Hydras, Ordinals & Co. — A library in Coq of entertaining formal mathematics <https://coq-community.org/hydra-battles/doc/hydras.pdf>`__ (PDF, using a custom `Alectryon driver <https://github.com/coq-community/hydra-battles/blob/master/doc/movies/driver.py>`__ to render snippets extracted from a large Coq development).
 - Enrico Tassi, `Tutorial on the Elpi programming language <https://lpcic.github.io/coq-elpi/tutorial_elpi_lang.html>`__ (using a `custom Alectryon driver <https://github.com/LPCIC/coq-elpi/blob/master/etc/alectryon_elpi.py>`__ to highlight mixed Coq/ELPI code).
