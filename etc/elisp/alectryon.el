@@ -1,6 +1,6 @@
-;;; alectryon.el --- Toggle between Coq and reStructuredText  -*- lexical-binding: t; -*-
+;;; alectryon.el --- Toggle between Code and markup  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2020  Clément Pit-Claudel
+;; Copyright (C) 2020-2023  Clément Pit-Claudel
 
 ;; Author: Clément Pit-Claudel <clement.pitclaudel@live.com>
 ;; Keywords: convenience, languages, tools
@@ -81,7 +81,7 @@
 (require 'proof-general nil t)
 
 (defgroup alectryon nil
-  "ReStructuredText support Coq files."
+  "Bidirectional literate programming support."
   :prefix "alectryon-"
   :group 'languages)
 
@@ -134,7 +134,113 @@
              (font-lock-flush) (font-lock-ensure))
     (with-no-warnings (font-lock-fontify-buffer))))
 
-;;;; Conversion between Coq and reST
+;;;; Modes selection
+
+(defun alectryon--coq-exit-hook ()
+  "Exit Proof General."
+  (ignore-errors (alectryon--invoke 'proof-shell-exit t)))
+
+(defconst alectryon-prog-modes
+  '(( coq-mode
+      :tag "coq"
+      :exit-hooks (alectryon--coq-exit-hook)
+      :comment-delimiters ("(*|" . "|*)")
+      :comment-delimiters-re ("([*][|]" . "[|][*])")
+      :annotations-re "([*]\s*\\(\\(?:\s*[.][-a-z]+\\)+\\)\s*[*])")))
+
+(defconst alectryon-text-modes
+  '(( rst-mode
+      :tag "rst")))
+
+(defvar-local alectryon-prog-mode 'coq-mode
+  "Programming mode to use with Alectryon in this buffer.
+
+This variable is initialized when Alectryon is switched on, based
+on the current mode.")
+(put 'alectryon-prog-mode 'permanent-local t)
+
+(defvar-local alectryon-text-mode 'rst-mode
+  "Markup mode to use with Alectryon in this buffer.
+
+This variable is initialized when Alectryon is switched on, based
+on the current mode.")
+(put 'alectryon-text-mode 'permanent-local t)
+
+(defun alectryon--prog-plist ()
+  "Return the `prog-mode' Alectryon configuration for the current buffer."
+  (or (alist-get alectryon-prog-mode alectryon-prog-modes)
+      (error "Unrecognized Alectryon programming mode: %s" alectryon-prog-mode)))
+
+(defun alectryon--text-plist ()
+  "Return the `text-mode' Alectryon configuration for the current buffer."
+  (or (alist-get alectryon-text-mode alectryon-text-modes)
+      (error "Unrecognized Alectryon markup mode: %s" alectryon-text-mode)))
+
+(defun alectryon--provided-mode-derived-p (mode &rest modes)
+  "Check if MODE is derived from MODES."
+  (or (apply #'provided-mode-derived-p mode modes)
+      ;; Special override for coq-mode, which doesn't inherit from `prog-mode'.
+      (and (eq mode 'coq-mode) (member 'prog-mode modes))))
+
+(defmacro alectryon--mode-case (if-code if-markup &optional mode)
+  "Choose between IF-CODE and IF-MARKUP based on MODE."
+  (let ((m (make-symbol "mode")))
+    `(progn
+       (let ((,m (or ,mode major-mode)))
+         (cond
+          ((alectryon--provided-mode-derived-p ,m 'prog-mode) ,if-code)
+          ((alectryon--provided-mode-derived-p ,m 'text-mode) ,if-markup)
+          (t (error "Unrecognized mode: %s" ,m)))))))
+
+(defun alectryon--config (prop &optional text-or-prog)
+  "Get value of configuration variable PROP.
+
+If TEXT-OR-PROG is `text', return the `text-mode' value of the
+variable.  If it is `prog', return the `prog-mode' value of the
+variable.  If it is nil, choose based on the current mode."
+  (unless text-or-prog
+    (setq text-or-prog (alectryon--mode-case 'prog 'text)))
+  (plist-get
+   (pcase text-or-prog
+     (`prog (alectryon--prog-plist))
+     (`text (alectryon--text-plist)))
+   prop))
+
+(defun alectryon--config-code+markup ()
+  "Compute an id such as `coq+rst' based on `alectryon-config'."
+  (format "%s+%s" (alectryon--config :tag 'prog) (alectryon--config :tag 'text)))
+
+(defun alectryon--config-markup ()
+  "Get an id such as `rst' for Alectryon."
+  (alectryon--config :tag 'text))
+
+(defun alectryon--config-frontend (&optional mode)
+  "Get a frontend id for MODE."
+  (alectryon--mode-case (alectryon--config-code+markup) (alectryon--config-markup) mode))
+
+(defun alectryon--config-backend (&optional mode)
+  "Get a frontend id for MODE."
+  (alectryon--mode-case (alectryon--config-markup) (alectryon--config-code+markup) mode))
+
+(defun alectryon-set-text-mode (mode)
+  "Set markup mode to MODE."
+  (interactive (completing-read "Markup mode to use in this buffer: "
+                                (mapcar #'car alectryon-text-modes) nil t))
+  (setf alectryon-text-mode mode)
+  (when (and (derived-mode-p 'text-mode)
+             (not (derived-mode-p mode)))
+    (alectryon--set-mode mode)))
+
+(defun alectryon-set-prog-mode (mode)
+  "Set markup mode to MODE."
+  (interactive (completing-read "Programming mode to use in this buffer: "
+                                (mapcar #'car alectryon-prog-modes) nil t))
+  (setf alectryon-prog-mode mode)
+  (when (and (derived-mode-p 'prog-mode)
+             (not (derived-mode-p mode)))
+    (alectryon--set-mode mode)))
+
+;;;; Conversion between code and markup
 
 (defun alectryon--run-converter (input args)
   "Run Alectryon with ARGS on contents of buffer INPUT.
@@ -152,22 +258,10 @@ The output goes into the current buffer."
       (unless (eq 0 ex)
         (error "Conversion error (%s):\n%s" ex (alectryon--buffer-string))))))
 
-(defmacro alectryon--mode-case (coq rst &optional mode)
-  "Choose between COQ and RST based on MODE."
-  (let ((m (make-symbol "mode")))
-    `(progn
-       (let ((,m (or ,mode major-mode)))
-         (cond
-          ((provided-mode-derived-p ,m 'coq-mode) ,coq)
-          ((provided-mode-derived-p ,m 'rst-mode) ,rst)
-          (t (user-error "Unrecognized mode: %S" ,m)))))))
-
 (defun alectryon--converter-args (&optional mode)
   "Compute conversion arguments to convert from MODE."
-  (alectryon--mode-case
-   `("--frontend" "coq+rst" "--backend" "rst")
-   `("--frontend" "rst" "--backend" "coq+rst")
-   mode))
+  `("--frontend" ,(alectryon--config-frontend mode)
+    "--backend" ,(alectryon--config-backend mode)))
 
 (defun alectryon--convert-from (mode)
   "Convert current buffer from MODE."
@@ -197,19 +291,18 @@ Please open an issue at https://github.com/cpitclaudel/alectryon.")
   (funcall #'alectryon-mode))
 
 (defun alectryon--toggle ()
-  "Switch between Coq and reST views of the same file."
-  (alectryon--record-original-mode)
-  (when (derived-mode-p 'coq-mode)
-    (ignore-errors (alectryon--invoke 'proof-shell-exit t)))
+  "Switch between code and markup views of the same file."
+  (alectryon--record-mode)
+  (run-hooks (alectryon--config :exit-hooks))
   (let ((modified (buffer-modified-p)))
     (alectryon--convert-from major-mode)
     (push `(apply ,(apply-partially #'alectryon--set-mode major-mode))
           buffer-undo-list)
-    (alectryon--set-mode (alectryon--mode-case 'rst-mode 'coq-mode))
+    (alectryon--set-mode (alectryon--mode-case alectryon-text-mode alectryon-prog-mode))
     (set-buffer-modified-p modified)))
 
 (defun alectryon-toggle ()
-  "Switch between Coq and reST views of the same file."
+  "Switch between code and markup views of the same file."
   (interactive)
   (alectryon--toggle)
   (message "Switched to %s mode.  Press %s to go back." mode-name
@@ -251,10 +344,10 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
     :face (if alectryon-mode 'success '(bold error)))))
 
 (flycheck-define-command-checker 'alectryon
-  "Flycheck checker for literate Coq."
+  "Flycheck checker for literate code."
   :command '("alectryon"
              "--stdin-filename" source-original
-             "--frontend" (eval (alectryon--mode-case "coq+rst" "rst"))
+             "--frontend" (eval (alectryon--config-frontend))
              "--backend" "lint"
              "-")
   :standard-input t
@@ -268,26 +361,28 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 
 (defface alectryon-comment
   '((t :inherit font-lock-doc-face))
-  "Face used to highlight (*| … |*) comments."
+  "Face used to highlight Alectryon comments."
   :group 'alectryon)
 
 (defface alectryon-comment-marker
   '((t :strike-through t :height 0.5))
-  "Face used to highlight (*| … |*) markers."
+  "Face used to highlight Alectryon comment delimiters."
   :group 'alectryon)
 
-(defun alectryon--coq-syntactic-face-function (state)
+(defun alectryon--prog-syntactic-face-function (state)
   "Determine which face to use based on parsing state STATE."
   (let ((comment-opener-pos (nth 8 state)))
     (when comment-opener-pos
       (save-excursion
         (goto-char comment-opener-pos)
-        (when (looking-at-p (regexp-quote "(*|"))
+        (when (looking-at-p (car (alectryon--config :comment-delimiters-re 'prog)))
           'alectryon-comment)))))
 
 ;; TODO: display as a solid line even when it's on the same line.
-(defconst alectryon--coq-font-lock-keywords
-  '(("^\\(([*][|]\\|[|][*])\\)$"
+(defun alectryon--prog-font-lock-keywords ()
+  "Compute `font-lock' keywords for Alectryon delimiters in `prog-mode'."
+  `((,(pcase-let ((`(,open . ,close) (alectryon--config :comment-delimiters-re 'prog)))
+        (format "^\\(%s\\|%s\\)$" open close))
      ;; No space allowed at EOL (the :align-to would push it to the next line)
      1 '(face alectryon-comment-marker display (space :align-to right)) append)))
 
@@ -296,14 +391,16 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 ;;;; Editing
 
 (defun alectryon-insert-literate-block ()
-  "Insert a pair of (*| … |*) markers."
+  "Insert a pair of Alectryon comment delimiters."
   (interactive)
-  (let* ((face (get-text-property (point) 'face))
-         (in-lit (and (nth 4 (syntax-ppss))
-                      (memq 'alectryon-comment (if (listp face) face (list face)))))
-         (delim (if in-lit
-                    '("|*)\n\n" . "\n\n(*|")
-                  '("(*|\n" . "\n|*)"))))
+  (pcase-let*
+      ((face (get-text-property (point) 'face))
+       (`(,open . ,close) (alectryon--config :comment-delimiters 'prog))
+       (in-lit (and (nth 4 (syntax-ppss))
+                    (memq 'alectryon-comment (if (listp face) face (list face)))))
+       (delim (if in-lit
+                  `(,(format "%s\n\n" close) . ,(format "\n\n%s" open))
+                `(,(format "%s\n" open) . ,(format "\n%s" close)))))
     (insert (car delim))
     (save-excursion (insert (cdr delim)))))
 
@@ -314,7 +411,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   (interactive)
   (let* ((html-fname (make-temp-file "alectryon" nil ".html"))
          (input (current-buffer))
-         (frontend (alectryon--mode-case "coq+rst" "rst"))
+         (frontend (alectryon--mode-case (alectryon--config-code+markup) (alectryon--config-markup)))
          (args `("--frontend" ,frontend "--backend" "webpage"
                  "-o" ,html-fname)))
     (with-temp-buffer
@@ -358,48 +455,55 @@ Current document must have a file name."
   (interactive)
   (customize-group 'alectryon))
 
-(defvar alectryon-coq-mode-map
+(defvar alectryon-prog-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map alectryon-mode-map)
     (define-key map (kbd "C-c C-=") #'alectryon-insert-literate-block)
     map))
 
-(define-minor-mode alectryon--coq-mode
-  "Enable or disable the Coq-specific parts of `alectryon-mode'."
-  :keymap alectryon-coq-mode-map
+(defvar-local alectryon--prog-font-lock-keywords nil
+  "Cache variable for `alectryon--prog-font-lock-keywords'.")
+
+(define-minor-mode alectryon--prog-mode
+  "Enable or disable the code-specific parts of `alectryon-mode'."
+  :keymap alectryon-prog-mode-map
   (cond
-   (alectryon--coq-mode
+   (alectryon--prog-mode
     (visual-line-mode)
-    (font-lock-add-keywords nil alectryon--coq-font-lock-keywords)
+    (setq alectryon--prog-font-lock-keywords (alectryon--prog-font-lock-keywords))
+    (font-lock-add-keywords nil alectryon--prog-font-lock-keywords)
     (add-to-list 'font-lock-extra-managed-props 'display)
     (add-function :before-until (local 'font-lock-syntactic-face-function)
-                  #'alectryon--coq-syntactic-face-function '((depth . -100))))
+                  #'alectryon--prog-syntactic-face-function '((depth . -100))))
    (t
     (visual-line-mode -1)
-    (font-lock-remove-keywords nil alectryon--coq-font-lock-keywords)
+    (font-lock-remove-keywords nil alectryon--prog-font-lock-keywords)
     (remove-function (local 'font-lock-syntactic-face-function)
-                     #'alectryon--coq-syntactic-face-function))))
+                     #'alectryon--prog-syntactic-face-function))))
 
-(defvar alectryon-rst-mode-map
+(defvar alectryon-text-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map alectryon-mode-map)
     map))
 
-(define-minor-mode alectryon--rst-mode
-  "Enable or disable the reST-specific parts of `alectryon-mode'."
-  :keymap alectryon-rst-mode-map)
+(define-minor-mode alectryon--text-mode
+  "Enable or disable the markup-specific parts of `alectryon-mode'."
+  :keymap alectryon-text-mode-map)
 
-(defun alectryon--record-original-mode ()
+(defun alectryon--record-mode ()
   "Initialize `alectryon--original-mode'."
-  (setq-local alectryon--original-mode (or alectryon--original-mode major-mode)))
+  (setq-local alectryon--original-mode (or alectryon--original-mode major-mode))
+  (alectryon--mode-case
+   (setq alectryon-prog-mode major-mode)
+   (setf alectryon-text-mode major-mode)))
 
 ;; Adding the menu to a parent keymap causes it to be duplicated (?!), so add it
 ;; to both submaps instead.
-(easy-menu-define alectryon-mode-menu (list alectryon-coq-mode-map alectryon-rst-mode-map)
+(easy-menu-define alectryon-mode-menu (list alectryon-prog-mode-map alectryon-text-mode-map)
   "Alectryon's main menu."
   '("Alectryon"
-    ["Convert to reStructuredText" alectryon-toggle :visible (alectryon--mode-case t nil)]
-    ["Convert to Coq + reST" alectryon-toggle :visible (alectryon--mode-case nil t)]
+    ["Convert to markup" alectryon-toggle :visible (alectryon--mode-case t nil)]
+    ["Convert to code" alectryon-toggle :visible (alectryon--mode-case nil t)]
     ["Preview the current buffer as a webpage." alectryon-preview]
     ["Configure alectryon-mode" alectryon-customize]))
 
@@ -419,21 +523,21 @@ Current document must have a file name."
 
 ;;;###autoload
 (define-minor-mode alectryon-mode
-  "Mode for Literate Coq files.
+  "Mode for Alectryon files.
 
-In Coq mode:
-\\{alectryon-coq-mode-map}
-In reST mode:
-\\{alectryon-rst-mode-map}"
+In code mode:
+\\{alectryon-prog-mode-map}
+In markup mode:
+\\{alectryon-text-mode-map}"
   :lighter " 📚"
   (cond
    (alectryon-mode
-    (alectryon--record-original-mode)
+    (alectryon--record-mode)
     (alectryon--invoke 'flycheck-mode)
     (add-hook 'write-contents-functions #'alectryon--save t t)
     (add-hook 'flyspell-mode-hook #'alectryon--flyspell-hook)
     (alectryon--flyspell-hook)
-    (alectryon--mode-case (alectryon--coq-mode 1) (alectryon--rst-mode 1)))
+    (alectryon--mode-case (alectryon--prog-mode 1) (alectryon--text-mode 1)))
    (t
     (unless (alectryon--in-original-mode)
       (alectryon--toggle)
@@ -442,23 +546,28 @@ In reST mode:
     (remove-hook 'write-contents-functions #'alectryon--save t)
     (remove-hook 'flyspell-mode-hook #'alectryon--flyspell-hook)
     (alectryon--flyspell-unhook)
-    (alectryon--mode-case (alectryon--coq-mode -1) (alectryon--rst-mode -1))))
+    (alectryon--mode-case (alectryon--prog-mode -1) (alectryon--text-mode -1))))
   (alectryon--refontify))
 
 ;;;; Presentation mode
 
-(defconst alectryon--coq-presentation-font-lock-keywords
-  '(("([*]\s*\\(\\(?:\s*[.][-a-z]+\\)+\\)\s*[*])"
+(defun alectryon--prog-presentation-font-lock-keywords ()
+  "Compute `font-lock' keywords for Alectryon annotations in `prog-mode'."
+  `((,(alectryon--config :code-annotations-re)
      0 '(face '(:height 0.5) display "👻") append)))
 
+(defvar-local alectryon--prog-presentation-font-lock-keywords nil
+  "Cache variable for `alectryon--prog-presentation-font-lock-keywords'.")
+
 (define-minor-mode alectryon-presentation-mode
-  "Hide alectryon annotations in Coq files."
+  "Hide Alectryon annotations in code files."
   :lighter ""
   (cond
    (alectryon-presentation-mode
-    (font-lock-add-keywords nil alectryon--coq-presentation-font-lock-keywords))
+    (setq alectryon--prog-font-lock-keywords (alectryon--prog-presentation-font-lock-keywords))
+    (font-lock-add-keywords nil alectryon--prog-presentation-font-lock-keywords))
    (t
-    (font-lock-remove-keywords nil alectryon--coq-presentation-font-lock-keywords)))
+    (font-lock-remove-keywords nil alectryon--prog-presentation-font-lock-keywords)))
   (font-lock-flush))
 
 ;;;###autoload
