@@ -436,6 +436,8 @@ In any case, make an exception for comments:
     display: block;
     flex-grow: 1;
     margin: 0;
+    width: unset;
+    max-width: unset;
 }
 
 .alectryon-io .goal-separator .goal-name {
