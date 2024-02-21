@@ -293,7 +293,7 @@ Please open an issue at https://github.com/cpitclaudel/alectryon.")
 (defun alectryon--toggle ()
   "Switch between code and markup views of the same file."
   (alectryon--record-mode)
-  (run-hooks (alectryon--config :exit-hooks))
+  (apply #'run-hooks (alectryon--config :exit-hooks))
   (let ((modified (buffer-modified-p)))
     (alectryon--convert-from major-mode)
     (push `(apply ,(apply-partially #'alectryon--set-mode major-mode))
