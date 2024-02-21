@@ -256,7 +256,9 @@ The output goes into the current buffer."
                    (apply #'call-process-region nil nil alectryon
                           nil buffer nil args)))))
       (unless (eq 0 ex)
-        (error "Conversion error (%s):\n%s" ex (alectryon--buffer-string))))))
+        (error "Conversion error (%s) when running `%s':\n%s"
+               ex (mapconcat #'shell-quote-argument (cons alectryon args) " ")
+               (alectryon--buffer-string))))))
 
 (defun alectryon--converter-args (&optional mode)
   "Compute conversion arguments to convert from MODE."
