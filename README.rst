@@ -245,12 +245,19 @@ The ``.. coq::`` directive takes a list of space-separated flags to control the 
 - One option controls whether output is folded (``fold``) or unfolded (``unfold``).  When output is folded, users can reveal the output corresponding to each input line selectively.
 
 - Multiple options control what is included in the output.
+
   - ``in``: Include input sentences (``no-in``: hide them)
+
   - ``goals``: Include goals (``no-goals``: hide them)
+
   - ``messages``: Include messages (``no-messages``: hide them)
+
   - ``hyps``: Include hypotheses (``no-hyps``: hide them)
+
   - ``out``: Include goals and messages (``no-out``: hide them)
+
   - ``all``: Include input, goals, and messages (``none``: hide them)
+
   - ``fails`` (for sentences expected to throw an error): Strip the `Fail` keyword from the input and remove the *The command has indeed failed with message:* prefix in the output. (``succeeds``: leave input and output as-is)
 
 The default is ``all fold``, meaning that all output is available, and starts folded.  The exact semantics depend on the polarity of the first inclusion option encountered: ``x y z`` means the same as ``none x y z``, i.e. include ``x``, ``y``, ``z``, and nothing else; ``no-x no-y`` means ``all no-x no-y``, i.e. include everything except ``x`` and ``y``.
