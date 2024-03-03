@@ -658,7 +658,7 @@ def post_process_arguments(parser, args):
     # argparse applies ‘type’ before ‘choices’, so we do the conversion here
     args.copy_fn = COPY_FUNCTIONS[args.copy_fn]
 
-    if args.long_line_threshold < 0:
+    if args.long_line_threshold <= 0:
         args.long_line_threshold = None
 
     args.point, args.marker = args.mark_point
@@ -836,7 +836,8 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
 
     warn_out = parser.add_argument_group("Warnings configuration")
 
-    LL_THRESHOLD_HELP = "Warn on lines longer than this threshold (docutils)."
+    LL_THRESHOLD_HELP = ("Warn on lines longer than this threshold "
+                         "(docutils, 0 to turn off).")
     warn_out.add_argument("--long-line-threshold", type=int,
                           default=72, help=LL_THRESHOLD_HELP)
 
