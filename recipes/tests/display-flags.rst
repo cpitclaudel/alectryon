@@ -9,7 +9,7 @@ This file tests various combinations of display flags.  To compile::
 .. coq:: none
 
    Require Import Coq.Unicode.Utf8. (* .none *)
-   Require Import NArith ArithRing.
+   Require Import PeanoNat ArithRing.
 
    Fixpoint nsum max f :=
      match max with
@@ -28,7 +28,7 @@ This file tests various combinations of display flags.  To compile::
        Show Proof. (* .in .messages *)
        reflexivity.
      - (* n ← S _ *) (* .hyps *)
-       rewrite Mult.mult_plus_distr_l. (* .fold *)
+       rewrite Nat.mul_add_distr_l. (* .fold *)
        rewrite IHn.
        Show Proof. (* .all .no-goals *)
        ring.
@@ -65,11 +65,11 @@ This file tests various combinations of display flags.  To compile::
      (* `.fails` adds red highlight and removes "indeed failed". *)
      1 + true.
 
-   Require Coq.Arith.Arith. (* ← Executed but hidden *) (* .none *)
-   Goal True.               (* ← Goal unfolded *) (* .unfold *)
-     Fail exact 1.          (* ← Goal omitted *) (* .in .messages *)
-     Fail fail.             (* ← Error message shown, input hidden *) (* .unfold .messages *)
-     exact I.               (* ← Executed but hidden *) (* -.s{*} *)
+   Require Coq.PeanoNat. (* ← Executed but hidden *) (* .none *)
+   Goal True.            (* ← Goal unfolded *) (* .unfold *)
+     Fail exact 1.       (* ← Goal omitted *) (* .in .messages *)
+     Fail fail.          (* ← Error message shown, input hidden *) (* .unfold .messages *)
+     exact I.            (* ← Executed but hidden *) (* -.s{*} *)
    Qed.
 
 .. coq:: -.h#l* -.h#[aA] -.s(Check let).msg(Check) -.s{Proof.}.in -.s{Proof.}.g#* -.s{Proof.}.msg(*)

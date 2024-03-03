@@ -11,7 +11,7 @@ To compile::
 
 .. coq::
 
-   Require Import Arith.
+   Require Import PeanoNat.
 
    Lemma mul_comm :
      forall a b: nat, a * b = b * a.

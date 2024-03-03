@@ -8,10 +8,10 @@ To run it::
     alectryon --frontend coq --html-minification minification.v
       # Plain Coq → HTML (minified); produces ‘minification.v.html’ **)
 
-Require Import Arith.
+Require Import PeanoNat.
 
 Section Redundant.
-  Context (non_negative := le_0_n).
+  Context (non_negative := Nat.le_0_l).
 
   Fixpoint tree (n: nat) :=
     match n with

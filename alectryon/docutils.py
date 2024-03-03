@@ -229,16 +229,16 @@ class Config:
     def read_docinfo(self):
         # Sphinx doesn't translate ``field_list`` to ``docinfo``
         selector = lambda n: isinstance(n, (nodes.field_list, nodes.docinfo))
-        for di in self.document.traverse(selector):
-            for field in di.traverse(nodes.field):
+        for di in list(self.document.findall(selector)):
+            for field in list(di.findall(nodes.field)):
                 name, body = field.children
                 field.text = "`:{}:`".format(name.rawsource)
                 field.rawsource = ":{}: {}".format(name.rawsource, body.rawsource)
                 _try(self.document, self.parse_docinfo_field,
                      field, name.rawsource, body.rawsource)
-        for di in self.document.traverse(selector):
+        for di in list(self.document.findall(selector)):
             errors = []
-            for field in di.traverse(nodes.problematic):
+            for field in list(di.findall(nodes.problematic)):
                 errors.append(field)
                 field.parent.remove(field)
             if errors:
@@ -338,7 +338,7 @@ class ActivateMathJaxTransform(OneTimeTransform):
         return isinstance(node, (nodes.math, nodes.math_block))
 
     def _apply(self, **kwargs):
-        for node in self.document.traverse(self.is_math):
+        for node in self.document.findall(self.is_math):
             node.attributes.setdefault("classes", []).append("mathjax_process")
 
 class DocutilsObserver(core.Observer):
@@ -401,9 +401,9 @@ class AlectryonTransform(OneTimeTransform):
     def apply_drivers(self):
         from .json import CacheSet
         state = alectryon_state(self.document)
-        all_pending = self.document.traverse(alectryon_pending)
+        all_pending = by_lang(self.document.findall(alectryon_pending))
         with CacheSet(CACHE_DIRECTORY, self.document['source'], CACHE_COMPRESSION) as caches:
-            for lang, pending_nodes in by_lang(all_pending).items():
+            for lang, pending_nodes in all_pending.items():
                 driver_info, annotated = self.annotate(pending_nodes, lang, caches[lang])
                 state.drivers_info.append(driver_info)
                 for node, fragments in zip(pending_nodes, annotated):
@@ -426,7 +426,7 @@ class AlectryonTransform(OneTimeTransform):
 
     def apply_toggle(self):
         toggle = lambda id: nodes.raw('', TOGGLE_HTML.format(id=id), format='html')
-        toggles = list(self.document.traverse(alectryon_pending_toggle))
+        toggles = list(self.document.findall(alectryon_pending_toggle))
         for idx, node in enumerate(toggles):
             self.insert_toggle_after(node, toggle(idx), False)
             self.auto_toggle = False
@@ -584,11 +584,11 @@ class AlectryonMrefTransform(OneTimeTransform):
 
     def _apply(self, **_kwargs):
         ios = {id: node
-               for node in self.document.traverse(alectryon_pending_io)
+               for node in self.document.findall(alectryon_pending_io)
                for id in node.get("ids", ())}
         last_io = None
         io_or_mref = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_mref))
-        for node in self.document.traverse(io_or_mref):
+        for node in list(self.document.findall(io_or_mref)):
             if isinstance(node, alectryon_pending_io):
                 last_io = node
             elif isinstance(node, alectryon_pending_mref):
@@ -660,9 +660,9 @@ class AlectryonPostTransform(OneTimeTransform):
 
     def _apply(self, **_kwargs):
         io_or_quote = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_quote))
-        all_pending = self.document.traverse(io_or_quote)
+        all_pending = by_lang(self.document.findall(io_or_quote))
         fmt, generator = self.init_generator() # Init once so gensym is shared
-        for lang, pending_nodes in by_lang(all_pending).items():
+        for lang, pending_nodes in all_pending.items():
             config = alectryon_state(self.document).config
             with generator.highlighter.override(lang=lang):
                 with added_tokens(config.tokens_by_lang[lang], lang):
@@ -824,7 +824,7 @@ class ExperimentalExerciseDirective(Topic, AlectryonDirective):
         node['optional'] = self.options.get('optional', False)
         if not difficulty:
             return self._error("Missing required option ':difficulty:'")
-        for title in node.traverse(nodes.title):
+        for title in list(node.findall(nodes.title)):
             title.children.insert(0, nodes.Text("Exercise: "))
         return [node]
 

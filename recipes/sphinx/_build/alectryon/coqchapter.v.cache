@@ -5,7 +5,7 @@
   "&coq": {
     "driver": [
       "Coq+SerAPI",
-      "8.15.0+0.15.0"
+      "8.18.0+0.18.2"
     ],
     "metadata": {
       "sertop_args": []

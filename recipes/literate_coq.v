@@ -25,7 +25,7 @@ Alectryon supports literate programs and documents (combinations of code and pro
 .. coq:: none
 |*)
 
-Require Import Arith.
+Require Import PeanoNat.
 
 (*|
 Here's an *inductive specification* of evenness:

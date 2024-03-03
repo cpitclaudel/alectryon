@@ -33,7 +33,7 @@ _output/.version-info: | _output/
 	@echo "docutils==$(shell $(PYTHON) -c 'import docutils; print(docutils.__version__)')" >> $@
 	@echo "sphinx==$(shell $(PYTHON) -c 'import sphinx; print(sphinx.__version__)')" >> $@
 	@echo "myst-parser==$(shell $(PYTHON) -c 'import myst_parser; print(myst_parser.__version__)')" >> $@
-	@echo "alabaster==$(shell $(PYTHON) -c 'import alabaster; print(alabaster._version.__version__)')" >> $@
+	@echo "alabaster==$(shell $(PYTHON) -c 'import alabaster; print(alabaster.__version__)')" >> $@
 
 ifeq (, $(COVERAGE))
 other += _output/.version-info

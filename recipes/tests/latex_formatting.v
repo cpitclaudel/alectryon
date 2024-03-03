@@ -142,7 +142,7 @@ Some text.
 
    Some text in compound.
 
-   Some text in compound.  Spacing isn't right; see `<https://sourceforge.net/p/docutils/patches/183/>`__.
+   Some text in compound.  Spacing used to be wrong; see `<https://sourceforge.net/p/docutils/patches/183/>`__.
 |*)
 
 (* Some code in compound *)

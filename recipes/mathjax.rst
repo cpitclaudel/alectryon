@@ -11,7 +11,7 @@ First, we start with a definition of ``sum``:
 .. coq::
 
    Require Import Coq.Unicode.Utf8. (* .none *)
-   Require Import NArith ArithRing.
+   Require Import PeanoNat ArithRing.
 
    Fixpoint nsum max f :=
      match max with
@@ -100,7 +100,7 @@ And finally we write the actual proofs:
      - (* n ← 0 *)
        reflexivity.
      - (* n ← S _ *)
-       rewrite Mult.mult_plus_distr_l.
+       rewrite Nat.mul_add_distr_l.
        rewrite IHn.
        ring.
    Qed.

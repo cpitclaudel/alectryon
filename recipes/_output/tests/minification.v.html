@@ -49,10 +49,10 @@
 <span class="sd">    alectryon --frontend coq --html-minification minification.v</span>
 <span class="sd">      # Plain Coq → HTML (minified); produces ‘minification.v.html’ **)</span>
 
-</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Arith.</span><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> PeanoNat.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Section</span> <span class="nf">Redundant</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Context</span> (<span class="nv">non_negative</span> := le_0_n).</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Context</span> (<span class="nv">non_negative</span> := Nat.le_0_l).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">
 </span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Fixpoint</span> <span class="nf">tree</span> (<span class="nv">n</span>: nat) :=
     <span class="kr">match</span> n <span class="kr">with</span>
