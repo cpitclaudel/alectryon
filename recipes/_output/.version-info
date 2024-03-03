@@ -1,5 +1,6 @@
-Coq: 8.15.1
-Pygments: 2.12.0
-Docutils: 0.17.1
-Sphinx: 4.5.0
-MyST: 0.17.2
+coq==8.15.1
+pygments==2.12.0
+docutils==0.17.1
+sphinx==4.5.0
+myst-parser==0.17.2
+alabaster==0.7.12
