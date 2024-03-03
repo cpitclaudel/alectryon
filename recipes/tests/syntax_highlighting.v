@@ -37,3 +37,6 @@ Print b.
 
 Notation "` x '' y `" := (x + y).
 Check (1 + 2).
+
+Notation "F ₀ x" := (F x) (at level 70).
+Check S ₀ 3.
