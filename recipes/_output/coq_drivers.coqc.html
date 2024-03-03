@@ -37,7 +37,7 @@ alectryon --coq-driver=sertop_noexec coq_drivers.v -o coq_drivers.noexec.html
 </span></span><span class="alectryon-sentence"><span class="alectryon-input" id="coq-drivers-v-s-proof-0"><span class="kn">Proof</span>.<span class="alectryon-mref-marker">1</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">induction</span> l; <span class="nb">simpl</span>; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input" id="coq-drivers-v-s-goal-in-0"><span class="kn">Goal</span> <span class="kr">forall</span> {<span class="nv">A</span> <span class="nv">B</span>} (<span class="nv">f</span>: A -&gt; B -&gt; B) (<span class="nv">l</span>: list A) <span class="nv">b</span>,
     fold_right f b l = fold_left (<span class="kr">fun</span> <span class="nv">acc</span> <span class="nv">b</span> =&gt; f b acc) (rev l) b.<span class="alectryon-mref-marker">2</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Proof</span>.</span><span class="alectryon-wsp">
@@ -46,7 +46,7 @@ alectryon --coq-driver=sertop_noexec coq_drivers.v -o coq_drivers.noexec.html
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">-</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">rewrite</span> IHl, fold_left_app; <span class="nb">simpl</span>; <span class="nb">auto</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Check</span> nat.</span></span></pre><p>Limited reference functionality is still available: <a class="alectryon-mref reference internal" href="#coq-drivers-v-s-proof-0">1</a>, <a class="alectryon-mref reference internal" href="#coq-drivers-v-s-goal-in-0">2</a>, <samp class="alectryon-inline highlight"><!-- Generator: Alectryon --><span class="kn">Goal</span> <span class="kr">forall</span> {<span class="nv">A</span> <span class="nv">B</span>} (<span class="nv">f</span>: A -&gt; B -&gt; B) (<span class="nv">l</span>: list A) <span class="nv">b</span>,
     fold_right f b l = fold_left (<span class="kr">fun</span> <span class="nv">acc</span> <span class="nv">b</span> =&gt; f b acc) (rev l) b.</samp>.</p>
 </div>

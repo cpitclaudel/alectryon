@@ -51,7 +51,7 @@ Here's an *inductive specification* of evenness:
   | <span class="mi">1</span> =&gt; false
   | S (S n) =&gt; even n
   <span class="kr">end</span>.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 <span class="c">(* Ensure that we never unfold [even (S n)] *)</span>
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Arguments</span> even : <span class="nb">simpl</span> nomatch.</span></span></pre><div class="doc">
 Can we prove it correct?
