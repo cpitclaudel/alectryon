@@ -27,18 +27,6 @@ other :=
 	mkdir -p $@
 .PRECIOUS: %/
 
-_output/.version-info: | _output/
-	@echo "coq==$(shell coqc -v | tr '\n' ' ' | sed 's/.*version \([0-9.]\+\).*/\1/')" > $@
-	@echo "pygments==$(shell $(PYTHON) -c 'import pygments; print(pygments.__version__)')" >> $@
-	@echo "docutils==$(shell $(PYTHON) -c 'import docutils; print(docutils.__version__)')" >> $@
-	@echo "sphinx==$(shell $(PYTHON) -c 'import sphinx; print(sphinx.__version__)')" >> $@
-	@echo "myst-parser==$(shell $(PYTHON) -c 'import myst_parser; print(myst_parser.__version__)')" >> $@
-	@echo "alabaster==$(shell $(PYTHON) -c 'import alabaster; print(alabaster.__version__)')" >> $@
-
-ifeq (, $(COVERAGE))
-other += _output/.version-info
-endif
-
 ########################
 # Auto-generated rules #
 ########################
