@@ -53,15 +53,15 @@ def _catch_parsing_errors(fpath, k, *args):
     except ParsingError as e:
         raise ValueError("{}: {}".format(fpath, e)) from e
 
-def code_to_rst(code, fpath, point, marker, input_language):
-    from .literate import code2rst_marked, LANGUAGES
-    lang = LANGUAGES[input_language]
-    return _catch_parsing_errors(fpath, code2rst_marked, lang, code, point, marker)
+def code_to_markup(code, fpath, point, marker, input_language, backend):
+    from .literate import get_markup, code2markup_marked
+    markup = get_markup(backend, input_language)
+    return _catch_parsing_errors(fpath, code2markup_marked, markup, code, point, marker)
 
-def rst_to_code(rst, fpath, point, marker, backend):
-    from .literate import rst2code_marked, LANGUAGES
-    lang = LANGUAGES[backend.replace("+rst", "")]
-    return _catch_parsing_errors(fpath, rst2code_marked, lang, rst, point, marker)
+def markup_to_code(rst, fpath, point, marker, frontend, backend):
+    from .literate import get_markup, markup2code_marked
+    markup = get_markup(frontend, backend.replace("+rst", ""))
+    return _catch_parsing_errors(fpath, markup2code_marked, markup, rst, point, marker)
 
 def init_driver(input_language, driver_name, driver_args, fpath):
     driver_cls = core.resolve_driver(input_language, driver_name)
@@ -393,6 +393,11 @@ CODE_EXTENSIONS = {
     ext for exts in core.EXTENSIONS_BY_LANGUAGE.values() for ext in exts
 }
 
+EXTENSIONS_BY_MARKUP = {
+    "md": (".md",),
+    "rst": (".rst",),
+}
+
 # No ‘apply_transforms’ in JSON pipelines: we save the prover output without
 # modifications.
 def _add_code_pipelines(pipelines, lang, *exts):
@@ -447,17 +452,19 @@ def _add_code_pipelines(pipelines, lang, *exts):
         (read_plain, parse_plain, annotate_chunks, encode_json, dump_json,
          write_file(".io.json", strip=()))
     }
-    pipelines[lang + '+rst'] = {
-        'webpage':
-        (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".html", strip=(*exts, ".rst"))),
-        'latex':
-        (read_plain, register_docutils, gen_docutils, copy_assets,
-         write_file(".tex", strip=(*exts, ".rst"))),
-        'lint':
-        (read_plain, register_docutils, gen_docutils,
-         write_file(".lint.json", strip=(*exts, ".rst"))),
-    }
+    for markup, mexts in EXTENSIONS_BY_MARKUP.items():
+        strip = (*exts, *mexts)
+        pipelines["{}+{}".format(lang, markup)] = {
+            'webpage':
+            (read_plain, register_docutils, gen_docutils, copy_assets,
+             write_file(".html", strip=strip)),
+            'latex':
+            (read_plain, register_docutils, gen_docutils, copy_assets,
+             write_file(".tex", strip=strip)),
+            'lint':
+            (read_plain, register_docutils, gen_docutils,
+             write_file(".lint.json", strip=strip)),
+        }
 
 def _add_coqdoc_pipeline(pipelines):
     pipelines['coqdoc'] = {
@@ -482,14 +489,18 @@ def _add_docutils_pipelines(pipelines, lang, *exts):
     }
 
 def _add_transliteration_pipelines(pipelines):
-    exts = (*CODE_EXTENSIONS, ".rst")
-    for lang, (ext, *_) in core.EXTENSIONS_BY_LANGUAGE.items():
-        pipelines['rst'][lang] = pipelines['rst'][lang + '+rst'] = \
-            (read_plain, rst_to_code, write_file(ext, strip=exts))
-        pipelines[lang]['rst'] = \
-            (read_plain, code_to_rst, write_file(".rst", strip=()))
-        pipelines[lang + '+rst']['rst'] = \
-            (read_plain, code_to_rst, write_file(ext + ".rst", strip=(*exts, ".rst")))
+    for markup, mexts in EXTENSIONS_BY_MARKUP.items():
+        exts = (*CODE_EXTENSIONS, *mexts)
+        for lang, (ext, *_) in core.EXTENSIONS_BY_LANGUAGE.items():
+            lang_plus = "{}+{}".format(lang, markup)
+            pipelines[markup][lang] = pipelines[markup][lang_plus] = \
+                (read_plain, markup_to_code, write_file(ext, strip=exts))
+            pipelines[markup][lang] = pipelines[markup][lang_plus] = \
+                (read_plain, markup_to_code, write_file(ext, strip=exts))
+            pipelines[lang][markup] = \
+                (read_plain, code_to_markup, write_file(mexts[0], strip=()))
+            pipelines[lang_plus][markup] = \
+                (read_plain, code_to_markup, write_file(ext + mexts[0], strip=exts))
 
 def warn_renamed_json_pipeline(v, ctx):
     print("WARNING: Frontend `json` is ambiguous; use `coq.json` instead.",
@@ -507,8 +518,8 @@ def _add_pipelines(pipelines):
     for lang, exts in core.EXTENSIONS_BY_LANGUAGE.items():
         _add_code_pipelines(pipelines, lang, *exts)
     _add_coqdoc_pipeline(pipelines)
-    _add_docutils_pipelines(pipelines, "rst", ".rst")
-    _add_docutils_pipelines(pipelines, "md", ".md")
+    for markup, exts in EXTENSIONS_BY_MARKUP.items():
+        _add_docutils_pipelines(pipelines, markup, *exts)
     _add_transliteration_pipelines(pipelines)
     _add_compatibility_pipelines(pipelines)
     return pipelines
