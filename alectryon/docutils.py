@@ -709,11 +709,12 @@ def recompute_contents(directive, real_indentation):
     """
     if directive.content_offset <= directive.lineno: # MyST bug
         return (0, "\n".join(directive.content))
-    block_lines = directive.block_text.splitlines()
+    block_lines = directive.block_text.splitlines() # Includes trailing blank lines
     block_header_len = directive.content_offset - directive.lineno + 1
     header_indentation = measure_indentation(directive.block_text)
     assert header_indentation is not None
-    body_lines = block_lines[block_header_len:]
+    block_header_end = block_header_len + len(directive.content)
+    body_lines = block_lines[block_header_len:block_header_end]
     min_indentation = measure_min_indentation(body_lines)
     body_indentation = min(header_indentation + real_indentation, min_indentation)
     contents = "\n".join(ln[body_indentation:] for ln in body_lines)
