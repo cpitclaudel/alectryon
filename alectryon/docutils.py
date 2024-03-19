@@ -502,9 +502,10 @@ class AlectryonMrefTransform(OneTimeTransform):
     @staticmethod
     def _find_mref_io(path, ios, last_io):
         io_name = path["io"]
-        io = ios.get(io_name) if io_name else last_io
+        io_normalized_name = io_name and nodes.fully_normalize_name(io_name)
+        io = ios.get(io_normalized_name) if io_normalized_name else last_io
         if io is None:
-            if io_name:
+            if io_normalized_name:
                 raise ValueError("Reference to unknown Alectryon block.")
             raise ValueError("Not sure which code block this refers to; "
                              "add ``.io#…`` to disambiguate.")

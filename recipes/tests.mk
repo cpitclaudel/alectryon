@@ -210,6 +210,11 @@ _output/tests/recording.snippets.tex: tests/recording.v.io.json
 	$(alectryon) $< --backend snippets-latex
 tests_targets += _output/tests/recording.snippets.tex
 
+# reST → HTML
+_output/tests/references.html: tests/references.rst
+	$(alectryon) $<
+tests_targets += _output/tests/references.html
+
 # Coq → HTML
 _output/tests/screenshot.html: tests/screenshot.v
 	$(alectryon) $<
