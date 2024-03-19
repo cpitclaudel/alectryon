@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+<title>References corner-cases</title>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="pygments.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="references-corner-cases">
+<h1 class="title">References corner-cases</h1>
+
+<p>To compile:</p>
+<pre class="literal-block">
+alectryon references.rst # reST → HTML; produces ‘references.html’
+</pre>
+<p>reST normalizes block names, so <code class="highlight coq"><span class="o">.</span><span class="n">io</span></code> references need to be normalized too:</p>
+<pre class="alectryon-io highlight" id="named-block"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="references-rst-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chk0"><span class="kn">Print</span> eq.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kn">Inductive</span> <span class="nf">eq</span> (<span class="nv">A</span> : <span class="kt">Type</span>) (<span class="nv">x</span> : A) : A -&gt; <span class="kt">Prop</span> :=
+    eq_refl : x = x.
+
+<span class="kn">Arguments</span> eq {A}%type_scope x _
+<span class="kn">Arguments</span> eq_refl {A}%type_scope {x}, [_] _</blockquote></div></div></small></span></pre><ul class="simple">
+<li><samp class="alectryon-inline highlight"><!-- Generator: Alectryon --><span class="kn">Print</span> eq.</samp>.</li>
+<li><samp class="alectryon-inline highlight"><!-- Generator: Alectryon --><span class="kn">Inductive</span> <span class="nf">eq</span> (<span class="nv">A</span> : <span class="kt">Type</span>) (<span class="nv">x</span> : A) : A -&gt; <span class="kt">Prop</span> :=
+    eq_refl : x = x.
+
+<span class="kn">Arguments</span> eq {A}%type_scope x _
+<span class="kn">Arguments</span> eq_refl {A}%type_scope {x}, [_] _</samp>.</li>
+</ul>
+</div>
+</div></body>
+</html>
