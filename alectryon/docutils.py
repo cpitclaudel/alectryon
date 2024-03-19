@@ -506,7 +506,9 @@ class AlectryonMrefTransform(OneTimeTransform):
         io = ios.get(io_normalized_name) if io_normalized_name else last_io
         if io is None:
             if io_normalized_name:
-                raise ValueError("Reference to unknown Alectryon block.")
+                raise ValueError(
+                    f"Reference to unknown .io block {io_normalized_name}. " +
+                    (f"Use one of: {', '.join(sorted(ios))}." if ios else ""))
             raise ValueError("Not sure which code block this refers to; "
                              "add ``.io#…`` to disambiguate.")
         return io
