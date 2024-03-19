@@ -103,7 +103,7 @@ tests/errors.rst:128: (ERROR/3) In `.. coq::`:
    No match found for `.msg{*}` in `Abort.`
 tests/errors.rst:137: (ERROR/3) In `.. coq:: unfold out`: Cannot show output of 'Check nat.' without .in or .unfold.
 tests/errors.rst:75: (ERROR/3) In :mref:`.s(Goal True)`: Not sure which code block this refers to; add ``.io#…`` to disambiguate.
-tests/errors.rst:85: (ERROR/3) In :mref:`.io#nope.s(123)`: Reference to unknown Alectryon block.
+tests/errors.rst:85: (ERROR/3) In :mref:`.io#nope.s(123)`: Reference to unknown .io block nope. 
 tests/errors.rst:86: (ERROR/3) In :mref:`.s(Goal).g#25`: No goal matches '25'.
 tests/errors.rst:87: (ERROR/3) In :mref:`.s(pose proof).h#n.body`: Target is null
 tests/errors.rst:92: (ERROR/3) In assertion `.g{*not found*}`: No goal matches '*not found*'.
