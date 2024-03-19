@@ -589,7 +589,7 @@ class AlectryonMrefTransform(OneTimeTransform):
     def _apply(self, **_kwargs):
         ios = {id: node
                for node in self.document.findall(alectryon_pending_io)
-               for id in node.get("ids", ())}
+               for id in node.get("names", ())}
         last_io = None
         io_or_mref = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_mref))
         for node in list(self.document.findall(io_or_mref)):
