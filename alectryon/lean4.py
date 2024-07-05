@@ -59,6 +59,8 @@ class Lean4(CLIDriver):
 
             if self.lake_file_path is not None:
                 working_directory = os.path.dirname(os.path.realpath(self.lake_file_path))
+                self.user_args += [self.LAKE_ENV_KEY, self.lake_file_path]
+            else:
                 self.user_args += [self.LAKE_ENV_KEY, self.LAKE_TMP_FILE_PATH]
 
             input_file_path = str(os.path.abspath(input_file))
