@@ -65,15 +65,12 @@ class Lean4(CLIDriver):
             working_directory = os.path.dirname(os.path.realpath(self.user_args[idx]))
 
             input_file_path = str(os.path.abspath(input_file))
-            self.run_cli(
-                working_directory=working_directory,
+            self.run_cli(working_directory=working_directory,
                 capture_output=False,
                 more_args=[input_file_path],
             )
 
-            output_file = input_file.with_suffix(
-                self.LEAN_FILE_EXT + self.LEAN_INK_FILE_EXT
-            )
+            output_file = input_file.with_suffix(self.LEAN_FILE_EXT + self.LEAN_INK_FILE_EXT)
             content = output_file.read_text(encoding="utf-8")
             json_result = json.loads(content)
             tuple_result = PlainSerializer.decode(json_result)
