@@ -52,6 +52,15 @@ class StringView:
     def __str__(self) -> str:
         return self.s[self.beg:self.end]
 
+    def __iter__(self):
+        """Iterate over this view's characters.
+
+        >>> list(StringView("01234", 1, 3))
+        ['1', '2']
+        """
+        for idx in range(self.beg, self.end):
+            yield self.s[idx]
+
     def __repr__(self):
         return repr(str(self))
 
@@ -121,6 +130,15 @@ class Line:
     def __str__(self):
         s = "".join(str(p) for p in self.parts)
         return s if not s.isspace() else ""
+
+    def __iter__(self):
+        """Iterate over this line's characters.
+
+        >>> list(Line.of_parts([StringView("abc", 0, 1), StringView("123", 1, 3)]))
+        ['a', '2', '3']
+        """
+        for part in self.parts:
+            yield from part
 
     def isspace(self):
         return all(p.isspace() for p in self.parts)
@@ -634,11 +652,26 @@ class DafnyParser(LineParser):
     """
     LIT_HEADER_RE = re.compile("^[ \t]*///[ ]?", re.MULTILINE)
 
-INDENTATION_RE = re.compile(" *")
 def measure_indentation(line: Line) -> int:
-    m = line.match(INDENTATION_RE)
-    assert m
-    return m.end() - m.start()
+    """Compute the position of the first non-space character in `line`.
+
+    >>> measure_indentation(Line.of_str(""))
+    0
+    >>> measure_indentation(Line.of_str("  "))
+    2
+    >>> measure_indentation(Line.of_str("  a"))
+    2
+    >>> measure_indentation(Line.of_parts([
+    ...     StringView("abcd", 1, 1),
+    ...     StringView("a  d", 1, 3),
+    ...     StringView("a  d", 2, 3),
+    ... ]))
+    3
+    """
+    for idx, c in enumerate(line):
+        if c != " ":
+            return idx
+    return len(line)
 
 # Conversion
 # ----------
