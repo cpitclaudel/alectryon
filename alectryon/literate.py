@@ -184,7 +184,8 @@ class Line:
 
     # _replace from NamedTuple doesn't work because of __len__ above
     def _replace_parts(self, parts: List[StringView]) -> "Line": # pylint: disable=arguments-differ
-        return type(self)(self.num, parts)
+        # ``Line`` (not ``type(self)``), since we can't change the parts of an ``EmptyLine``.
+        return Line(self.num, parts)
 
 class EmptyLine(Line):
     """A subclass used to track empty lines added by Alectryon."""
