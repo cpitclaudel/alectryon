@@ -65,7 +65,7 @@ This file tests various combinations of display flags.  To compile::
      (* `.fails` adds red highlight and removes "indeed failed". *)
      1 + true.
 
-   Require Coq.PeanoNat. (* ← Executed but hidden *) (* .none *)
+   Require PeanoNat.     (* ← Executed but hidden *) (* .none *)
    Goal True.            (* ← Goal unfolded *) (* .unfold *)
      Fail exact 1.       (* ← Goal omitted *) (* .in .messages *)
      Fail fail.          (* ← Error message shown, input hidden *) (* .unfold .messages *)
