@@ -9,6 +9,7 @@
 \usepackage{longtable,ltcaption,array}
 \setlength{\extrarowheight}{2pt}
 \newlength{\DUtablewidth} % internal use in tables
+\newcommand{\DUcolumnwidth}[1]{\dimexpr#1\DUtablewidth-2\tabcolsep\relax}
 \usepackage{textcomp} % text symbol macros
 
 %%% Custom LaTeX preamble
@@ -230,8 +231,8 @@ Coq fragments are introduced with \texttt{.. coq::}:
 
 They can be nested nested into other reST directives, such as tables:
 
-\setlength{\DUtablewidth}{0.900\linewidth}%
-\begin{longtable}{|p{0.470\DUtablewidth}|p{0.470\DUtablewidth}|}
+\setlength{\DUtablewidth}{\dimexpr0.900\linewidth-3\arrayrulewidth\relax}%
+\begin{longtable}{|p{\DUcolumnwidth{0.500}}|p{\DUcolumnwidth{0.500}}|}
 \caption{Coq commands}\\
 \hline
 \textbf{%
@@ -250,7 +251,7 @@ Description
 } \\
 \hline
 \endhead
-\multicolumn{2}{p{0.94\DUtablewidth}}{\raggedleft\ldots continued on next page}\\
+\multicolumn{2}{p{\DUcolumnwidth{1.000}}}{\raggedleft\ldots continued on next page}\\
 \endfoot
 \endlastfoot
 

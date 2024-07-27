@@ -78,6 +78,12 @@ def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
         exit_code.val = int(driver.observer.exit_code >= 3)
         return annotated
 
+# Passing these settings avoids `FutureWarning`s
+DOCUTILS_FUTURE_WARNINGS_SETTINGS_OVERRIDES = {
+    'use_latex_citations': True,
+    'legacy_column_widths': False,
+}
+
 def register_docutils(v, ctx):
     from . import docutils
 
@@ -107,6 +113,7 @@ def register_docutils(v, ctx):
         'alectryon_banner': ctx["include_banner"],
         'alectryon_vernums': ctx["include_vernums"],
         'alectryon_webpage_style': ctx["webpage_style"],
+        **DOCUTILS_FUTURE_WARNINGS_SETTINGS_OVERRIDES
     }
 
     return v
@@ -183,7 +190,8 @@ def _docutils_cmdline(description, frontend, backend, dialect):
     pipeline = get_pipeline(frontend, backend, dialect)
     return publish_cmdline(
         parser=pipeline.parser(), writer=pipeline.writer(),
-        settings_overrides={'stylesheet_path': None},
+        settings_overrides={'stylesheet_path': None,
+                            **DOCUTILS_FUTURE_WARNINGS_SETTINGS_OVERRIDES},
         description="{} {}".format(description, default_description))
 
 def _scrub_fname(fname):
