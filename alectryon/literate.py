@@ -179,7 +179,7 @@ class Line:
         return line
 
     def match(self, regex: Pattern[str]) -> Optional[Match]:
-        assert len(self.parts) == 1
+        assert len(self.parts) == 1, f"Cannot call `match()` on {self!r}."
         return self.parts[0].match(regex)
 
     # _replace from NamedTuple doesn't work because of __len__ above
@@ -968,8 +968,8 @@ def parsed_blocks_of_partition(md: MarkupDef, spans: Iterable[Classified]) -> It
         if isinstance(span, Comment):
             linestrs = md.lang.unwrap_literate(span.v)
             linum, lines = number_lines(linestrs, linum)
-            lines = deque(map(md.lang.unescape, lines))
             last = md.parse_lit(lines, last.directive_indent if last else 0)
+            last = last._replace(lines=deque(map(md.lang.unescape, last.lines)))
             yield last
         else:
             linum, lines = split_lines_numbered(span.v, linum)
