@@ -65,7 +65,7 @@ alectryon --html-minification minification.rst # reST → HTML; produces ‘mini
 <p>Here is an example proof, written in a way that generates lots of redundant objects (for example, section variables appear in the proof context at every step of the proof):</p>
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> List.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Import</span> ListNotations.</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Section</span> <span class="nf">Folds</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Context</span> {<span class="nv">A</span>} (<span class="nv">op</span>: A -&gt; A -&gt; A) (<span class="nv">init</span>: A).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Context</span> (<span class="nv">init_comm</span>: <span class="kr">forall</span> <span class="nv">a</span>, op init a = op a init).</span><span class="alectryon-wsp">
@@ -81,7 +81,7 @@ alectryon --html-minification minification.rst # reST → HTML; produces ‘mini
        (B -&gt; A -&gt; A) -&gt; A -&gt; list B -&gt; A
 
 <span class="kn">Arguments</span> fold_right [A B]%type_scope f%function_scope
-  a0 l%list_scope</blockquote></div></div></small></span><span class="alectryon-wsp">
+  a0 l%list_scope</blockquote></div></div></small></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><label class="alectryon-input"><span class="kn">Lemma</span> <span class="nf">init_comm&#39;</span> <span class="nv">l</span>:
     <span class="kr">forall</span> <span class="nv">a</span>, fold_left op l (op init a) = op a (fold_left op l init).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>A</var><span class="hyp-type"><b>: </b><span><span class="kt">Type</span></span></span></span><br><span><var>op</var><span class="hyp-type"><b>: </b><span>A -&gt; A -&gt; A</span></span></span><br><span><var>init</var><span class="hyp-type"><b>: </b><span>A</span></span></span><br><span><var>init_comm</var><span class="hyp-type"><b>: </b><span><span class="kr">forall</span> <span class="nv">a</span> : A, op init a = op a init</span></span></span><br><span><var>op_assoc</var><span class="hyp-type"><b>: </b><span><span class="kr">forall</span> <span class="nv">x</span> <span class="nv">y</span> <span class="nv">z</span> : A,
 op (op x y) z = op x (op y z)</span></span></span><br><span><var>l</var><span class="hyp-type"><b>: </b><span>list A</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kr">forall</span> <span class="nv">a</span> : A,
