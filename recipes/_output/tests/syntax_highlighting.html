@@ -39,7 +39,7 @@ alectryon syntax_highlighting.v
    <span class="kr">let fix</span> <span class="nv">f</span> (<span class="nv">x0</span> : nat) : nat := x0 <span class="kr">in</span>
    (<span class="kr">fun</span> &#39;(f0, x0, y1) =&gt; f0 (x0 + y1)) (f, t, y)
      : nat</blockquote></div></div></small><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">test</span> (<span class="nv">as&#39;</span> <span class="nv">is&#39;</span> <span class="nv">with&#39;</span>: nat) :=
   <span class="kr">match</span> <span class="kr">match</span> <span class="mi">1</span> <span class="kr">with</span>
         | S is&#39; =&gt; <span class="mi">0</span>
@@ -60,21 +60,21 @@ alectryon syntax_highlighting.v
      : nat -&gt; nat -&gt; nat -&gt; option nat
 
 <span class="kn">Arguments</span> test (as&#39; is&#39; with&#39;)%nat_scope</blockquote></div></div></small><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;$0&quot;</span> := (<span class="mi">0</span>, <span class="mi">0</span>).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Infix</span> <span class="s2">&quot;$+&quot;</span> := (<span class="kr">fun</span> &#39;(u, a) &#39;(_, b) =&gt; (u, a + b)) (<span class="kn">at level</span> <span class="mi">39</span>).</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">b</span> := <span class="kr">fun</span> &#39;(x, y) &#39;(pair x&#39; y&#39;) =&gt; (x + x&#39;, y + y&#39;).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="syntax-highlighting-v-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="syntax-highlighting-v-chk2"><span class="kn">Print</span> b.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">b =
 <span class="kr">fun</span> &#39;(x, y) &#39;(x&#39;, y&#39;) =&gt; (x + x&#39;, y + y&#39;)
      : nat * nat -&gt; nat * nat -&gt; nat * nat
 
 <span class="kn">Arguments</span> b pat pat</blockquote></div></div></small><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;` x &#39;&#39; y `&quot;</span> := (x + y).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="syntax-highlighting-v-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="syntax-highlighting-v-chk3"><span class="kn">Check</span> (<span class="mi">1</span> + <span class="mi">2</span>).</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">` <span class="mi">1</span> &#39;&#39; <span class="mi">2</span> `
      : nat</blockquote></div></div></small><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;F ₀ x&quot;</span> := (F x) (<span class="kn">at level</span> <span class="mi">70</span>).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="syntax-highlighting-v-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="syntax-highlighting-v-chk4"><span class="kn">Check</span> S ₀ <span class="mi">3</span>.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="mi">4</span>
      : nat</blockquote></div></div></small></span></pre>

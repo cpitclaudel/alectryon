@@ -117,9 +117,9 @@ With those declarations, Lean knows that the expression
 <tt class="docutils literal">g₂⁻¹ * g₁ * g₂</tt> denotes an element of <tt class="docutils literal">G</tt>.</p>
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">section</span></span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">variables</span> (G : <span class="kt">Type</span>) [has_mul G] [has_inv G]</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">variables</span> g₁ g₂ : G</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk5" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk5"><span class="k">#check</span> g₂<span class="bp">⁻¹</span> <span class="bp">*</span> g₁ <span class="bp">*</span> g₂</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">g₂<span class="bp">⁻¹</span> <span class="bp">*</span> g₁ <span class="bp">*</span> g₂ : G</blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">end</span></span></span></pre><p>Putting the declarations in a <tt class="docutils literal">section</tt>, as we do here, delimits their
 scope. In this case, the section declaration is not needed, and no harm
@@ -161,11 +161,11 @@ computationally when <tt class="docutils literal">r</tt> holds.</p>
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">universe</span> u</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">parameters</span> {α : <span class="kt">Type</span> u} (r : α <span class="bp">→</span> α <span class="bp">→</span> <span class="kt">Prop</span>) [decidable_rel r]</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">local</span> <span class="kd">infix</span> <span class="bp">`≼`</span> : <span class="mi">50</span> := r</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">def</span> ordered_insert (a : α) : list α <span class="bp">→</span> list α
   <span class="bp">|</span> []       := [a]
   <span class="bp">|</span> (b :: l) := <span class="k">if</span> a <span class="bp">≼</span> b <span class="k">then</span> a :: (b :: l) <span class="k">else</span> b :: ordered_insert l</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">def</span> insertion_sort : list α <span class="bp">→</span> list α
   <span class="bp">|</span> []       := []
   <span class="bp">|</span> (b :: l) := ordered_insert b (insertion_sort l)</span><span class="alectryon-wsp">
@@ -229,7 +229,7 @@ mathematical foundation, so that any conventional mathematical assertion
 can be reasonably expressed, and any theorem that can be proved using
 conventional mathematical means can be carried out formally, with enough
 effort. Here is a proof that the sum of two even numbers is even:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp"><span class="c1">-- theorem even_add : ∀ m n, even m → even n → even (n + m) :=</span>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-txt"><span class="c1">-- theorem even_add : ∀ m n, even m → even n → even (n + m) :=</span>
 <span class="c1">--   take m n,</span>
 <span class="c1">--   assume ⟨k, (hk : m = 2 * k)⟩,</span>
 <span class="c1">--   assume ⟨l, (hl : n = 2 * l)⟩,</span>
@@ -249,7 +249,7 @@ the requisite expression. Here is a tactic-style proof of the theorem
 above:</p>
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">axiom</span> mul_add: <span class="bp">∀</span> m n p: nat, m <span class="bp">*</span> (n <span class="bp">+</span> p) <span class="bp">=</span> m <span class="bp">*</span> n <span class="bp">+</span> m <span class="bp">*</span> p</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">axiom</span> add_sym: <span class="bp">∀</span> m n: nat, n <span class="bp">+</span> m <span class="bp">=</span> m <span class="bp">+</span> n</span><span class="alectryon-wsp">
-</span></span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kd">theorem</span> even_add : <span class="bp">∀</span> m n, even m <span class="bp">→</span> even n <span class="bp">→</span> even (n <span class="bp">+</span> m) :=</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk10" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk10"><span class="kd">begin</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="bp">∀</span> (m n : ℕ), even m <span class="bp">→</span> even n <span class="bp">→</span> even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="lean3-tutorial-rst-chk11" style="display: none" type="checkbox"><label class="alectryon-input" for="lean3-tutorial-rst-chk11">intros m n hm hn,</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>m, n</var><span class="hyp-type"><b>: </b><span>ℕ</span></span></span><br><span><var>hm</var><span class="hyp-type"><b>: </b><span>even m</span></span></span><br><span><var>hn</var><span class="hyp-type"><b>: </b><span>even n</span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">even (n <span class="bp">+</span> m)</div></blockquote></div></div></small><span class="alectryon-wsp">
