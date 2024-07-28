@@ -1531,6 +1531,7 @@ def parse_arguments():
                     ".md": "md", ".rst": "rst"}.get(ext)
         if args.src is None:
             parser.error("Not sure how to translate {}: use --from.".format(args.input))
+            assert False
 
     assert args.src
     if args.src in MARKUPS and args.dst in LANGUAGES:
@@ -1541,6 +1542,7 @@ def parse_arguments():
         fw, bw = code2markup, markup2code
     else:
         parser.error("Unsupported conversion: {} → {}".format(args.src, args.dst))
+        assert False
 
     if args.roundtrip:
         args.fn = lambda s: diff(s, bw(mdef, fw(mdef, s)))
