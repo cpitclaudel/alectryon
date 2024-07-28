@@ -282,11 +282,13 @@ class Cache:
 
     def put(self, chunks, metadata, annotated, driver):
         memo = CacheState()
+        annotated = self.serializer.encode(annotated, memo)
+        memo_dict = { "memo": memo.persistent } if memo.persistent else {}
         self.data = {"driver": self.normalize(driver),
                      "metadata": self.normalize(metadata),
                      "chunks": list(chunks),
-                     "annotated": self.serializer.encode(annotated, memo),
-                     "memo": memo.persistent}
+                     "annotated": annotated,
+                     **memo_dict}
 
     def update(self, chunks, driver):
         annotated = self.get(chunks, driver.metadata)
