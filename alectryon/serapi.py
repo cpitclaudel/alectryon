@@ -187,7 +187,7 @@ class SerAPI(REPLDriver):
     @staticmethod
     def _highlight_exn(span, chunk, prefix='    '):
         src = SerAPI.highlight_substring(chunk, *span)
-        LOC_FMT = ("The offending chunk is delimited by >>>…<<< below:\n{}")
+        LOC_FMT = "The offending chunk is delimited by >>>…<<< below:\n{}"
         return LOC_FMT.format(indent(src.decode('utf-8', 'ignore'), prefix))
 
     @staticmethod

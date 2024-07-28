@@ -351,8 +351,8 @@ class DocutilsObserver(core.Observer):
 
     def _notify(self, n: core.Notification):
         loc = n.location
-        beg = dict(line=loc.beg.line, column=loc.beg.col) if loc else {}
-        end = dict(end_line=loc.end.line, end_column=loc.end.col) if loc and loc.end else {}
+        beg = {"line": loc.beg.line, "column": loc.beg.col} if loc else {}
+        end = {"end_line": loc.end.line, "end_column": loc.end.col} if loc and loc.end else {}
         self.document.reporter.system_message(n.level, n.message, **beg, **end)
 
 def by_lang(pending_nodes: Iterable[nodes.pending]) -> Dict[str, List[nodes.pending]]:
@@ -377,7 +377,7 @@ class AlectryonTransform(OneTimeTransform):
         for linum, s in transforms.find_long_lines(fragments, threshold=LONG_LINE_THRESHOLD):
             msg = "Long line ({} characters)\n   {}".format(len(s), s)
             contents_line = getattr(node, "contents_line", None)
-            opts = dict(line=contents_line + linum) if contents_line else {}
+            opts = {"line": contents_line + linum} if contents_line else {}
             w = self.document.reporter.warning(msg, base_node=node, **opts)
             # We want a message on the command line but not in the document, so
             # remove the node created by ``Reporter.system_message``:
@@ -829,9 +829,9 @@ class ExperimentalExerciseDirective(Topic, AlectryonDirective):
 def directive_without_arguments(directive):
     """Create a fake directive sharing `directive`'s options to """
     return type("Converted", (directive,),
-                dict(has_content=False,
-                     required_arguments=0,
-                     optional_arguments=0))
+                {"has_content": False,
+                 "required_arguments": 0,
+                 "optional_arguments": 0})
 
 # Derived from docutils.directives.misc.Role (public domain)
 # LATER: Move to upstream

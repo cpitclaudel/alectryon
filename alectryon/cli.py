@@ -786,11 +786,11 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
 
     cache_out = parser.add_argument_group("Cache configuration")
 
-    CACHE_DIRECTORY_HELP = ("Cache prover output in DIRECTORY.")
+    CACHE_DIRECTORY_HELP = "Cache prover output in DIRECTORY."
     cache_out.add_argument("--cache-directory", default=None, metavar="DIRECTORY",
                            help=CACHE_DIRECTORY_HELP)
 
-    CACHE_COMPRESSION_HELP = ("Compress caches.")
+    CACHE_COMPRESSION_HELP = "Compress caches."
     CACHE_COMPRESSION_CHOICES = ("none", "gzip", "xz")
     cache_out.add_argument("--cache-compression", nargs='?',
                            default=None, const="xz",
