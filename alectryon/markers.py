@@ -22,6 +22,7 @@
 
 import re
 from fnmatch import fnmatchcase
+from typing import Dict
 
 class MarkerError(ValueError):
     MSG = "{}"
@@ -96,7 +97,7 @@ def find_one(kind, lookup_fn, haystack, needle):
         return s
     raise MarkerError("No {} matches '{}'.".format(kind, needle))
 
-QUERY_SHAPE = \
+QUERY_SHAPE: Dict[str, object] = \
     {"io": {
         "s": {
             "in": {},
