@@ -799,7 +799,7 @@ class AlectryonToggleDirective(Directive):
 
     required_arguments = 0
     optional_arguments = 0
-    option_spec: Dict[str, Any] = {}
+    option_spec: ClassVar[Dict[str, Any]] = {}
     has_content = False
 
     def run(self):
@@ -1116,7 +1116,7 @@ class MAssertDirective(AlectryonDirective):
     final_argument_whitespace = True
 
     name = "massert"
-    option_spec: Dict[str, Any] = {}
+    option_spec: ClassVar[Dict[str, Any]] = {}
 
     @staticmethod
     def _gen_ref(sm, linum, refstr, options):

@@ -27,25 +27,20 @@ This is mostly useful through Alectryon's command line.  For integration with
 Sphinx, use the ``myst_parser`` and ``alectryon.sphinx`` plugins.
 """
 
-from typing import Type
-
 import docutils.parsers
 
 try:
     from myst_parser.docutils_ import Parser as MystParser # type: ignore
-
-    # https://github.com/executablebooks/MyST-Parser/issues/347
-    # https://github.com/executablebooks/MyST-Parser/pull/419
-    class RealParser(MystParser):
-        def get_transforms(self):
-            from .docutils import ActivateMathJaxTransform
-            return super().get_transforms() + [ActivateMathJaxTransform]
-
-    Parser: Type[docutils.parsers.Parser] = RealParser
-
 except ImportError as err:
     class FallbackParser(docutils.parsers.Parser):
         def parse(self, inputstring, document):
             document.append(document.reporter.severe(
                 'Cannot parse Markdown input without Python package `myst_parser`.'))
-    Parser = FallbackParser
+    MystParser = FallbackParser # type: ignore
+
+# https://github.com/executablebooks/MyST-Parser/issues/347
+# https://github.com/executablebooks/MyST-Parser/pull/419
+class Parser(MystParser):
+    def get_transforms(self):
+        from .docutils import ActivateMathJaxTransform
+        return super().get_transforms() + [ActivateMathJaxTransform]
