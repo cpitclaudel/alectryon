@@ -209,7 +209,7 @@ def _docutils_config(document, attr, default=None):
 def _note_pending(document, node: nodes.pending):
     """Register the transform associated to a pending node."""
     app = _sphinx_app(document)
-    if app and node.transform.is_post_transform:
+    if app and node.transform.is_post_transform: # type: ignore
         return # Post-transforms are handled in sphinx.py
     document.note_pending(node)
 
@@ -808,7 +808,7 @@ class AlectryonToggleDirective(Directive):
 
     required_arguments = 0
     optional_arguments = 0
-    option_spec: Dict[str, Any] = {}
+    option_spec: ClassVar[Dict[str, Any]] = {}
     has_content = False
 
     def run(self):
@@ -824,8 +824,8 @@ class ExperimentalExerciseDirective(Topic, AlectryonDirective):
 
     required_arguments = 1
     option_spec = {**Topic.option_spec,
-                   "difficulty": directives.nonnegative_int,
-                   "optional": directives.flag}
+                   "difficulty": directives.nonnegative_int, # type: ignore
+                   "optional": directives.flag} # type: ignore
 
     def run(self):
         [node] = super().run()
@@ -1125,7 +1125,7 @@ class MAssertDirective(AlectryonDirective):
     final_argument_whitespace = True
 
     name = "massert"
-    option_spec: Dict[str, Any] = {}
+    option_spec: ClassVar[Dict[str, Any]] = {}
 
     @staticmethod
     def _gen_ref(sm, linum, refstr, options):

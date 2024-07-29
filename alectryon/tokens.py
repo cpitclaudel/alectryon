@@ -71,7 +71,7 @@ class Tokens(NamedTuple):
         end = bisect.bisect_left(self.toks, ((endpos,),), self.view.start, self.view.stop)
         return Tokens(self.toks, slice(start, end, None), Range(startpos, endpos))
 
-    def __iter__(self) -> Iterator[Token]:
+    def __iter__(self) -> Iterator[Token]: # type: ignore # LATER: dataclass
         for idx in range(self.view.start, self.view.stop):
             yield self.toks[idx].reposition(self.rng.start, self.rng.end)
 

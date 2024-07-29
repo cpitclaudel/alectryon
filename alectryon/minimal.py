@@ -28,7 +28,7 @@ Invoke with ``python3 -m alectryon.minimal --help``.
 
 # pylint: disable=dangerous-default-value
 
-from typing import Dict, Any
+from typing import ClassVar, Dict, Any
 
 from docutils import nodes
 from docutils.parsers.rst import directives, roles, Directive # type: ignore
@@ -38,7 +38,7 @@ import docutils.parsers.rst.directives.body # type: ignore # pylint: disable=unu
 
 class ProverDirective(directives.body.CodeBlock):
     final_argument_whitespace = True
-    option_spec: Dict[str, Any] = {}
+    option_spec: ClassVar[Dict[str, Any]] = {}
 
     def run(self):
         self.arguments = [self.name] # Ignore arguments

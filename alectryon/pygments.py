@@ -63,7 +63,7 @@ CUSTOM_LEXERS_BY_ALIAS = {
 }
 
 @lru_cache(maxsize=None)
-def get_lexer(lang):
+def get_lexer(lang: str):
     alias = CUSTOM_LEXER_ALIASES.get(lang, lang)
     # LATER: Upstream Coq lexer, remove this branch
     if alias in CUSTOM_LEXERS_BY_ALIAS:
