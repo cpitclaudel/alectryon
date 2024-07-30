@@ -44,7 +44,8 @@ Recipes
 
 Try these recipes in the ``recipes`` directory of this repository (for each task I listed two commands: a short one and a longer one making everything explicit):
 
-Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style)::
+Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style)
+  .. code::
 
       alectryon literate_coq.v
       alectryon --frontend coq+rst --backend webpage literate_coq.v -o literate_coq.html
