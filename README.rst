@@ -511,7 +511,7 @@ The reStructuredText directive for Lean 4 is ``.. lean4::``, for Markdown/MyST f
      Some reST prose.
      -/
 
-See `<recipes/plain-lean4.lean>`__, `<recipes/lean4-tactics.rst>`__, `<recipes/lean4-tactics-myst.md>`__ and `<recipes/literate-lean4.lean>`__  for examples.
+See `<recipes/plain-lean4.lean>`__, and `<recipes/literate_lean4.lean>`__  for examples.
 
 Lean 4 support was contributed by Niklas Bülow (@insightmind).
 
