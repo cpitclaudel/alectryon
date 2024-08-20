@@ -365,10 +365,13 @@ class FileCacheSet(BaseCacheSet):
         version = metadata.get("cache_version")
         if version == "1":
             metadata.pop("cache_version", None)
+            if "generator" in contents:
+                # 2ce6c0a4741084b7e437c5aea0fc1e73cf7a354d
+                contents["driver"] = contents.pop("generator")
+            # d376077b1bc98f431b990b3371201b415ed5733a
             return {"metadata": cls.METADATA,
                     **{cls.LANG_PREFIX + "coq":
-                       {"driver": contents.pop("generator"),
-                        "metadata": contents.pop("metadata"),
+                       {"metadata": contents.pop("metadata"),
                         **contents}}}
         return contents
 
