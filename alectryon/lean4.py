@@ -28,6 +28,7 @@ from alectryon import json
 from alectryon.json import PlainSerializer
 from .core import CLIDriver, EncodedDocument, Text, Fragment
 
+
 class Lean4(CLIDriver):
     BIN = "leanInk"
     NAME = "Lean4"
@@ -47,7 +48,6 @@ class Lean4(CLIDriver):
 
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
-        self.lake_file_path = None
 
     def run_leanInk_document(self, encoded_document: EncodedDocument) -> List[Any]:
         """Run LeanInk with encoded_document file."""
@@ -57,43 +57,39 @@ class Lean4(CLIDriver):
             input_file.write_bytes(encoded_document.contents)
             working_directory = temp_directory
 
-            if self.lake_file_path is not None:
-                working_directory = os.path.dirname(os.path.realpath(self.lake_file_path))
-                self.user_args += [self.LAKE_ENV_KEY, self.LAKE_TMP_FILE_PATH]
+            try:
+                lakefile_idx = self.user_args.index("--lake") + 1
+            except ValueError:
+                self.user_args += ["--lake", self.LAKE_TMP_FILE_PATH]
+                lakefile_idx = -1
+            working_directory = os.path.dirname(
+                os.path.realpath(self.user_args[lakefile_idx])
+            )
 
             input_file_path = str(os.path.abspath(input_file))
-            self.run_cli(working_directory=working_directory,
-                         capture_output=False,
-                         more_args=[input_file_path])
+            self.run_cli(
+                working_directory=working_directory,
+                capture_output=False,
+                more_args=[input_file_path],
+            )
 
-            output_file = input_file.with_suffix(self.LEAN_FILE_EXT + self.LEAN_INK_FILE_EXT)
+            output_file = input_file.with_suffix(
+                self.LEAN_FILE_EXT + self.LEAN_INK_FILE_EXT
+            )
             content = output_file.read_text(encoding="utf-8")
             json_result = json.loads(content)
             tuple_result = PlainSerializer.decode(json_result)
             assert isinstance(tuple_result, list)
             return tuple_result
 
-    def resolve_lake_arg(self):
-        """Remove lake argument from user_args for manual evaluation."""
-        new_user_args = []
-        self.lake_file_path = None
-        for (index, arg) in enumerate(self.user_args, start=0):
-            if arg == "--lake":
-                self.lake_file_path = self.user_args[index + 1]
-                new_user_args = self.user_args[index + 2:]
-                break
-            new_user_args += (arg,)
-        self.user_args = new_user_args
-
     def annotate(self, chunks):
         document = EncodedDocument(chunks, "\n", encoding="utf-8")
-        self.resolve_lake_arg()
         result: List[Fragment] = self.run_leanInk_document(document)
 
         if not result:
             return list([])
 
-        # Sometimes we require an additonal \n and sometimes not. I wasn't really able to
+        # Sometimes we require an additional \n and sometimes not. I wasn't really able to
         # find out exactly when, but this workaround seems to work for almost all cases.
         if not result[-1].contents.endswith("\n"):
             result = result + [Text(contents="\n")]
