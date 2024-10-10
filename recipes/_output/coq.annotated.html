@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Processing snippets embedded within an HTML document</title>
+
+<meta content="Alectryon" name="generator"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="alectryon.css" rel="stylesheet">
+<link href="pygments.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<script src="alectryon.js"></script>
+</head>
+<body class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running Coq+SerAPI. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div>
+<p>This file shows how to process a LaTeX file with Alectryon.  To compile it, use the following command:</p>
+<pre>
+      alectryon coq.html # HTML → HTML, produces ‘coq.annotated.html’
+    </pre>
+<p>To use Alectryon with your own HTML file, just wrap your code in <code>pre</code> tags with the <code>alectryon</code> class.  Here are two examples:</p>
+<pre class="alectryon"><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp">
+</span><span class="alectryon-sentence"><input class="alectryon-toggle" id="coq-html-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="coq-html-chk0"><span class="kn">Goal</span> <span class="kt">True</span> /\ <span class="kt">True</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span> /\ <span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="coq-html-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="coq-html-chk1"><span class="nb">split</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote><div class="alectryon-extra-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="coq-html-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="coq-html-chk2">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> I.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">    </span></pre></pre>
+<pre class="alectryon"><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp">
+  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="coq-html-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="coq-html-chk3"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
+     : <span class="kt">Set</span></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="coq-html-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="coq-html-chk4">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> I.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">    </span></pre></pre>
+</body>
+</html>

@@ -27,6 +27,16 @@ _output/caching.html: caching.v
 	$(alectryon) --cache-directory _output/ --cache-compression=xz $<
 recipes_targets += _output/caching.html
 
+# HTML → HTML
+_output/coq.annotated.html: coq.html
+	$(alectryon) $<
+recipes_targets += _output/coq.annotated.html
+
+# LaTeX → LaTeX
+_output/coq.annotated.tex: coq.tex
+	$(alectryon) $<
+recipes_targets += _output/coq.annotated.tex
+
 # Coq+reST → HTML
 _output/coq_drivers.html: coq_drivers.v
 	$(alectryon) --coq-driver=sertop $< -o $@

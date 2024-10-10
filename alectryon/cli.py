@@ -18,7 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Dict, Optional, Tuple, List, Union
+from typing import ClassVar, Dict, Optional, Tuple, List, Union, NamedTuple, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from bs4 import BeautifulSoup, ResultSet
 
 import argparse
 import inspect
@@ -67,11 +70,15 @@ def init_driver(input_language, driver_name, driver_args, fpath):
     driver_cls = core.resolve_driver(input_language, driver_name)
     return driver_cls(driver_args, fpath=fpath)
 
+def _get_driver(ctx):
+    driver = ctx["driver"] = ctx.get("driver") or ctx_invoke(init_driver, ctx)
+    return driver
+
 def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
-                    input_language, driver_name, driver_args, exit_code):
+                    input_language, exit_code, ctx):
     from .core import StderrObserver
     from .json import CacheSet
-    driver = init_driver(input_language, driver_name, driver_args, fpath)
+    driver = _get_driver(ctx)
     with CacheSet(cache_directory, fpath, cache_compression) as caches:
         annotated = caches[input_language].update(chunks, driver)
         assert isinstance(driver.observer, StderrObserver)
@@ -244,10 +251,13 @@ def _gen_coqdoc_html_assert(docs, coqdoc_comments):
         pprint(list(zip(coqdoc_comments, docs)))
         raise AssertionError()
 
-def _gen_coqdoc_html(coqdoc_fragments):
+def _parse_html(html):
     from bs4 import BeautifulSoup
+    return BeautifulSoup(html, "html.parser")
+
+def _gen_coqdoc_html(coqdoc_fragments):
     coqdoc_output = _run_coqdoc(fr.contents for fr in coqdoc_fragments)
-    soup = BeautifulSoup(coqdoc_output, "html.parser")
+    soup = _parse_html(coqdoc_output)
     docs = soup.find_all(class_='doc')
     coqdoc_comments = [c for c in coqdoc_fragments if not c.special]
     _gen_coqdoc_html_assert(docs, coqdoc_comments)
@@ -311,48 +321,138 @@ def copy_assets(state, assets: List[Tuple[str, Union[str, core.Asset]]],
 
     return state
 
-def dump_html_standalone(snippets, fname, webpage_style,
-                         html_minification, include_banner, include_vernums,
-                         assets, html_classes, input_language,
-                         driver_name, driver_args, fpath):
-    from dominate import tags, document
-    from dominate.util import raw
+def _gen_html_header(html_minification, assets):
+    from dominate.util import raw, container
+    from dominate import tags
     from . import GENERATOR
-    from .html import ASSETS, ADDITIONAL_HEADS, JS_UNMINIFY, gen_banner, wrap_classes
+    from .html import ASSETS, ADDITIONAL_HEADS, JS_UNMINIFY
 
-    doc = document(title=fname)
-    doc.set_attribute("class", "alectryon-standalone")
-
-    doc.head.add(tags.meta(charset="utf-8"))
-    doc.head.add(tags.meta(name="generator", content=GENERATOR))
+    head = container()
+    head.add(tags.meta(name="generator", content=GENERATOR))
 
     for hd in ADDITIONAL_HEADS:
-        doc.head.add(raw(hd))
+        head.add(raw(hd))
     if html_minification:
-        doc.head.add(raw(JS_UNMINIFY))
+        head.add(raw(JS_UNMINIFY))
     for css in ASSETS.ALECTRYON_CSS + ASSETS.PYGMENTS_CSS:
-        doc.head.add(tags.link(rel="stylesheet", href=str(css)))
+        head.add(tags.link(rel="stylesheet", href=str(css)))
     for link in (ASSETS.IBM_PLEX_CDN, ASSETS.FIRA_CODE_CDN):
-        doc.head.add(raw("\n    " + link))
+        head.add(raw("\n    " + link))
     for js in ASSETS.ALECTRYON_JS:
-        doc.head.add(tags.script(src=js))
+        head.add(tags.script(src=js))
 
     _record_assets(assets, ASSETS.PATH, ASSETS.ALECTRYON_CSS)
     _record_assets(assets, ASSETS.PATH, ASSETS.ALECTRYON_JS)
     _record_assets(assets, ASSETS.PATH, ASSETS.PYGMENTS_CSS)
 
+    return head
+
+def _add_html_minification_class(html_classes, html_minification):
     if html_minification:
         html_classes.append("minified")
 
+def dump_html_standalone(snippets, fname, webpage_style,
+                         html_minification, include_banner, include_vernums,
+                         assets, html_classes, ctx) -> str:
+    from dominate import tags, document
+    from dominate.util import raw
+    from .html import gen_banner, wrap_classes
+
+    doc = document(title=fname)
+    doc.set_attribute("class", "alectryon-standalone")
+
+    doc.head.add(tags.meta(charset="utf-8"))
+    doc.head.add(_gen_html_header(html_minification, assets))
+
+    _add_html_minification_class(html_classes, html_minification)
     cls = wrap_classes(webpage_style, *html_classes)
+
     root = doc.body.add(tags.article(cls=cls))
     if include_banner:
-        driver = init_driver(input_language, driver_name, driver_args, fpath)
-        root.add(raw(gen_banner([driver.version_info()], include_vernums)))
+        root.add(raw(gen_banner([_get_driver(ctx).version_info()], include_vernums)))
     for snippet in snippets:
         root.add(snippet)
 
     return doc.render(pretty=False)
+
+class ParsedHTMLDocument:
+    """A parsed HTML document."""
+    HTML_CODE_BLOCK_SELECTOR: ClassVar[str] = "pre.alectryon"
+
+    def __init__(self, html: str):
+        self.soup: BeautifulSoup = _parse_html(html)
+        self.tags: ResultSet = self.soup.select(self.HTML_CODE_BLOCK_SELECTOR)
+
+    @property
+    def chunks(self):
+        return [tag.text for tag in self.tags]
+
+    def update(self, chunks):
+        from bs4.element import PreformattedString
+        chunks = list(chunks)
+        assert(len(self.tags) == len(chunks))
+        for block, chunk in zip(self.tags, chunks):
+            block.clear()
+            block.append(PreformattedString(str(chunk)))
+
+def parse_html(state, ctx) -> List[str]:
+    """Separate code snippets from HTML document `state`."""
+    ctx["document"] = document = ParsedHTMLDocument(state)
+    return document.chunks
+
+def unparse_html(chunks, document, html_minification, include_banner, include_vernums,
+                 assets, html_classes, webpage_style, ctx) -> str:
+    """Replace code blocks in `document` with annotated `chunks`."""
+    from bs4.element import PreformattedString
+    from .html import gen_banner, wrap_classes
+    document.update(chunks)
+
+    head, body = document.soup.find("head"), document.soup.find("body")
+    head.append(PreformattedString(_gen_html_header(html_minification, assets).render()))
+
+    _add_html_minification_class(html_classes, html_minification)
+    body["class"] = body.get("class", []) + [wrap_classes(webpage_style, *html_classes)]
+
+    if include_banner:
+        from bs4.element import PreformattedString
+        body.insert(0, PreformattedString(gen_banner([_get_driver(ctx).version_info()], include_vernums)))
+
+    return str(document.soup)
+
+class LaTeXBlock(NamedTuple):
+    is_chunk: bool
+    contents: str
+
+class ParsedLaTeXDocument:
+    """A LaTeX document, split into a sequence of code and text blocks."""
+
+    @staticmethod
+    def latex_pattern(lang: str) -> re.Pattern:
+        return re.compile(rf"\\begin{{{lang}}}.*?\n(.*?)\\end{{{lang}}}", re.DOTALL)
+
+    def __init__(self, latex: str, input_language: str):
+        from itertools import batched
+        matches = iter(self.latex_pattern(input_language).split(latex))
+        self.chunks = []
+        self.blocks: List[LaTeXBlock] = [LaTeXBlock(False, next(matches))]
+        for codeblock, textblock in batched(matches, 2):
+            self.chunks.append(codeblock)
+            self.blocks.append(LaTeXBlock(True, codeblock))
+            self.blocks.append(LaTeXBlock(False, textblock))
+
+    def unparse(self, annotated):
+        return [str(next(annotated)) if block.is_chunk else block.contents for block in self.blocks]
+
+def parse_tex(state, input_language, ctx) -> List[str]:
+    """Extract code snippets from TeX input `state`."""
+    ctx["document"] = document = ParsedLaTeXDocument(state, input_language)
+    return document.chunks
+
+def unparse_tex(chunks, document, assets) -> str:
+    """Replaces the code snippets in the LaTeX document with the chunks."""
+    from .docutils import LatexTranslator
+    _record_assets(assets, LatexTranslator.ASSETS_PATH, LatexTranslator.ASSETS)
+    return "".join(document.unparse(chunks))
 
 def encode_json(obj):
     from .json import PlainSerializer
@@ -477,6 +577,20 @@ def _add_coqdoc_pipeline(pipelines):
          write_file(".html", strip=(".v",))),
     }
 
+def _add_html_pipeline(pipelines):
+    pipelines['html'] = {
+        'webpage': (read_plain, parse_html, annotate_chunks, apply_transforms,
+                    gen_html_snippets, unparse_html, copy_assets,
+                    write_file(".annotated.html", strip=(".html",)))
+    }
+
+def _add_tex_pipeline(pipelines):
+    pipelines['tex'] = {
+        'latex': (read_plain, parse_tex, annotate_chunks, apply_transforms,
+                  gen_latex_snippets, unparse_tex, copy_assets,
+                  write_file(".annotated.tex", strip=(".tex",)))
+    }
+
 def _add_docutils_pipelines(pipelines, lang, *exts):
     exts = (*CODE_EXTENSIONS, *exts)
     pipelines[lang] = {
@@ -525,6 +639,8 @@ def _add_pipelines(pipelines):
         _add_docutils_pipelines(pipelines, markup, *exts)
     _add_transliteration_pipelines(pipelines)
     _add_compatibility_pipelines(pipelines)
+    _add_html_pipeline(pipelines)
+    _add_tex_pipeline(pipelines)
     return pipelines
 
 # LATER: Reorganize to separate concepts of language and frontend instead of
@@ -550,6 +666,8 @@ FRONTENDS_BY_EXTENSION = {
     '.md': 'md',
 
     '.json': 'json', # LATER: Remove
+    '.html': 'html',
+    '.tex': 'tex'
 }
 
 BACKENDS_BY_EXTENSION = {
@@ -580,6 +698,8 @@ DEFAULT_BACKENDS = {
     'md': 'webpage',
 
     'json': 'json', # LATER: Remove
+    'html': 'webpage',
+    'tex': 'latex'
 }
 
 def _input_frontends(lang):
@@ -593,6 +713,8 @@ INPUT_LANGUAGE_BY_FRONTEND = {
     "coqdoc": "coq",
 
     "json": "coq", # LATER: Remove
+    "html": "coq",
+    "tex": "coq"
 }
 
 def infer_mode(fpath, kind, arg, table):
@@ -901,9 +1023,12 @@ class ExitCode:
     def __init__(self, n):
         self.val = n
 
+def ctx_invoke(fn, ctx, *args):
+    params = list(inspect.signature(fn).parameters.keys())[len(args):]
+    return fn(*args, **{p: ctx[p] for p in params})
+
 def call_pipeline_step(step, state, ctx):
-    params = list(inspect.signature(step).parameters.keys())[1:]
-    return step(state, **{p: ctx[p] for p in params})
+    return ctx_invoke(step, ctx, state)
 
 def build_context(fpath, args, frontend, backend):
     input_is_stdin = fpath == "-"

@@ -1,0 +1,45 @@
+\documentclass{article}
+
+\usepackage{listings}
+\lstnewenvironment{coq}{}{}
+
+\usepackage{alectryon}
+\usepackage{pygments}
+
+\begin{document}
+This file shows how to process a LaTeX file with Alectryon.  To compile it, use the following command:
+
+\begin{verbatim}
+    alectryon coq.tex # LaTeX → LaTeX, produces ‘coq.annotated.tex’
+\end{verbatim}
+
+To use Alectryon with your own LaTeX files:
+
+\begin{enumerate}
+\item Define a \verb|coq| environment to wrap your Coq blocks.  Do that in any of the following ways:
+
+\begin{verbatim}
+\usepackage{listings}
+\lstnewenvironment{coq}{}{}
+\end{verbatim}
+
+\begin{verbatim}
+\usepackage{verbatim}
+\newenvironment{coq}{\verbatim}{\endverbatim}
+\end{verbatim}
+
+\item Add \verb|\usepackage{alectryon}| and \verb|\usepackage{pygments}| to your preamble.
+\end{enumerate}
+
+Here are two examples:
+\begin{coq}
+Goal True /\ True.
+  split. (* .unfold *)
+  - exact I.
+\end{coq}
+\begin{coq}
+  Check nat. (* .unfold *)
+  - exact I.
+Qed.
+\end{coq}
+\end{document}
