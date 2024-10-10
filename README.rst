@@ -86,6 +86,20 @@ Translate a literate Coq file into a reStructuredText document:
       alectryon literate_coq.v -o literate_coq.v.rst
       alectryon --frontend coq+rst --backend rst literate_coq.v -o literate_coq.v.rst
 
+Annotate snippets (``pre.alectryon``) within an HTML document:
+
+   .. code::
+
+      alectryon coq.html
+      alectryon --frontend html --backend webpage coq.html -o coq.annotated.html
+
+Annotate snippets (``\begin{coq}``) within a TeX/LaTeX document (make sure to add ``\usepackage{alectryon}`` and ``\usepackage{pygments}`` to your preamble):
+
+   .. code::
+
+      alectryon coq.tex
+      alectryon --frontend tex --backend latex coq.tex -o coq.annotated.tex
+
 Record goals and responses for fragments contained in a JSON source file:
    .. code::
 
@@ -104,7 +118,7 @@ Command-line interface
 .. code::
 
    alectryon [-h] […]
-             [--frontend {coq,coq+rst,coqdoc,json,md,rst}]
+             [--frontend {coq,coq+rst,coqdoc,html,json,md,rst,tex}]
              [--backend {coq,coq+rst,json,latex,rst,snippets-html,snippets-latex,webpage,…}]
              input [input ...]
 

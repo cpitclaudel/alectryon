@@ -1,0 +1,166 @@
+\documentclass{article}
+
+\usepackage{listings}
+\lstnewenvironment{coq}{}{}
+
+\usepackage{alectryon}
+\usepackage{pygments}
+
+\begin{document}
+This file shows how to process a LaTeX file with Alectryon.  To compile it, use the following command:
+
+\begin{verbatim}
+    alectryon coq.tex # LaTeX → LaTeX, produces ‘coq.annotated.tex’
+\end{verbatim}
+
+To use Alectryon with your own LaTeX files:
+
+\begin{enumerate}
+\item Define a \verb|coq| environment to wrap your Coq blocks.  Do that in any of the following ways:
+
+\begin{verbatim}
+\usepackage{listings}
+\lstnewenvironment{coq}{}{}
+\end{verbatim}
+
+\begin{verbatim}
+\usepackage{verbatim}
+\newenvironment{coq}{\verbatim}{\endverbatim}
+\end{verbatim}
+
+\item Add \verb|\usepackage{alectryon}| and \verb|\usepackage{pygments}| to your preamble.
+\end{enumerate}
+
+Here are two examples:
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Goal}~\PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{n+nb}{split}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+        \sep
+        \begin{extragoals}
+          \begin{goal}
+            \begin{hyps}\end{hyps}
+            \sep
+            \infrule{}
+            \sep
+            \begin{conclusion}
+              \PY{k+kt}{True}
+            \end{conclusion}
+          \end{goal}
+        \end{extragoals}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{o}{\PYZhy{}}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{exact}~\PY{n}{I}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+\end{alectryon}
+\begin{alectryon}
+  % Generator: Alectryon
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{k+kn}{Check}~\PY{n}{nat}\PY{o}{.}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{messages}
+        \begin{message}
+          \PY{n}{nat}\nl
+          ~~~~~\PY{o}{:}~\PY{k+kt}{Set}
+        \end{message}
+      \end{messages}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      ~~\PY{o}{\PYZhy{}}
+    \end{input}
+    \sep
+    \begin{output}
+      \begin{goals}
+        \begin{goal}
+          \begin{hyps}\end{hyps}
+          \sep
+          \infrule{}
+          \sep
+          \begin{conclusion}
+            \PY{k+kt}{True}
+          \end{conclusion}
+        \end{goal}
+      \end{goals}
+    \end{output}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{n+nb+bp}{exact}~\PY{n}{I}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+  \sep
+  \begin{sentence}
+    \begin{input}
+      \PY{k+kn}{Qed}\PY{o}{.}\nl
+    \end{input}
+  \end{sentence}
+\end{alectryon}
+\end{document}

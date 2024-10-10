@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing snippets embedded within an HTML document</title>
+  </head>
+  <body>
+    <p>This file shows how to process a LaTeX file with Alectryon.  To compile it, use the following command:</p>
+    <pre>
+      alectryon coq.html # HTML → HTML, produces ‘coq.annotated.html’
+    </pre>
+
+    <p>To use Alectryon with your own HTML file, just wrap your code in <code>pre</code> tags with the <code>alectryon</code> class.  Here are two examples:</p>
+    <pre class="alectryon">
+Goal True /\ True.
+  split. (* .unfold *)
+  - exact I.
+    </pre>
+    <pre class="alectryon">
+  Check nat. (* .unfold *)
+  - exact I.
+Qed.
+    </pre>
+  </body>
+</html>
