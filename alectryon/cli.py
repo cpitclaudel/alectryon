@@ -784,7 +784,7 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
 
     HTML_DIALECT_HELP = "Choose which HTML dialect to use."
     HTML_DIALECT_CHOICES = ("html4", "html5")
-    html_out.add_argument("--html-dialect", default="html4",
+    html_out.add_argument("--html-dialect", default="html5",
                           choices=HTML_DIALECT_CHOICES,
                           help=HTML_DIALECT_HELP)
 
