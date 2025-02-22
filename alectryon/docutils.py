@@ -64,7 +64,7 @@ from typing import Any, ClassVar, DefaultDict, Dict, Iterable, \
     List, Tuple, Type, Union
 
 import re
-import os.path
+from pathlib import Path
 from copy import deepcopy
 from collections import namedtuple, defaultdict
 from importlib import import_module
@@ -135,6 +135,9 @@ See the documentation of --cache-compression."""
 
 HTML_MINIFICATION = False
 """Whether to minify generated HTML files."""
+
+GENSYM_PATH_DEPTH = 1
+"""How much of each document name to use when generating HTML indices."""
 
 def _node_error(document, node, msg):
     err = document.reporter.error(msg, base_node=node, line=node.line)
@@ -211,8 +214,14 @@ def _note_pending(document, node: nodes.pending):
     document.note_pending(node)
 
 def _gensym_stem(document, suffix=""):
+    """Generate a reasonably unambiguous identifier for this document.
+
+    Use the file name when ``GENSYM_PATH_DEPTH`` is set to 1, or more of the
+    file path with higher values.
+    """
     source = document.get('source', "")
-    return nodes.make_id(os.path.basename(source)) + (source and suffix)
+    parts = Path(source).parts[-GENSYM_PATH_DEPTH:]
+    return nodes.make_id("-".join(parts)) + (source and suffix)
 
 class Config:
     @staticmethod
@@ -1265,7 +1274,7 @@ def register_stylesheets(translator, stylesheets, assets_path):
                 translator.stylesheet.append(translator.embedded_stylesheet % contents)
                 continue
             # Expand only if we're going to inline; otherwise keep relative
-            asset = os.path.join(assets_path, asset)
+            asset = str(Path(assets_path) / asset)
         translator.stylesheet.append(translator.stylesheet_call(asset))
 
 def make_HtmlTranslator(base):
