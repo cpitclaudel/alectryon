@@ -103,7 +103,7 @@ def b16(i):
 
 class Gensym():
     # Having a global table of counters ensures that creating multiple Gensym
-    # instances in the same session doesn't cause collisions
+    # instances in the same session doesn't cause collisions.
     GENSYM_COUNTERS: Dict[str, DefaultDict[str, int]] = {}
 
     def __init__(self, stem):
