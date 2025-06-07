@@ -588,6 +588,7 @@ DRIVERS_BY_LANGUAGE = {
         "sertop": (".serapi", "SerAPI"),
         "sertop_noexec": (".serapi", "SerAPI_noexec"),
         "coqc_time": (".coqc_time", "CoqcTime"),
+        "vscoq": (".vscoq", "VsCoq"),
         "noop": (".noop", "NoOp")
     },
     "dafny": {

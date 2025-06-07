@@ -846,7 +846,8 @@ DRIVER_ARGS_BY_NAME: Dict[str, Optional[str]] = {
     "sertop_noexec": "sertop_args",
     "coqc_time": "coqc_args",
     "lean3_repl": None,
-    "leanInk": "leanInk_args"
+    "leanInk": "leanInk_args",
+    "vscoq": None
 }
 """Map from driver name to field in argparse namespace.
 Used to populate ``args.driver_args_by_name`` in ``post_process_arguments``."""
