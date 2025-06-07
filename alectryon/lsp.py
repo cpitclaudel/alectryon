@@ -234,9 +234,8 @@ class LSPClient:
     CLIENT_NAME = "Alectryon"
     LANGUAGE_ID = "coq"
 
-    def __init__(self, repl: Popen, debug_func=None):
+    def __init__(self, repl: Popen):
         self.repl = repl
-        self.debug_func = debug_func or core_debug
         self.parser = LSPParser()
         self.root_uri = Path(os.getcwd()).as_uri()
         self.next_request_id = 1
@@ -320,10 +319,6 @@ class LSPClient:
         self.send_message(LSPNotification(LSPNotificationList.EXIT, {}))
         self.initialized = False
     
-    def debug(self, message, prefix=""):
-        if self.debug_func:
-            self.debug_func(message, prefix)
-    
     def get_next_request_id(self) -> int:
         request_id = self.next_request_id
         self.next_request_id += 1
@@ -331,7 +326,7 @@ class LSPClient:
     
     def send_message(self, query: LSPMessage) -> None:
         bs = self.parser.serialize(query)
-        self.debug(bs, ">> ")
+        core_debug(bs, ">> ")
         self.repl.stdin.write(bs)
         self.repl.stdin.flush()
     

@@ -20,17 +20,15 @@
 # SOFTWARE.
 
 from enum import Enum
-import tempfile
-import time
-from typing import Dict, Iterable, List, Tuple, Any, Optional, cast
-from subprocess import Popen
 from pathlib import Path
+import time
+from typing import Dict, Iterable, List, Any, Optional, cast
+from subprocess import Popen
 
 from .core import EncodedDocument, Fragment, Position, Positioned, REPLDriver, Sentence, Text
-from .lsp import LSPClient, LSPQuery, LSPMethod, LSPRequest, LSPNotification, LSPNotificationList, LSPException, LSPError, LSPResponse, LSPErrorCode
-from .ppstring import process_proof_views, clean_fragment_contents, extract_comments_from_sentence
+from .lsp import LSPClient, LSPMethod, LSPRequest, LSPNotification, LSPNotificationList, LSPException, LSPResponse, LSPErrorCode
+from .ppstring import extract_goals_and_messages_from_proof_views
 from .transforms import coalesce_text
-from .coq import CoqIdents
 
 # VSCoq-specific LSP methods
 class VsCoqNotification(LSPMethod, Enum):
@@ -43,6 +41,7 @@ class VsCoqNotification(LSPMethod, Enum):
 class VsCoqRequest(LSPMethod, Enum):
     DOCUMENT_PROOFS = "vscoq/documentProofs"
     ABOUT = "vscoq/about"
+    DOCUMENT_STATE = "vscoq/documentState"
 
 ################################################################################################################################
 #                                         STEPFORWARDQUERY CLASS DEFINITION                                                    #
@@ -96,6 +95,7 @@ class VsCoqFileProcessor:
     end_position: Dict[str, int]
     end_of_file_reached: bool = False
     error_detected: bool = False
+    sentence_ranges: List[Dict[str, Any]] = []
 
     def is_end_of_file(self) -> bool:
         if not self.current_position or not self.end_position:
@@ -136,10 +136,44 @@ class VsCoqFileProcessor:
         if step_result.error_detected:
             self.error_detected = True
 
+    def process_document_state(self, document_state_data: dict) -> None:
+        document_text = document_state_data["document"]
+        self.sentence_ranges = self.parse_document_state(document_text)
+
+    def parse_document_state(self, document_state: str) -> List[dict]:
+        import re
+        
+        sentences = []
+        
+        first_section = document_state.split("Document using sentences_by_end map")[0]
+        
+        pattern = r'\[(\d+)\].*?\((\d+) -> (\d+)\)'
+        
+        for match in re.finditer(pattern, first_section):
+            sentence_id = int(match.group(1))
+            start_offset = int(match.group(2))
+            end_offset = int(match.group(3))
+            
+            sentences.append({
+                "id": sentence_id,
+                "start": start_offset,
+                "end": end_offset,
+                "match_text": match.group(0)
+            })
+        
+        # Remove the last sentence (alectryon_end_of_file)
+        if sentences:
+            last_sentence = sentences[-1]
+            if("alectryon_end_of_file" in last_sentence["match_text"]):
+                sentences.pop()
+
+        return sentences
+
     def get_results(self) -> Dict[str, Any]:
         return {
             "proof_views": self.proof_views,
-            "errors": self.error_diagnostics
+            "errors": self.error_diagnostics,
+            "sentence_ranges": self.sentence_ranges
         }
 
 
@@ -149,8 +183,8 @@ class VsCoqFileProcessor:
 
 class VsCoqClient(LSPClient):
     """VSCoq client using the simplified architecture"""    
-    def __init__(self, repl: Popen, debug_func=None):
-        super().__init__(repl, debug_func)
+    def __init__(self, repl: Popen):
+        super().__init__(repl)
 
     CAPABILITIES = {
         "workspace": {
@@ -193,6 +227,12 @@ class VsCoqClient(LSPClient):
                     delay *= self.PARSING_DELAY_MULTIPLIER
                 else:
                     raise e
+                
+    def get_state_info(self, uri: str, context: VsCoqFileProcessor) -> None:
+        query = LSPRequest(self.get_next_request_id(), VsCoqRequest.DOCUMENT_STATE, {"textDocument": {"uri":uri}})
+        result = self.send_and_process(query)
+        state_result = cast(LSPResponse, result)
+        context.process_document_state(state_result.result)
     
     def process_file(self, uri: str, contents: str) -> Dict[str, Any]:
         modified_contents = contents + "Create HintDb alectryon_end_of_file."
@@ -206,13 +246,17 @@ class VsCoqClient(LSPClient):
                 self.open_document(uri, modified_contents)
                 self.wait_for_parsing_complete(uri)
 
+            self.get_state_info(uri, context)
+
             while context.should_continue_processing():
                 self.step_forward(uri, context)
             
             self.shutdown()
             self.exit()
             
-            return context.get_results()
+            result = context.get_results()
+
+            return result
         except LSPException as e:
             raise e
     
@@ -227,7 +271,7 @@ class VsCoq(REPLDriver):
 
     CLI_ARGS = ()
     REPL_ARGS = ()
-    VERSION_ARGS = ()
+    VERSION_ARGS = ("--version",)
 
     ID = "vscoq"
     LSP_LANGUAGE_ID = LANGUAGE = "coq"
@@ -248,49 +292,41 @@ class VsCoq(REPLDriver):
             error_msg = self._format_error(error, contents)
             self.observer.notify(None, error_msg, Position(self.fpath, line, char).as_range(), level=3)
 
-    def process_result(self, result, contents):
-        """Process the results from VSCoq into fragments"""
-        fragments = process_proof_views(result, contents)
-
-        processed_fragments = []
-        for fragment in fragments:
-            if isinstance(fragment, Sentence):
-                comment_fragments = extract_comments_from_sentence(fragment)
-                cleaned_fragments = [clean_fragment_contents(f) for f in comment_fragments]
-                processed_fragments.extend(cleaned_fragments)
-            else:
-                processed_fragments.append(clean_fragment_contents(fragment))
-        return processed_fragments
-
     def _find_sentences(self, document: EncodedDocument):
         """Find sentences in the document using VSCoq"""
-        with tempfile.TemporaryDirectory(prefix="alectryon_vscoq_") as wd:
-            source = Path(wd) / CoqIdents.topfile_of_fpath(self.fpath)
-            source.write_bytes(document.contents)
-            uri = source.absolute().as_uri()
-            str_contents = document.contents.decode(document.encoding)
-            
-            if not self._client and self.repl:
-                self._client = VsCoqClient(self.repl)
+        str_contents = document.contents.decode(document.encoding)
+        
+        if not self._client and self.repl:
+            self._client = VsCoqClient(self.repl)
 
-            try:
-                result = self._client.process_file(uri, str_contents)
-                self._report_errors(result, str_contents)
-                    
-                processed_fragments = self.process_result(result, str_contents)
+        if self.fpath and str(self.fpath) != "-":
+            uri = Path(self.fpath).absolute().as_uri()
+        else:
+            uri = f"file:///virtual/alectryon_temp.v"
 
-                current_pos = 0
-                byte_contents = document.contents
-                for fr in processed_fragments:
-                    if isinstance(fr, Sentence) or isinstance(fr, Text):
-                        byte_text = fr.contents.encode(document.encoding)
-                        text_offset = byte_contents.find(byte_text, current_pos)
+        try:
+            result = self._client.process_file(uri, str_contents)
+            self._report_errors(result, str_contents)
 
-                        if text_offset >= 0:
-                            current_pos = text_offset + len(byte_text)
-                            yield Positioned(text_offset, current_pos, fr)
-            except Exception as e:
-                self.observer.notify(None, str(e), Position(self.fpath, 0, 1).as_range(), level=3)
+            sentence_ranges = result.get('sentence_ranges', [])
+            proof_view_data = extract_goals_and_messages_from_proof_views(result.get('proof_views', []))
+
+            min_length = min(len(sentence_ranges), len(proof_view_data))
+
+            for i in range(min_length):
+                sentence_range = sentence_ranges[i]
+                start_offset = sentence_range["start"]
+                end_offset = sentence_range["end"]
+
+                content = document.contents[start_offset:end_offset].decode(document.encoding)
+
+                pv_data = proof_view_data[i]
+                sentence = Sentence(contents=content.strip(), goals=pv_data['goals'], messages=pv_data['messages'])
+
+                yield Positioned(start_offset, end_offset, sentence)
+
+        except Exception as e:
+            self.observer.notify(None, str(e), Position(self.fpath, 0, 1).as_range(), level=3)
 
     def partition(self, document: EncodedDocument):
         """Partition document into fragments"""
@@ -307,7 +343,6 @@ class VsCoq(REPLDriver):
             except Exception as e:
                 api.observer.notify(None, str(e), Position(api.fpath, 0, 1).as_range(), level=3)
                 return [[Text(c)] for c in chunks]
-            
     
     def _format_error(self, diagnostic: Dict, contents: str) -> str:
         """Format error message like SerAPI with context highlighting"""
