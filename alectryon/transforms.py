@@ -898,272 +898,6 @@ def default_transform(fragments, lang, delay_errors=False):
 #==========================================================================================================================#
 #                                   Helper functions for the lsp ppstring format                                           #
 #==========================================================================================================================#
-
-def extract_string_from_ppcmd(ppcmd):
-    """Extract string content from Ppcmd structures."""
-    if ppcmd is None:
-        return ""
-    
-    if isinstance(ppcmd, list) and len(ppcmd) >= 2 and ppcmd[0] == "Ppcmd_string":
-        return ppcmd[1]
-    
-    if isinstance(ppcmd, list):
-        if ppcmd and ppcmd[0] in ["Ppcmd_tag", "Ppcmd_box", "Ppcmd_glue"]:
-            result = []
-            for item in ppcmd[1:]:
-                extracted = extract_string_from_ppcmd(item)
-                if extracted:
-                    result.append(extracted)
-            return " ".join(result)
-        
-        all_strings = []
-        for item in ppcmd:
-            extracted = extract_string_from_ppcmd(item)
-            if extracted:
-                all_strings.append(extracted)
-        return " ".join(all_strings)
-    
-    return ""
-
-def extract_messages_from_data(messages_data):
-    result = []
-    if not messages_data:
-        return result
-    
-    for msg in messages_data:
-        if isinstance(msg, list) and len(msg) >= 2:
-            content = extract_string_from_ppcmd(msg[1])
-            if content:
-                result.append(Message(contents=content))
-    
-    return result
-
-def extract_hypothesis_from_ppcmd(hyp_ppcmd):
-    if not hyp_ppcmd:
-        return None
-    
-    full_str = extract_string_from_ppcmd(hyp_ppcmd)
-    
-    colon_count = full_str.count(':')
-    
-    if colon_count == 0:
-        return Hypothesis(names=full_str.strip(), body=None, type="")
-    
-    elif colon_count == 1:
-        name_part, type_part = full_str.split(':', 1)
-        return Hypothesis(
-            names=name_part.strip(),
-            body=None, 
-            type=type_part.strip()
-        )
-    
-    else:
-        first_colon_index = full_str.find(':')
-        last_colon_index = full_str.rfind(':')
-        
-        name_part = full_str[:first_colon_index]
-        type_part = full_str[last_colon_index + 1:]
-        
-        body_part = full_str[first_colon_index + 1:last_colon_index]
-        
-        return Hypothesis(
-            names=name_part.strip(),
-            body=body_part.strip(), 
-            type=type_part.strip()
-        )
-    
-def extract_hypotheses_list(hypotheses_data):
-    result = []
-    if not hypotheses_data:
-        return result
-    
-    for hyp in hypotheses_data:
-        hypothesis = extract_hypothesis_from_ppcmd(hyp)
-        if hypothesis:
-            result.append(hypothesis)
-    
-    return result
-
-def extract_goal_from_data(goal_data, goal_id=None):
-    """
-    Extract a Goal object from goal data.
-    """
-    if not goal_data:
-        return None
-    
-    conclusion = ""
-    if "goal" in goal_data:
-        conclusion = extract_string_from_ppcmd(goal_data["goal"])
-    
-    hypotheses = []
-    if "hypotheses" in goal_data:
-        hypotheses = extract_hypotheses_list(goal_data["hypotheses"])
-    
-    name = goal_id if goal_id is not None else goal_data.get("id", None)
-    
-    return Goal(name=name, conclusion=conclusion, hypotheses=hypotheses)
-
-def extract_text(content_lines, start_pos, end_pos):
-    start_line = start_pos['line']
-    start_char = start_pos['character']
-    end_line = end_pos['line']
-    end_char = end_pos['character']
-    
-    if start_line >= len(content_lines):
-        return ""
-    
-    if start_line == end_line:
-        line = content_lines[start_line]
-        start_char = min(start_char, len(line))
-        end_char = min(end_char, len(line))
-        return line[start_char:end_char]
-    
-    result = ""
-    
-    if start_line < len(content_lines):
-        line = content_lines[start_line]
-        start_char = min(start_char, len(line))
-        result = line[start_char:]
-    
-    for line_num in range(start_line + 1, min(end_line, len(content_lines))):
-        result += "\n" + content_lines[line_num]
-    
-    if end_line < len(content_lines):
-        line = content_lines[end_line]
-        end_char = min(end_char, len(line))
-        result += "\n" + line[:end_char]
-    
-    return result
-
-def process_proof_views(result_data, test_content):
-    """Process proof views by properly mapping each command to its proof state."""
-    fragments = []
-    content_lines = test_content.split('\n')
-    
-    proof_views = result_data['proof_views']
-    if not proof_views:
-        return fragments
-    
-    previous_end = None
-    
-    for i, pv_data in enumerate(proof_views):
-        position = pv_data["position"]
-        start_pos = position["start"]
-        end_pos = position["end"]
-        
-        if previous_end is not None:
-            actual_start = previous_end
-        else:
-            actual_start = start_pos
-        
-        command_text = extract_text(content_lines, actual_start, end_pos)
-        
-        previous_end = end_pos
-        
-        goals = []
-        proof_view = pv_data["proof_view"]
-        if proof_view and proof_view.get('proof') and proof_view['proof']:
-            goals_data = proof_view['proof'].get('goals', [])
-            for goal_data in goals_data:
-                goal = extract_goal_from_data(goal_data)
-                if goal:
-                    goals.append(goal)
-        
-        messages = []
-        if proof_view and proof_view.get('messages'):
-            messages_data = proof_view.get('messages', [])
-            messages = extract_messages_from_data(messages_data)
-        
-        fragments.append(Sentence(
-            contents=command_text.strip(),
-            messages=messages,
-            goals=goals
-        ))
-    
-    return fragments
-
-def is_embedded_comment(parts, comment_index):
-    """Determine if a comment is embedded within code."""
-    if comment_index < 0 or comment_index >= len(parts):
-        return False
-        
-    has_code_before = False
-    has_code_after = False
-    
-    # Check for code before the comment
-    for i in range(0, comment_index):
-        if isinstance(parts[i], Code) and str(parts[i].v).strip():
-            has_code_before = True
-            break
-    
-    # Check for code after the comment
-    for i in range(comment_index + 1, len(parts)):
-        if isinstance(parts[i], Code) and str(parts[i].v).strip():
-            has_code_after = True
-            break
-    
-    return has_code_before and has_code_after
-
-def extract_comments_from_sentence(sentence):
-    """Extract comments from a sentence, but keep embedded comments within their code."""
-    parts = partition(COQ, sentence.contents)
-    
-    if len(parts) <= 1 or not any(isinstance(p, Comment) for p in parts): # type: ignore
-        return [sentence]
-    
-    has_standalone_comment = False
-    for i, part in enumerate(parts):
-        if isinstance(part, Comment) and not is_embedded_comment(parts, i):
-            has_standalone_comment = True
-            break
-            
-    if not has_standalone_comment:
-        return [sentence]
-    
-    result = []
-    current_text = ""
-    goals_assigned = False
-    
-    for i, part in enumerate(parts):
-        if isinstance(part, Comment):
-            if is_embedded_comment(parts, i):
-                current_text += str(part.v)
-            else:
-                if current_text.strip():
-                    if not goals_assigned:
-                        result.append(Sentence(current_text, sentence.messages, sentence.goals))
-                        goals_assigned = True
-                    else:
-                        result.append(Sentence(current_text, [], []))
-                    current_text = ""
-                
-                result.append(Text(str(part.v)))
-        else:
-            current_text += str(part.v)
-    
-    if current_text.strip():
-        if not goals_assigned:
-            result.append(Sentence(current_text, sentence.messages, sentence.goals))
-        else:
-            result.append(Sentence(current_text, [], []))
-    
-    return result
-    
-def clean_fragment_contents(fragment):
-    """Clean fragment contents without removing newlines."""
-    if isinstance(fragment, Sentence):
-        clean_content = fragment.contents.strip()
-        return Sentence(
-            contents=clean_content,
-            messages=fragment.messages,
-            goals=fragment.goals
-        )
-    elif isinstance(fragment, Text):
-        clean_content = fragment.contents.strip()
-        return Text(clean_content)
-    else:
-        return fragment
-
 def pretty_print_fragments(fragments):
     """Pretty print fragments with clear formatting and indentation."""
     print("\n=== PRETTY PRINTED FRAGMENTS ===\n")
@@ -1211,3 +945,110 @@ def pretty_print_fragments(fragments):
         
         print("\n" + "─" * 60 + "\n")
 
+def string_of_pp_string(pp):
+    """Convert a Coq pretty-printed string to a regular string"""
+    if not isinstance(pp, list) or len(pp) == 0:
+        return str(pp) if pp else ""
+    
+    match pp[0]:
+        case "Ppcmd_empty":
+            return ""
+        case "Ppcmd_string":
+            return pp[1] if len(pp) > 1 else ""
+        case "Ppcmd_glue":
+            if len(pp) > 1 and isinstance(pp[1], list):
+                return "".join(string_of_pp_string(sub_pp) for sub_pp in pp[1])
+            return ""
+        case "Ppcmd_box":
+            return string_of_pp_string(pp[2]) if len(pp) > 2 else ""
+        case "Ppcmd_tag":
+            return string_of_pp_string(pp[2]) if len(pp) > 2 else ""
+        case "Ppcmd_print_break":
+            return " " * pp[1] if len(pp) > 1 and isinstance(pp[1], int) else ""
+        case "Ppcmd_force_newline":
+            return "\n"
+        case "Ppcmd_comment":
+            if len(pp) > 1 and isinstance(pp[1], list):
+                return " ".join(pp[1])
+            return ""
+        case _:
+            return str(pp)
+        
+def extract_goals_and_messages_from_proof_views(proof_views):
+    """Extract only goals and messages from proof views"""
+    results = []
+    
+    for pv_data in proof_views:
+        proof_view = pv_data["proof_view"]
+        
+        # Extract goals
+        goals = []
+        if proof_view and proof_view.get('proof') and proof_view['proof']:
+            goals_data = proof_view['proof'].get('goals', [])
+            for goal_data in goals_data:
+                goal = extract_goal_from_data(goal_data)
+                if goal:
+                    goals.append(goal)
+        
+        # Extract messages
+        messages = []
+        if proof_view and proof_view.get('messages'):
+            messages_data = proof_view.get('messages', [])
+            for msg in messages_data:
+                if isinstance(msg, list) and len(msg) >= 2:
+                    content = string_of_pp_string(msg[1])
+                    if content:
+                        messages.append(Message(contents=content))
+        
+        results.append({
+            'goals': goals,
+            'messages': messages
+        })
+    
+    return results
+
+def extract_goal_from_data(goal_data, goal_id=None):
+    """Extract a Goal object from goal data"""
+    if not goal_data:
+        return None
+    
+    conclusion = ""
+    if "goal" in goal_data:
+        conclusion = string_of_pp_string(goal_data["goal"])
+    
+    hypotheses = []
+    if "hypotheses" in goal_data:
+        for hyp in goal_data["hypotheses"]:
+            full_str = string_of_pp_string(hyp)
+            
+            colon_count = full_str.count(':')
+            
+            if colon_count == 0:
+                hypothesis = Hypothesis(names=[full_str.strip()], body=None, type="")
+            elif colon_count == 1:
+                name_part, type_part = full_str.split(':', 1)
+                hypothesis = Hypothesis(
+                    names=[name_part.strip()],
+                    body=None, 
+                    type=type_part.strip()
+                )
+            else:
+                first_colon_index = full_str.find(':')
+                last_colon_index = full_str.rfind(':')
+                
+                name_part = full_str[:first_colon_index]
+                type_part = full_str[last_colon_index + 1:]
+                body_part = full_str[first_colon_index + 1:last_colon_index]
+                
+                hypothesis = Hypothesis(
+                    names=[name_part.strip()],
+                    body=body_part.strip(), 
+                    type=type_part.strip()
+                )
+            
+            if hypothesis:
+                hypotheses.append(hypothesis)
+    
+    name = goal_id if goal_id is not None else goal_data.get("id", None)
+    
+    return Goal(name=name, conclusion=conclusion, hypotheses=hypotheses)
