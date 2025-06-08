@@ -20,14 +20,14 @@
 # SOFTWARE.
 
 from enum import Enum
+from pathlib import Path
 import time
 from typing import Dict, Iterable, List, Any, Optional, cast
 from subprocess import Popen
 
-from .core import DriverInfo, EncodedDocument, Fragment, Position, Positioned, REPLDriver, Sentence, Text
+from .core import EncodedDocument, Fragment, Position, Positioned, REPLDriver, Sentence, Text
 from .lspFinal import LSPClient, LSPMethod, LSPRequest, LSPNotification, LSPNotificationList, LSPException, LSPResponse, LSPErrorCode
 from .transforms import coalesce_text, extract_goals_and_messages_from_proof_views
-from .coq import CoqIdents
 
 # VSCoq-specific LSP methods
 class VsCoqNotification(LSPMethod, Enum):
@@ -298,8 +298,13 @@ class VsCoq(REPLDriver):
         if not self._client and self.repl:
             self._client = VsCoqClient(self.repl)
 
+        if self.fpath and str(self.fpath) != "-":
+            uri = Path(self.fpath).absolute().as_uri()
+        else:
+            uri = f"file:///virtual/alectryon_temp.v"
+
         try:
-            result = self._client.process_file(str(self.fpath), str_contents)
+            result = self._client.process_file(uri, str_contents)
             self._report_errors(result, str_contents)
 
             sentence_ranges = result.get('sentence_ranges', [])
