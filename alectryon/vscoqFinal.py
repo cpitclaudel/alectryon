@@ -182,8 +182,8 @@ class VsCoqFileProcessor:
 
 class VsCoqClient(LSPClient):
     """VSCoq client using the simplified architecture"""    
-    def __init__(self, repl: Popen, debug_func=None):
-        super().__init__(repl, debug_func)
+    def __init__(self, repl: Popen):
+        super().__init__(repl)
 
     CAPABILITIES = {
         "workspace": {

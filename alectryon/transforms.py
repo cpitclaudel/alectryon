@@ -895,56 +895,6 @@ def default_transform(fragments, lang, delay_errors=False):
     return apply_transforms(fragments, DEFAULT_TRANSFORMS[lang], delay_errors)
 
 
-#==========================================================================================================================#
-#                                   Helper functions for the lsp ppstring format                                           #
-#==========================================================================================================================#
-def pretty_print_fragments(fragments):
-    """Pretty print fragments with clear formatting and indentation."""
-    print("\n=== PRETTY PRINTED FRAGMENTS ===\n")
-    
-    for i, fragment in enumerate(fragments):
-        if isinstance(fragment, Sentence):
-            print(f"Fragment {i} [Sentence]:")
-            
-            content_lines = fragment.contents.split('\n')
-            for line in content_lines:
-                print(f"  │ {line}")
-            
-            if fragment.messages:
-                print("  ├─ Messages:")
-                for j, msg in enumerate(fragment.messages):
-                    print(f"  │  {j}: {msg.contents}")
-            else:
-                print("  ├─ Messages: None")
-            
-            if fragment.goals:
-                print("  └─ Goals:")
-                for j, goal in enumerate(fragment.goals):
-                    print(f"  │  Goal {j} ({goal.name}):")
-                    print(f"  │    Conclusion: {goal.conclusion}")
-                    
-                    if goal.hypotheses:
-                        print(f"  │    Hypotheses:")
-                        for k, hyp in enumerate(goal.hypotheses):
-                            if hyp.body:
-                                print(f"  │      {hyp.names}: {hyp.body} : {hyp.type}")
-                            else:
-                                print(f"  │      {hyp.names}: {hyp.type}")
-                    else:
-                        print(f"  │    Hypotheses: None")
-            else:
-                print("  └─ Goals: None")
-        
-        elif isinstance(fragment, Text):
-            print(f"Fragment {i} [Comment]:")
-            
-            content_lines = fragment.contents.split('\n')
-            for line in content_lines:
-                if line.strip():  
-                    print(f"  │ {line}")
-        
-        print("\n" + "─" * 60 + "\n")
-
 def string_of_pp_string(pp):
     """Convert a Coq pretty-printed string to a regular string"""
     if not isinstance(pp, list) or len(pp) == 0:
