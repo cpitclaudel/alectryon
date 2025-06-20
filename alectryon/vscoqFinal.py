@@ -310,7 +310,9 @@ class VsCoq(REPLDriver):
             sentence_ranges = result.get('sentence_ranges', [])
             proof_view_data = extract_goals_and_messages_from_proof_views(result.get('proof_views', []))
 
-            for i in range(len(sentence_ranges)):
+            min_length = min(len(sentence_ranges), len(proof_view_data))
+
+            for i in range(min_length):
                 sentence_range = sentence_ranges[i]
                 start_offset = sentence_range["start"]
                 end_offset = sentence_range["end"]
