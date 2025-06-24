@@ -181,7 +181,7 @@ class myst(unittest.TestCase):
             from docutils.utils import new_document, SystemMessage
 
             myst = importlib.reload(alectryon.myst)
-            self.assertEqual(myst.Parser, myst.FallbackParser)
+            self.assertEqual(myst.MystParser, myst.FallbackParser)
 
             with redirected_std():
                 with self.assertRaisesRegex(SystemMessage, "SEVERE"):

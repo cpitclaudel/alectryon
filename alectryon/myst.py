@@ -31,7 +31,7 @@ import docutils.parsers
 
 try:
     from myst_parser.docutils_ import Parser as MystParser # type: ignore
-except ImportError as err:
+except ImportError:
     class FallbackParser(docutils.parsers.Parser):
         def parse(self, inputstring, document):
             document.append(document.reporter.severe(

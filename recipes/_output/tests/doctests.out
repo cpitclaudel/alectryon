@@ -26,24 +26,34 @@ step (alectryon.literate.CoqParser)
 Doctest: alectryon.literate.CoqParser.step ... ok
 DafnyParser (alectryon.literate)
 Doctest: alectryon.literate.DafnyParser ... ok
+parse_lit (alectryon.literate.IndentedMarkup)
+Doctest: alectryon.literate.IndentedMarkup.parse_lit ... ok
 step (alectryon.literate.LeanParser)
 Doctest: alectryon.literate.LeanParser.step ... ok
+__iter__ (alectryon.literate.Line)
+Doctest: alectryon.literate.Line.__iter__ ... ok
 __len__ (alectryon.literate.Line)
 Doctest: alectryon.literate.Line.__len__ ... ok
-_last_directive (alectryon.literate)
-Doctest: alectryon.literate._last_directive ... ok
+__iter__ (alectryon.literate.StringView)
+Doctest: alectryon.literate.StringView.__iter__ ... ok
 coq2rst (alectryon.literate)
 Doctest: alectryon.literate.coq2rst ... ok
+dafny2md (alectryon.literate)
+Doctest: alectryon.literate.dafny2md ... ok
 dafny2rst (alectryon.literate)
 Doctest: alectryon.literate.dafny2rst ... ok
+markup_parse (alectryon.literate)
+Doctest: alectryon.literate.markup_parse ... ok
+md2dafny (alectryon.literate)
+Doctest: alectryon.literate.md2dafny ... ok
+measure_indentation (alectryon.literate)
+Doctest: alectryon.literate.measure_indentation ... ok
 rst2coq (alectryon.literate)
 Doctest: alectryon.literate.rst2coq ... ok
 rst2dafny (alectryon.literate)
 Doctest: alectryon.literate.rst2dafny ... ok
 rst2lean3 (alectryon.literate)
 Doctest: alectryon.literate.rst2lean3 ... ok
-rst_partition (alectryon.literate)
-Doctest: alectryon.literate.rst_partition ... ok
 cli (alectryon.minimal)
 Doctest: alectryon.minimal.cli ... ok
 StripErrorsTokenFilter (alectryon.pygments)
@@ -74,6 +84,6 @@ partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 37 tests
+Ran 42 tests
 
 OK

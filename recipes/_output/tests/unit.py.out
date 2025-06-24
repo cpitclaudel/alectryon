@@ -1,6 +1,6 @@
-test_backend_gen (__main__.core) ... ok
-test_validation (__main__.json) ... ok
-test_styles (__main__.lsp) ... ok
+test_backend_gen (__main__.core.test_backend_gen) ... ok
+test_validation (__main__.json.test_validation) ... ok
+test_styles (__main__.lsp.test_styles) ... ok
 
 ----------------------------------------------------------------------
 Ran 3 tests
