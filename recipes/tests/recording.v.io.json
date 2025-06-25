@@ -1,5 +1,5 @@
 // To compile:
-//   $ alectryon recording.v.io.json # IO → HTML, produces ‘recording.v.html’
+//   $ alectryon recording.v.io.json --no-header # IO → HTML, produces ‘recording.v.html’
 //   $ alectryon recording.v.io.json --backend snippets-html # IO → HTML, produces ‘recording.snippets.html’
 //   $ alectryon recording.v.io.json --backend snippets-latex # IO → LaTeX, produces ‘recording.snippets.tex’
 [

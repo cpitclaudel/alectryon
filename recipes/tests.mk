@@ -199,7 +199,7 @@ tests_targets += _output/tests/recording.v.io.json
 
 # IO → HTML
 _output/tests/recording.v.html: tests/recording.v.io.json
-	$(alectryon) $<
+	$(alectryon) $< --no-header
 tests_targets += _output/tests/recording.v.html
 # IO → HTML
 _output/tests/recording.snippets.html: tests/recording.v.io.json
