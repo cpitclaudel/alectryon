@@ -110,67 +110,63 @@ And that movie can be exported to LaTeX or HTML:
    >>> for ltx in LatexGenerator(make_highlighter("latex", "coq")).gen(annotated):
    ...     print(ltx)
    \begin{alectryon}
-     % Generator: Alectryon
-     \sep
-     \begin{sentence}
-       \begin{input}
+     \begin{\al{sentence}}
+       \begin{\al{input}}
          \PY{k+kn}{Check}~\PY{l+m+mi}{1}\PY{o}{.}
-       \end{input}
-       \sep
-       \begin{output}
-         \begin{messages}
-           \begin{message}
-             \PY{l+m+mi}{1}\nl
+       \end{\al{input}}
+       \Al{sep}
+       \begin{\al{output}}
+         \begin{\al{messages}}
+           \begin{\al{message}}
+             \PY{l+m+mi}{1}\Al{nl}
              ~~~~~\PY{o}{:}~\PY{n}{nat}
-           \end{message}
-         \end{messages}
-       \end{output}
-     \end{sentence}
+           \end{\al{message}}
+         \end{\al{messages}}
+       \end{\al{output}}
+     \end{\al{sentence}}
    \end{alectryon}
    \begin{alectryon}
-     % Generator: Alectryon
-     \sep
-     \begin{sentence}
-       \begin{input}
+     \begin{\al{sentence}}
+       \begin{\al{input}}
          \PY{k+kn}{Goal}~\PY{k+kt}{False}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}\PY{o}{.}
-       \end{input}
-       \sep
-       \begin{output}
-         \begin{goals}
-           \begin{goal}
-             \begin{hyps}\end{hyps}
-             \sep
-             \infrule{}
-             \sep
-             \begin{conclusion}
+       \end{\al{input}}
+       \Al{sep}
+       \begin{\al{output}}
+         \begin{\al{goals}}
+           \begin{\al{goal}}
+             \begin{\al{hyps}}\end{\al{hyps}}
+             \Al{sep}
+             \Al{infrule}{}
+             \Al{sep}
+             \begin{\al{conclusion}}
                \PY{k+kt}{False}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{k+kt}{True}
-             \end{conclusion}
-           \end{goal}
-         \end{goals}
-       \end{output}
-     \end{sentence}
-     \sep
-     \begin{sentence}
-       \begin{input}
+             \end{\al{conclusion}}
+           \end{\al{goal}}
+         \end{\al{goals}}
+       \end{\al{output}}
+     \end{\al{sentence}}
+     \Al{sep}
+     \begin{\al{sentence}}
+       \begin{\al{input}}
          \PY{n+nb}{intros}~\PY{n}{H}\PY{o}{.}
-       \end{input}
-       \sep
-       \begin{output}
-         \begin{goals}
-           \begin{goal}
-             \begin{hyps}
-               \hyp{H}{\PY{k+kt}{False}}
-             \end{hyps}
-             \sep
-             \infrule{}
-             \sep
-             \begin{conclusion}
+       \end{\al{input}}
+       \Al{sep}
+       \begin{\al{output}}
+         \begin{\al{goals}}
+           \begin{\al{goal}}
+             \begin{\al{hyps}}
+               \Al{hyp}{H}{\PY{k+kt}{False}}
+             \end{\al{hyps}}
+             \Al{sep}
+             \Al{infrule}{}
+             \Al{sep}
+             \begin{\al{conclusion}}
                \PY{k+kt}{True}
-             \end{conclusion}
-           \end{goal}
-         \end{goals}
-       \end{output}
-     \end{sentence}
+             \end{\al{conclusion}}
+           \end{\al{goal}}
+         \end{\al{goals}}
+       \end{\al{output}}
+     \end{\al{sentence}}
    \end{alectryon}
 
 Look at the implementation of ``cli.py`` for more examples.

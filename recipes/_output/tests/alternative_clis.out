@@ -83,22 +83,20 @@
 \begin{document}
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Check}~\PY{n}{nat}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{n}{nat}\nl
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{n}{nat}\Al{nl}
           ~~~~~\PY{o}{:}~\PY{k+kt}{Set}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 \end{document}
@@ -135,22 +133,20 @@
 \begin{document}
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Check}~\PY{n}{nat}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{n}{nat}\nl
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{n}{nat}\Al{nl}
           ~~~~~\PY{o}{:}~\PY{k+kt}{Set}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 \end{document}

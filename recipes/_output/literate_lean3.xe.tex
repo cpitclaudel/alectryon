@@ -90,92 +90,84 @@ alectryon --frontend lean3+rst literate_lean3.lean --backend rst
 Alectryon captures the results of \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{lean3}{\DUrole{k}{\#check}}}}}, \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{lean3}{\DUrole{k}{\#eval}}}}}, and the like:
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k}{\PYZsh{}reduce}~\PY{k}{let}~\PY{n}{x}~\PY{o}{:=}~\PY{l+m+mi}{5}~\PY{k}{in}~\PY{n}{x}~\PY{n+nb+bp}{+}~\PY{l+m+mi}{3}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
           \PY{l+m+mi}{8}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 By default, these results are folded and are displayed upon hovering or clicking.  We can unfold them by default using annotations or directives:
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k}{\PYZsh{}check}~\PY{n}{nat}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
           \PY{n}{ℕ}~\PY{o}{:}~\PY{k+kt}{Type}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k}{\PYZsh{}check}~\PY{n}{bool}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
           \PY{n}{bool}~\PY{o}{:}~\PY{k+kt}{Type}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k}{\PYZsh{}eval}~\PY{l+m+mi}{1}~\PY{n+nb+bp}{+}~\PY{l+m+mi}{1}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
           \PY{l+m+mi}{2}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 Other flags can be used to control display, like \texttt{.no-in}:
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{k+kd}{structure}~\PY{n}{iff}~\PY{o}{:}~\PY{k+kt}{Prop}~\PY{n+nb+bp}{→}~\PY{k+kt}{Prop}~\PY{n+nb+bp}{→}~\PY{k+kt}{Prop}\nl
-          \PY{n}{fields}\PY{o}{:}\nl
-          \PY{n}{iff.mp}~\PY{o}{:}~\PY{n+nb+bp}{∀}~\PY{o}{\PYZob{}}\PY{n}{a}~\PY{n}{b}~\PY{o}{:}~\PY{k+kt}{Prop}\PY{o}{\PYZcb{},}~\PY{o}{(}\PY{n}{a}~\PY{n+nb+bp}{↔}~\PY{n}{b}\PY{o}{)}~\PY{n+nb+bp}{→}~\PY{n}{a}~\PY{n+nb+bp}{→}~\PY{n}{b}\nl
+  \begin{\al{sentence}}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{k+kd}{structure}~\PY{n}{iff}~\PY{o}{:}~\PY{k+kt}{Prop}~\PY{n+nb+bp}{→}~\PY{k+kt}{Prop}~\PY{n+nb+bp}{→}~\PY{k+kt}{Prop}\Al{nl}
+          \PY{n}{fields}\PY{o}{:}\Al{nl}
+          \PY{n}{iff.mp}~\PY{o}{:}~\PY{n+nb+bp}{∀}~\PY{o}{\PYZob{}}\PY{n}{a}~\PY{n}{b}~\PY{o}{:}~\PY{k+kt}{Prop}\PY{o}{\PYZcb{},}~\PY{o}{(}\PY{n}{a}~\PY{n+nb+bp}{↔}~\PY{n}{b}\PY{o}{)}~\PY{n+nb+bp}{→}~\PY{n}{a}~\PY{n+nb+bp}{→}~\PY{n}{b}\Al{nl}
           \PY{n}{iff.mpr}~\PY{o}{:}~\PY{n+nb+bp}{∀}~\PY{o}{\PYZob{}}\PY{n}{a}~\PY{n}{b}~\PY{o}{:}~\PY{k+kt}{Prop}\PY{o}{\PYZcb{},}~\PY{o}{(}\PY{n}{a}~\PY{n+nb+bp}{↔}~\PY{n}{b}\PY{o}{)}~\PY{n+nb+bp}{→}~\PY{n}{b}~\PY{n+nb+bp}{→}~\PY{n}{a}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 
@@ -186,294 +178,292 @@ Other flags can be used to control display, like \texttt{.no-in}:
 Alectryon also captures goals and hypotheses as proofs progress:
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kd}{example}~\PY{o}{(}\PY{n}{p}~\PY{n}{q}~\PY{n}{r}~\PY{o}{:}~\PY{k+kt}{Prop}\PY{o}{)}~\PY{o}{:}~\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}~\PY{n+nb+bp}{↔}~\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}~\PY{o}{:=}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kd}{example}~\PY{o}{(}\PY{n}{p}~\PY{n}{q}~\PY{n}{r}~\PY{o}{:}~\PY{k+kt}{Prop}\PY{o}{)}~\PY{o}{:}~\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}~\PY{n+nb+bp}{↔}~\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}~\PY{o}{:=}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~\PY{n}{apply}~\PY{n}{iff.intro}\PY{o}{,}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{p, q, r}{\PY{k+kt}{Prop}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}~\PY{n+nb+bp}{→}~\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}
-          \end{conclusion}
-        \end{goal}
-        \sep
-        \begin{extragoals}
-          \begin{goal}
-            \begin{hyps}
-              \hyp{p, q, r}{\PY{k+kt}{Prop}}
-            \end{hyps}
-            \sep
-            \infrule{}
-            \sep
-            \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}
+              \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+            \end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
               \PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}~\PY{n+nb+bp}{→}~\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}
-            \end{conclusion}
-          \end{goal}
-        \end{extragoals}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{o}{\PYZob{}}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{p, q, r}{\PY{k+kt}{Prop}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}~\PY{n+nb+bp}{→}~\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{literate-lean3-lean-s-intro-h-0}~~~~\PY{n}{intro}~\PY{n}{H}\PY{o}{,}\mrefmarker{1}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{p, q, r}{\PY{k+kt}{Prop}}
-            \sep
-            \hyp{H}{\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{literate-lean3-lean-s-intro-h-0}~~~~\PY{n}{intro}~\PY{n}{H}\PY{o}{,}\Al{mrefmarker}{1}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+            \Al{sep}
+            \Al{hyp}{H}{\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~~~\PY{n}{apply}~\PY{n}{and.intro}\PY{o}{,}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{p, q, r}{\PY{k+kt}{Prop}}
-            \sep
-            \hyp{H}{\anchor{literate-lean3-lean-s-and-intro-h-h-0}\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}\mrefmarker{2}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+            \Al{sep}
+            \Al{hyp}{H}{\Al{anchor}{literate-lean3-lean-s-and-intro-h-h-0}\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}\Al{mrefmarker}{2}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{q}
-          \end{conclusion}
-        \end{goal}
-        \sep
-        \begin{extragoals}
-          \begin{goal}
-            \begin{hyps}
-              \hyp{p, q, r}{\PY{k+kt}{Prop}}
-              \sep
-              \hyp{H}{\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}}
-            \end{hyps}
-            \sep
-            \infrule{}
-            \sep
-            \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}
+              \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+              \Al{sep}
+              \Al{hyp}{H}{\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}}
+            \end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
               \PY{n}{p}
-            \end{conclusion}
-          \end{goal}
-        \end{extragoals}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~~~\PY{n}{apply}~\PY{o}{(}\PY{n}{and.elim\PYZus{}right}~\PY{n}{H}\PY{o}{),}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{p, q, r}{\PY{k+kt}{Prop}}
-            \sep
-            \hyp{H}{\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+            \Al{sep}
+            \Al{hyp}{H}{\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{p}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{n}{apply}~\PY{o}{(}\PY{n}{and.elim\PYZus{}left}~\PY{n}{H}\PY{o}{),}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{n}{apply}~\PY{o}{(}\PY{n}{and.elim\PYZus{}left}~\PY{n}{H}\PY{o}{),}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~\PY{o}{\PYZcb{},}~
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{o}{\PYZob{}}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{p, q, r}{\PY{k+kt}{Prop}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}~\PY{n+nb+bp}{→}~\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~~~\PY{n}{intro}~\PY{n}{H}\PY{o}{,}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{p, q, r}{\PY{k+kt}{Prop}}
-            \sep
-            \hyp{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+            \Al{sep}
+            \Al{hyp}{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~~~\PY{n}{apply}~\PY{n}{and.intro}\PY{o}{,}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{p, q, r}{\PY{k+kt}{Prop}}
-            \sep
-            \hyp{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+            \Al{sep}
+            \Al{hyp}{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{p}
-          \end{conclusion}
-        \end{goal}
-        \sep
-        \begin{extragoals}
-          \begin{goal}
-            \begin{hyps}
-              \hyp{p, q, r}{\PY{k+kt}{Prop}}
-              \sep
-              \hyp{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
-            \end{hyps}
-            \sep
-            \infrule{}
-            \sep
-            \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}
+              \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+              \Al{sep}
+              \Al{hyp}{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
+            \end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
               \PY{n}{q}
-            \end{conclusion}
-          \end{goal}
-        \end{extragoals}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~~~\PY{n}{apply}~\PY{o}{(}\PY{n}{and.elim\PYZus{}right}~\PY{n}{H}\PY{o}{),}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{p, q, r}{\PY{k+kt}{Prop}}
-            \sep
-            \hyp{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
+            \Al{sep}
+            \Al{hyp}{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{q}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{n}{apply}~\PY{o}{(}\PY{n}{and.elim\PYZus{}left}~\PY{n}{H}\PY{o}{),}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{o}{\PYZcb{}}\nl
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{n}{apply}~\PY{o}{(}\PY{n}{and.elim\PYZus{}left}~\PY{n}{H}\PY{o}{),}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{o}{\PYZcb{}}\Al{nl}
       \PY{k+kd}{end}
-    \end{input}
-  \end{sentence}
+    \end{\al{input}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 Most features available for Coq are also available for Lean3; in particular, references (\hyperref[literate-lean3-lean-s-intro-h-0]{1}, \hyperref[literate-lean3-lean-s-and-intro-h-h-0]{2}), quotes (\alectryonInline{\PY{n}{p}~\PY{o}{∧}~\PY{n}{q}}) and assertions should work.

@@ -3,9 +3,4 @@ tests/unterminated.rst:13: (ERROR/3) Coq raised an exception:
 The offending chunk is delimited by >>>…<<< below:
   > (* >>>"This string is unterminated. *)<<<
 Results past this point may be unreliable.
-tests/unterminated.rst:13: (WARNING/2) Orphaned message for sid b'0':
- >  Not interpreting "*)" as the end of current
- >  non-terminated comment because it occurs in a
- >  non-terminated string of the comment.
- >  [comment-terminator-in-string,parsing,default]
 exit: 13

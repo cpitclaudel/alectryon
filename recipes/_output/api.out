@@ -4,69 +4,65 @@
 ================================================================================
 <latex>
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Goal}~\PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{n+nb}{split}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{k+kt}{True}
-          \end{conclusion}
-        \end{goal}
-        \sep
-        \begin{extragoals}
-          \begin{goal}
-            \begin{hyps}\end{hyps}
-            \sep
-            \infrule{}
-            \sep
-            \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}\end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
               \PY{k+kt}{True}
-            \end{conclusion}
-          \end{goal}
-        \end{extragoals}
-      \end{goals}
-    \end{output}
-  \end{sentence}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 </latex>
 <latex>
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kp}{all}\PY{o}{:}~\PY{n+nb}{eauto}\PY{o}{.}
-    \end{input}
-  \end{sentence}
+    \end{\al{input}}
+  \end{\al{sentence}}
 \end{alectryon}
 </latex>
