@@ -98,137 +98,135 @@ Alectryon supports references to individual sentences and hypotheses within a co
 
 \begin{quote}
 \begin{alectryon}
-  \anchor{setup}
-  \sep
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-fixpoint-plus-comm-0}\PY{k+kn}{Fixpoint}~\PY{n+nf}{plus\PYZus{}comm}~\PY{o}{(}\PY{n+nv}{n}~\PY{n+nv}{m}\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{\PYZob{}}\PY{n+nv}{struct}~\PY{n+nv}{n}\PY{o}{\PYZcb{}}~\PY{o}{:}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}\PY{o}{.}\mrefmarker{1}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
-            \sep
-            \hyp{n, m}{\PY{n}{nat}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+  \Al{anchor}{setup}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-fixpoint-plus-comm-0}\PY{k+kn}{Fixpoint}~\PY{n+nf}{plus\PYZus{}comm}~\PY{o}{(}\PY{n+nv}{n}~\PY{n+nv}{m}\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{\PYZob{}}\PY{n+nv}{struct}~\PY{n+nv}{n}\PY{o}{\PYZcb{}}~\PY{o}{:}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}\PY{o}{.}\Al{mrefmarker}{1}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
+            \Al{sep}
+            \Al{hyp}{n, m}{\PY{n}{nat}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Proof}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
-            \sep
-            \hyp{n, m}{\PY{n}{nat}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
+            \Al{sep}
+            \Al{hyp}{n, m}{\PY{n}{nat}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-destruct-n-0}~~\PY{n+nb}{destruct}~\PY{n}{n}~\PY{n+nb}{eqn}\PY{o}{:}\PY{n}{Heq}\PY{o}{.}\mrefmarker{◉}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \anchor{references-rst-s-destruct-n-g-1-0}
-          \sep
-          \begin{hyps}
-            \hyp{plus\char`\_comm}{\anchor{references-rst-s-destruct-n-g-1-h-plus-comm-0}\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}\mrefmarker{9}}
-            \sep
-            \hyp{n, m}{\anchor{references-rst-s-destruct-n-g-1-h-n-0}\PY{n}{nat}\mrefmarker{3}}
-            \sep
-            \hyp{Heq}{\anchor{references-rst-s-destruct-n-g-1-h-n-0-0}\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}\mrefmarker{4}}
-          \end{hyps}
-          \sep
-          \infrule{\mrefmarker{2}}
-          \sep
-          \begin{conclusion}
-            \anchor{references-rst-s-destruct-n-ccl-0}\PY{l+m+mi}{0}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{l+m+mi}{0}\mrefmarker{5}
-          \end{conclusion}
-        \end{goal}
-        \sep
-        \begin{extragoals}
-          \begin{goal}
-            \anchor{references-rst-s-destruct-n-g-s-n0-0}
-            \sep
-            \begin{hyps}
-              \hyp{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
-              \sep
-              \hyp{n, m, n0}{\PY{n}{nat}}
-              \sep
-              \hyp{Heq}{\anchor{references-rst-s-destruct-n-g-s-n0-h-n-s-0}\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}\mrefmarker{7}}
-            \end{hyps}
-            \sep
-            \infrule{\mrefmarker{6}}
-            \sep
-            \begin{conclusion}
-              \anchor{references-rst-s-destruct-n-g-s-n0-ccl-0}\PY{n}{S}~\PY{n}{n0}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n0}\mrefmarker{8}
-            \end{conclusion}
-          \end{goal}
-        \end{extragoals}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-setup-s-base-case-0}~~\PY{o}{\PYZhy{}}~\PY{c}{(*~Base~case~*)}\mrefmarker{10}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
-            \sep
-            \hyp{n, m}{\PY{n}{nat}}
-            \sep
-            \hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-destruct-n-0}~~\PY{n+nb}{destruct}~\PY{n}{n}~\PY{n+nb}{eqn}\PY{o}{:}\PY{n}{Heq}\PY{o}{.}\Al{mrefmarker}{◉}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \Al{anchor}{references-rst-s-destruct-n-g-1-0}
+          \Al{sep}
+          \begin{\al{hyps}}
+            \Al{hyp}{plus\char`\_comm}{\Al{anchor}{references-rst-s-destruct-n-g-1-h-plus-comm-0}\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}\Al{mrefmarker}{9}}
+            \Al{sep}
+            \Al{hyp}{n, m}{\Al{anchor}{references-rst-s-destruct-n-g-1-h-n-0}\PY{n}{nat}\Al{mrefmarker}{3}}
+            \Al{sep}
+            \Al{hyp}{Heq}{\Al{anchor}{references-rst-s-destruct-n-g-1-h-n-0-0}\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}\Al{mrefmarker}{4}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{\Al{mrefmarker}{2}}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \Al{anchor}{references-rst-s-destruct-n-ccl-0}\PY{l+m+mi}{0}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{l+m+mi}{0}\Al{mrefmarker}{5}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \Al{anchor}{references-rst-s-destruct-n-g-s-n0-0}
+            \Al{sep}
+            \begin{\al{hyps}}
+              \Al{hyp}{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
+              \Al{sep}
+              \Al{hyp}{n, m, n0}{\PY{n}{nat}}
+              \Al{sep}
+              \Al{hyp}{Heq}{\Al{anchor}{references-rst-s-destruct-n-g-s-n0-h-n-s-0}\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}\Al{mrefmarker}{7}}
+            \end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{\Al{mrefmarker}{6}}
+            \Al{sep}
+            \begin{\al{conclusion}}
+              \Al{anchor}{references-rst-s-destruct-n-g-s-n0-ccl-0}\PY{n}{S}~\PY{n}{n0}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n0}\Al{mrefmarker}{8}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-setup-s-base-case-0}~~\PY{o}{\PYZhy{}}~\PY{c}{(*~Base~case~*)}\Al{mrefmarker}{10}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
+            \Al{sep}
+            \Al{hyp}{n, m}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{l+m+mi}{0}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{l+m+mi}{0}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~~~\PY{n+nb}{rewrite}~\PY{o}{\PYZlt{}\PYZhy{}}~\PY{n}{plus\PYZus{}n\PYZus{}O}\PY{o}{;}~\PY{n+nb+bp}{reflexivity}\PY{o}{.}
-    \end{input}
-  \end{sentence}
+    \end{\al{input}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 The \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{kn}{Fixpoint}}}}} command (\hyperref[references-rst-fixpoint-plus-comm-0]{1}) indicates that we are beginning an inductive proof.
@@ -266,123 +264,121 @@ To allow forward- and back-references, counters are not reset from one block to 
 
 \begin{quote}
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-induction-0}~~\PY{o}{\PYZhy{}}~\PY{c}{(*~Induction~*)}\mrefmarker{11}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
-            \sep
-            \hyp{n, m, n0}{\PY{n}{nat}}
-            \sep
-            \hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-induction-0}~~\PY{o}{\PYZhy{}}~\PY{c}{(*~Induction~*)}\Al{mrefmarker}{11}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
+            \Al{sep}
+            \Al{hyp}{n, m, n0}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{S}~\PY{n}{n0}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n0}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~~~\PY{n+nb}{simpl}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
-            \sep
-            \hyp{n, m, n0}{\PY{n}{nat}}
-            \sep
-            \hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
+            \Al{sep}
+            \Al{hyp}{n, m, n0}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{S}~\PY{o}{(}\PY{n}{n0}~\PY{o}{+}~\PY{n}{m}\PY{o}{)}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n0}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~~~\PY{n+nb}{rewrite}~\PY{o}{(}\PY{n}{plus\PYZus{}comm}~\PY{n}{n0}\PY{o}{).}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
-            \sep
-            \hyp{n, m, n0}{\PY{n}{nat}}
-            \sep
-            \hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
+            \Al{sep}
+            \Al{hyp}{n, m, n0}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{S}~\PY{o}{(}\PY{n}{m}~\PY{o}{+}~\PY{n}{n0}\PY{o}{)}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n0}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~~~\PY{n+nb}{rewrite}~\PY{n}{plus\PYZus{}n\PYZus{}Sm}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
-            \sep
-            \hyp{n, m, n0}{\PY{n}{nat}}
-            \sep
-            \hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{plus\char`\_comm}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{n+nv}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{n}~\PY{o}{+}~\PY{n}{m}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{n}}
+            \Al{sep}
+            \Al{hyp}{n, m, n0}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{m}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n0}~\PY{o}{=}~\PY{n}{m}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n0}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~~~\PY{n+nb+bp}{reflexivity}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PY{n+nb+bp}{reflexivity}\PY{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Qed}\PY{o}{.}
-    \end{input}
-  \end{sentence}
+    \end{\al{input}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 \begin{itemize}
@@ -405,174 +401,172 @@ Here is how it looks:
 The following commands print information about an identifier \hyperref[references-rst-io-cp-s-about-0]{α}, print its definition \hyperref[references-rst-io-cp-s-print-0]{β}, and compute the type of a term \hyperref[references-rst-io-cp-s-check-0]{γ} or its reduction \hyperref[references-rst-io-cp-s-compute-0]{δ}.
 
 \begin{alectryon}
-  \anchor{cp}
-  \sep
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-cp-s-about-0}\PY{k+kn}{About}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}\mrefmarker{α}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\nl
-          \nl
-          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{k}{is}~\PY{n}{not}~\PY{n}{universe}~\PY{n}{polymorphic}\nl
-          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}\nl
-          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{k}{is}~\PY{n}{transparent}\nl
+  \Al{anchor}{cp}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-cp-s-about-0}\PY{k+kn}{About}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}\Al{mrefmarker}{α}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\Al{nl}
+          \Al{nl}
+          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{k}{is}~\PY{n}{not}~\PY{n}{universe}~\PY{n}{polymorphic}\Al{nl}
+          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}\Al{nl}
+          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{k}{is}~\PY{n}{transparent}\Al{nl}
           \PY{n}{Expands}~\PY{n}{to}\PY{o}{:}~\PY{n}{Constant}~\PY{n}{Coq}\PY{o}{.}\PY{n}{Init}\PY{o}{.}\PY{n}{Nat}\PY{o}{.}\PY{n}{add}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-cp-s-print-0}\PY{k+kn}{Print}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}\mrefmarker{β}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{=}\nl
-          \PY{k}{fix}~\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{\PYZob{}}\PY{k}{struct}~\PY{n}{n}\PY{o}{\PYZcb{}}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{:=}\nl
-          ~~\PY{k}{match}~\PY{n}{n}~\PY{k}{with}\nl
-          ~~\PY{o}{|}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}~\PY{n}{m}\nl
-          ~~\PY{o}{|}~\PY{n}{S}~\PY{n}{p}~\PY{o}{=\PYZgt{}}~\PY{n}{S}~\PY{o}{(}\PY{n}{add}~\PY{n}{p}~\PY{n}{m}\PY{o}{)}\nl
-          ~~\PY{k}{end}\nl
-          ~~~~~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\nl
-          \nl
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-cp-s-print-0}\PY{k+kn}{Print}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}\Al{mrefmarker}{β}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{=}\Al{nl}
+          \PY{k}{fix}~\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{\PYZob{}}\PY{k}{struct}~\PY{n}{n}\PY{o}{\PYZcb{}}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{:=}\Al{nl}
+          ~~\PY{k}{match}~\PY{n}{n}~\PY{k}{with}\Al{nl}
+          ~~\PY{o}{|}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}~\PY{n}{m}\Al{nl}
+          ~~\PY{o}{|}~\PY{n}{S}~\PY{n}{p}~\PY{o}{=\PYZgt{}}~\PY{n}{S}~\PY{o}{(}\PY{n}{add}~\PY{n}{p}~\PY{n}{m}\PY{o}{)}\Al{nl}
+          ~~\PY{k}{end}\Al{nl}
+          ~~~~~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\Al{nl}
+          \Al{nl}
           \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-cp-s-check-0}\PY{k+kn}{Check}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\mrefmarker{γ}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{l+m+mi}{2}~\PY{o}{+}~\PY{l+m+mi}{3}\nl
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-cp-s-check-0}\PY{k+kn}{Check}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\Al{mrefmarker}{γ}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{l+m+mi}{2}~\PY{o}{+}~\PY{l+m+mi}{3}\Al{nl}
           ~~~~~\PY{o}{:}~\PY{n}{nat}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-cp-s-compute-0}\PY{k+kn}{Compute}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\mrefmarker{δ}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{o}{=}~\PY{l+m+mi}{5}\nl
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-cp-s-compute-0}\PY{k+kn}{Compute}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\Al{mrefmarker}{δ}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{o}{=}~\PY{l+m+mi}{5}\Al{nl}
           \PY{o}{:}~\PY{n}{nat}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    \nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-cp-s-simpl-0}\PY{k+kn}{Eval}~\PY{n+nb}{simpl}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\mrefmarker{い}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{o}{=}~\PY{l+m+mi}{5}\nl
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    \Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-cp-s-simpl-0}\PY{k+kn}{Eval}~\PY{n+nb}{simpl}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\Al{mrefmarker}{い}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{o}{=}~\PY{l+m+mi}{5}\Al{nl}
           \PY{o}{:}~\PY{n}{nat}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-cp-s-cbn-0}\PY{k+kn}{Eval}~\PY{n+nb}{cbn}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\mrefmarker{ろ}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{o}{=}~\PY{l+m+mi}{5}\nl
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-cp-s-cbn-0}\PY{k+kn}{Eval}~\PY{n+nb}{cbn}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\Al{mrefmarker}{ろ}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{o}{=}~\PY{l+m+mi}{5}\Al{nl}
           \PY{o}{:}~\PY{n}{nat}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-cp-s-cbv-0}\PY{k+kn}{Eval}~\PY{n+nb}{cbv}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\mrefmarker{は}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{o}{=}~\PY{l+m+mi}{5}\nl
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-cp-s-cbv-0}\PY{k+kn}{Eval}~\PY{n+nb}{cbv}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\Al{mrefmarker}{は}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{o}{=}~\PY{l+m+mi}{5}\Al{nl}
           \PY{o}{:}~\PY{n}{nat}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-cp-s-lazy-0}\PY{k+kn}{Eval}~\PY{n+nb}{lazy}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\mrefmarker{に}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{o}{=}~\PY{l+m+mi}{5}\nl
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-cp-s-lazy-0}\PY{k+kn}{Eval}~\PY{n+nb}{lazy}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\Al{mrefmarker}{に}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{o}{=}~\PY{l+m+mi}{5}\Al{nl}
           \PY{o}{:}~\PY{n}{nat}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-cp-s-vm-compute-0}\PY{k+kn}{Eval}~\PY{n+nb}{vm\PYZus{}compute}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\mrefmarker{ほ}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{o}{=}~\PY{l+m+mi}{5}\nl
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-cp-s-vm-compute-0}\PY{k+kn}{Eval}~\PY{n+nb}{vm\PYZus{}compute}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\Al{mrefmarker}{ほ}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{o}{=}~\PY{l+m+mi}{5}\Al{nl}
           \PY{o}{:}~\PY{n}{nat}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-cp-s-pattern-0}\PY{k+kn}{Eval}~\PY{n+nb}{pattern}~\PY{l+m+mi}{2}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\mrefmarker{へ}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{o}{=}~\PY{o}{(}\PY{k}{fun}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{=\PYZgt{}}~\PY{n}{n}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{l+m+mi}{2}\nl
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-cp-s-pattern-0}\PY{k+kn}{Eval}~\PY{n+nb}{pattern}~\PY{l+m+mi}{2}~\PY{k}{in}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{l+m+mi}{2}~\PY{l+m+mi}{3}\PY{o}{.}\Al{mrefmarker}{へ}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{o}{=}~\PY{o}{(}\PY{k}{fun}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{=\PYZgt{}}~\PY{n}{n}~\PY{o}{+}~\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{l+m+mi}{2}\Al{nl}
           \PY{o}{:}~\PY{n}{nat}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 The second batch of commands perform reduction with a custom strategy: \hyperref[references-rst-io-cp-s-simpl-0]{い} \hyperref[references-rst-io-cp-s-cbn-0]{ろ} \hyperref[references-rst-io-cp-s-cbv-0]{は} \hyperref[references-rst-io-cp-s-lazy-0]{に} \hyperref[references-rst-io-cp-s-vm-compute-0]{ほ} \hyperref[references-rst-io-cp-s-pattern-0]{へ}.
@@ -589,22 +583,20 @@ Objects located using the marker-placement mini-language can be tagged with arbi
 
 \begin{quote}
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Check}~\PY{n}{nat}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{n}{nat}\nl
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{n}{nat}\Al{nl}
           ~~~~~\PY{o}{:}~\PY{k+kt}{Set}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 \end{quote}
 
@@ -612,32 +604,30 @@ These properties can then be used within custom transforms.  Out of the box, Ale
 
 \begin{quote}
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Extraction~Language~Haskell}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Extraction~Language~Haskell}\PY{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Extraction}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{n+nf}{add}\PY{+w}{~}\PY{o+ow}{::}\PY{+w}{~}\PY{k+kt}{Nat}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{k+kt}{Nat}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{k+kt}{Nat}\nl
-          \PY{n+nf}{add}\PY{+w}{~}\PY{n}{n}\PY{+w}{~}\PY{n}{m}\PY{+w}{~}\PY{o+ow}{=}\nl
-          \PY{+w}{~~}\PY{k+kr}{case}\PY{+w}{~}\PY{n}{n}\PY{+w}{~}\PY{k+kr}{of}\PY{+w}{~}\PY{p}{\PYZob{}}\nl
-          \PY{+w}{~~~}\PY{k+kt}{O}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{n}{m}\PY{p}{;}\nl
-          \PY{+w}{~~~}\PY{k+kt}{S}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{k+kt}{S}\PY{+w}{~}\PY{p}{(}\PY{n}{add}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{n}{m}\PY{p}{)\PYZcb{}}\nl
-          \nl
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{n+nf}{add}\PY{+w}{~}\PY{o+ow}{::}\PY{+w}{~}\PY{k+kt}{Nat}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{k+kt}{Nat}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{k+kt}{Nat}\Al{nl}
+          \PY{n+nf}{add}\PY{+w}{~}\PY{n}{n}\PY{+w}{~}\PY{n}{m}\PY{+w}{~}\PY{o+ow}{=}\Al{nl}
+          \PY{+w}{~~}\PY{k+kr}{case}\PY{+w}{~}\PY{n}{n}\PY{+w}{~}\PY{k+kr}{of}\PY{+w}{~}\PY{p}{\PYZob{}}\Al{nl}
+          \PY{+w}{~~~}\PY{k+kt}{O}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{n}{m}\PY{p}{;}\Al{nl}
+          \PY{+w}{~~~}\PY{k+kt}{S}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{o+ow}{\PYZhy{}\PYZgt{}}\PY{+w}{~}\PY{k+kt}{S}\PY{+w}{~}\PY{p}{(}\PY{n}{add}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{n}{m}\PY{p}{)\PYZcb{}}\Al{nl}
+          \Al{nl}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 \end{quote}
 
@@ -649,7 +639,7 @@ These properties can then be used within custom transforms.  Out of the box, Ale
 Instead of inserting a link to the relevant goal fragment, you can use the \texttt{:mquote:} role to insert a copy of a goal fragment inline. This only works for an input sentence, the conclusion or name of a goal, and the type, body, or name of a hypothesis:
 
 \begin{quote}
-The proof above had two cases: \alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}}} (\hyperref[references-rst-s-destruct-n-g-1-h-n-0-0]{4}) and \alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}} (\hyperref[references-rst-s-destruct-n-g-s-n0-h-n-s-0]{7}).
+The proof above had two cases: \alectryonInline{\Al{hyp}{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}}} (\hyperref[references-rst-s-destruct-n-g-1-h-n-0-0]{4}) and \alectryonInline{\Al{hyp}{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}} (\hyperref[references-rst-s-destruct-n-g-s-n0-h-n-s-0]{7}).
 The second goal below is named \alectryonInline{gg}.
 The last case of the proof below has two induction hypotheses: \alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}} and \alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}\PYZsq{}}}. The two permutation hypotheses are \alectryonInline{H} and \alectryonInline{H0}.
 \end{quote}
@@ -657,7 +647,7 @@ The last case of the proof below has two induction hypotheses: \alectryonInline{
 For conciseness, it is possible to define an alias of \texttt{:mquote:} that uses a fixed prefix.  Notice how the second example overrides the \texttt{.g} part of the prefix, too.
 
 \begin{quote}
-The proof above had two cases: \alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}}} and \alectryonInline{\hyp{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}}.
+The proof above had two cases: \alectryonInline{\Al{hyp}{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{l+m+mi}{0}}} and \alectryonInline{\Al{hyp}{Heq}{\PY{n}{n}~\PY{o}{=}~\PY{n}{S}~\PY{n}{n0}}}.
 The second goal below is named \alectryonInline{gg}.
 The last case of the proof below has two induction hypotheses: \alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}} and \alectryonInline{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}\PYZsq{}}}.
 The two permutation hypotheses are \alectryonInline{H} and \alectryonInline{H0}.
@@ -667,92 +657,90 @@ Newlines in quoted objects are removed, and line breaks are allowed:
 
 \begin{quote}
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Record}~\PY{n+nf}{P}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=}\nl
-      ~~\PY{o}{\PYZob{}}~\PY{n}{p\PYZus{}first}\PY{o}{:}~\PY{n}{A}\PY{o}{;}\nl
-      ~~~~\PY{n}{p\PYZus{}second}\PY{o}{:}~\PY{n}{B}~\PY{o}{\PYZcb{}.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Goal}~\PY{k}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{o}{@}\PY{n}{P}~\PY{n}{A}~\PY{n}{B}\PY{o}{),}\nl
-      ~~\PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)}~\PY{k}{in}\nl
-      ~~\PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k}{in}\nl
-      ~~\PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}\nl
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Record}~\PY{n+nf}{P}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=}\Al{nl}
+      ~~\PY{o}{\PYZob{}}~\PY{n}{p\PYZus{}first}\PY{o}{:}~\PY{n}{A}\PY{o}{;}\Al{nl}
+      ~~~~\PY{n}{p\PYZus{}second}\PY{o}{:}~\PY{n}{B}~\PY{o}{\PYZcb{}.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Goal}~\PY{k}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{o}{@}\PY{n}{P}~\PY{n}{A}~\PY{n}{B}\PY{o}{),}\Al{nl}
+      ~~\PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)}~\PY{k}{in}\Al{nl}
+      ~~\PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k}{in}\Al{nl}
+      ~~\PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}\Al{nl}
       ~~~~~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
-            \PY{k}{forall}~\PY{o}{(}\PY{n+nv}{A}~\PY{n+nv}{B}~\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}~\PY{o}{:}~\PY{n}{P}\PY{o}{),}\nl
-            \PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p\PYZus{}first}~\PY{n}{p}~\PY{k}{in}\nl
-            \PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p\PYZus{}second}~\PY{n}{p}~\PY{k}{in}\nl
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k}{forall}~\PY{o}{(}\PY{n+nv}{A}~\PY{n+nv}{B}~\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}~\PY{o}{:}~\PY{n}{P}\PY{o}{),}\Al{nl}
+            \PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p\PYZus{}first}~\PY{n}{p}~\PY{k}{in}\Al{nl}
+            \PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p\PYZus{}second}~\PY{n}{p}~\PY{k}{in}\Al{nl}
             \PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Proof}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
-            \PY{k}{forall}~\PY{o}{(}\PY{n+nv}{A}~\PY{n+nv}{B}~\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}~\PY{o}{:}~\PY{n}{P}\PY{o}{),}\nl
-            \PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p\PYZus{}first}~\PY{n}{p}~\PY{k}{in}\nl
-            \PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p\PYZus{}second}~\PY{n}{p}~\PY{k}{in}\nl
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k}{forall}~\PY{o}{(}\PY{n+nv}{A}~\PY{n+nv}{B}~\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{p}~\PY{o}{:}~\PY{n}{P}\PY{o}{),}\Al{nl}
+            \PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p\PYZus{}first}~\PY{n}{p}~\PY{k}{in}\Al{nl}
+            \PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p\PYZus{}second}~\PY{n}{p}~\PY{k}{in}\Al{nl}
             \PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{n+nb}{destruct}~\PY{n}{p}\PY{o}{;}~\PY{n+nb+bp}{reflexivity}\PY{o}{.}~
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Qed}\PY{o}{.}
-    \end{input}
-  \end{sentence}
+    \end{\al{input}}
+  \end{\al{sentence}}
 \end{alectryon}
 
-The first sentence is \alectryonInline{\PY{k+kn}{Record}~\PY{n+nf}{P}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=}\nl
-~~\PY{o}{\PYZob{}}~\PY{n}{p\PYZus{}first}\PY{o}{:}~\PY{n}{A}\PY{o}{;}\nl
+The first sentence is \alectryonInline{\PY{k+kn}{Record}~\PY{n+nf}{P}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{:}~\PY{k+kt}{Type}\PY{o}{\PYZcb{}}~\PY{o}{:=}\Al{nl}
+~~\PY{o}{\PYZob{}}~\PY{n}{p\PYZus{}first}\PY{o}{:}~\PY{n}{A}\PY{o}{;}\Al{nl}
 ~~~~\PY{n}{p\PYZus{}second}\PY{o}{:}~\PY{n}{B}~\PY{o}{\PYZcb{}.}}.\DUfootnotemark{footnote-reference-1}{f1}{1}
 %
 \DUfootnotetext{f1}{footnote-reference-1}{1}{\phantomsection\label{f1}%
-The second sentence is \alectryonInline{\PY{k+kn}{Goal}~\PY{k}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{o}{@}\PY{n}{P}~\PY{n}{A}~\PY{n}{B}\PY{o}{),}\nl
-~~\PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)}~\PY{k}{in}\nl
-~~\PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k}{in}\nl
-~~\PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}\nl
-~~~~~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}\PY{o}{.}}.  Later on we'll see a message: \alectryonInline{\begin{message}
-  \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\nl
+The second sentence is \alectryonInline{\PY{k+kn}{Goal}~\PY{k}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{o}{@}\PY{n}{P}~\PY{n}{A}~\PY{n}{B}\PY{o}{),}\Al{nl}
+~~\PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)}~\PY{k}{in}\Al{nl}
+~~\PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k}{in}\Al{nl}
+~~\PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}\Al{nl}
+~~~~~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}\PY{o}{.}}.  Later on we'll see a message: \alectryonInline{\begin{\al{message}}
+  \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\Al{nl}
   \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{,}\PY{n}{default}\PY{o}{]}
-\end{message}}.
+\end{\al{message}}}.
 }
 \end{quote}
 
@@ -760,18 +748,18 @@ To preserve newlines, use the \texttt{.. mquote::} directive instead:
 
 \begin{quote}
 \begin{alectryon}
-  \PY{k+kn}{Goal}~\PY{k}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{o}{@}\PY{n}{P}~\PY{n}{A}~\PY{n}{B}\PY{o}{),}\nl
-  ~~\PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)}~\PY{k}{in}\nl
-  ~~\PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k}{in}\nl
-  ~~\PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}\nl
+  \PY{k+kn}{Goal}~\PY{k}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{o}{@}\PY{n}{P}~\PY{n}{A}~\PY{n}{B}\PY{o}{),}\Al{nl}
+  ~~\PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)}~\PY{k}{in}\Al{nl}
+  ~~\PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k}{in}\Al{nl}
+  ~~\PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}\Al{nl}
   ~~~~~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}\PY{o}{.}
 \end{alectryon}
 
 \begin{alectryon}
-  \begin{message}
-    \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\nl
+  \begin{\al{message}}
+    \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\Al{nl}
     \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{,}\PY{n}{default}\PY{o}{]}
-  \end{message}
+  \end{\al{message}}
 \end{alectryon}
 \end{quote}
 
@@ -779,11 +767,11 @@ There, too, you may want to define aliases:
 
 \begin{quote}
 \begin{alectryon}
-  \hyp{H}{\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}}
+  \Al{hyp}{H}{\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}}
 \end{alectryon}
 
 \begin{alectryon}
-  \hyp{H0}{\PY{n}{Permutation}~\PY{n}{l\PYZsq{}}~\PY{n}{l\PYZsq{}\PYZsq{}}}
+  \Al{hyp}{H0}{\PY{n}{Permutation}~\PY{n}{l\PYZsq{}}~\PY{n}{l\PYZsq{}\PYZsq{}}}
 \end{alectryon}
 \end{quote}
 
@@ -791,13 +779,13 @@ Finally, you may chose a different Pygments lexer to highlight a quote.  For exa
 
 \begin{quote}
 \begin{alectryon}
-  \begin{message}
-    \PY{p}{(}\PY{k}{define}\PY{+w}{~}\PY{n+nv}{add}\PY{+w}{~}\PY{p}{(}\PY{n+nf}{lambdas}\PY{+w}{~}\PY{p}{(}\PY{n+nf}{n}\PY{+w}{~}\PY{n+nv}{m}\PY{p}{)}\nl
-    \PY{+w}{~~}\PY{p}{(}\PY{k}{match}\PY{+w}{~}\PY{n+nv}{n}\nl
-    \PY{+w}{~~~~~}\PY{p}{((}\PY{n+nf}{O}\PY{p}{)}\PY{+w}{~}\PY{n+nv}{m}\PY{p}{)}\nl
-    \PY{+w}{~~~~~}\PY{p}{((}\PY{n+nf}{S}\PY{+w}{~}\PY{n+nv}{p}\PY{p}{)}\PY{+w}{~}\PY{o}{`}\PY{p}{(}\PY{n+nf}{S}\PY{+w}{~}\PY{o}{,}\PY{p}{(}\PY{k}{@}\PY{+w}{~}\PY{n+nv}{add}\PY{+w}{~}\PY{n+nv}{p}\PY{+w}{~}\PY{n+nv}{m}\PY{p}{))))))}\nl
-    \nl
-  \end{message}
+  \begin{\al{message}}
+    \PY{p}{(}\PY{k}{define}\PY{+w}{~}\PY{n+nv}{add}\PY{+w}{~}\PY{p}{(}\PY{n+nf}{lambdas}\PY{+w}{~}\PY{p}{(}\PY{n+nf}{n}\PY{+w}{~}\PY{n+nv}{m}\PY{p}{)}\Al{nl}
+    \PY{+w}{~~}\PY{p}{(}\PY{k}{match}\PY{+w}{~}\PY{n+nv}{n}\Al{nl}
+    \PY{+w}{~~~~~}\PY{p}{((}\PY{n+nf}{O}\PY{p}{)}\PY{+w}{~}\PY{n+nv}{m}\PY{p}{)}\Al{nl}
+    \PY{+w}{~~~~~}\PY{p}{((}\PY{n+nf}{S}\PY{+w}{~}\PY{n+nv}{p}\PY{p}{)}\PY{+w}{~}\PY{o}{`}\PY{p}{(}\PY{n+nf}{S}\PY{+w}{~}\PY{o}{,}\PY{p}{(}\PY{k}{@}\PY{+w}{~}\PY{n+nv}{add}\PY{+w}{~}\PY{n+nv}{p}\PY{+w}{~}\PY{n+nv}{m}\PY{p}{))))))}\Al{nl}
+    \Al{nl}
+  \end{\al{message}}
 \end{alectryon}
 \end{quote}
 
@@ -810,111 +798,109 @@ References can also be used to customize the display of goals and hypotheses.  I
 
 \begin{quote}
 \begin{alectryon}
-  \anchor{pr}
-  \sep
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \Al{anchor}{pr}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Check}~\PY{k}{let}~\PY{n+nv}{t}~\PY{o}{:=}~\PY{n}{nat}~\PY{k}{in}~\PY{k}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{n}\PY{o}{:}~\PY{n}{t}\PY{o}{\PYZcb{},}~\PY{n}{n}~\PY{o}{\PYZgt{}=}~\PY{l+m+mi}{0}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\nl
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\Al{nl}
           \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{,}\PY{n}{default}\PY{o}{]}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Theorem}~\PY{n+nf}{Permutation\PYZus{}In}~\PY{o}{\PYZob{}}\PY{n+nv}{A}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{l}~\PY{n+nv}{l\PYZsq{}}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}\PY{o}{:}~\PY{n}{A}\PY{o}{)}~\PY{o}{:}\nl
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Theorem}~\PY{n+nf}{Permutation\PYZus{}In}~\PY{o}{\PYZob{}}\PY{n+nv}{A}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{l}~\PY{n+nv}{l\PYZsq{}}~\PY{o}{:}~\PY{n}{list}~\PY{n}{A}\PY{o}{)}~\PY{o}{(}\PY{n+nv}{a}\PY{o}{:}~\PY{n}{A}\PY{o}{)}~\PY{o}{:}\Al{nl}
       ~~\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \anchor{references-rst-io-pr-s-induction-1-0}~~\PY{n+nb}{induction}~\PY{l+m+mi}{1}\PY{o}{;}~\PY{n+nb}{intros}~\PY{o}{*}~\PY{n}{Hin}\PY{o}{;}~\PY{o}{[}~\PY{o}{|}~\PY{n+nb}{refine}~\PY{o}{?[}\PY{n}{gg}\PY{o}{]}~\PY{o}{|}~\PY{o}{..}~\PY{o}{].}\mrefmarker{12}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{H}{\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}}
-            \sep
-            \hyp{IHPermutation}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}}
-            \sep
-            \hyp{Hin}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{o}{(}\PY{n}{x}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}}
-          \end{hyps}
-          \sep
-          \infrule{\gid{gg}}
-          \sep
-          \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \Al{anchor}{references-rst-io-pr-s-induction-1-0}~~\PY{n+nb}{induction}~\PY{l+m+mi}{1}\PY{o}{;}~\PY{n+nb}{intros}~\PY{o}{*}~\PY{n}{Hin}\PY{o}{;}~\PY{o}{[}~\PY{o}{|}~\PY{n+nb}{refine}~\PY{o}{?[}\PY{n}{gg}\PY{o}{]}~\PY{o}{|}~\PY{o}{..}~\PY{o}{].}\Al{mrefmarker}{12}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{H}{\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}}
+            \Al{sep}
+            \Al{hyp}{IHPermutation}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}}
+            \Al{sep}
+            \Al{hyp}{Hin}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{o}{(}\PY{n}{x}~\PY{o}{::}~\PY{n}{l}\PY{o}{)}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{\Al{gid}{gg}}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{o}{(}\PY{n}{x}~\PY{o}{::}~\PY{n}{l\PYZsq{}}\PY{o}{)}
-          \end{conclusion}
-        \end{goal}
-        \sep
-        \begin{extragoals}
-          \begin{goal}
-            \begin{hyps}
-              \hyp{l, l\char`\', l\char`\'\char`\'}{\anchor{references-rst-io-pr-s-induction-1-g-4-h-l-0}\PY{n}{list}~\PY{n}{A}\mrefmarker{13}}
-              \sep
-              \hyp{H}{\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}}
-              \sep
-              \hyp{H0}{\PY{n}{Permutation}~\PY{n}{l\PYZsq{}}~\PY{n}{l\PYZsq{}\PYZsq{}}}
-              \sep
-              \hyp{IHPermutation1}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}}
-              \sep
-              \hyp{IHPermutation2}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}\PYZsq{}}}
-              \sep
-              \hyp{Hin}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}}
-            \end{hyps}
-            \sep
-            \infrule{}
-            \sep
-            \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}
+              \Al{hyp}{l, l\char`\', l\char`\'\char`\'}{\Al{anchor}{references-rst-io-pr-s-induction-1-g-4-h-l-0}\PY{n}{list}~\PY{n}{A}\Al{mrefmarker}{13}}
+              \Al{sep}
+              \Al{hyp}{H}{\PY{n}{Permutation}~\PY{n}{l}~\PY{n}{l\PYZsq{}}}
+              \Al{sep}
+              \Al{hyp}{H0}{\PY{n}{Permutation}~\PY{n}{l\PYZsq{}}~\PY{n}{l\PYZsq{}\PYZsq{}}}
+              \Al{sep}
+              \Al{hyp}{IHPermutation1}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}}
+              \Al{sep}
+              \Al{hyp}{IHPermutation2}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}\PYZsq{}}}
+              \Al{sep}
+              \Al{hyp}{Hin}{\PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l}}
+            \end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
               \PY{n}{List}\PY{o}{.}\PY{n}{In}~\PY{n}{a}~\PY{n}{l\PYZsq{}\PYZsq{}}
-            \end{conclusion}
-          \end{goal}
-        \end{extragoals}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    \nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kp}{all}\PY{o}{:}~\PY{n+nb}{simpl}~\PY{k}{in}~\PY{o}{*;}~\PY{n+nb+bp}{tauto}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    \Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kp}{all}\PY{o}{:}~\PY{n+nb}{simpl}~\PY{k}{in}~\PY{o}{*;}~\PY{n+nb+bp}{tauto}\PY{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Qed}\PY{o}{.}
-    \end{input}
-  \end{sentence}
+    \end{\al{input}}
+  \end{\al{sentence}}
 \end{alectryon}
 \end{quote}
 
@@ -927,23 +913,21 @@ A constant concern when displaying proof states to readers is that what is displ
 
 \begin{quote}
 \begin{alectryon}
-  \anchor{plus}
-  \sep
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \Al{anchor}{plus}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Print}~\PY{n}{plus}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
           \PY{k+kn}{Notation}~\PY{n+nf}{plus}~\PY{o}{:=}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 \end{quote}
 
@@ -951,29 +935,27 @@ To show the recursive definition of addition.   But as Coq's standard library go
 
 \begin{quote}
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Print}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{=}\nl
-          \PY{k}{fix}~\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{\PYZob{}}\PY{k}{struct}~\PY{n}{n}\PY{o}{\PYZcb{}}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{:=}\nl
-          ~~\PY{k}{match}~\PY{n}{n}~\PY{k}{with}\nl
-          ~~\PY{o}{|}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}~\PY{n}{m}\nl
-          ~~\PY{o}{|}~\PY{n}{S}~\PY{n}{p}~\PY{o}{=\PYZgt{}}~\PY{n}{S}~\PY{o}{(}\PY{n}{add}~\PY{n}{p}~\PY{n}{m}\PY{o}{)}\nl
-          ~~\PY{k}{end}\nl
-          ~~~~~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\nl
-          \nl
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{=}\Al{nl}
+          \PY{k}{fix}~\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{\PYZob{}}\PY{k}{struct}~\PY{n}{n}\PY{o}{\PYZcb{}}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{:=}\Al{nl}
+          ~~\PY{k}{match}~\PY{n}{n}~\PY{k}{with}\Al{nl}
+          ~~\PY{o}{|}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}~\PY{n}{m}\Al{nl}
+          ~~\PY{o}{|}~\PY{n}{S}~\PY{n}{p}~\PY{o}{=\PYZgt{}}~\PY{n}{S}~\PY{o}{(}\PY{n}{add}~\PY{n}{p}~\PY{n}{m}\PY{o}{)}\Al{nl}
+          ~~\PY{k}{end}\Al{nl}
+          ~~~~~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\Al{nl}
+          \Al{nl}
           \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 \end{quote}
 

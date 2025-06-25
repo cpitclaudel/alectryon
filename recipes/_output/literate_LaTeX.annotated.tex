@@ -25,81 +25,79 @@ $ alectryon literate_LaTeX.tex
   In LaTeX Coq fragments are written as \verb|\begin{alectryon}{coq}{}|:
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Goal}~\PY{k}{exists}~\PY{n+nv}{x}\PY{o}{,}~\PY{n}{x}~\PY{o}{*}~\PY{n}{x}~\PY{o}{=}~\PY{l+m+mi}{49}~\PY{o}{/\PYZbs{}}~\PY{n}{x}~\PY{o}{\PYZlt{}}~\PY{l+m+mi}{10}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{k}{exists}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{*}~\PY{n}{x}~\PY{o}{=}~\PY{l+m+mi}{49}~\PY{o}{/\PYZbs{}}~\PY{n}{x}~\PY{o}{\PYZlt{}}~\PY{l+m+mi}{10}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k}{let~rec}~\PY{n+nv}{t}~\PY{n+nv}{n}~\PY{o}{:=}\nl
-      ~~~~\PY{o}{(}\PY{k}{exists}~\PY{n+nv}{n}\PY{o}{;}~\PY{n+nb}{split}\PY{o}{;}~\PY{o}{[}\PY{n+nb+bp}{reflexivity}~\PY{o}{|])}~\PY{o}{||}~\PY{n}{t}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{k}{in}\nl
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k}{let~rec}~\PY{n+nv}{t}~\PY{n+nv}{n}~\PY{o}{:=}\Al{nl}
+      ~~~~\PY{o}{(}\PY{k}{exists}~\PY{n+nv}{n}\PY{o}{;}~\PY{n+nb}{split}\PY{o}{;}~\PY{o}{[}\PY{n+nb+bp}{reflexivity}~\PY{o}{|])}~\PY{o}{||}~\PY{n}{t}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{k}{in}\Al{nl}
       ~~\PY{n}{t}~\PY{l+m+mi}{0}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{l+m+mi}{7}~\PY{o}{\PYZlt{}}~\PY{l+m+mi}{10}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~\PY{n+nb}{unfold}~\PY{n}{lt}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{l+m+mi}{8}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{10}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      ~~\PY{k+kp}{repeat}~\PY{n+nb}{constructor}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kp}{repeat}~\PY{n+nb}{constructor}\PY{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Qed}\PY{o}{.}
-    \end{input}
-  \end{sentence}
+    \end{\al{input}}
+  \end{\al{sentence}}
 \end{alectryon}
 \end{frame}
 
@@ -111,18 +109,16 @@ $ alectryon literate_LaTeX.tex
 
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{output}
-      \begin{messages}
-        \begin{message}
-          \PY{n}{The}~\PY{n}{reference}~\PY{n}{z}~\PY{n}{was}~\PY{n}{not}~\PY{n}{found}~\PY{k}{in}~\PY{n}{the}~\PY{n}{current}\nl
+  \begin{\al{sentence}}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{n}{The}~\PY{n}{reference}~\PY{n}{z}~\PY{n}{was}~\PY{n}{not}~\PY{n}{found}~\PY{k}{in}~\PY{n}{the}~\PY{n}{current}\Al{nl}
           \PY{n}{environment}\PY{o}{.}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 \end{frame}
 

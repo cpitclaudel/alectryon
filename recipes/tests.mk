@@ -223,12 +223,12 @@ tests_targets += _output/tests/screenshot.html
 # reST → HTML
 _output/tests/stylesheets.html: tests/stylesheets.v
 	DOCUTILSCONFIG=tests/stylesheets.docutils.conf \
-       $(alectryon) $< --pygments-style emacs -o - | sed -r '/^ *<style type="text.css">/,/^ *<.style>/ { /^ *<style |<.style>|Alectryon/b; d}' > $@
+       $(alectryon) $< --pygments-style emacs -o - | sed -r '/^ *<style type="text.css">/,/^ *<.style>/ { /^ *<style |<.style>/b; d}' > $@
 tests_targets += _output/tests/stylesheets.html
 # reST → LaTeX
 _output/tests/stylesheets.part.tex: tests/stylesheets.v
 	DOCUTILSCONFIG=tests/stylesheets.docutils.conf \
-       $(alectryon) $< --pygments-style emacs --backend latex -o - | sed -r '/^% embedded stylesheet/,/^\\makeatother/ { /^\\makeat|Alectryon/b; d}' > $@
+       $(alectryon) $< --pygments-style emacs --backend latex -o - | sed -r '/^% embedded stylesheet/,/^\\makeatother/ { /^\\makeat/b; d}' > $@
 tests_targets += _output/tests/stylesheets.part.tex
 
 # Coq → HTML

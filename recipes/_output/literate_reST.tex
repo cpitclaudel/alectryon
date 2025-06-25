@@ -90,143 +90,141 @@ $ cd ..; python -m alectryon.literate -{}-from rst -{}-to coq - \textbackslash{}
 Coq fragments are introduced with \texttt{.. coq::}:
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Lemma}~\PY{n+nf}{le\PYZus{}l}~\PY{o}{:}~\PY{k}{forall}~\PY{n+nv}{y}~\PY{n+nv}{x}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{k}{forall}~\PY{n+nv}{y}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~\PY{n+nb}{induction}~\PY{n}{y}\PY{o}{;}~\PY{n+nb}{inversion}~\PY{l+m+mi}{1}\PY{o}{;}~\PY{n+nb}{subst}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{y}{\PY{n}{nat}}
-            \sep
-            \hyp{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
-            \sep
-            \hyp{H}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{y}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
+            \Al{sep}
+            \Al{hyp}{H}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}
-          \end{conclusion}
-        \end{goal}
-        \sep
-        \begin{extragoals}
-          \begin{goal}
-            \begin{hyps}
-              \hyp{y}{\PY{n}{nat}}
-              \sep
-              \hyp{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
-              \sep
-              \hyp{x}{\PY{n}{nat}}
-              \sep
-              \hyp{H}{\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
-              \sep
-              \hyp{H1}{\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
-            \end{hyps}
-            \sep
-            \infrule{}
-            \sep
-            \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}
+              \Al{hyp}{y}{\PY{n}{nat}}
+              \Al{sep}
+              \Al{hyp}{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
+              \Al{sep}
+              \Al{hyp}{x}{\PY{n}{nat}}
+              \Al{sep}
+              \Al{hyp}{H}{\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
+              \Al{sep}
+              \Al{hyp}{H1}{\PY{n}{S}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
+            \end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
               \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}
-            \end{conclusion}
-          \end{goal}
-        \end{extragoals}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~\PY{k+kp}{all}\PY{o}{:}~\PY{n+nb}{info\PYZus{}eauto}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
           \PY{c}{(*~info~eauto:~*)}
-        \end{message}
-        \sep
-        \begin{message}
+        \end{\al{message}}
+        \Al{sep}
+        \begin{\al{message}}
           \PY{n+nb}{simple~apply}~\PY{n}{le\PYZus{}S}\PY{o}{.}
-        \end{message}
-        \sep
-        \begin{message}
+        \end{\al{message}}
+        \Al{sep}
+        \begin{\al{message}}
           \PY{n+nb}{simple~apply}~\PY{n}{le\PYZus{}n}\PY{o}{.}
-        \end{message}
-        \sep
-        \begin{message}
+        \end{\al{message}}
+        \Al{sep}
+        \begin{\al{message}}
           \PY{c}{(*~info~eauto:~*)}
-        \end{message}
-        \sep
-        \begin{message}
+        \end{\al{message}}
+        \Al{sep}
+        \begin{\al{message}}
           \PY{n+nb}{simple~apply}~\PY{n}{le\PYZus{}S}\PY{o}{.}
-        \end{message}
-        \sep
-        \begin{message}
+        \end{\al{message}}
+        \Al{sep}
+        \begin{\al{message}}
           \PY{n+nb}{simple~apply}~\PY{n}{IHy}\PY{o}{.}
-        \end{message}
-        \sep
-        \begin{message}
+        \end{\al{message}}
+        \Al{sep}
+        \begin{\al{message}}
           \PY{n+nb+bp}{exact}~\PY{n}{H1}\PY{o}{.}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
-      \PY{k+kn}{Qed}\PY{o}{.}\nl
-    \end{input}
-  \end{sentence}
-  \sep
-  \begin{txt}
-    \nl
-  \end{txt}
-  \sep
-  \begin{sentence}
-    \begin{input}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Qed}\PY{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    \Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{k+kn}{Goal}~\PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
 
 They can be nested nested into other reST directives, such as tables:
@@ -256,29 +254,27 @@ Description
 \endlastfoot
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~\PY{n+nb}{intros}~\PY{n}{x}~\PY{n}{y}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{x, y}{\PY{n}{nat}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{x, y}{\PY{n}{nat}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{k}{forall}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
  & 
 Move the variables \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{x}}}}} and \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{y}}}}} into the context.
@@ -286,43 +282,41 @@ Move the variables \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole
 \hline
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~\PY{n+nb}{revert}~\PY{n}{x}\PY{o}{;}~\PY{n+nb}{induction}~\PY{n}{y}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}\end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-          \end{conclusion}
-        \end{goal}
-        \sep
-        \begin{extragoals}
-          \begin{goal}
-            \begin{hyps}
-              \hyp{y}{\PY{n}{nat}}
-              \sep
-              \hyp{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
-            \end{hyps}
-            \sep
-            \infrule{}
-            \sep
-            \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}
+              \Al{hyp}{y}{\PY{n}{nat}}
+              \Al{sep}
+              \Al{hyp}{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
+            \end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
               \PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-            \end{conclusion}
-          \end{goal}
-        \end{extragoals}
-      \end{goals}
-    \end{output}
-  \end{sentence}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
  & 
 Perform induction on \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{y}}}}}, generalizing \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{x}}}}}.
@@ -330,55 +324,53 @@ Perform induction on \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUro
 \hline
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~\PY{k+kp}{all}\PY{o}{:}~\PY{n+nb}{intros}~\PY{n}{x}~\PY{n}{z}~\PY{o}{(}\PY{n}{Hl}~\PY{o}{\PYZam{}}~\PY{n}{Hr}\PY{o}{).}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{x, z}{\PY{n}{nat}}
-            \sep
-            \hyp{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}}
-            \sep
-            \hyp{Hr}{\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{x, z}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}}
+            \Al{sep}
+            \Al{hyp}{Hr}{\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-          \end{conclusion}
-        \end{goal}
-        \sep
-        \begin{extragoals}
-          \begin{goal}
-            \begin{hyps}
-              \hyp{y}{\PY{n}{nat}}
-              \sep
-              \hyp{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
-              \sep
-              \hyp{x, z}{\PY{n}{nat}}
-              \sep
-              \hyp{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
-              \sep
-              \hyp{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
-            \end{hyps}
-            \sep
-            \infrule{}
-            \sep
-            \begin{conclusion}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}
+              \Al{hyp}{y}{\PY{n}{nat}}
+              \Al{sep}
+              \Al{hyp}{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
+              \Al{sep}
+              \Al{hyp}{x, z}{\PY{n}{nat}}
+              \Al{sep}
+              \Al{hyp}{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
+              \Al{sep}
+              \Al{hyp}{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
+            \end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
               \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-            \end{conclusion}
-          \end{goal}
-        \end{extragoals}
-      \end{goals}
-    \end{output}
-  \end{sentence}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
  & 
 Move conjunction into the context, splitting it into \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{Hl}}}}} and \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{Hr}}}}}.
@@ -386,39 +378,37 @@ Move conjunction into the context, splitting it into \texttt{\DUrole{code}{\DUro
 \hline
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~\PY{o}{\PYZhy{}}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{x, z}{\PY{n}{nat}}
-            \sep
-            \hyp{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}}
-            \sep
-            \hyp{Hr}{\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{x, z}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{l+m+mi}{0}}
+            \Al{sep}
+            \Al{hyp}{Hr}{\PY{l+m+mi}{0}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{n+nb}{inversion}~\PY{n}{Hl}\PY{o}{;}~\PY{n+nb+bp}{assumption}\PY{o}{.}
-    \end{input}
-  \end{sentence}
+    \end{\al{input}}
+  \end{\al{sentence}}
 \end{alectryon}
  & 
 Solve base case; \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{nb}{inversion}}}}} changes \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{x} \DUrole{o}{<=} \DUrole{mi}{0}}}}} into \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{x} \DUrole{o}{=} \DUrole{mi}{0}}}}}.
@@ -426,99 +416,97 @@ Solve base case; \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n
 \hline
 
 \begin{alectryon}
-  % Generator: Alectryon
-  \sep
-  \begin{sentence}
-    \begin{input}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~\PY{o}{\PYZhy{}}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{y}{\PY{n}{nat}}
-            \sep
-            \hyp{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
-            \sep
-            \hyp{x, z}{\PY{n}{nat}}
-            \sep
-            \hyp{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
-            \sep
-            \hyp{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{y}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
+            \Al{sep}
+            \Al{hyp}{x, z}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
+            \Al{sep}
+            \Al{hyp}{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       \PY{n+nb}{inversion}~\PY{n}{Hl}\PY{o}{;}~\PY{n+nb}{subst}\PY{o}{;}~\PY{k+kp}{try}~\PY{n+nb+bp}{congruence}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{goals}
-        \begin{goal}
-          \begin{hyps}
-            \hyp{y}{\PY{n}{nat}}
-            \sep
-            \hyp{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
-            \sep
-            \hyp{x, z}{\PY{n}{nat}}
-            \sep
-            \hyp{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
-            \sep
-            \hyp{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
-            \sep
-            \hyp{H0}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
-          \end{hyps}
-          \sep
-          \infrule{}
-          \sep
-          \begin{conclusion}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{y}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{IHy}{\PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{z}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
+            \Al{sep}
+            \Al{hyp}{x, z}{\PY{n}{nat}}
+            \Al{sep}
+            \Al{hyp}{Hl}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{S}~\PY{n}{y}}
+            \Al{sep}
+            \Al{hyp}{Hr}{\PY{n}{S}~\PY{n}{y}~\PY{o}{\PYZlt{}=}~\PY{n}{z}}
+            \Al{sep}
+            \Al{hyp}{H0}{\PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{y}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
             \PY{n}{x}~\PY{o}{\PYZlt{}=}~\PY{n}{z}
-          \end{conclusion}
-        \end{goal}
-      \end{goals}
-    \end{output}
-  \end{sentence}
-  \sep
-  \begin{sentence}
-    \begin{input}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
       ~~~~\PY{n+nb}{apply}~\PY{n}{IHy}\PY{o}{;}~\PY{n+nb}{split}\PY{o}{;}~\PY{n+nb}{info\PYZus{}eauto~using}~\PY{n}{le\PYZus{}l}\PY{o}{.}
-    \end{input}
-    \sep
-    \begin{output}
-      \begin{messages}
-        \begin{message}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
           \PY{c}{(*~info~eauto:~*)}
-        \end{message}
-        \sep
-        \begin{message}
+        \end{\al{message}}
+        \Al{sep}
+        \begin{\al{message}}
           \PY{n+nb+bp}{exact}~\PY{n}{H0}\PY{o}{.}
-        \end{message}
-        \sep
-        \begin{message}
+        \end{\al{message}}
+        \Al{sep}
+        \begin{\al{message}}
           \PY{c}{(*~info~eauto:~*)}
-        \end{message}
-        \sep
-        \begin{message}
+        \end{\al{message}}
+        \Al{sep}
+        \begin{\al{message}}
           \PY{n+nb}{simple~apply}~\PY{n}{le\PYZus{}l}\PY{o}{.}
-        \end{message}
-        \sep
-        \begin{message}
+        \end{\al{message}}
+        \Al{sep}
+        \begin{\al{message}}
           \PY{n+nb+bp}{exact}~\PY{n}{Hr}\PY{o}{.}
-        \end{message}
-      \end{messages}
-    \end{output}
-  \end{sentence}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
 \end{alectryon}
  & 
 Solve inductive case using the \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{le\_l}}}}} lemma.
