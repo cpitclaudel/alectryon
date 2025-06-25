@@ -24,7 +24,7 @@ import re
 from os import path
 
 from .core import Backend, Text, RichSentence, Messages, Goals, Asset
-from . import transforms, GENERATOR
+from . import transforms
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
 
@@ -311,7 +311,6 @@ class LatexGenerator(Backend):
         """Serialize a list of `fragments` to LaTeX."""
         # FIXME: classes. optargs=[",".join(classes)] if classes else [] ?
         with environments.alectryon(escape_name=False) as env:
-            Raw("% Generator: {}".format(GENERATOR))
             self.gen_ids(ids)
             fragments = transforms.apply_transforms(fragments, [
                 # transforms.merge_fragments_by_line(fragments) # FIXME
