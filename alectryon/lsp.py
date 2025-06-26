@@ -22,23 +22,18 @@ class LSPException(Exception):
         return cls(error_info.get("message", "Unknown error"),
                   error_info.get("code", -1))
 
-class LSPMethod:
-    @property
-    def value(self) -> str:
-        return getattr(self, "_value_", str(self))
-
-class LSPRequestList(LSPMethod, Enum):
+class LSPRequests:
     INITIALIZE = "initialize"
     SHUTDOWN = "shutdown"
     SEMANTIC_TOKENS_FULL = "textDocument/semanticTokens/full"
 
-class LSPNotificationList(LSPMethod, Enum):
+class LSPNotifications:
     INITIALIZED = "initialized"
     DID_OPEN = "textDocument/didOpen"
     EXIT = "exit"
     PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"
 
-class LSPErrorCode:
+class LSPErrorCodes:
     PARSING_NOT_FINISHED = -32802
     METHOD_NOT_FOUND = -32601
 
@@ -83,7 +78,7 @@ class LSPQuery(LSPMessage):
 class LSPRequest(LSPQuery):
     """LSP Request that expects a response"""
 
-    def __init__(self, idx: int, method: Union[LSPMethod, str], params: Optional[JSON] = None):
+    def __init__(self, idx: int, method: str, params: Optional[JSON] = None):
         self.idx = idx
         self.method = method
         self.params = params or {}
@@ -122,7 +117,7 @@ class LSPRequest(LSPQuery):
 class LSPNotification(LSPQuery):
     """LSP Notification (no response expected)"""
 
-    def __init__(self, method: Union[LSPMethod, str], params = None):
+    def __init__(self, method: str, params = None):
         self.method = method
         self.params = params or {}
         self.collected_notifications: List['LSPNotification'] = []
@@ -281,7 +276,7 @@ class LSPClient:
     def initialize(self) -> bool:
         try:
             init_query = LSPRequest(
-                self.get_next_request_id(), LSPRequestList.INITIALIZE, {
+                self.get_next_request_id(), LSPRequests.INITIALIZE, {
                     "processId": __import__('os').getpid(),
                     "clientInfo": {"name": self.CLIENT_NAME, "version": "1.0.0"},
                     "rootUri": self.root_uri,
@@ -294,12 +289,12 @@ class LSPClient:
             return False
 
     def send_initialized(self) -> None:
-        initialized = LSPNotification(LSPNotificationList.INITIALIZED, {})
+        initialized = LSPNotification(LSPNotifications.INITIALIZED, {})
         self.send_and_process(initialized)
         self.initialized = True
 
     def open_document(self, uri: str, contents: str) -> None:
-        open_doc = LSPNotification(LSPNotificationList.DID_OPEN, {
+        open_doc = LSPNotification(LSPNotifications.DID_OPEN, {
             "textDocument": {"uri": uri, "languageId": "coq", "version": 0, "text": contents}
         })
         self.send_message(open_doc)
@@ -309,13 +304,13 @@ class LSPClient:
             return
 
         try:
-            shutdown_query = LSPRequest(self.get_next_request_id(), LSPRequestList.SHUTDOWN, {})
+            shutdown_query = LSPRequest(self.get_next_request_id(), LSPRequests.SHUTDOWN, {})
             self.send_and_process(shutdown_query)
         except LSPException as e:
             print(f"Shutdown failed: {e}")
 
     def exit(self) -> None:
-        self.send_message(LSPNotification(LSPNotificationList.EXIT, {}))
+        self.send_message(LSPNotification(LSPNotifications.EXIT, {}))
         self.initialized = False
 
     def get_next_request_id(self) -> int:
@@ -344,7 +339,7 @@ class LSPClient:
 
                 if isinstance(incoming, LSPRequest):
                     error_response = LSPError(
-                        incoming.idx, LSPErrorCode.METHOD_NOT_FOUND,
+                        incoming.idx, LSPErrorCodes.METHOD_NOT_FOUND,
                         "This client does not support server requests."
                     )
                     self.send_message(error_response)
