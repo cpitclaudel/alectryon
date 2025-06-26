@@ -26,17 +26,17 @@ from typing import Dict, Iterable, List, Any, Optional, cast
 from subprocess import Popen
 
 from .core import EncodedDocument, Fragment, Position, Positioned, REPLDriver, Sentence, Text
-from .lspFinal import LSPClient, LSPMethod, LSPRequest, LSPNotification, LSPNotificationList, LSPException, LSPResponse, LSPErrorCode
+from .lspFinal import LSPClient, LSPRequest, LSPNotification, LSPException, LSPResponse, LSPNotifications, LSPErrorCodes
 from .transforms import coalesce_text, extract_goals_and_messages_from_proof_views
 
 # VSCoq-specific LSP methods
-class VsCoqNotification(LSPMethod, Enum):
+class Notifications:
     STEP_FORWARD = "vscoq/stepForward"
     PROOF_VIEW = "vscoq/proofView"
     UPDATE_HIGHLIGHTS = "vscoq/updateHighlights"
     BLOCK_ON_ERROR = "vscoq/blockOnError"
 
-class VsCoqRequest(LSPMethod, Enum):
+class Requests:
     DOCUMENT_PROOFS = "vscoq/documentProofs"
     ABOUT = "vscoq/about"
     DOCUMENT_STATE = "vscoq/documentState"
@@ -47,7 +47,7 @@ class VsCoqRequest(LSPMethod, Enum):
 
 class StepForwardQuery(LSPNotification):
     def __init__(self, uri: str):
-        super().__init__(VsCoqNotification.STEP_FORWARD, {
+        super().__init__(Notifications.STEP_FORWARD, {
             "textDocument": {"uri": uri, "version": 0}
         })
         self.uri = uri
@@ -60,20 +60,20 @@ class StepForwardQuery(LSPNotification):
         super().handle_notification(notification)
         method = notification.method
 
-        if method == VsCoqNotification.UPDATE_HIGHLIGHTS.value:
+        if method == Notifications.UPDATE_HIGHLIGHTS:
             if "processedRange" in notification.params and notification.params["processedRange"]:
                 self.current_position = notification.params["processedRange"][-1]
 
-        elif method == VsCoqNotification.PROOF_VIEW.value:
+        elif method == Notifications.PROOF_VIEW:
             self.proof_view = {
                 "position": self.current_position,
                 "proof_view": notification.params
             }
 
-        elif method == VsCoqNotification.BLOCK_ON_ERROR.value:
+        elif method == Notifications.BLOCK_ON_ERROR:
             self.error_detected = True
 
-        elif method == LSPNotificationList.PUBLISH_DIAGNOSTICS.value:
+        elif method == LSPNotifications.PUBLISH_DIAGNOSTICS:
             if "diagnostics" in notification.params and notification.params["diagnostics"]:
                 self.diagnostics.extend(notification.params["diagnostics"])
 
@@ -216,18 +216,18 @@ class VsCoqClient(LSPClient):
         delay = self.INITIAL_PARSING_DELAY
         while True:
             try:
-                request = LSPRequest(self.get_next_request_id(), VsCoqRequest.DOCUMENT_PROOFS, {"textDocument": {"uri":uri}})
+                request = LSPRequest(self.get_next_request_id(), Requests.DOCUMENT_PROOFS, {"textDocument": {"uri":uri}})
                 self.send_and_process(request)
                 break
             except LSPException as e:
-                if e.code == LSPErrorCode.PARSING_NOT_FINISHED:
+                if e.code == LSPErrorCodes.PARSING_NOT_FINISHED:
                     time.sleep(delay)
                     delay *= self.PARSING_DELAY_MULTIPLIER
                 else:
                     raise e
 
     def get_state_info(self, uri: str, context: VsCoqFileProcessor) -> None:
-        query = LSPRequest(self.get_next_request_id(), VsCoqRequest.DOCUMENT_STATE, {"textDocument": {"uri":uri}})
+        query = LSPRequest(self.get_next_request_id(), Requests.DOCUMENT_STATE, {"textDocument": {"uri":uri}})
         result = self.send_and_process(query)
         state_result = cast(LSPResponse, result)
         context.process_document_state(state_result.result)
