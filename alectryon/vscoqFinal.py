@@ -1,5 +1,4 @@
-# vscoq.py - VSCoq Driver using Ultra-Simple LSP Architecture
-# Copyright © 2025
+# Copyright © 2025 Falvien Jaquerod, Clément Pit-Claudel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,71 +18,55 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from enum import Enum
-from pathlib import Path
-import time
-from typing import Dict, Iterable, List, Any, Optional, cast
-from subprocess import Popen
+import dataclasses
+from typing import Callable, ClassVar, Dict, Generic, Iterable, List, Any, Optional, TypeVar
 
-from .core import EncodedDocument, Fragment, Position, Positioned, REPLDriver, Sentence, Text
-from .lspFinal import LSPClient, LSPRequest, LSPNotification, LSPException, LSPResponse, LSPNotifications, LSPErrorCodes
+from alectryon.lsp import LSPException, LSPResponse
+
+from .core import EncodedDocument, Fragment, Position, Positioned, Sentence, Text
+from .lspFinal import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDriver, LSPServerException, LSPServerMessage, LSPServerNotification, LSPServerNotifications, LSPServerRequest
 from .transforms import coalesce_text, extract_goals_and_messages_from_proof_views
 
-# VSCoq-specific LSP methods
-class Notifications:
-    STEP_FORWARD = "vscoq/stepForward"
+class Notifications(LSPServerNotifications):
     PROOF_VIEW = "vscoq/proofView"
     UPDATE_HIGHLIGHTS = "vscoq/updateHighlights"
     BLOCK_ON_ERROR = "vscoq/blockOnError"
 
-class Requests:
-    DOCUMENT_PROOFS = "vscoq/documentProofs"
-    ABOUT = "vscoq/about"
-    DOCUMENT_STATE = "vscoq/documentState"
+class StepForwardQuery(LSPClientNotification):
+    METHOD = "vscoq/stepForward"
 
-################################################################################################################################
-#                                         STEPFORWARDQUERY CLASS DEFINITION                                                    #
-################################################################################################################################
+    @property
+    def params(self):
+        return { "textDocument": { "uri": self.uri, "version": 0 } }
 
-class StepForwardQuery(LSPNotification):
-    def __init__(self, uri: str):
-        super().__init__(Notifications.STEP_FORWARD, {
-            "textDocument": {"uri": uri, "version": 0}
-        })
+    def __init__(self, client: LSPClient, uri: str):
+        super().__init__(client)
         self.uri = uri
         self.proof_view = None
         self.current_position = None
         self.error_detected = False
         self.diagnostics = []
 
-    def handle_notification(self, notification: 'LSPNotification') -> None:
-        super().handle_notification(notification)
-        method = notification.method
-
-        if method == Notifications.UPDATE_HIGHLIGHTS:
-            if "processedRange" in notification.params and notification.params["processedRange"]:
-                self.current_position = notification.params["processedRange"][-1]
-
-        elif method == Notifications.PROOF_VIEW:
-            self.proof_view = {
+    def process_message(self, message: LSPServerMessage) -> None:
+        super().process_message(message)
+        if not isinstance(message, LSPServerNotification):
+            return
+        if message.method == Notifications.UPDATE_HIGHLIGHTS:
+            if pr := message.params["processedRange"]:
+                self.current_position = pr[-1]
+        elif message.method == Notifications.PROOF_VIEW:
+            self.proof_view = { # FIXME: class
                 "position": self.current_position,
-                "proof_view": notification.params
+                "proof_view": message.params
             }
-
-        elif method == Notifications.BLOCK_ON_ERROR:
+        elif message.method == Notifications.BLOCK_ON_ERROR:
             self.error_detected = True
-
-        elif method == LSPNotifications.PUBLISH_DIAGNOSTICS:
-            if "diagnostics" in notification.params and notification.params["diagnostics"]:
-                self.diagnostics.extend(notification.params["diagnostics"])
+        elif message.method == Notifications.PUBLISH_DIAGNOSTICS:
+            self.diagnostics.extend(message.params["diagnostics"])
 
     @property
-    def is_done(self) -> bool:
-        return self.proof_view is not None or self.error_detected
-
-################################################################################################################################
-#                                        VSCOQFILEPROCESSOR CLASS DEFINITION                                                   #
-################################################################################################################################
+    def done(self) -> bool:
+        return bool(self.current_position and self.proof_view) or self.error_detected
 
 class VsCoqFileProcessor:
     """Handles state and processing logic of a single VsCoq file"""
@@ -134,8 +117,9 @@ class VsCoqFileProcessor:
         if step_result.error_detected:
             self.error_detected = True
 
-    def process_document_state(self, document_state_data: dict) -> None:
-        document_text = document_state_data["document"]
+    def process_document_state(self, ds: "DocumentStateRequest") -> None:
+        assert ds.result
+        document_text = ds.result["document"]
         self.sentence_ranges = self.parse_document_state(document_text)
 
     def parse_document_state(self, document_state: str) -> List[dict]:
@@ -174,63 +158,68 @@ class VsCoqFileProcessor:
             "sentence_ranges": self.sentence_ranges
         }
 
+@dataclasses.dataclass
+class URIRequest(LSPClientRequest):
+    uri: str
 
-################################################################################################################################
-#                                            VSCOQCLIENT CLASS DEFINITION                                                      #
-################################################################################################################################
+    @property
+    def params(self):
+        return { "textDocument": { "uri": self.uri } }
+
+class DocumentProofsRequest(URIRequest):
+    METHOD = "vscoq/documentProofs"
+
+class DocumentStateRequest(URIRequest):
+    METHOD = "vscoq/documentState"
+
+@dataclasses.dataclass
+class ExponentialBackoff:
+    delay = 0.05
+    delay_multiplier = 2
+
+    def ready(self) -> bool:
+        raise NotImplementedError
+
+    def wait(self):
+        import time
+        while not self.ready():
+            time.sleep(self.delay)
+            self.delay *= self.delay_multiplier
+
+@dataclasses.dataclass
+class VsCoqReadyMonitor(ExponentialBackoff):
+    """Wait until the document is parsed.
+
+    We need this to get answers to StepForward queries; waiting on
+    `DocumentState` doesn't work because it succeeds with empty contents if the
+    document isn't parsed yet.
+    """
+    PARSING_NOT_FINISHED: ClassVar[int] = -32802
+
+    client: "VsCoqClient"
+    uri: str
+
+    def ready(self):
+        try:
+            DocumentProofsRequest(self.client, self.uri).send()
+        except LSPServerException as e:
+            if e.code == self.PARSING_NOT_FINISHED:
+                return False
+            raise e
+        return True
 
 class VsCoqClient(LSPClient):
-    """VSCoq client using the simplified architecture"""
-    def __init__(self, repl: Popen):
-        super().__init__(repl)
-
-    CAPABILITIES = {
-        "workspace": {
-            "configuration": False,
-        },
-        "textDocument": {
-            "semanticTokens": {
-                "requests": {"range": False, "full": True},
-                "tokenTypes": list(LSPClient.TOKEN_TYPES),
-                "tokenModifiers": list(LSPClient.TOKEN_MODIFIERS),
-                "formats": ["relative"],
-                "overlappingTokenSupport": False,
-                "multilineTokenSupport": True,
-                "serverCancelSupport": False,
-                "augmentsSyntaxTokens": False,
-            }
-        }
-    }
+    LANGUAGE_ID = "coq"
 
     def step_forward(self, uri: str, context: VsCoqFileProcessor) -> None:
-        query = StepForwardQuery(uri)
-        result = self.send_and_process(query)
-        step_result = cast(StepForwardQuery, result)
-        context.process_step_result(step_result)
+        context.process_step_result(StepForwardQuery(self, uri).send())
 
     def calculate_file_end(self, contents: str) -> Dict[str, int]:
         lines = contents.split("\n")
         return {"line": len(lines) - 1, "character": len(lines[-1])}
 
-    def wait_for_parsing_complete(self, uri: str) -> None:
-        delay = self.INITIAL_PARSING_DELAY
-        while True:
-            try:
-                request = LSPRequest(self.get_next_request_id(), Requests.DOCUMENT_PROOFS, {"textDocument": {"uri":uri}})
-                self.send_and_process(request)
-                break
-            except LSPException as e:
-                if e.code == LSPErrorCodes.PARSING_NOT_FINISHED:
-                    time.sleep(delay)
-                    delay *= self.PARSING_DELAY_MULTIPLIER
-                else:
-                    raise e
-
     def get_state_info(self, uri: str, context: VsCoqFileProcessor) -> None:
-        query = LSPRequest(self.get_next_request_id(), Requests.DOCUMENT_STATE, {"textDocument": {"uri":uri}})
-        result = self.send_and_process(query)
-        state_result = cast(LSPResponse, result)
-        context.process_document_state(state_result.result)
+        context.process_document_state(DocumentStateRequest(self, uri).send())
 
     def process_file(self, uri: str, contents: str) -> Dict[str, Any]:
         modified_contents = contents + "Create HintDb alectryon_end_of_file."
@@ -238,46 +227,26 @@ class VsCoqClient(LSPClient):
         context = VsCoqFileProcessor()
         context.end_position = self.calculate_file_end(modified_contents)
 
-        try:
-            if self.initialize():
-                self.send_initialized()
-                self.open_document(uri, modified_contents)
-                self.wait_for_parsing_complete(uri)
+        self.open(uri, modified_contents)
+        VsCoqReadyMonitor(self, uri).wait()
 
-            self.get_state_info(uri, context)
+        self.get_state_info(uri, context)
 
-            while context.should_continue_processing():
-                self.step_forward(uri, context)
+        while context.should_continue_processing():
+            self.step_forward(uri, context)
 
-            self.shutdown()
-            self.exit()
+        result = context.get_results()
 
-            result = context.get_results()
+        return result
 
-            return result
-        except LSPException as e:
-            raise e
-
-################################################################################################################################
-#                                                  VSCOQ CLASS DEFINITION                                                      #
-################################################################################################################################
-
-class VsCoq(REPLDriver):
-    """Alectryon driver for VsCoq using ultra-simple LSP architecture"""
+class VsCoq(LSPDriver[VsCoqClient]):
+    ID = "vscoq"
     BIN = "vscoqtop"
     NAME = "VSCoq"
 
-    CLI_ARGS = ()
-    REPL_ARGS = ()
     VERSION_ARGS = ("--version",)
 
-    ID = "vscoq"
-    LSP_LANGUAGE_ID = LANGUAGE = "coq"
-    LSP_CLIENT_NAME = "Alectryon"
-
-    def __init__(self, args=(), fpath="-", binpath=None):
-        super().__init__(args, fpath, binpath)
-        self._client = None
+    CLIENT = VsCoqClient
 
     def _report_errors(self, result, contents) -> None:
         """Report errors from processing results"""
@@ -293,17 +262,9 @@ class VsCoq(REPLDriver):
     def _find_sentences(self, document: EncodedDocument):
         """Find sentences in the document using VSCoq"""
         str_contents = document.contents.decode(document.encoding)
-
-        if not self._client and self.repl:
-            self._client = VsCoqClient(self.repl)
-
-        if self.fpath and str(self.fpath) != "-":
-            uri = Path(self.fpath).absolute().as_uri()
-        else:
-            uri = f"file:///virtual/alectryon_temp.v"
-
+        assert self.client
         try:
-            result = self._client.process_file(uri, str_contents)
+            result = self.client.process_file(self.uri, str_contents)
             self._report_errors(result, str_contents)
 
             sentence_ranges = result.get('sentence_ranges', [])
@@ -323,7 +284,7 @@ class VsCoq(REPLDriver):
 
                 yield Positioned(start_offset, end_offset, sentence)
 
-        except Exception as e:
+        except LSPServerException as e:
             self.observer.notify(None, str(e), Position(self.fpath, 0, 1).as_range(), level=3)
 
     def partition(self, document: EncodedDocument):
@@ -338,7 +299,7 @@ class VsCoq(REPLDriver):
             try:
                 fragments = api.partition(document)
                 return list(document.recover_chunks(coalesce_text(fragments)))
-            except Exception as e:
+            except LSPServerException as e:
                 api.observer.notify(None, str(e), Position(api.fpath, 0, 1).as_range(), level=3)
                 return [[Text(c)] for c in chunks]
 
@@ -361,7 +322,7 @@ class VsCoq(REPLDriver):
                     start["line"], start["character"],
                     end["line"], end["character"]
                 )
-                err += f"\nThe offending chunk is delimited by >>>…<<< below:\n"
+                err += "\nThe offending chunk is delimited by >>>…<<< below:\n"
                 err += "\n".join(f"{QUOTE}{line}" for line in highlighted.splitlines())
             except (IndexError, KeyError):
                 err += f"\nError at line {start['line'] + 1}, column {start['character'] + 1}"

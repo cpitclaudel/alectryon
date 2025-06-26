@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, DefaultDict, Dict, Iterable, IO, List, \
+from typing import Any, ClassVar, DefaultDict, Dict, Iterable, IO, List, \
     NamedTuple, NoReturn, Optional, Tuple, Union
 
 from collections import deque, namedtuple, defaultdict
@@ -449,7 +449,7 @@ class StderrObserver(Observer):
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
 class Driver():
-    ID: str
+    ID: ClassVar[str]
 
     def __init__(self, args: Tuple[str, ...]=(), fpath: str="-"):
         self.observer: Observer = StderrObserver()
@@ -474,8 +474,8 @@ class Driver():
         raise NotImplementedError()
 
 class CLIDriver(Driver): # pylint: disable=abstract-method
-    BIN: str = "unset-binary"
-    NAME: str = "cli-driver"
+    BIN: ClassVar[str]
+    NAME: ClassVar[str]
 
     CLI_ARGS: Tuple[str, ...] = ()
     VERSION_ARGS: Tuple[str, ...] = ("--version",)
@@ -523,7 +523,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
                                         indent(self._proc_out(p), "   ")))
         return p.stdout
 
-class REPLDriver(CLIDriver): # pylint: disable=abstract-method
+class PopenDriver(CLIDriver): # pylint: disable=abstract-method
     REPL_ARGS: Tuple[str, ...] = ()
 
     def __init__(self, args=(), fpath="-", binpath=None):
@@ -532,24 +532,13 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
         self.instance_args: Tuple[str, ...] = ()
 
     def __enter__(self):
+        assert not self.repl
         self.reset()
         return self
 
     def __exit__(self, *_exn):
         self.kill()
         return False
-
-    def _read(self):
-        assert self.repl and self.repl.stdout
-        response = self.repl.stdout.readline()
-        debug(response, '<< ')
-        return response
-
-    def _write(self, s, end):
-        assert self.repl and self.repl.stdin
-        debug(s, '>> ')
-        self.repl.stdin.write(s + end)  # type: ignore
-        self.repl.stdin.flush()
 
     def kill(self):
         """Terminate this prover instance."""
@@ -570,7 +559,21 @@ class REPLDriver(CLIDriver): # pylint: disable=abstract-method
 
     def reset(self):
         """Start or restart this prover instance."""
+        self.kill()
         self.repl = self._start(stderr=None)
+
+class REPLDriver(PopenDriver):
+    def _read(self):
+        assert self.repl and self.repl.stdout
+        response = self.repl.stdout.readline()
+        debug(response, '<< ')
+        return response
+
+    def _write(self, s, end):
+        assert self.repl and self.repl.stdin
+        debug(s, '>> ')
+        self.repl.stdin.write(s + end)  # type: ignore
+        self.repl.stdin.flush()
 
 class TextREPLDriver(REPLDriver): # pylint: disable=abstract-method
     REPL_ENCODING = "utf-8"
