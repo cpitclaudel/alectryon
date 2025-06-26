@@ -1,5 +1,4 @@
 from typing import Any, Callable, Dict, List, NamedTuple, Optional, Union
-from enum import Enum
 import json
 import os
 import re
@@ -20,7 +19,7 @@ class LSPException(Exception):
     def from_json(cls, data: Dict[str, Any]) -> 'LSPException':
         """Create LSPException from JSON error data"""
         error_info = data["error"]
-        return cls(error_info.get("message", "Unknown error"), 
+        return cls(error_info.get("message", "Unknown error"),
                   error_info.get("code", -1))
 
 class LSPMethod:
@@ -35,7 +34,7 @@ class LSPRequestList(LSPMethod, Enum):
 
 class LSPNotificationList(LSPMethod, Enum):
     INITIALIZED = "initialized"
-    DID_OPEN = "textDocument/didOpen" 
+    DID_OPEN = "textDocument/didOpen"
     EXIT = "exit"
     PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"
 
@@ -49,7 +48,7 @@ class LSPMessage:
     def from_json(cls, data: Dict) -> 'LSPMessage':
         idx = data.get("id")
         method = data.get("method")
-        
+
         if method is not None:
             if idx is not None:
                 return LSPRequest.from_json(data)
@@ -60,7 +59,7 @@ class LSPMessage:
                 raise LSPException.from_json(data)
             else:
                 return LSPResponse.from_json(data)
-    
+
     def json(self) -> JSON:
         raise NotImplementedError()
 
@@ -69,18 +68,18 @@ class LSPQuery(LSPMessage):
 
     def process_incoming(self, incoming: 'LSPMessage') -> bool:
         raise NotImplementedError()
-    
+
     def handle_notification(self, notification: 'LSPNotification') -> None:
         """Handles incoming notifications"""
         if not hasattr(self, 'collected_notifications'):
             self.collected_notifications = []
         self.collected_notifications.append(notification)
-    
+
     @property
     def is_done(self) -> bool:
         """Checks if this message is complete"""
         raise NotImplementedError()
-    
+
 class LSPRequest(LSPQuery):
     """LSP Request that expects a response"""
 
@@ -103,7 +102,7 @@ class LSPRequest(LSPQuery):
             "method": method_str,
             "params": self.params
         }
-    
+
     def process_incoming(self, incoming: 'LSPMessage') -> bool:
         if isinstance(incoming, LSPResponse) and incoming.idx == self.idx:
             self.result = incoming.result
@@ -119,7 +118,7 @@ class LSPRequest(LSPQuery):
     @property
     def is_done(self) -> bool:
         return self.result is not None
-    
+
 class LSPNotification(LSPQuery):
     """LSP Notification (no response expected)"""
 
@@ -141,20 +140,20 @@ class LSPNotification(LSPQuery):
             "method": method_str,
             "params": self.params
         }
-    
+
     def process_incoming(self, incoming: 'LSPMessage') -> bool:
         if isinstance(incoming, LSPNotification):
             self.handle_notification(incoming)
             return self.is_done
         return False
-    
+
     @property
     def is_done(self) -> bool:
         return True
 
 class LSPResponse(LSPMessage):
     """LSP Response to a request"""
-    
+
     def __init__(self, idx: int, result: JSON):
         self.idx = idx
         self.result = result
@@ -163,15 +162,15 @@ class LSPResponse(LSPMessage):
     def from_json(cls, data: Dict) -> 'LSPResponse':
         """Create LSPResponse from JSON data"""
         return cls(data["id"], data.get("result", {}))
-    
+
     def json(self) -> JSON:
         """Convert response to JSON for sending"""
         return {
-            "jsonrpc": "2.0", 
-            "id": self.idx, 
+            "jsonrpc": "2.0",
+            "id": self.idx,
             "result": self.result
         }
-    
+
 class LSPError(LSPMessage):
     """LSP Error response"""
 
@@ -189,7 +188,7 @@ class LSPError(LSPMessage):
     def json(self) -> JSON:
         """Convert error to JSON for sending"""
         return {
-            "jsonrpc": "2.0", 
+            "jsonrpc": "2.0",
             "id": self.idx,
             "error": {"code": self.code, "message": self.message}
         }
@@ -214,23 +213,23 @@ class LSPParser:
             header = LSPParser.JRPC_HEADER_RE.match(line)
             if header:
                 length = int(header.group("len"))
-        
+
         if line == "":
             raise EOFError("Connection closed")
         if length is None:
             raise ValueError("No Content-Length header")
-        
+
         response = stream.read(length)
         if len(response) != length:
             raise ValueError("Truncated response")
-        
+
         resp = response.decode("utf-8")
         core_debug(resp, "<< ")
         data = json.loads(resp)
-        
+
         return LSPMessage.from_json(data)
 
-class LSPClient:    
+class LSPClient:
     CLIENT_NAME = "Alectryon"
     LANGUAGE_ID = "coq"
 
@@ -248,7 +247,7 @@ class LSPClient:
         "workspace": { "configuration": False },
         "textDocument": {}
     }
-    
+
     TOKEN_TYPES: Dict[str, str] = {
         "namespace": "Name.Namespace",
         "type": "Keyword.Type",
@@ -293,7 +292,7 @@ class LSPClient:
             return True
         except LSPException:
             return False
-        
+
     def send_initialized(self) -> None:
         initialized = LSPNotification(LSPNotificationList.INITIALIZED, {})
         self.send_and_process(initialized)
@@ -308,7 +307,7 @@ class LSPClient:
     def shutdown(self) -> None:
         if not self.initialized:
             return
-        
+
         try:
             shutdown_query = LSPRequest(self.get_next_request_id(), LSPRequestList.SHUTDOWN, {})
             self.send_and_process(shutdown_query)
@@ -318,18 +317,18 @@ class LSPClient:
     def exit(self) -> None:
         self.send_message(LSPNotification(LSPNotificationList.EXIT, {}))
         self.initialized = False
-    
+
     def get_next_request_id(self) -> int:
         request_id = self.next_request_id
         self.next_request_id += 1
         return request_id
-    
+
     def send_message(self, query: LSPMessage) -> None:
         bs = self.parser.serialize(query)
         core_debug(bs, ">> ")
         self.repl.stdin.write(bs)
         self.repl.stdin.flush()
-    
+
     def receive_message(self) -> LSPMessage:
         return self.parser.from_stream(self.repl.stdout)
 
@@ -338,14 +337,14 @@ class LSPClient:
 
         if query.is_done:
             return query
-        
+
         while True:
             try:
                 incoming = self.receive_message()
 
                 if isinstance(incoming, LSPRequest):
                     error_response = LSPError(
-                        incoming.idx, LSPErrorCode.METHOD_NOT_FOUND, 
+                        incoming.idx, LSPErrorCode.METHOD_NOT_FOUND,
                         "This client does not support server requests."
                     )
                     self.send_message(error_response)
@@ -356,5 +355,5 @@ class LSPClient:
                     break
             except LSPException as e:
                 raise e
-            
+
         return query
