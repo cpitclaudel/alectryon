@@ -35,7 +35,6 @@ class VsCoqNotification(LSPMethod, Enum):
     PROOF_VIEW = "vscoq/proofView"
     UPDATE_HIGHLIGHTS = "vscoq/updateHighlights"
     BLOCK_ON_ERROR = "vscoq/blockOnError"
-    INTERPRET_TO_END = "vscoq/interpretToEnd"
 
 class VsCoqRequest(LSPMethod, Enum):
     DOCUMENT_PROOFS = "vscoq/documentProofs"
@@ -56,28 +55,28 @@ class StepForwardQuery(LSPNotification):
         self.current_position = None
         self.error_detected = False
         self.diagnostics = []
-    
+
     def handle_notification(self, notification: 'LSPNotification') -> None:
         super().handle_notification(notification)
         method = notification.method
-        
+
         if method == VsCoqNotification.UPDATE_HIGHLIGHTS.value:
             if "processedRange" in notification.params and notification.params["processedRange"]:
                 self.current_position = notification.params["processedRange"][-1]
-        
+
         elif method == VsCoqNotification.PROOF_VIEW.value:
             self.proof_view = {
                 "position": self.current_position,
                 "proof_view": notification.params
             }
-        
+
         elif method == VsCoqNotification.BLOCK_ON_ERROR.value:
             self.error_detected = True
 
         elif method == LSPNotificationList.PUBLISH_DIAGNOSTICS.value:
             if "diagnostics" in notification.params and notification.params["diagnostics"]:
                 self.diagnostics.extend(notification.params["diagnostics"])
-    
+
     @property
     def is_done(self) -> bool:
         return self.proof_view is not None or self.error_detected
@@ -99,10 +98,10 @@ class VsCoqFileProcessor:
     def is_end_of_file(self) -> bool:
         if not self.current_position or not self.end_position:
             return False
-        
+
         return (self.current_position["end"]["line"] == self.end_position["line"] and
                 self.current_position["end"]["character"] == self.end_position["character"])
-    
+
     def update_position(self, position: Dict[str, int]) -> None:
         self.current_position = position
         if self.is_end_of_file():
@@ -119,7 +118,7 @@ class VsCoqFileProcessor:
 
     def should_continue_processing(self) -> bool:
         return not self.end_of_file_reached and not self.error_detected
-    
+
     def process_step_result(self, step_result: StepForwardQuery) -> None:
         if step_result.current_position:
             self.update_position(step_result.current_position)
@@ -141,25 +140,25 @@ class VsCoqFileProcessor:
 
     def parse_document_state(self, document_state: str) -> List[dict]:
         import re
-        
+
         sentences = []
-        
+
         first_section = document_state.split("Document using sentences_by_end map")[0]
-        
+
         pattern = r'\[(\d+)\].*?\((\d+) -> (\d+)\)'
-        
+
         for match in re.finditer(pattern, first_section):
             sentence_id = int(match.group(1))
             start_offset = int(match.group(2))
             end_offset = int(match.group(3))
-            
+
             sentences.append({
                 "id": sentence_id,
                 "start": start_offset,
                 "end": end_offset,
                 "match_text": match.group(0)
             })
-        
+
         # Remove the last sentence (alectryon_end_of_file)
         if sentences:
             last_sentence = sentences[-1]
@@ -181,7 +180,7 @@ class VsCoqFileProcessor:
 ################################################################################################################################
 
 class VsCoqClient(LSPClient):
-    """VSCoq client using the simplified architecture"""    
+    """VSCoq client using the simplified architecture"""
     def __init__(self, repl: Popen):
         super().__init__(repl)
 
@@ -208,11 +207,11 @@ class VsCoqClient(LSPClient):
         result = self.send_and_process(query)
         step_result = cast(StepForwardQuery, result)
         context.process_step_result(step_result)
-    
+
     def calculate_file_end(self, contents: str) -> Dict[str, int]:
         lines = contents.split("\n")
         return {"line": len(lines) - 1, "character": len(lines[-1])}
-    
+
     def wait_for_parsing_complete(self, uri: str) -> None:
         delay = self.INITIAL_PARSING_DELAY
         while True:
@@ -226,13 +225,13 @@ class VsCoqClient(LSPClient):
                     delay *= self.PARSING_DELAY_MULTIPLIER
                 else:
                     raise e
-                
+
     def get_state_info(self, uri: str, context: VsCoqFileProcessor) -> None:
         query = LSPRequest(self.get_next_request_id(), VsCoqRequest.DOCUMENT_STATE, {"textDocument": {"uri":uri}})
         result = self.send_and_process(query)
         state_result = cast(LSPResponse, result)
         context.process_document_state(state_result.result)
-    
+
     def process_file(self, uri: str, contents: str) -> Dict[str, Any]:
         modified_contents = contents + "Create HintDb alectryon_end_of_file."
 
@@ -249,16 +248,16 @@ class VsCoqClient(LSPClient):
 
             while context.should_continue_processing():
                 self.step_forward(uri, context)
-            
+
             self.shutdown()
             self.exit()
-            
+
             result = context.get_results()
 
             return result
         except LSPException as e:
             raise e
-    
+
 ################################################################################################################################
 #                                                  VSCOQ CLASS DEFINITION                                                      #
 ################################################################################################################################
@@ -294,7 +293,7 @@ class VsCoq(REPLDriver):
     def _find_sentences(self, document: EncodedDocument):
         """Find sentences in the document using VSCoq"""
         str_contents = document.contents.decode(document.encoding)
-        
+
         if not self._client and self.repl:
             self._client = VsCoqClient(self.repl)
 
@@ -330,7 +329,7 @@ class VsCoq(REPLDriver):
     def partition(self, document: EncodedDocument):
         """Partition document into fragments"""
         return document.intersperse_text_fragments(self._find_sentences(document))
-    
+
     def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
         """Annotate chunks of Coq code"""
         document = EncodedDocument(chunks, "\n", encoding="utf-8")
@@ -342,23 +341,23 @@ class VsCoq(REPLDriver):
             except Exception as e:
                 api.observer.notify(None, str(e), Position(api.fpath, 0, 1).as_range(), level=3)
                 return [[Text(c)] for c in chunks]
-    
+
     def _format_error(self, diagnostic: Dict, contents: str) -> str:
         """Format error message like SerAPI with context highlighting"""
         message = diagnostic.get("message", "Unknown error")
-        
+
         QUOTE = '  > '
         ERR_FMT = "Coq raised an exception:\n{}"
         err = ERR_FMT.format(self.indent(message, QUOTE))
-        
+
         if "range" in diagnostic:
             range_info = diagnostic["range"]
             start = range_info["start"]
             end = range_info["end"]
-            
+
             try:
                 highlighted = self.highlight_substring(
-                    contents, 
+                    contents,
                     start["line"], start["character"],
                     end["line"], end["character"]
                 )
@@ -366,7 +365,7 @@ class VsCoq(REPLDriver):
                 err += "\n".join(f"{QUOTE}{line}" for line in highlighted.splitlines())
             except (IndexError, KeyError):
                 err += f"\nError at line {start['line'] + 1}, column {start['character'] + 1}"
-        
+
         err += "\nResults past this point may be unreliable."
         return err
 
@@ -374,10 +373,10 @@ class VsCoq(REPLDriver):
     def highlight_substring(contents: str, start_line: int, start_char: int, end_line: int, end_char: int) -> str:
         """Highlight error location with >>> <<< markers like SerAPI"""
         lines = contents.splitlines()
-        
+
         context_start = max(0, start_line - 3)
         context_end = min(len(lines), end_line + 4)
-        
+
         context_lines = []
         for i in range(context_start, context_end):
             if i < len(lines):
@@ -389,10 +388,10 @@ class VsCoq(REPLDriver):
                     context_lines.append(f">>>{line}<<<")
                 else:
                     context_lines.append(line)
-        
+
         return "\n".join(context_lines)
 
-    @staticmethod 
+    @staticmethod
     def indent(text: str, prefix: str) -> str:
         """Indent each line of text with prefix"""
         return "\n".join(prefix + line for line in text.splitlines())
