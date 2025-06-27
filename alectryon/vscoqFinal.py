@@ -18,145 +18,48 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import ClassVar, Dict, Iterable, Any, Optional
+
 import dataclasses
-from typing import Callable, ClassVar, Dict, Generic, Iterable, List, Any, Optional, TypeVar
+import re
 
-from alectryon.lsp import LSPException, LSPResponse
-
-from .core import EncodedDocument, Fragment, Position, Positioned, Sentence, Text
-from .lspFinal import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDriver, LSPServerException, LSPServerMessage, LSPServerNotification, LSPServerNotifications, LSPServerRequest
-from .transforms import coalesce_text, extract_goals_and_messages_from_proof_views
+from .core import EncodedDocument, Fragment, Goal, Hypothesis, Message, Position, Positioned, Sentence, Text
+from .lspFinal import JSON, LSPClient, LSPClientNotification, LSPClientQuery, LSPClientRequest, LSPDriver, LSPServerException, LSPServerMessage, LSPServerNotification, LSPServerNotifications
+from .transforms import coalesce_text
 
 class Notifications(LSPServerNotifications):
     PROOF_VIEW = "vscoq/proofView"
-    UPDATE_HIGHLIGHTS = "vscoq/updateHighlights"
     BLOCK_ON_ERROR = "vscoq/blockOnError"
 
-class StepForwardQuery(LSPClientNotification):
+@dataclasses.dataclass
+class StepForwardNotification(LSPClientNotification):
     METHOD = "vscoq/stepForward"
+    uri: str
+
+    def __post_init__(self):
+        self.proof_view: Optional[JSON] = None
+        self.blocked_on_error: bool = False
+        self.diagnostics: list[JSON] = []
 
     @property
     def params(self):
         return { "textDocument": { "uri": self.uri, "version": 0 } }
 
-    def __init__(self, client: LSPClient, uri: str):
-        super().__init__(client)
-        self.uri = uri
-        self.proof_view = None
-        self.current_position = None
-        self.error_detected = False
-        self.diagnostics = []
-
     def process_message(self, message: LSPServerMessage) -> None:
         super().process_message(message)
         if not isinstance(message, LSPServerNotification):
             return
-        if message.method == Notifications.UPDATE_HIGHLIGHTS:
-            if pr := message.params["processedRange"]:
-                self.current_position = pr[-1]
-        elif message.method == Notifications.PROOF_VIEW:
-            self.proof_view = { # FIXME: class
-                "position": self.current_position,
-                "proof_view": message.params
-            }
+        if message.method == Notifications.PROOF_VIEW:
+            self.proof_view = message.params
         elif message.method == Notifications.BLOCK_ON_ERROR:
-            self.error_detected = True
+            self.blocked_on_error = True
         elif message.method == Notifications.PUBLISH_DIAGNOSTICS:
             self.diagnostics.extend(message.params["diagnostics"])
 
     @property
     def done(self) -> bool:
-        return bool(self.current_position and self.proof_view) or self.error_detected
+        return self.proof_view is not None or self.blocked_on_error
 
-class VsCoqFileProcessor:
-    """Handles state and processing logic of a single VsCoq file"""
-    proof_views: List[Dict[str, Any]] = []
-    error_diagnostics: List[Dict[str, Any]] = []
-    current_position: Optional[Dict[str, Any]] = None
-    end_position: Dict[str, int]
-    end_of_file_reached: bool = False
-    error_detected: bool = False
-    sentence_ranges: List[Dict[str, Any]] = []
-
-    def is_end_of_file(self) -> bool:
-        if not self.current_position or not self.end_position:
-            return False
-
-        return (self.current_position["end"]["line"] == self.end_position["line"] and
-                self.current_position["end"]["character"] == self.end_position["character"])
-
-    def update_position(self, position: Dict[str, int]) -> None:
-        self.current_position = position
-        if self.is_end_of_file():
-            self.end_of_file_reached = True
-
-    def add_proof_view(self, proof_view: Dict[str, Any]) -> None:
-        if not self.end_of_file_reached:
-            self.proof_views.append(proof_view)
-
-    def add_diagnostics(self, diagnostics: List[Dict[str, Any]]) -> None:
-        for diag in diagnostics:
-            if diag.get("severity", 0) == 1:
-                self.error_diagnostics.append(diag)
-
-    def should_continue_processing(self) -> bool:
-        return not self.end_of_file_reached and not self.error_detected
-
-    def process_step_result(self, step_result: StepForwardQuery) -> None:
-        if step_result.current_position:
-            self.update_position(step_result.current_position)
-
-        if step_result.diagnostics:
-            self.add_diagnostics(step_result.diagnostics)
-
-        if step_result.proof_view:
-            self.add_proof_view(step_result.proof_view)
-            if step_result.current_position:
-                self.update_position(step_result.current_position)
-
-        if step_result.error_detected:
-            self.error_detected = True
-
-    def process_document_state(self, ds: "DocumentStateRequest") -> None:
-        assert ds.result
-        document_text = ds.result["document"]
-        self.sentence_ranges = self.parse_document_state(document_text)
-
-    def parse_document_state(self, document_state: str) -> List[dict]:
-        import re
-
-        sentences = []
-
-        first_section = document_state.split("Document using sentences_by_end map")[0]
-
-        pattern = r'\[(\d+)\].*?\((\d+) -> (\d+)\)'
-
-        for match in re.finditer(pattern, first_section):
-            sentence_id = int(match.group(1))
-            start_offset = int(match.group(2))
-            end_offset = int(match.group(3))
-
-            sentences.append({
-                "id": sentence_id,
-                "start": start_offset,
-                "end": end_offset,
-                "match_text": match.group(0)
-            })
-
-        # Remove the last sentence (alectryon_end_of_file)
-        if sentences:
-            last_sentence = sentences[-1]
-            if("alectryon_end_of_file" in last_sentence["match_text"]):
-                sentences.pop()
-
-        return sentences
-
-    def get_results(self) -> Dict[str, Any]:
-        return {
-            "proof_views": self.proof_views,
-            "errors": self.error_diagnostics,
-            "sentence_ranges": self.sentence_ranges
-        }
 
 @dataclasses.dataclass
 class URIRequest(LSPClientRequest):
@@ -169,6 +72,7 @@ class URIRequest(LSPClientRequest):
 class DocumentProofsRequest(URIRequest):
     METHOD = "vscoq/documentProofs"
 
+@dataclasses.dataclass
 class DocumentStateRequest(URIRequest):
     METHOD = "vscoq/documentState"
 
@@ -208,91 +112,142 @@ class VsCoqReadyMonitor(ExponentialBackoff):
             raise e
         return True
 
+class VsCoqOutput:
+    @staticmethod
+    def string_of_pp_string(pp):
+        """Convert a Coq pretty-printed string to a regular string."""
+        # FIXME get VsCoq to return structured output
+
+        if not isinstance(pp, list) or len(pp) == 0:
+            return str(pp) if pp else ""
+
+        match pp[0]:
+            case "Ppcmd_empty":
+                return ""
+            case "Ppcmd_string":
+                return pp[1] if len(pp) > 1 else ""
+            case "Ppcmd_glue":
+                if len(pp) > 1 and isinstance(pp[1], list):
+                    return "".join(VsCoqOutput.string_of_pp_string(sub_pp) for sub_pp in pp[1])
+                return ""
+            case "Ppcmd_box":
+                return VsCoqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
+            case "Ppcmd_tag":
+                return VsCoqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
+            case "Ppcmd_print_break":
+                return " " * pp[1] if len(pp) > 1 and isinstance(pp[1], int) else ""
+            case "Ppcmd_force_newline":
+                return "\n"
+            case "Ppcmd_comment":
+                if len(pp) > 1 and isinstance(pp[1], list):
+                    return " ".join(pp[1])
+                return ""
+            case _:
+                return str(pp)
+
+    @staticmethod
+    def parse_message(mv: list[JSON]):
+        return Message(VsCoqOutput.string_of_pp_string(mv[1]))
+
+    @staticmethod
+    def parse_hyp(hv):
+         # FIXME don't use string processing: parse the structure instead
+        full_str = VsCoqOutput.string_of_pp_string(hv)
+        colon_count = full_str.count(':')
+        if colon_count == 0:
+            return Hypothesis(names=[full_str.strip()], body=None, type="")
+        elif colon_count == 1:
+            name_part, type_part = full_str.split(':', 1)
+            return Hypothesis(names=[name_part.strip()], body=None, type=type_part.strip())
+        else:
+            first_colon_index = full_str.find(':')
+            last_colon_index = full_str.rfind(':')
+            name_part = full_str[:first_colon_index]
+            type_part = full_str[last_colon_index + 1:]
+            body_part = full_str[first_colon_index + 1:last_colon_index]
+            return Hypothesis(names=[name_part.strip()], body=body_part.strip(), type=type_part.strip())
+
+    @staticmethod
+    def parse_goal(gv: JSON):
+        name = gv.get("id", None)
+        conclusion = VsCoqOutput.string_of_pp_string(gv["goal"])
+        hypotheses = [VsCoqOutput.parse_hyp(hv) for hv in gv["hypotheses"]]
+        return Goal(name, conclusion, hypotheses)
+
+    @staticmethod
+    def parse_proof_view(pv: JSON):
+        messages = [VsCoqOutput.parse_message(mv) for mv in pv.get("messages", [])]
+        goals = [VsCoqOutput.parse_goal(gv) for gv in (pv.get("proof") or {}).get("goals", [])]
+        return messages, goals
+
+class VsCoqDocument:
+    def __init__(self, client: "VsCoqClient", uri: str, contents: str):
+        self.client = client
+        self.uri, self.contents = uri, contents
+        self.blocked_on_error: bool = False
+        self.error_diagnostics: list[Dict[str, Any]] = []
+
+    def _compute_ranges(self):
+        document = DocumentStateRequest(self.client, self.uri).send().result["document"]
+        first_section = document.split("Document using sentences_by_end map")[0]
+        PATTERN = re.compile(r"\[\d+\].*?[(](?P<beg>\d+) -> (?P<end>\d+)[)]")
+        for m in PATTERN.finditer(first_section):
+            yield int(m.group("beg")), int(m.group("end"))
+
+    def _step_forward(self):
+        sf = StepForwardNotification(self.client, self.uri).send()
+        self.blocked_on_error |= sf.blocked_on_error
+        self.error_diagnostics.extend(d for d in sf.diagnostics if d.get("severity") == 1)
+        return sf.proof_view
+
+    def process(self) -> Iterable[Positioned]:
+        self.client.open(self.uri, self.contents)
+        VsCoqReadyMonitor(self.client, self.uri).wait()
+
+        for (beg, end) in self._compute_ranges():
+            if not (pv := self._step_forward()):
+                break
+            contents = self.contents[beg:end]
+            messages, goals = VsCoqOutput.parse_proof_view(pv)
+            yield Positioned(beg, end, Sentence(contents, messages, goals))
+
 class VsCoqClient(LSPClient):
     LANGUAGE_ID = "coq"
-
-    def step_forward(self, uri: str, context: VsCoqFileProcessor) -> None:
-        context.process_step_result(StepForwardQuery(self, uri).send())
-
-    def calculate_file_end(self, contents: str) -> Dict[str, int]:
-        lines = contents.split("\n")
-        return {"line": len(lines) - 1, "character": len(lines[-1])}
-
-    def get_state_info(self, uri: str, context: VsCoqFileProcessor) -> None:
-        context.process_document_state(DocumentStateRequest(self, uri).send())
-
-    def process_file(self, uri: str, contents: str) -> Dict[str, Any]:
-        modified_contents = contents + "Create HintDb alectryon_end_of_file."
-
-        context = VsCoqFileProcessor()
-        context.end_position = self.calculate_file_end(modified_contents)
-
-        self.open(uri, modified_contents)
-        VsCoqReadyMonitor(self, uri).wait()
-
-        self.get_state_info(uri, context)
-
-        while context.should_continue_processing():
-            self.step_forward(uri, context)
-
-        result = context.get_results()
-
-        return result
 
 class VsCoq(LSPDriver[VsCoqClient]):
     ID = "vscoq"
     BIN = "vscoqtop"
-    NAME = "VSCoq"
+    NAME = "VsCoq"
 
     VERSION_ARGS = ("--version",)
 
     CLIENT = VsCoqClient
 
-    def _report_errors(self, result, contents) -> None:
+    def _report_errors(self, doc: VsCoqDocument) -> None:
         """Report errors from processing results"""
-        if result["errors"]:
-            error = result["errors"][0]
+        if doc.error_diagnostics:
+            error = doc.error_diagnostics[0]
             error_range = error["range"]
             line = error_range["start"]["line"] + 1
             char = error_range["start"]["character"] + 1
             error_msg = f"Error at line {line}, column {char}: {error['message']}"
-            error_msg = self._format_error(error, contents)
+            error_msg = self._format_error(error, doc.contents)
             self.observer.notify(None, error_msg, Position(self.fpath, line, char).as_range(), level=3)
 
     def _find_sentences(self, document: EncodedDocument):
-        """Find sentences in the document using VSCoq"""
-        str_contents = document.contents.decode(document.encoding)
-        assert self.client
-        try:
-            result = self.client.process_file(self.uri, str_contents)
-            self._report_errors(result, str_contents)
-
-            sentence_ranges = result.get('sentence_ranges', [])
-            proof_view_data = extract_goals_and_messages_from_proof_views(result.get('proof_views', []))
-
-            min_length = min(len(sentence_ranges), len(proof_view_data))
-
-            for i in range(min_length):
-                sentence_range = sentence_ranges[i]
-                start_offset = sentence_range["start"]
-                end_offset = sentence_range["end"]
-
-                content = document.contents[start_offset:end_offset].decode(document.encoding)
-
-                pv_data = proof_view_data[i]
-                sentence = Sentence(contents=content.strip(), goals=pv_data['goals'], messages=pv_data['messages'])
-
-                yield Positioned(start_offset, end_offset, sentence)
-
-        except LSPServerException as e:
-            self.observer.notify(None, str(e), Position(self.fpath, 0, 1).as_range(), level=3)
+        """Find sentences in the document using VsCoq."""
+        contents = document.contents.decode(document.encoding) # FIXME why decode?
+        vdoc = VsCoqDocument(self.client, self.uri, contents)
+        sentences = vdoc.process()
+        self._report_errors(vdoc)
+        return sentences
 
     def partition(self, document: EncodedDocument):
-        """Partition document into fragments"""
+        """Partition document into fragments."""
         return document.intersperse_text_fragments(self._find_sentences(document))
 
-    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
-        """Annotate chunks of Coq code"""
+    def annotate(self, chunks: Iterable[str]) -> list[list[Fragment]]:
+        """Annotate chunks of Coq code."""
         document = EncodedDocument(chunks, "\n", encoding="utf-8")
 
         with self as api:
@@ -357,7 +312,7 @@ class VsCoq(LSPDriver[VsCoqClient]):
         """Indent each line of text with prefix"""
         return "\n".join(prefix + line for line in text.splitlines())
 
-def annotate(chunks: Iterable[str], sertop_args=(), fpath="-", binpath=None) -> List[List[Fragment]]:
+def annotate(chunks: Iterable[str], sertop_args=(), fpath="-", binpath=None) -> list[list[Fragment]]:
     """Annotate multiple chunks of Coq code.
 
     >>> annotate(["Check 1."])

@@ -124,7 +124,7 @@ class LSPClientQuery(LSPClientMessage):
 class LSPClientRequest(LSPClientQuery):
     def __post_init__(self):
         self.idx: int = self._gensym()
-        self.result: Optional[JSON] = None
+        self._result: Optional[JSON] = None
         self._done = False
 
     GENSYM: ClassVar[int] = -1
@@ -140,7 +140,7 @@ class LSPClientRequest(LSPClientQuery):
     def process_message(self, message: LSPServerMessage):
         super().process_message(message)
         if isinstance(message, LSPServerResponse) and message.idx == self.idx:
-            self.result = message.result
+            self._result = message.result
             self._done = True
         elif isinstance(message, LSPServerError) and message.idx == self.idx:
             raise message.exn
@@ -148,6 +148,11 @@ class LSPClientRequest(LSPClientQuery):
     @property
     def done(self) -> bool:
         return self._done
+
+    @property
+    def result(self) -> JSON:
+        assert self._result
+        return self._result
 
 @dataclasses.dataclass
 class LSPServerRequest(LSPServerMessage):
@@ -160,8 +165,6 @@ class LSPServerRequest(LSPServerMessage):
         return cls(data["id"], data["method"], data.get("params", {}))
 
 class LSPClientNotification(LSPClientQuery):
-    METHOD: ClassVar[str]
-
     @property
     def params(self) -> dict[str, Any]:
         return {}
@@ -379,23 +382,28 @@ class LSPClient:
 T = TypeVar("T", bound=LSPClient)
 class LSPDriver(PopenDriver, Generic[T]):
     CLIENT: Type[T]
-    client: Optional[T] = None
+    _client: Optional[T] = None
 
     def version_info(self) -> DriverInfo:
         with self:
-            return self.client.driver_info or DriverInfo(self.NAME, "?")
+            return self._client.driver_info or DriverInfo(self.NAME, "?")
 
     def reset(self):
         super().reset()
         assert self.repl
-        self.client = self.CLIENT(self.repl)
+        self._client = self.CLIENT(self.repl)
 
     def kill(self):
-        if self.client:
-            self.client.kill()
+        if self._client:
+            self._client.kill()
         super().kill()
 
     @property
     def uri(self):
         path = self.fpath.with_name("alectryon_temp") if self.fpath.name == "-" else self.fpath
         return path.absolute().as_uri()
+
+    @property
+    def client(self):
+        assert self._client
+        return self._client
