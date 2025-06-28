@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, ClassVar, DefaultDict, Dict, Iterable, IO, List, \
+from typing import Any, ClassVar, DefaultDict, Dict, Generic, Iterable, IO, List, \
     NamedTuple, NoReturn, Optional, Tuple, TypeVar, Union
 
 from collections import deque, namedtuple, defaultdict
@@ -281,7 +281,11 @@ class PosView(View):
         return Range(self.translate_offset(beg),
                      self.translate_offset(end))
 
-Positioned = namedtuple("Positioned", "beg end e")
+TPositioned = TypeVar("TPositioned", covariant=True)
+class Positioned(NamedTuple, Generic[TPositioned]):
+    beg: int
+    end: int
+    e: TPositioned
 
 class Document:
     """A utility class to handle conversions to and from a list of chunks.
@@ -343,7 +347,7 @@ class Document:
         return beg, end
 
     @staticmethod
-    def _intersperse_text_fragments(text, pfragments: Iterable[Positioned]) -> Iterable[Fragment]:
+    def _intersperse_text_fragments(text, pfragments: Iterable[Positioned[Fragment]]) -> Iterable[Fragment]:
         """Split `text` into fragments.
 
         For ranges covered by `pfragments`, return the corresponding element.
@@ -358,7 +362,7 @@ class Document:
         if pos < len(text):
             yield Text(text[pos:])
 
-    def intersperse_text_fragments(self, pfragments: Iterable[Positioned]) -> Iterable[Fragment]:
+    def intersperse_text_fragments(self, pfragments: Iterable[Positioned[Fragment]]) -> Iterable[Fragment]:
         """Split `self.contents` into fragments."""
         return self._intersperse_text_fragments(self, pfragments)
 
