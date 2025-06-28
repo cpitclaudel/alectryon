@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, ClassVar, Dict, Generic, Optional, Self, Type, TypeVar
+from typing import Any, ClassVar, Dict, Generic, Iterable, Optional, Self, Type, TypeVar
 
 import json
 import os
@@ -27,7 +27,9 @@ import dataclasses
 from pathlib import Path
 from subprocess import Popen
 
-from .core import DriverInfo, Observer, PopenDriver, Range, debug as core_debug, must
+from alectryon.transforms import coalesce_text
+
+from .core import Document, DriverInfo, Fragment, Observer, PopenDriver, Position, Positioned, Range, Text, debug as core_debug, must
 
 JSON = Dict[str, Any]
 
@@ -415,3 +417,32 @@ class LSPDriver(PopenDriver, Generic[T]):
     @property
     def uri(self):
         return self.fpath.absolute().as_uri()
+
+    def _encode(self, chunks: Iterable[str]) -> Document:
+        """Construct a document from `chunks`."""
+        raise NotImplementedError
+
+    def _find_sentences(self, document: Document) -> Iterable[Positioned[Fragment]]:
+        """Extract sentences (along with messages and goals) from `document`."""
+        raise NotImplementedError
+
+    def partition(self, document: Document):
+        """Partition `document` into fragments."""
+        return document.intersperse_text_fragments(self._find_sentences(document))
+
+    def annotate(self, chunks: Iterable[str]) -> list[list[Fragment]]:
+        """Annotate chunks of code.
+
+        >>> from .vscoq import VsCoq
+        >>> VsCoq().annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Check xyz."])
+        [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
+        """
+        document = self._encode(chunks)
+
+        with self as api:
+            try:
+                fragments = api.partition(document)
+                return list(document.recover_chunks(coalesce_text(fragments)))
+            except LSPServerException as e:
+                api.observer.notify(None, str(e), Position(api.fpath, 1, 0).as_range(), level=3)
+                return [[Text(c)] for c in chunks]
