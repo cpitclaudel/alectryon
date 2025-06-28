@@ -27,7 +27,7 @@ import dataclasses
 from pathlib import Path
 from subprocess import Popen
 
-from .core import DriverInfo, PopenDriver, debug as core_debug
+from .core import DriverInfo, Observer, PopenDriver, Range, debug as core_debug, must
 
 JSON = Dict[str, Any]
 
@@ -124,7 +124,7 @@ class LSPClientQuery(LSPClientMessage):
 class LSPClientRequest(LSPClientQuery):
     def __post_init__(self):
         self.idx: int = self._gensym()
-        self._result: Optional[JSON] = None
+        self.result: Optional[JSON] = None
         self._done = False
 
     GENSYM: ClassVar[int] = -1
@@ -140,7 +140,7 @@ class LSPClientRequest(LSPClientQuery):
     def process_message(self, message: LSPServerMessage):
         super().process_message(message)
         if isinstance(message, LSPServerResponse) and message.idx == self.idx:
-            self._result = message.result
+            self.result = message.result
             self._done = True
         elif isinstance(message, LSPServerError) and message.idx == self.idx:
             raise message.exn
@@ -148,11 +148,6 @@ class LSPClientRequest(LSPClientQuery):
     @property
     def done(self) -> bool:
         return self._done
-
-    @property
-    def result(self) -> JSON:
-        assert self._result
-        return self._result
 
 @dataclasses.dataclass
 class LSPServerRequest(LSPServerMessage):
@@ -343,6 +338,26 @@ class LSPClientShutdownRequest(LSPClientRequest):
 class LSPClientExitNotification(LSPClientNotification):
     METHOD = "exit"
 
+@dataclasses.dataclass(frozen=True)
+class LSPDiagnostic:
+    SEVERITY_LEVELS: ClassVar[dict[int, int]] = { 1: 3, 2: 2, 3: 1, 4: 1 }
+
+    fpath: str
+    range: Range
+    message: str
+    severity: int
+
+    @staticmethod
+    def of_json(fpath: str, js: JSON):
+        return LSPDiagnostic(
+            fpath, Range.of_lsp(fpath, js["range"]),
+            js["message"], js["severity"]
+        )
+
+    def notify(self, obs: Observer, details: Optional[str]=""):
+        level = self.SEVERITY_LEVELS[self.severity]
+        obs.notify(None, self.message + (details or ""), self.range, level=level)
+
 class LSPClient:
     LANGUAGE_ID: ClassVar[str]
 
@@ -382,28 +397,21 @@ class LSPClient:
 T = TypeVar("T", bound=LSPClient)
 class LSPDriver(PopenDriver, Generic[T]):
     CLIENT: Type[T]
-    _client: Optional[T] = None
+    client: Optional[T] = None
 
     def version_info(self) -> DriverInfo:
         with self:
-            return self._client.driver_info or DriverInfo(self.NAME, "?")
+            return self.client.driver_info or DriverInfo(self.NAME, "?")
 
     def reset(self):
         super().reset()
-        assert self.repl
-        self._client = self.CLIENT(self.repl)
+        self.client = self.CLIENT(must(self.repl))
 
     def kill(self):
-        if self._client:
-            self._client.kill()
+        if self.client:
+            self.client.kill()
         super().kill()
 
     @property
     def uri(self):
-        path = self.fpath.with_name("alectryon_temp") if self.fpath.name == "-" else self.fpath
-        return path.absolute().as_uri()
-
-    @property
-    def client(self):
-        assert self._client
-        return self._client
+        return self.fpath.absolute().as_uri()
