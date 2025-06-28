@@ -18,13 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import ClassVar, Dict, Iterable, Any, Optional
+from pathlib import Path
+from typing import ClassVar, Dict, Iterable, Optional
 
 import dataclasses
 import re
 
-from .core import EncodedDocument, Fragment, Goal, Hypothesis, Message, Position, Positioned, Sentence, Text
-from .lspFinal import JSON, LSPClient, LSPClientNotification, LSPClientQuery, LSPClientRequest, LSPDriver, LSPServerException, LSPServerMessage, LSPServerNotification, LSPServerNotifications
+from .core import EncodedDocument, Fragment, Goal, Hypothesis, Message, Observer, Position, Positioned, Range, Sentence, Text, must
+from .lspFinal import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPServerException, LSPServerMessage, LSPServerNotification, LSPServerNotifications
 from .transforms import coalesce_text
 
 class Notifications(LSPServerNotifications):
@@ -34,12 +35,13 @@ class Notifications(LSPServerNotifications):
 @dataclasses.dataclass
 class StepForwardNotification(LSPClientNotification):
     METHOD = "vscoq/stepForward"
+    fpath: Path
     uri: str
 
     def __post_init__(self):
+        self.blocked_on_error = False
         self.proof_view: Optional[JSON] = None
-        self.blocked_on_error: bool = False
-        self.diagnostics: list[JSON] = []
+        self.diagnostics: list[LSPDiagnostic] = [] # Could be handled by a wrapper class
 
     @property
     def params(self):
@@ -54,12 +56,13 @@ class StepForwardNotification(LSPClientNotification):
         elif message.method == Notifications.BLOCK_ON_ERROR:
             self.blocked_on_error = True
         elif message.method == Notifications.PUBLISH_DIAGNOSTICS:
-            self.diagnostics.extend(message.params["diagnostics"])
+            uri = message.params["uri"]
+            fpath = str(self.fpath) if uri == self.uri else uri
+            self.diagnostics.extend(LSPDiagnostic.of_json(fpath, d) for d in message.params["diagnostics"])
 
     @property
     def done(self) -> bool:
-        return self.proof_view is not None or self.blocked_on_error
-
+        return self.proof_view is not None
 
 @dataclasses.dataclass
 class URIRequest(LSPClientRequest):
@@ -72,7 +75,6 @@ class URIRequest(LSPClientRequest):
 class DocumentProofsRequest(URIRequest):
     METHOD = "vscoq/documentProofs"
 
-@dataclasses.dataclass
 class DocumentStateRequest(URIRequest):
     METHOD = "vscoq/documentState"
 
@@ -175,42 +177,63 @@ class VsCoqOutput:
         return Goal(name, conclusion, hypotheses)
 
     @staticmethod
-    def parse_proof_view(pv: JSON):
+    def parseproof_view(pv: JSON):
         messages = [VsCoqOutput.parse_message(mv) for mv in pv.get("messages", [])]
         goals = [VsCoqOutput.parse_goal(gv) for gv in (pv.get("proof") or {}).get("goals", [])]
         return messages, goals
 
 class VsCoqFile:
-    def __init__(self, client: "VsCoqClient", uri: str, doc: EncodedDocument):
-        self.client = client
-        self.uri, self.doc = uri, doc
-        self.blocked_on_error: bool = False
-        self.error_diagnostics: list[Dict[str, Any]] = []
+    def __init__(self, driver: "VsCoq", doc: EncodedDocument):
+        self.client = must(driver.client)
+        self.observer = driver.observer
+        self.fpath, self.uri = driver.fpath, driver.uri
+        self.doc = doc
 
     def _compute_ranges(self):
-        document = DocumentStateRequest(self.client, self.uri).send().result["document"]
+        req = DocumentStateRequest(self.client, self.uri)
+        document = must(req.send().result)["document"]
         first_section = document.split("Document using sentences_by_end map")[0]
         PATTERN = re.compile(r"\[\d+\].*?[(](?P<beg>\d+) -> (?P<end>\d+)[)]")
         for m in PATTERN.finditer(first_section):
             yield int(m.group("beg")), int(m.group("end"))
 
-    def _step_forward(self):
-        sf = StepForwardNotification(self.client, self.uri).send()
-        self.blocked_on_error |= sf.blocked_on_error
-        self.error_diagnostics.extend(d for d in sf.diagnostics if d.get("severity") == 1)
-        assert sf.proof_view
-        return sf.proof_view
-
     def process(self) -> Iterable[Positioned]:
         self.client.open(self.uri, self.doc.str)
         VsCoqReadyMonitor(self.client, self.uri).wait()
 
+        blocked_on_error: bool = False
+        diagnostics: dict[LSPDiagnostic, None] = {}
+
         for (beg, end) in self._compute_ranges():
-            if not (pv := self._step_forward()):
-                break
             contents: str = self.doc[beg:end]
-            messages, goals = VsCoqOutput.parse_proof_view(pv)
+            if blocked_on_error:
+                yield Positioned(beg, end, Text(contents))
+                continue
+            pv = StepForwardNotification(self.client, self.fpath, self.uri).send()
+            messages, goals = VsCoqOutput.parseproof_view(must(pv.proof_view))
             yield Positioned(beg, end, Sentence(contents, messages, goals))
+            diagnostics |= dict.fromkeys(pv.diagnostics)
+            blocked_on_error |= pv.blocked_on_error
+
+        # LATER: Adjust line numbers for code blocks embedded in literate documents.
+        for diag in diagnostics:
+            if diag.severity >= 3:
+                continue
+            beg, end = self.doc.range2offsets(diag.range)
+            context = self._format_error_context(beg, end)
+            diag.notify(self.observer, context)
+
+    def _format_error_context(self, beg, end) -> str:
+        context = self._highlight_context(beg, end)
+        return ("\nThe offending range is delimited by >>>…<<< below:\n" +
+                "\n".join(f"  > {line}" for line in context.splitlines()))
+
+    def _highlight_context(self, beg: int, end: int) -> str:
+        """Highlight error location with >>> <<< markers."""
+        prefix, substring, suffix = self.doc[:beg], self.doc[beg:end], self.doc[end:]
+        prefix = "\n".join(prefix.splitlines()[-3:])
+        suffix = "\n".join(suffix.splitlines()[:3])
+        return f"{prefix}>>>{substring}<<<{suffix}"
 
 class VsCoqClient(LSPClient):
     LANGUAGE_ID = "coq"
@@ -224,22 +247,10 @@ class VsCoq(LSPDriver[VsCoqClient]):
 
     CLIENT = VsCoqClient
 
-    def _report_errors(self, doc: VsCoqFile) -> None:
-        """Report errors from processing results"""
-        if doc.error_diagnostics:
-            error = doc.error_diagnostics[0]
-            error_range = error["range"]
-            line = error_range["start"]["line"] + 1
-            char = error_range["start"]["character"] + 1
-            error_msg = f"Error at line {line}, column {char}: {error['message']}"
-            error_msg = self._format_error(error, doc.doc.str)
-            self.observer.notify(None, error_msg, Position(self.fpath, line, char).as_range(), level=3)
-
     def _find_sentences(self, document: EncodedDocument) -> Iterable[Positioned]:
         """Find sentences in the document using VsCoq."""
-        vdoc = VsCoqFile(self.client, self.uri, document)
+        vdoc = VsCoqFile(self, document)
         sentences = vdoc.process()
-        self._report_errors(vdoc)
         return sentences
 
     def partition(self, document: EncodedDocument):
@@ -257,60 +268,6 @@ class VsCoq(LSPDriver[VsCoqClient]):
             except LSPServerException as e:
                 api.observer.notify(None, str(e), Position(api.fpath, 0, 1).as_range(), level=3)
                 return [[Text(c)] for c in chunks]
-
-    def _format_error(self, diagnostic: Dict, contents: str) -> str:
-        """Format error message like SerAPI with context highlighting"""
-        message = diagnostic.get("message", "Unknown error")
-
-        QUOTE = '  > '
-        ERR_FMT = "Coq raised an exception:\n{}"
-        err = ERR_FMT.format(self.indent(message, QUOTE))
-
-        if "range" in diagnostic:
-            range_info = diagnostic["range"]
-            start = range_info["start"]
-            end = range_info["end"]
-
-            try:
-                highlighted = self.highlight_substring(
-                    contents,
-                    start["line"], start["character"],
-                    end["line"], end["character"]
-                )
-                err += "\nThe offending chunk is delimited by >>>…<<< below:\n"
-                err += "\n".join(f"{QUOTE}{line}" for line in highlighted.splitlines())
-            except (IndexError, KeyError):
-                err += f"\nError at line {start['line'] + 1}, column {start['character'] + 1}"
-
-        err += "\nResults past this point may be unreliable."
-        return err
-
-    @staticmethod
-    def highlight_substring(contents: str, start_line: int, start_char: int, end_line: int, end_char: int) -> str:
-        """Highlight error location with >>> <<< markers like SerAPI"""
-        lines = contents.splitlines()
-
-        context_start = max(0, start_line - 3)
-        context_end = min(len(lines), end_line + 4)
-
-        context_lines = []
-        for i in range(context_start, context_end):
-            if i < len(lines):
-                line = lines[i]
-                if i == start_line and start_line == end_line:
-                    highlighted = line[:start_char] + ">>>" + line[start_char:end_char] + "<<<" + line[end_char:]
-                    context_lines.append(highlighted)
-                elif start_line <= i <= end_line:
-                    context_lines.append(f">>>{line}<<<")
-                else:
-                    context_lines.append(line)
-
-        return "\n".join(context_lines)
-
-    @staticmethod
-    def indent(text: str, prefix: str) -> str:
-        """Indent each line of text with prefix"""
-        return "\n".join(prefix + line for line in text.splitlines())
 
 def annotate(chunks: Iterable[str], sertop_args=(), fpath="-", binpath=None) -> list[list[Fragment]]:
     """Annotate multiple chunks of Coq code.

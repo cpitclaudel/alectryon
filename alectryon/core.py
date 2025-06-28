@@ -129,6 +129,11 @@ class Gensym():
         self.counters[prefix] += 1
         return self.stem + prefix + b16(self.counters[prefix])
 
+T = TypeVar("T")
+def must(x: Optional[T]) -> T:
+    assert x is not None
+    return x
+
 @contextmanager
 def nullctx():
     yield
@@ -198,6 +203,10 @@ class Position(NamedTuple):
     def as_range(self):
         return Range(self, None)
 
+    @classmethod
+    def of_lsp(cls, fpath: Union[str, Path], js: dict[str, Any]):
+        return Position(fpath, js["line"] + 1, js["character"])
+
 class Range(NamedTuple):
     beg: Position
     end: Optional[Position]
@@ -208,6 +217,11 @@ class Range(NamedTuple):
         end = "{}:{}".format(self.end.line, self.end.col) if self.end else ""
         pos = ("({})-({})" if end else "{}:{}").format(beg, end)
         return "{}:{}:".format(self.beg.fpath or "<unknown>", pos)
+
+    @classmethod
+    def of_lsp(cls, fpath: Union[str, Path], js: dict[str, Any]):
+        return cls(Position.of_lsp(fpath, js["start"]),
+                   Position.of_lsp(fpath, js["end"]))
 
 class PosStr(str):
     def __new__(cls, s, *_args):
@@ -275,7 +289,7 @@ class Document:
     def __init__(self, chunks, chunk_separator):
         self.chunks = list(chunks)
         self.with_separator = [c + chunk_separator for c in self.chunks]
-        self.contents = chunk_separator[0:0].join(self.with_separator)
+        self.str = self.contents = chunk_separator[0:0].join(self.with_separator)
         self.separator = chunk_separator
         self._bol_offsets = None
 
@@ -462,7 +476,7 @@ class StderrObserver(Observer):
     def _notify(self, n: Notification):
         header = n.location.as_header() if n.location else "!!"
         message = n.message.rstrip().replace("\n", "\n   ")
-        level_name = {2: "WARNING", 3: "ERROR"}.get(n.level, "??")
+        level_name = {1: "INFO", 2: "WARNING", 3: "ERROR"}.get(n.level, "??")
         sys.stderr.write("{} ({}/{}) {}\n".format(header, level_name, n.level, message))
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
