@@ -180,10 +180,10 @@ class VsCoqOutput:
         goals = [VsCoqOutput.parse_goal(gv) for gv in (pv.get("proof") or {}).get("goals", [])]
         return messages, goals
 
-class VsCoqDocument:
-    def __init__(self, client: "VsCoqClient", uri: str, contents: str):
+class VsCoqFile:
+    def __init__(self, client: "VsCoqClient", uri: str, doc: EncodedDocument):
         self.client = client
-        self.uri, self.contents = uri, contents
+        self.uri, self.doc = uri, doc
         self.blocked_on_error: bool = False
         self.error_diagnostics: list[Dict[str, Any]] = []
 
@@ -198,16 +198,17 @@ class VsCoqDocument:
         sf = StepForwardNotification(self.client, self.uri).send()
         self.blocked_on_error |= sf.blocked_on_error
         self.error_diagnostics.extend(d for d in sf.diagnostics if d.get("severity") == 1)
+        assert sf.proof_view
         return sf.proof_view
 
     def process(self) -> Iterable[Positioned]:
-        self.client.open(self.uri, self.contents)
+        self.client.open(self.uri, self.doc.str)
         VsCoqReadyMonitor(self.client, self.uri).wait()
 
         for (beg, end) in self._compute_ranges():
             if not (pv := self._step_forward()):
                 break
-            contents = self.contents[beg:end]
+            contents: str = self.doc[beg:end]
             messages, goals = VsCoqOutput.parse_proof_view(pv)
             yield Positioned(beg, end, Sentence(contents, messages, goals))
 
@@ -223,7 +224,7 @@ class VsCoq(LSPDriver[VsCoqClient]):
 
     CLIENT = VsCoqClient
 
-    def _report_errors(self, doc: VsCoqDocument) -> None:
+    def _report_errors(self, doc: VsCoqFile) -> None:
         """Report errors from processing results"""
         if doc.error_diagnostics:
             error = doc.error_diagnostics[0]
@@ -231,13 +232,12 @@ class VsCoq(LSPDriver[VsCoqClient]):
             line = error_range["start"]["line"] + 1
             char = error_range["start"]["character"] + 1
             error_msg = f"Error at line {line}, column {char}: {error['message']}"
-            error_msg = self._format_error(error, doc.contents)
+            error_msg = self._format_error(error, doc.doc.str)
             self.observer.notify(None, error_msg, Position(self.fpath, line, char).as_range(), level=3)
 
-    def _find_sentences(self, document: EncodedDocument):
+    def _find_sentences(self, document: EncodedDocument) -> Iterable[Positioned]:
         """Find sentences in the document using VsCoq."""
-        contents = document.contents.decode(document.encoding) # FIXME why decode?
-        vdoc = VsCoqDocument(self.client, self.uri, contents)
+        vdoc = VsCoqFile(self.client, self.uri, document)
         sentences = vdoc.process()
         self._report_errors(vdoc)
         return sentences
