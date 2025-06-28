@@ -66,5 +66,5 @@ class CoqcTime(CLIDriver):
             fragments = self.partition(document)
             return list(document.recover_chunks(fragments))
         except ValueError as e:
-            self.observer.notify(None, str(e), Position(self.fpath, 0, 1).as_range(), level=3)
+            self.observer.notify(None, str(e), Position(self.fpath, 1, 0).as_range(), level=3)
             return [[Text(c)] for c in chunks]
