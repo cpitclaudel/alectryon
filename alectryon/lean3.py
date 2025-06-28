@@ -175,8 +175,8 @@ class Lean3(TextREPLDriver):
             for idx, node in enumerate(self.ast):
                 print(idx, node)
                 if node and "start" in node and "end" in node:
-                    print(self.document[self.document.pos2offset(*node["start"]):
-                                        self.document.pos2offset(*node["end"])])
+                    print(self.document[self.document.lc2offset(*node["start"]):
+                                        self.document.lc2offset(*node["end"])])
                 print()
 
         for start, end, idx, parent in sorted(self._find_sentence_ranges()):
@@ -188,8 +188,8 @@ class Lean3(TextREPLDriver):
                 if parent in (last_idx, last_parent):
                     last_state = self._get_state_at(start)
                 yield (last_span, last_state)
-            last_span = (self.document.pos2offset(*start),
-                         self.document.pos2offset(*end)) if start != end else None
+            last_span = (self.document.lc2offset(*start),
+                         self.document.lc2offset(*end)) if start != end else None
             last_end, last_idx, last_parent = end, idx, parent
         if last_span:
             yield (last_span, None)
@@ -226,7 +226,7 @@ class Lean3(TextREPLDriver):
         """Further split `fragments` using boundaries of top-level sentences."""
         roots = self._find_nodes_by_kind("commands")
         commands = (self.ast[cidx] for r in roots for cidx in self.ast[r].get("children", []))
-        cutoffs = [self.document.pos2offset(*c["start"]) for c in commands if "start" in c]
+        cutoffs = [self.document.lc2offset(*c["start"]) for c in commands if "start" in c]
         return self.document.split_fragments(fragments, cutoffs)
 
     def partition(self):
@@ -236,8 +236,8 @@ class Lean3(TextREPLDriver):
 
     @staticmethod
     def _collect_message_span(msg, doc):
-        return (doc.pos2offset(msg["pos_line"], msg["pos_col"]),
-                doc.pos2offset(msg["end_pos_line"], msg["end_pos_col"]),
+        return (doc.lc2offset(msg["pos_line"], msg["pos_col"]),
+                doc.lc2offset(msg["end_pos_line"], msg["end_pos_col"]),
                 msg)
 
     @staticmethod

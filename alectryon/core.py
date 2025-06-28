@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 from typing import Any, ClassVar, DefaultDict, Dict, Iterable, IO, List, \
-    NamedTuple, NoReturn, Optional, Tuple, Union
+    NamedTuple, NoReturn, Optional, Tuple, TypeVar, Union
 
 from collections import deque, namedtuple, defaultdict
 from contextlib import contextmanager
@@ -192,8 +192,8 @@ class Asset(str):
 
 class Position(NamedTuple):
     fpath: Union[str, Path]
-    line: int
-    col: int
+    line: int # 1-based
+    col: int # 0-based
 
     def as_range(self):
         return Range(self, None)
@@ -297,14 +297,33 @@ class Document:
             self._bol_offsets = [m.start() for m in matches]
         return self._bol_offsets
 
-    def offset2pos(self, offset) -> Tuple[int, int]:
+    def offset2lc(self, offset) -> Tuple[int, int]:
         import bisect
-        zline = bisect.bisect_right(self.bol_offsets, offset)
-        bol = self.bol_offsets[zline - 1]
-        return zline, offset - bol
+        line = bisect.bisect_right(self.bol_offsets, offset)
+        bol = self.bol_offsets[line - 1]
+        return line, offset - bol
 
-    def pos2offset(self, line: int, col: int) -> int:
+    def lc2offset(self, line: int, col: int) -> int:
+        assert line >= 1
         return self.bol_offsets[line - 1] + col
+
+    def offset2pos(self, fpath: Union[str, Path], offset: int) -> Position:
+        return Position(fpath, *self.offset2lc(offset))
+
+    def pos2offset(self, pos: Position) -> int:
+        return self.lc2offset(pos.line, pos.col)
+
+    def offsets2range(self, fpath: Union[str, Path], beg: int, end: int) -> Range:
+        return Range(self.offset2pos(fpath, beg), self.offset2pos(fpath, end))
+
+    def _eol_offset(self, offset: int):
+        eol = re.compile("$" if isinstance(self.contents, str) else b"$", re.MULTILINE)
+        return must(eol.search(self.contents, offset)).start() # type: ignore
+
+    def range2offsets(self, range: Range) -> Tuple[int, int]:
+        beg = self.pos2offset(range.beg)
+        end = self.pos2offset(range.end) if range.end else self._eol_offset(beg)
+        return beg, end
 
     @staticmethod
     def _intersperse_text_fragments(text, pfragments: Iterable[Positioned]) -> Iterable[Fragment]:
