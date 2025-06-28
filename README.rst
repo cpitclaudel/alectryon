@@ -169,12 +169,12 @@ Use ``alectryon --help`` for full command line details.
 As a library
 ------------
 
-Use ``alectryon.serapi.annotate(chunks: List[str])``, which returns an object with the same structure as the JSON above, but using objects instead of records with a ``_type`` field:
+Use ``alectryon.vsrocq.annotate(chunks: list[str])``, which returns an object with the same structure as the JSON above, but using objects instead of records with a ``_type`` field:
 
 .. code-block:: python
 
-    >>> from alectryon.serapi import annotate
-    >>> annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Check xyz."])
+    >>> from alectryon.vsrocq import VsRocq
+    >>> VsRocq().annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Check xyz."])
     [# A list of processed fragments
      [# Each fragment is a list of records (each an instance of a namedtuple)
       Sentence(contents='Example xyz (H: False): True.',
