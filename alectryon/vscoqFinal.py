@@ -19,14 +19,13 @@
 # SOFTWARE.
 
 from pathlib import Path
-from typing import ClassVar, Dict, Iterable, Optional
+from typing import ClassVar, Iterable, Optional
 
 import dataclasses
 import re
 
-from .core import EncodedDocument, Fragment, Goal, Hypothesis, Message, Observer, Position, Positioned, Range, Sentence, Text, must
+from .core import Document, EncodedDocument, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, Text, must
 from .lspFinal import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPServerException, LSPServerMessage, LSPServerNotification, LSPServerNotifications
-from .transforms import coalesce_text
 
 class Notifications(LSPServerNotifications):
     PROOF_VIEW = "vscoq/proofView"
@@ -183,7 +182,7 @@ class VsCoqOutput:
         return messages, goals
 
 class VsCoqFile:
-    def __init__(self, driver: "VsCoq", doc: EncodedDocument):
+    def __init__(self, driver: "VsCoq", doc: Document):
         self.client = must(driver.client)
         self.observer = driver.observer
         self.fpath, self.uri = driver.fpath, driver.uri
@@ -197,7 +196,7 @@ class VsCoqFile:
         for m in PATTERN.finditer(first_section):
             yield int(m.group("beg")), int(m.group("end"))
 
-    def process(self) -> Iterable[Positioned]:
+    def process(self) -> Iterable[Positioned[Fragment]]:
         self.client.open(self.uri, self.doc.str)
         VsCoqReadyMonitor(self.client, self.uri).wait()
 
@@ -247,32 +246,9 @@ class VsCoq(LSPDriver[VsCoqClient]):
 
     CLIENT = VsCoqClient
 
-    def _find_sentences(self, document: EncodedDocument) -> Iterable[Positioned]:
+    def _encode(self, chunks: Iterable[str]) -> Document:
+        return EncodedDocument(chunks, "\n", encoding="utf-8")
+
+    def _find_sentences(self, document: Document) -> Iterable[Positioned[Fragment]]:
         """Find sentences in the document using VsCoq."""
-        vdoc = VsCoqFile(self, document)
-        sentences = vdoc.process()
-        return sentences
-
-    def partition(self, document: EncodedDocument):
-        """Partition document into fragments."""
-        return document.intersperse_text_fragments(self._find_sentences(document))
-
-    def annotate(self, chunks: Iterable[str]) -> list[list[Fragment]]:
-        """Annotate chunks of Coq code."""
-        document = EncodedDocument(chunks, "\n", encoding="utf-8")
-
-        with self as api:
-            try:
-                fragments = api.partition(document)
-                return list(document.recover_chunks(coalesce_text(fragments)))
-            except LSPServerException as e:
-                api.observer.notify(None, str(e), Position(api.fpath, 0, 1).as_range(), level=3)
-                return [[Text(c)] for c in chunks]
-
-def annotate(chunks: Iterable[str], sertop_args=(), fpath="-", binpath=None) -> list[list[Fragment]]:
-    """Annotate multiple chunks of Coq code.
-
-    >>> annotate(["Check 1."])
-    [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
-    """
-    return VsCoq(args=sertop_args, fpath=fpath, binpath=binpath).annotate(chunks)
+        return VsCoqFile(self, document).process()
