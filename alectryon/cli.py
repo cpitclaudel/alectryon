@@ -845,6 +845,7 @@ DRIVER_ARGS_BY_NAME: Dict[str, Optional[str]] = {
     "sertop": "sertop_args",
     "sertop_noexec": "sertop_args",
     "coqc_time": "coqc_args",
+    "coq_lsp": None,
     "lean3_repl": None,
     "leanInk": "leanInk_args",
     "vscoq": None
