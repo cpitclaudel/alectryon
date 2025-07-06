@@ -247,6 +247,8 @@ class VsRocq(LSPDriver[VsRocqClient]):
     CLIENT = VsRocqClient
 
     def _encode(self, chunks: Iterable[str]) -> Document:
+        # FIXME: VsRocq sends vscoq/documentState info using utf-8 offsets but
+        # uses codepoints (instead of utf-16?) in diagnostic line/char pairs.
         return EncodedDocument(chunks, "\n", encoding="utf-8")
 
     def _find_sentences(self, document: Document) -> Iterable[Positioned[Fragment]]:
