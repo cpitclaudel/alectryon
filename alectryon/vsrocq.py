@@ -92,7 +92,7 @@ class ExponentialBackoff:
             self.delay *= self.delay_multiplier
 
 @dataclasses.dataclass
-class VsCoqReadyMonitor(ExponentialBackoff):
+class VsRocqReadyMonitor(ExponentialBackoff):
     """Wait until the document is parsed.
 
     We need this to get answers to StepForward queries; waiting on
@@ -101,7 +101,7 @@ class VsCoqReadyMonitor(ExponentialBackoff):
     """
     PARSING_NOT_FINISHED: ClassVar[int] = -32802
 
-    client: "VsCoqClient"
+    client: "VsRocqClient"
     uri: str
 
     def ready(self):
@@ -113,11 +113,11 @@ class VsCoqReadyMonitor(ExponentialBackoff):
             raise e
         return True
 
-class VsCoqOutput:
+class VsRocqOutput:
     @staticmethod
     def string_of_pp_string(pp):
         """Convert a Coq pretty-printed string to a regular string."""
-        # FIXME get VsCoq to return structured output
+        # FIXME get VsRocq to return structured output
 
         if not isinstance(pp, list) or len(pp) == 0:
             return str(pp) if pp else ""
@@ -129,12 +129,12 @@ class VsCoqOutput:
                 return pp[1] if len(pp) > 1 else ""
             case "Ppcmd_glue":
                 if len(pp) > 1 and isinstance(pp[1], list):
-                    return "".join(VsCoqOutput.string_of_pp_string(sub_pp) for sub_pp in pp[1])
+                    return "".join(VsRocqOutput.string_of_pp_string(sub_pp) for sub_pp in pp[1])
                 return ""
             case "Ppcmd_box":
-                return VsCoqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
+                return VsRocqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
             case "Ppcmd_tag":
-                return VsCoqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
+                return VsRocqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
             case "Ppcmd_print_break":
                 return " " * pp[1] if len(pp) > 1 and isinstance(pp[1], int) else ""
             case "Ppcmd_force_newline":
@@ -148,12 +148,12 @@ class VsCoqOutput:
 
     @staticmethod
     def parse_message(mv: list[JSON]):
-        return Message(VsCoqOutput.string_of_pp_string(mv[1]))
+        return Message(VsRocqOutput.string_of_pp_string(mv[1]))
 
     @staticmethod
     def parse_hyp(hv):
          # FIXME don't use string processing: parse the structure instead
-        full_str = VsCoqOutput.string_of_pp_string(hv)
+        full_str = VsRocqOutput.string_of_pp_string(hv)
         colon_count = full_str.count(':')
         if colon_count == 0:
             return Hypothesis(names=[full_str.strip()], body=None, type="")
@@ -171,18 +171,18 @@ class VsCoqOutput:
     @staticmethod
     def parse_goal(gv: JSON):
         name = gv.get("id", None)
-        conclusion = VsCoqOutput.string_of_pp_string(gv["goal"])
-        hypotheses = [VsCoqOutput.parse_hyp(hv) for hv in gv["hypotheses"]]
+        conclusion = VsRocqOutput.string_of_pp_string(gv["goal"])
+        hypotheses = [VsRocqOutput.parse_hyp(hv) for hv in gv["hypotheses"]]
         return Goal(name, conclusion, hypotheses)
 
     @staticmethod
     def parseproof_view(pv: JSON):
-        messages = [VsCoqOutput.parse_message(mv) for mv in pv.get("messages", [])]
-        goals = [VsCoqOutput.parse_goal(gv) for gv in (pv.get("proof") or {}).get("goals", [])]
+        messages = [VsRocqOutput.parse_message(mv) for mv in pv.get("messages", [])]
+        goals = [VsRocqOutput.parse_goal(gv) for gv in (pv.get("proof") or {}).get("goals", [])]
         return messages, goals
 
-class VsCoqFile:
-    def __init__(self, driver: "VsCoq", doc: Document):
+class VsRocqFile:
+    def __init__(self, driver: "VsRocq", doc: Document):
         self.client = must(driver.client)
         self.observer = driver.observer
         self.fpath, self.uri = driver.fpath, driver.uri
@@ -198,7 +198,7 @@ class VsCoqFile:
 
     def process(self) -> Iterable[Positioned[Fragment]]:
         self.client.open(self.uri, self.doc.str)
-        VsCoqReadyMonitor(self.client, self.uri).wait()
+        VsRocqReadyMonitor(self.client, self.uri).wait()
 
         blocked_on_error: bool = False
         diagnostics: dict[LSPDiagnostic, None] = {}
@@ -209,7 +209,7 @@ class VsCoqFile:
                 yield Positioned(beg, end, Text(contents))
                 continue
             pv = StepForwardNotification(self.client, self.fpath, self.uri).send()
-            messages, goals = VsCoqOutput.parseproof_view(must(pv.proof_view))
+            messages, goals = VsRocqOutput.parseproof_view(must(pv.proof_view))
             yield Positioned(beg, end, Sentence(contents, messages, goals))
             diagnostics |= dict.fromkeys(pv.diagnostics)
             blocked_on_error |= pv.blocked_on_error
@@ -234,21 +234,21 @@ class VsCoqFile:
         suffix = "\n".join(suffix.splitlines()[:3])
         return f"{prefix}>>>{substring}<<<{suffix}"
 
-class VsCoqClient(LSPClient):
+class VsRocqClient(LSPClient):
     LANGUAGE_ID = "coq"
 
-class VsCoq(LSPDriver[VsCoqClient]):
-    ID = "vscoq"
+class VsRocq(LSPDriver[VsRocqClient]):
+    ID = "vsrocq"
     BIN = "vscoqtop"
-    NAME = "VsCoq"
+    NAME = "VsRocq"
 
     VERSION_ARGS = ("--version",)
 
-    CLIENT = VsCoqClient
+    CLIENT = VsRocqClient
 
     def _encode(self, chunks: Iterable[str]) -> Document:
         return EncodedDocument(chunks, "\n", encoding="utf-8")
 
     def _find_sentences(self, document: Document) -> Iterable[Positioned[Fragment]]:
-        """Find sentences in the document using VsCoq."""
-        return VsCoqFile(self, document).process()
+        """Find sentences in the document using VsRocq."""
+        return VsRocqFile(self, document).process()
