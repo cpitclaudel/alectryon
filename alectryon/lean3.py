@@ -25,7 +25,7 @@ from collections import deque
 from pathlib import Path
 from typing import Any, Iterable, List, Optional, Tuple
 
-from .core import TextREPLDriver, Positioned, Document, Hypothesis, Goal, \
+from .core import REPLDriver, Positioned, Document, Hypothesis, Goal, \
     Message, Sentence, Text, Fragment, cwd
 
 try:
@@ -53,9 +53,10 @@ Pos = Tuple[int, int]
 class ProtocolError(ValueError):
     pass
 
-class Lean3(TextREPLDriver):
+class Lean3(REPLDriver):
     BIN = "lean"
     NAME = "Lean3"
+    REPL_ENCODING = "utf-8"
 
     # I'm not completely sure that I understand Lean3's threading model.
     # Waiting until the "ok" for a query is not enough to determine that it has
