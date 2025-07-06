@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, ClassVar, Dict, Generic, Iterable, Optional, Self, Type, TypeVar
+from typing import Any, ClassVar, Dict, Generic, Iterable, Optional, Self, Type, TypeVar, overload
 
 import json
 import os
@@ -29,7 +29,7 @@ from subprocess import Popen
 
 from alectryon.transforms import coalesce_text
 
-from .core import Document, DriverInfo, Fragment, Observer, PopenDriver, Position, Positioned, Range, Text, debug as core_debug, must
+from .core import Document, DriverInfo, EncodedDocument, Fragment, Observer, PopenDriver, Position, Positioned, Range, Text, debug as core_debug, must
 
 JSON = Dict[str, Any]
 
@@ -396,6 +396,47 @@ class LSPClient:
 
     def open(self, uri: str, contents: str) -> None:
         LSPClientDidOpenNotification(self, self.LANGUAGE_ID, uri, contents).send()
+
+class LSPDocument(EncodedDocument):
+    """Variant of ``Document`` in which positions are UTF-16 offsets, not char offsets."""
+    ENCODING = "utf-16-le"
+
+    @classmethod
+    def _len(cls, s: str) -> int:
+        return super()._len(s) // 2
+
+    @overload
+    @staticmethod
+    def _map_index(i: slice) -> slice: ...
+    @overload
+    @staticmethod
+    def _map_index(i: int) -> int: ...
+
+    @staticmethod
+    def _map_index(i: int | slice) -> int | slice:
+        if isinstance(i, int):
+            return i * 2
+        if isinstance(i, slice):
+            assert i.step in (1, None)
+            i.indices
+            return slice(i.start * 2, i.stop * 2 if i.stop is not None else None)
+
+    @classmethod
+    def _slice(cls, s: str, index: slice) -> str:
+        return super()._slice(s, cls._map_index(index))
+
+    def __getitem__(self, index):
+        return super().__getitem__(self._map_index(index))
+
+    def __len__(self) -> int:
+        return super().__len__() // 2
+
+    def _find_bols(self) -> Iterable[int]:
+        for pos in super()._find_bols():
+            yield (pos + 1) // 2 # +1 because "\n" in UTF-16 is b"\n\x00"
+
+    def _find_eol(self, start: int) -> int:
+        return super()._find_eol(start * 2) // 2
 
 T = TypeVar("T", bound=LSPClient)
 class LSPDriver(PopenDriver, Generic[T]):
