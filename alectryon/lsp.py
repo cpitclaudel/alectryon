@@ -125,16 +125,16 @@ class LSPClientQuery(LSPClientMessage):
 @dataclasses.dataclass
 class LSPClientRequest(LSPClientQuery):
     def __post_init__(self):
-        self.idx: int = self._gensym()
+        self.idx: int = LSPClientRequest._gensym()
         self.result: Optional[JSON] = None
         self._done = False
 
     GENSYM: ClassVar[int] = -1
 
-    @classmethod
-    def _gensym(cls):
-        cls.GENSYM += 1
-        return cls.GENSYM
+    @staticmethod
+    def _gensym():
+        LSPClientRequest.GENSYM += 1
+        return LSPClientRequest.GENSYM
 
     def json(self) -> JSON:
         return {**super().json(), "id": self.idx}
