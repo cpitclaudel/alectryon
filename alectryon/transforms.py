@@ -20,17 +20,20 @@
 
 """Post-process annotated fragments of source code."""
 
-from typing import Optional, Tuple, TypeVar
+from typing import Dict, Optional, Tuple, TypeVar
 
 import re
 import textwrap
 from copy import copy
 from collections import namedtuple
 
+from alectryon.literate import COQ, Code, Comment, partition
+
 from . import markers
-from .core import Sentence, Text, Names, Enriched, \
+from .core import Goal, Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
-    Goals, Messages, RichSentence, ALL_LANGUAGES
+    Goals, Messages, RichSentence, ALL_LANGUAGES, \
+    Message, Hypothesis
 
 PathAnnot = namedtuple("PathAnnot", "raw path key val must_match")
 
