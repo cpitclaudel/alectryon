@@ -1,181 +1,255 @@
-# Copyright © 2022 Clément Pit-Claudel
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in all
-# copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-from typing import Any, Dict, Iterable, Iterator, IO, List, Tuple, Union, \
-    Optional, NamedTuple
-
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Union
+from enum import Enum
 import json
 import os
 import re
-from enum import Enum
 from pathlib import Path
 from subprocess import Popen
 
-from .core import debug, Document, DriverInfo, Position, REPLDriver, Text, Fragment
-from .tokens import Range, Token, Tokens, TokenizedStr
+from .core import debug as core_debug
 
-class LSPRequest(Enum):
+JSON = Dict[str, Any]
+
+class LSPException(Exception):
+    """Exception raised for LSP errors"""
+    def __init__(self, message: str, code: int = -1):
+        super().__init__(message)
+        self.code = code
+
+    @classmethod
+    def from_json(cls, data: Dict[str, Any]) -> 'LSPException':
+        """Create LSPException from JSON error data"""
+        error_info = data["error"]
+        return cls(error_info.get("message", "Unknown error"), 
+                  error_info.get("code", -1))
+
+class LSPMethod:
+    @property
+    def value(self) -> str:
+        return getattr(self, "_value_", str(self))
+
+class LSPRequestList(LSPMethod, Enum):
     INITIALIZE = "initialize"
     SHUTDOWN = "shutdown"
     SEMANTIC_TOKENS_FULL = "textDocument/semanticTokens/full"
-LSP_REQUESTS = set(r.value for r in LSPRequest)
 
-class LSPNotification(Enum):
+class LSPNotificationList(LSPMethod, Enum):
     INITIALIZED = "initialized"
-    DID_OPEN = "textDocument/didOpen"
+    DID_OPEN = "textDocument/didOpen" 
     EXIT = "exit"
-LSP_NOTIFICATIONS = set(n.value for n in LSPNotification)
+    PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"
 
-JSON = Dict[str, Any]
-LSPMethod = Union[LSPRequest, LSPNotification, str]
+class LSPErrorCode:
+    PARSING_NOT_FINISHED = -32802
+    METHOD_NOT_FOUND = -32601
 
-class LSPException(ValueError):
-    pass
+class LSPMessage:
+    """Base class for all LSP messages"""
+    @classmethod
+    def from_json(cls, data: Dict) -> 'LSPMessage':
+        idx = data.get("id")
+        method = data.get("method")
+        
+        if method is not None:
+            if idx is not None:
+                return LSPRequest.from_json(data)
+            else:
+                return LSPNotification.from_json(data)
+        else:
+            if "error" in data:
+                raise LSPException.from_json(data)
+            else:
+                return LSPResponse.from_json(data)
+    
+    def json(self) -> JSON:
+        raise NotImplementedError()
 
-class LSPError(NamedTuple):
-    idx: int
-    code: int
-    message: str
+class LSPQuery(LSPMessage):
+    """Base class for LSP Requests and notifications"""
+
+    def process_incoming(self, incoming: 'LSPMessage') -> bool:
+        raise NotImplementedError()
+    
+    def handle_notification(self, notification: 'LSPNotification') -> None:
+        """Handles incoming notifications"""
+        if not hasattr(self, 'collected_notifications'):
+            self.collected_notifications = []
+        self.collected_notifications.append(notification)
+    
+    @property
+    def is_done(self) -> bool:
+        """Checks if this message is complete"""
+        raise NotImplementedError()
+    
+class LSPRequest(LSPQuery):
+    """LSP Request that expects a response"""
+
+    def __init__(self, idx: int, method: Union[LSPMethod, str], params: Optional[JSON] = None):
+        self.idx = idx
+        self.method = method
+        self.params = params or {}
+        self.result: Optional[JSON] = None
+        self.collected_notifications: List['LSPNotification'] = []
+
+    @classmethod
+    def from_json(cls, data: Dict) -> 'LSPRequest':
+        return cls(data["id"], data["method"], data.get("params", {}))
 
     def json(self) -> JSON:
+        method_str = getattr(self.method, "value", str(self.method))
         return {
             "jsonrpc": "2.0",
             "id": self.idx,
-            "error": { "code": self.code, "message": self.message },
+            "method": method_str,
+            "params": self.params
         }
-
-class LSPResponse(NamedTuple):
-    idx: int
-    result: JSON
-
-    def json(self) -> JSON:
-        return {
-            "jsonrpc": "2.0",
-            "id": self.idx,
-            "result": self.result,
-        }
-
-class LSPQuery(NamedTuple):
-    idx: Optional[int]
-    method: LSPMethod
-    params: JSON
+    
+    def process_incoming(self, incoming: 'LSPMessage') -> bool:
+        if isinstance(incoming, LSPResponse) and incoming.idx == self.idx:
+            self.result = incoming.result
+            return True
+        elif isinstance(incoming, LSPNotification):
+            self.handle_notification(incoming)
+            return False
+        elif isinstance(incoming, LSPError) and incoming.idx == self.idx:
+            raise LSPException(incoming.message, incoming.code)
+        else:
+            return False
 
     @property
-    def is_request(self):
-        return self.idx is not None
+    def is_done(self) -> bool:
+        return self.result is not None
+    
+class LSPNotification(LSPQuery):
+    """LSP Notification (no response expected)"""
+
+    def __init__(self, method: Union[LSPMethod, str], params = None):
+        self.method = method
+        self.params = params or {}
+        self.collected_notifications: List['LSPNotification'] = []
+
+    @classmethod
+    def from_json(cls, data: Dict) -> 'LSPNotification':
+        """Create LSPNotification from JSON data"""
+        return cls(data["method"], data.get("params", {}))
 
     def json(self) -> JSON:
+        """Convert notification to JSON for sending"""
+        method_str = getattr(self.method, "value", str(self.method))
         return {
             "jsonrpc": "2.0",
-            "method": getattr(self.method, "value", self.method),
-            "params": self.params,
-            **({"id": self.idx} if self.is_request else {})
+            "method": method_str,
+            "params": self.params
+        }
+    
+    def process_incoming(self, incoming: 'LSPMessage') -> bool:
+        if isinstance(incoming, LSPNotification):
+            self.handle_notification(incoming)
+            return self.is_done
+        return False
+    
+    @property
+    def is_done(self) -> bool:
+        return True
+
+class LSPResponse(LSPMessage):
+    """LSP Response to a request"""
+    
+    def __init__(self, idx: int, result: JSON):
+        self.idx = idx
+        self.result = result
+
+    @classmethod
+    def from_json(cls, data: Dict) -> 'LSPResponse':
+        """Create LSPResponse from JSON data"""
+        return cls(data["id"], data.get("result", {}))
+    
+    def json(self) -> JSON:
+        """Convert response to JSON for sending"""
+        return {
+            "jsonrpc": "2.0", 
+            "id": self.idx, 
+            "result": self.result
+        }
+    
+class LSPError(LSPMessage):
+    """LSP Error response"""
+
+    def __init__(self, idx: int, code: int, message: str):
+        self.idx = idx
+        self.code = code
+        self.message = message
+
+    @classmethod
+    def from_json(cls, data: Dict) -> 'LSPError':
+        """Create LSPError from JSON data"""
+        error_info = data["error"]
+        return cls(data["id"], error_info["code"], error_info["message"])
+
+    def json(self) -> JSON:
+        """Convert error to JSON for sending"""
+        return {
+            "jsonrpc": "2.0", 
+            "id": self.idx,
+            "error": {"code": self.code, "message": self.message}
         }
 
-LSPMessage = Union[LSPError, LSPResponse, LSPQuery]
-
 class LSPParser:
+    """Parser for LSP messages"""
     JRPC_HEADER_RE = re.compile(r"Content-Length: (?P<len>[0-9]+)\r\n")
 
     @staticmethod
-    def serialize(msg: LSPMessage) -> bytes:
-        js = json.dumps(msg.json(), indent=1).replace("\n", "\r\n") + "\r\n"
-        header = "Content-Length: {}\r\n\r\n".format(len(js))
+    def serialize(query: LSPMessage) -> bytes:
+        js = json.dumps(query.json(), indent=1).replace("\n", "\r\n") + "\r\n"
+        header = f"Content-Length: {len(js)}\r\n\r\n"
         return header.encode("utf-8") + js.encode("utf-8")
 
     @staticmethod
-    def parse_lsp_method(m: str) -> LSPMethod:
-        if m in LSP_NOTIFICATIONS:
-            return LSPNotification(m)
-        if m in LSP_REQUESTS:
-            return LSPRequest(m)
-        return m
-
-    @staticmethod
-    def from_json(js: JSON) -> "LSPMessage":
-        idx = int(js["id"]) if "id" in js else None
-        method = js.get("method")
-        if method is not None:
-            return LSPQuery(idx, LSPParser.parse_lsp_method(method), js["params"])
-        if "result" not in js:
-            raise LSPException("LSP Error: {!r}".format(js["error"]))
-        assert idx is not None
-        return LSPResponse(idx, js["result"])
-
-    @staticmethod
-    def from_stream(stream: IO[bytes]) -> "LSPMessage":
+    def from_stream(stream) -> LSPMessage:
+        """Read and parse an LSP message from stream"""
         line, length = None, None
         while line not in ("", "\r\n"):
             line = stream.readline().decode("utf-8")
-            debug(repr(line), '<< ')
+            core_debug(repr(line), "<< ")
             header = LSPParser.JRPC_HEADER_RE.match(line)
             if header:
                 length = int(header.group("len"))
+        
         if line == "":
-            raise EOFError
+            raise EOFError("Connection closed")
         if length is None:
-            MSG = ("Unexpected output: {!r}, use --debug for a trace.".format(line) +
-                   "If --debug doesn't help, check the LSP server's logs.")
-            raise LSPException(MSG)
-        response: bytes = stream.read(length)
+            raise ValueError("No Content-Length header")
+        
+        response = stream.read(length)
         if len(response) != length:
-            raise LSPException(f"Truncated response: {response!r}")
+            raise ValueError("Truncated response")
+        
         resp = response.decode("utf-8")
-        debug(resp, "<< ")
-        return LSPParser.from_json(json.loads(resp))
+        core_debug(resp, "<< ")
+        data = json.loads(resp)
+        
+        return LSPMessage.from_json(data)
 
-class LSPTokenLegend:
-    def __init__(self, doc: Document, lsp_legend: JSON):
-        self.doc = doc
-        self.types = lsp_legend["tokenTypes"]
-        self.modifiers = lsp_legend["tokenModifiers"]
-        self.modifiers_dict: Dict[int, Tuple[str, ...]] = {}
+class LSPClient:    
+    CLIENT_NAME = "Alectryon"
+    LANGUAGE_ID = "coq"
 
-    def resolve_mods(self, imods: int) -> Tuple[str, ...]:
-        mods: Optional[Tuple[str, ...]] = self.modifiers_dict.get(imods)
-        if mods is None:
-            mods = self.modifiers_dict[imods] = tuple(sorted(
-                self.modifiers[i]
-                for i, c in enumerate(bin(imods)[:1:-1], 0)
-                if c == '1'
-            ))
-        return mods
+    def __init__(self, repl: Popen, debug_func=None):
+        self.repl = repl
+        self.debug_func = debug_func or core_debug
+        self.parser = LSPParser()
+        self.root_uri = Path(os.getcwd()).as_uri()
+        self.next_request_id = 1
+        self.initialized = False
 
-    def resolve_one(self, l: int, c: int, length: int, itype: int, imods: int) -> Token:
-        typ = self.types[itype]
-        mods = self.resolve_mods(imods)
-        start = self.doc.pos2offset(l, c)
-        return Token(Range(start, start + length), (typ, *mods))
+    INITIAL_PARSING_DELAY = 0.05
+    PARSING_DELAY_MULTIPLIER = 2.0
 
-    def resolve(self, tokens: Iterable[int]) -> Iterator[Token]:
-        l, c = 1, 0
-        groups = zip(*([iter(tokens)] * 5))
-        for dl, dc, length, itype, imods in groups:  # type: ignore
-            l, c = l + dl, (dc if dl != 0 else c + dc)
-            yield self.resolve_one(l, c, length, itype, imods)
-
-class LSPAdapter:
-    def __init__(self, client_name: str, language_id: str):
-        self.language_id = language_id
-        self.client_name = client_name
-
+    CAPABILITIES = {
+        "workspace": { "configuration": False },
+        "textDocument": {}
+    }
+    
     TOKEN_TYPES: Dict[str, str] = {
         "namespace": "Name.Namespace",
         "type": "Keyword.Type",
@@ -206,170 +280,86 @@ class LSPAdapter:
         'abstract', 'async', 'modification', 'documentation', 'defaultLibrary'
     }
 
-    def _iter_lsp_initialize(self) -> Iterator[Tuple[LSPMethod, JSON]]:
-        yield (LSPRequest.INITIALIZE, {
-            "processId": os.getpid(),
-            "clientInfo": {"name": self.client_name},
-            "rootUri": Path(os.getcwd()).as_uri(),
-            "capabilities": {
-                "workspace": {
-                    "configuration": False,
-                },
-                "textDocument": {
-                    "semanticTokens": {
-                        "requests": {"range": False, "full": True},
-                        "tokenTypes": list(self.TOKEN_TYPES),
-                        "tokenModifiers": list(self.TOKEN_MODIFIERS),
-                        "formats": ['relative'],
-                        "overlappingTokenSupport": False,
-                        "multilineTokenSupport": True,
-                        "serverCancelSupport": False,
-                        "augmentsSyntaxTokens": False,
-                    }
-                }
-            }
-        })
-        yield (LSPNotification.INITIALIZED, {})
-
-    @staticmethod
-    def _iter_lsp_shutdown():
-        yield (LSPRequest.SHUTDOWN, {})
-        yield (LSPNotification.EXIT, {})
-
-    def _lsp_query_tokens(self, uri: str, contents: str) -> Iterator[Tuple[LSPMethod, JSON]]:
-        yield from self._iter_lsp_initialize()
-        yield (LSPNotification.DID_OPEN, {
-            "textDocument": {
-                "uri": uri,
-                "languageId": self.language_id,
-                "version": 0,
-                "text": contents
-            }
-        })
-        yield (LSPRequest.SEMANTIC_TOKENS_FULL, {
-            "textDocument": { "uri": uri }
-        })
-        yield from self._iter_lsp_shutdown()
-
-    def _lsp_query_version(self):
-        yield from self._iter_lsp_initialize()
-        yield from self._iter_lsp_shutdown()
-
-    @staticmethod
-    def _iter_lsp(transcript: Iterable[Tuple[LSPMethod, JSON]]) -> Iterator[LSPQuery]:
-        for idx, (method, params) in enumerate(transcript):
-            yield LSPQuery(idx if isinstance(method, LSPRequest) else None, method, params)
-
-    @staticmethod
-    def _write_lsp(repl: Popen, msg: LSPMessage) -> None:
-        assert repl.stdin
-        bs = LSPParser.serialize(msg)
-        debug(bs, '>> ')
-        repl.stdin.write(bs)  # type: ignore
-        repl.stdin.flush()
-
-    @staticmethod
-    def _unsupported(idx: int) -> LSPError:
-        return LSPError(idx, code=-32601, # Method not found
-                        message="This client does not support server requests.")
-
-    @staticmethod
-    def _run_lsp(repl: Popen, trace: Iterable[LSPQuery]) -> Iterator[Tuple[LSPMethod, LSPResponse]]:
-        """Collect responses to LSP messages in `trace`."""
-        assert repl.stdout
-        trace = list(trace)
-        for msg in trace:
-            LSPAdapter._write_lsp(repl, msg)
-            if msg.is_request:
-                while True:
-                    resp = LSPParser.from_stream(repl.stdout)
-                    if isinstance(resp, LSPResponse) and resp.idx == msg.idx:
-                        yield (msg.method, resp)
-                        break
-                    # TODO: Implement the diagnostic request in the server, use it from here.
-                    if isinstance(resp, LSPQuery) and resp.is_request:
-                        assert resp.idx
-                        LSPAdapter._write_lsp(repl, LSPAdapter._unsupported(resp.idx))
-
-    @staticmethod
-    def _remove_overlapping(tokens: Iterable[Token]) -> List[Token]:
-        """Remove overlapping token from a list of `tokens`.
-
-        Later tokens are preferred over earlier ones, so if two overlapping
-        tokens are found the first one is discarded.
-        """
-        filtered: List[Token] = []
-        tokens = sorted(tokens, key=lambda t: t.rng)
-        for tok in tokens:
-            while filtered and tok.rng.start < filtered[-1].rng.end:
-                filtered.pop()
-            filtered.append(tok)
-        return filtered
-
-    def collect_lsp_info(self, repl: Popen, uri: str, doc: Document) -> Tokens:
-        messages = self._iter_lsp(self._lsp_query_tokens(uri, doc.contents))
-        tokens: Optional[Iterable[Token]] = None
-        token_options: Optional[Dict[str, Any]] = None
-        for (method, response) in self._run_lsp(repl, messages):
-            if method is LSPRequest.INITIALIZE:
-                token_options = response.result["capabilities"].get("semanticTokensProvider")
-            # TODO add a case for diagnostics.
-            elif method is LSPRequest.SEMANTIC_TOKENS_FULL:
-                if token_options is None or not token_options.get("full"):
-                    raise LSPException("This LSP server does not support semantic tokens")
-                # No early return: must exhaust iterator
-                # pylint: disable=unsubscriptable-object
-                legend = LSPTokenLegend(doc, token_options["legend"])
-                tokens = legend.resolve(response.result["data"])
-        assert tokens is not None
-        toks = self._remove_overlapping(tokens)
-        return Tokens(toks, slice(0, len(toks), None), Range(0, len(doc)))
-
-    def read_driver_info(self, repl: Popen) -> Optional[DriverInfo]:
-        messages = self._iter_lsp(self._lsp_query_version())
-        for (method, response) in self._run_lsp(repl, messages):
-            if method is LSPRequest.INITIALIZE:
-                info = response.result.get("serverInfo")
-                return DriverInfo(info["name"], info.get("version", "?")) if info else None
-        assert False
-
-class LSPDriver(REPLDriver):
-    """An base class for Alectryon Drivers talking to an LSP server."""
-    ID = "lsp"
-    LANGUAGE = "unset!"
-
-    LSP_CLIENT_NAME = "Alectryon"
-    LSP_LANGUAGE_ID = "unset!"
-
-    LSP_TYPE_MAP: Dict[Tuple[str, ...], str] = \
-        {(typ,): tok for (typ, tok) in LSPAdapter.TOKEN_TYPES.items()}
-
-    @property
-    def adapter(self):
-        assert self.LSP_LANGUAGE_ID
-        return LSPAdapter(self.LSP_CLIENT_NAME, self.LSP_LANGUAGE_ID)
-
-    def version_info(self) -> DriverInfo:
-        with self as api:
-            assert api.repl
-            return self.adapter.read_driver_info(api.repl) \
-                or DriverInfo(self.LANGUAGE, "?")
-
-    def collect_lsp_info(self, doc: Document) -> Tokens:
-        with self as api:
-            assert api.repl
-            uri = api.fpath.absolute().as_uri()
-            return self.adapter.collect_lsp_info(api.repl, uri, doc)
-
-    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
-        """Annotate chunks using the ``symbols`` command."""
+    def initialize(self) -> bool:
         try:
-            doc = Document(chunks, "\n")
-            tokens = self.collect_lsp_info(doc)
-            type_map: Dict[Tuple[str, ...], str] = self.LSP_TYPE_MAP
-            tokenized = TokenizedStr(doc.contents, tokens, type_map)
+            init_query = LSPRequest(
+                self.get_next_request_id(), LSPRequestList.INITIALIZE, {
+                    "processId": __import__('os').getpid(),
+                    "clientInfo": {"name": self.CLIENT_NAME, "version": "1.0.0"},
+                    "rootUri": self.root_uri,
+                    "capabilities": self.CAPABILITIES
+                }
+            )
+            self.send_and_process(init_query)
+            return True
+        except LSPException:
+            return False
+        
+    def send_initialized(self) -> None:
+        initialized = LSPNotification(LSPNotificationList.INITIALIZED, {})
+        self.send_and_process(initialized)
+        self.initialized = True
 
-            return list(doc.recover_chunks([Text(tokenized)]))
+    def open_document(self, uri: str, contents: str) -> None:
+        open_doc = LSPNotification(LSPNotificationList.DID_OPEN, {
+            "textDocument": {"uri": uri, "languageId": "coq", "version": 0, "text": contents}
+        })
+        self.send_message(open_doc)
+
+    def shutdown(self) -> None:
+        if not self.initialized:
+            return
+        
+        try:
+            shutdown_query = LSPRequest(self.get_next_request_id(), LSPRequestList.SHUTDOWN, {})
+            self.send_and_process(shutdown_query)
         except LSPException as e:
-            self.observer.notify(None, str(e), Position(self.fpath, 0, 1).as_range(), level=3)
-            return [[Text(c)] for c in chunks]
+            print(f"Shutdown failed: {e}")
+
+    def exit(self) -> None:
+        self.send_message(LSPNotification(LSPNotificationList.EXIT, {}))
+        self.initialized = False
+    
+    def debug(self, message, prefix=""):
+        if self.debug_func:
+            self.debug_func(message, prefix)
+    
+    def get_next_request_id(self) -> int:
+        request_id = self.next_request_id
+        self.next_request_id += 1
+        return request_id
+    
+    def send_message(self, query: LSPMessage) -> None:
+        bs = self.parser.serialize(query)
+        self.debug(bs, ">> ")
+        self.repl.stdin.write(bs)
+        self.repl.stdin.flush()
+    
+    def receive_message(self) -> LSPMessage:
+        return self.parser.from_stream(self.repl.stdout)
+
+    def send_and_process(self, query: LSPQuery) -> LSPQuery:
+        self.send_message(query)
+
+        if query.is_done:
+            return query
+        
+        while True:
+            try:
+                incoming = self.receive_message()
+
+                if isinstance(incoming, LSPRequest):
+                    error_response = LSPError(
+                        incoming.idx, LSPErrorCode.METHOD_NOT_FOUND, 
+                        "This client does not support server requests."
+                    )
+                    self.send_message(error_response)
+                    continue
+
+                is_complete = query.process_incoming(incoming)
+                if is_complete:
+                    break
+            except LSPException as e:
+                raise e
+            
+        return query
