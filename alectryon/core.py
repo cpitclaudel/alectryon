@@ -565,6 +565,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
 
 class PopenDriver(CLIDriver): # pylint: disable=abstract-method
     REPL_ARGS: Tuple[str, ...] = ()
+    REPL_ENCODING = None
 
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args, fpath, binpath)
@@ -595,7 +596,7 @@ class PopenDriver(CLIDriver): # pylint: disable=abstract-method
         cmd = [self.resolve_driver(),
                *self.REPL_ARGS, *self.user_args, *self.instance_args, *more_args]
         self._debug_start(cmd)
-        return subprocess.Popen(cmd, stdin=stdin, stderr=stderr, stdout=stdout)
+        return subprocess.Popen(cmd, stdin=stdin, stderr=stderr, stdout=stdout, encoding=self.REPL_ENCODING)
 
     def reset(self):
         """Start or restart this prover instance."""
@@ -614,17 +615,6 @@ class REPLDriver(PopenDriver):
         debug(s, '>> ')
         self.repl.stdin.write(s + end)  # type: ignore
         self.repl.stdin.flush()
-
-class TextREPLDriver(REPLDriver): # pylint: disable=abstract-method
-    REPL_ENCODING = "utf-8"
-
-    def _start(self, *args, **kwargs): # pylint: disable=signature-differs
-        repl = super()._start(*args, **kwargs)
-        repl.stdin = TextIOWrapper( #type: ignore
-            repl.stdin, write_through=True, encoding=self.REPL_ENCODING) #type: ignore
-        repl.stdout = TextIOWrapper( #type: ignore
-            repl.stdout, encoding=self.REPL_ENCODING) #type: ignore
-        return repl
 
 DRIVERS_BY_LANGUAGE = {
     "coq": {
