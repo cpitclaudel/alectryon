@@ -9,7 +9,7 @@ class CoqLSPClient(LSPClient):
     CLIENT_NAME = "Alectryon"
     LANGUAGE_ID = "coq"
 
-    @staticmethod 
+    @staticmethod
     def _decode_hyp(hyp):
         return Hypothesis(hyp["names"], hyp["def"], hyp["ty"])
 
@@ -19,7 +19,7 @@ class CoqLSPClient(LSPClient):
 
     @staticmethod
     def _decode_goal(goal):
-        return Goal(goal["info"]["name"], goal["ty"], 
+        return Goal(goal["info"]["name"], goal["ty"],
             CoqLSPClient._decode_hyps(goal["hyps"]))
 
     @staticmethod
@@ -28,7 +28,7 @@ class CoqLSPClient(LSPClient):
 
     @staticmethod
     def _decode_message(msg):
-        """ Messages can be either a string or an object which contains a string. """ 
+        """Messages can be either a string or an object which contains a string."""
         if isinstance(msg, str):
             return Message(msg)
         else:
@@ -39,7 +39,7 @@ class CoqLSPClient(LSPClient):
         return [CoqLSPClient._decode_message(m) for m in msgs]
 
     def _get_ranges(self):
-        """ Segment the document into a list of ranges (beginning/end) for each sentence. """
+        """Segment the document into a list of ranges (beginning/end) for each sentence."""
         request = LSPRequest(
             self.get_next_request_id(),
             "coq/getDocument",
@@ -48,13 +48,13 @@ class CoqLSPClient(LSPClient):
         return [(span["range"]["start"], span["range"]["end"]) for span in request.result["spans"]]
 
     def _get_sentence(self, text, position):
-        """ Get the sentence at a given position. 
+        """Get the sentence at a given position.
         The position should be in the range [sentence_start, sentence_end[
-        i.e. start included and end excluded. 
+        i.e. start included and end excluded.
         """
         request = LSPRequest(
-            self.get_next_request_id(), 
-            "proof/goals", 
+            self.get_next_request_id(),
+            "proof/goals",
             {"textDocument": {"uri": self.uri, "version": 0},
              "position": position })
         self.send_and_process(request)
@@ -87,7 +87,7 @@ class CoqLSPClient(LSPClient):
                 sentences.append(Positioned(start_ofs, end_ofs, s))
         # Intersperse the sentences in the original document.
         return document.intersperse_text_fragments(sentences)
- 
+
 class CoqLSP(REPLDriver):
     BIN = "coq-lsp"
     NAME = "Coq LSP Server"
@@ -105,10 +105,3 @@ class CoqLSP(REPLDriver):
             document = Document(chunks, "\n")
             client = CoqLSPClient(api.repl)
             return client.process(self.fpath.absolute().as_uri(), document)
-            
-#if __name__ == '__main__':
-#    with open("test.v", "r") as file:
-#        contents = file.read()
-#        sentences = CoqLSP(fpath="foo.v").annotate([contents])
-#        for s in sentences:
-#            print(s)
