@@ -22,8 +22,8 @@ from typing import Iterable
 
 import dataclasses
 
-from .core import Document, EncodedDocument, Fragment, Goal, Hypothesis, Message, Position, Positioned, Sentence, must
-from .lsp import LSPClient, LSPClientRequest, LSPDriver
+from .core import Document, Fragment, Goal, Hypothesis, Message, Position, Positioned, Sentence, must
+from .lsp import LSPDocument, LSPClient, LSPClientRequest, LSPDriver
 
 class Requests:
     GOALS = "proof/goals"
@@ -120,7 +120,7 @@ class CoqLSP(LSPDriver[CoqLSPClient]):
     CLIENT = CoqLSPClient
 
     def _encode(self, chunks: Iterable[str]) -> Document:
-        return Document(chunks, "\n")  # TODO: UTF-16 positions
+        return LSPDocument(chunks, "\n")
 
     def _find_sentences(self, document: Document) -> Iterable[Positioned[Fragment]]:
         return CoqLSPFile(self, document).process()

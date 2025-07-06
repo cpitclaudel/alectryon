@@ -474,8 +474,9 @@ class TextDocument(Document):
     def __len__(self) -> int:
         return len(self.str)
 
+    _BOL = re.compile("^", re.MULTILINE)
     def _find_bols(self) -> Iterable[int]:
-        matches = re.finditer("^", self.str, re.MULTILINE)
+        matches = self._BOL.finditer(self.str)
         return (m.start() for m in matches)
 
     _EOL = re.compile("$", re.MULTILINE)
@@ -504,8 +505,10 @@ class EncodedDocument(Document):
     def __len__(self) -> int:
         return len(self.bytes)
 
+    _BOL = re.compile(b"^", re.MULTILINE)
     def _find_bols(self) -> Iterable[int]:
-        matches = re.finditer(b"^", self.bytes, re.MULTILINE)
+        matches = self._BOL.finditer(self.bytes)
+        matches = list(matches)
         return (m.start() for m in matches)
 
     _EOL = re.compile(b"$", re.MULTILINE)
