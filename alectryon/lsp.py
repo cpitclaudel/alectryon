@@ -433,8 +433,8 @@ class LSPDriver(PopenDriver, Generic[T]):
     def annotate(self, chunks: Iterable[str]) -> list[list[Fragment]]:
         """Annotate chunks of code.
 
-        >>> from .vscoq import VsCoq
-        >>> VsCoq().annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Check xyz."])
+        >>> from .vsrocq import VsRocq
+        >>> VsRocq().annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Check xyz."])
         [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
         """
         document = self._encode(chunks)
