@@ -88,8 +88,9 @@ class LSPClientMessage:
 
     def serialize(self) -> bytes:
         js = json.dumps(self.json(), indent=1).replace("\n", "\r\n") + "\r\n"
-        header = f"Content-Length: {len(js)}\r\n\r\n"
-        return header.encode("utf-8") + js.encode("utf-8")
+        jsb = js.encode("utf-8")
+        header = f"Content-Length: {len(jsb)}\r\n\r\n"
+        return header.encode("utf-8") + jsb
 
     def send(self):
         raise NotImplementedError
