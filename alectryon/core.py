@@ -291,7 +291,7 @@ class Positioned(NamedTuple, Generic[TPositioned]):
     e: TPositioned
 
 class Document:
-    """A utility class to handle conversions to and from a list of chunks.
+    """A base class to handle conversions to and from a list of chunks.
 
     This is useful to recover chunk boundaries for provers that concatenate all
     chunks before processing them.
@@ -299,15 +299,29 @@ class Document:
     def __init__(self, chunks, chunk_separator):
         self.chunks = list(chunks)
         self.with_separator = [c + chunk_separator for c in self.chunks]
-        self.str = self.contents = chunk_separator[0:0].join(self.with_separator)
+        self.str: str = chunk_separator[0:0].join(self.with_separator)
         self.separator = chunk_separator
         self._bol_offsets = None
 
-    def __getitem__(self, index):
-        return self.contents.__getitem__(index)
+    @classmethod
+    def _len(cls, s: str) -> int:
+        raise NotImplementedError
 
-    def __len__(self):
-        return len(self.contents)
+    @classmethod
+    def _slice(cls, s: str, index: slice) -> str:
+        raise NotImplementedError
+
+    def __getitem__(self, index) -> str:
+        raise NotImplementedError
+
+    def __len__(self) -> int:
+        raise NotImplementedError
+
+    def _find_bols(self) -> Iterable[int]:
+        raise NotImplementedError
+
+    def _find_eol(self, start: int) -> int:
+        raise NotImplementedError
 
     def recover_chunks(self, fragments):
         grouped = self._recover_chunks(self.with_separator, fragments)
@@ -316,9 +330,7 @@ class Document:
     @property
     def bol_offsets(self):
         if self._bol_offsets is None:
-            bol = "^" if isinstance(self.contents, str) else b"^"
-            matches = re.finditer(bol, self.contents, re.MULTILINE) # type: ignore
-            self._bol_offsets = [m.start() for m in matches]
+            self._bol_offsets = list(self._find_bols())
         return self._bol_offsets
 
     def offset2lc(self, offset) -> Tuple[int, int]:
@@ -340,18 +352,13 @@ class Document:
     def offsets2range(self, fpath: Union[str, Path], beg: int, end: int) -> Range:
         return Range(self.offset2pos(fpath, beg), self.offset2pos(fpath, end))
 
-    def _eol_offset(self, offset: int):
-        eol = re.compile("$" if isinstance(self.contents, str) else b"$", re.MULTILINE)
-        return must(eol.search(self.contents, offset)).start() # type: ignore
-
     def range2offsets(self, range: Range) -> Tuple[int, int]:
         beg = self.pos2offset(range.beg)
-        end = self.pos2offset(range.end) if range.end else self._eol_offset(beg)
+        end = self.pos2offset(range.end) if range.end else self._find_eol(beg)
         return beg, end
 
-    @staticmethod
-    def _intersperse_text_fragments(text, pfragments: Iterable[Positioned[Fragment]]) -> Iterable[Fragment]:
-        """Split `text` into fragments.
+    def intersperse_text_fragments(self, pfragments: Iterable[Positioned[Fragment]]) -> Iterable[Fragment]:
+        """Split document into fragments.
 
         For ranges covered by `pfragments`, return the corresponding element.
         For the rest, create fresh ``Text`` objects.
@@ -359,35 +366,32 @@ class Document:
         pos = 0
         for st in pfragments:
             if pos < st.beg:
-                yield Text(text[pos:st.beg])
+                yield Text(self[pos:st.beg])
             yield st.e
             pos = st.end
-        if pos < len(text):
-            yield Text(text[pos:])
+        if pos < len(self):
+            yield Text(self[pos:])
 
-    def intersperse_text_fragments(self, pfragments: Iterable[Positioned[Fragment]]) -> Iterable[Fragment]:
-        """Split `self.contents` into fragments."""
-        return self._intersperse_text_fragments(self, pfragments)
-
-    @staticmethod
-    def with_boundaries(items: Iterable[Union[Sentence, Text, str]]):
+    TItem = TypeVar("TItem", bound=Union[Sentence, Text, str])
+    @classmethod
+    def with_boundaries(cls, items: Iterable[TItem]) -> Iterable[Positioned[TItem]]:
         end = 0
         for item in items:
-            beg, end = end, end + len(getattr(item, "contents", item))
+            beg, end = end, end + cls._len(item if isinstance(item, str) else item.contents)
             yield Positioned(beg, end, item)
 
-    @staticmethod
-    def split_fragment(fr: Fragment, cutoff):
+    @classmethod
+    def split_fragment(cls, fr: Fragment, cutoff):
         """Split `fr` at position `cutoff`.
 
-        >>> Document.split_fragment(Text("abcxyz"), 3)
+        >>> TextDocument.split_fragment(Text("abcxyz"), 3)
         (Text(contents='abc'), Text(contents='xyz'))
-        >>> Document.split_fragment(Sentence("abcxyz", [Message("out")], []), 3)
+        >>> TextDocument.split_fragment(Sentence("abcxyz", [Message("out")], []), 3)
         (Sentence(contents='abc', messages=[], goals=[]),
          Sentence(contents='xyz', messages=[Message(contents='out')], goals=[]))
         """
-        before = fr.contents[:cutoff]
-        after = fr.contents[cutoff:]
+        before = cls._slice(fr.contents, slice(0, cutoff))
+        after = cls._slice(fr.contents, slice(cutoff, None))
         fr0: Fragment
         if isinstance(fr, Text):
             fr0 = Text(before)
@@ -399,10 +403,10 @@ class Document:
     def split_fragments(cls, fragments, cutoffs):
         """Split `fragments` at positions `cutoffs`.
 
-        >>> list(Document.split_fragments([Text("abcdwxyz")], [0, 2, 4, 5, 7]))
+        >>> list(TextDocument.split_fragments([Text("abcdwxyz")], [0, 2, 4, 5, 7]))
         [Text(contents='ab'), Text(contents='cd'),
          Text(contents='w'), Text(contents='xy'), Text(contents='z')]
-        >>> list(Document.split_fragments([Text("abcd"), Text("wxyz")], [0, 2, 4, 5, 7]))
+        >>> list(TextDocument.split_fragments([Text("abcd"), Text("wxyz")], [0, 2, 4, 5, 7]))
         [Text(contents='ab'), Text(contents='cd'),
          Text(contents='w'), Text(contents='xy'), Text(contents='z')]
         """
@@ -439,11 +443,11 @@ class Document:
     @classmethod
     def strip_separators(cls, grouped, separator):
         r"""Remove separator at end of each fragment in `grouped`.
-        >>> list(Document.strip_separators([[Text("!"), Text("(* … *)\n")]], "\n"))
+        >>> list(TextDocument.strip_separators([[Text("!"), Text("(* … *)\n")]], "\n"))
         [[Text(contents='!'), Text(contents='(* … *)')]]
-        >>> list(Document.strip_separators([[Text("A"), Text("\n")]], "\n"))
+        >>> list(TextDocument.strip_separators([[Text("A"), Text("\n")]], "\n"))
         [[Text(contents='A')]]
-        >>> list(Document.strip_separators([[Text("\n")]], "\n"))
+        >>> list(TextDocument.strip_separators([[Text("\n")]], "\n"))
         [[]]
         """
         for fragments in grouped:
@@ -455,15 +459,61 @@ class Document:
                     fragments.pop()
             yield fragments
 
+class TextDocument(Document):
+    @classmethod
+    def _len(cls, s: str) -> int:
+        return len(s)
+
+    @classmethod
+    def _slice(cls, s: str, index: slice) -> str:
+        return s[index]
+
+    def __getitem__(self, index) -> str:
+        return self.str.__getitem__(index)
+
+    def __len__(self) -> int:
+        return len(self.str)
+
+    def _find_bols(self) -> Iterable[int]:
+        matches = re.finditer("^", self.str, re.MULTILINE)
+        return (m.start() for m in matches)
+
+    _EOL = re.compile("$", re.MULTILINE)
+    def _find_eol(self, start: int) -> int:
+        return must(self._EOL.search(self.str, pos=start)).start()
+
 class EncodedDocument(Document):
     """Variant of ``Document`` in which positions are byte offsets, not char offsets."""
-    def __init__(self, chunks, chunk_separator, encoding="utf-8"):
+    ENCODING: ClassVar[str]
+
+    def __init__(self, chunks, chunk_separator):
         super().__init__(chunks, chunk_separator)
-        self.encoding = encoding
-        self.contents = self.contents.encode(encoding)
+        self.bytes = self.str.encode(self.ENCODING)
+
+    @classmethod
+    def _len(cls, s: str) -> int:
+        return len(s.encode(cls.ENCODING))
+
+    @classmethod
+    def _slice(cls, s: str, index: slice) -> str:
+        return s.encode(cls.ENCODING)[index].decode(cls.ENCODING)
 
     def __getitem__(self, index):
-        return super().__getitem__(index).decode(self.encoding)
+        return self.bytes.__getitem__(index).decode(self.ENCODING)
+
+    def __len__(self) -> int:
+        return len(self.bytes)
+
+    def _find_bols(self) -> Iterable[int]:
+        matches = re.finditer(b"^", self.bytes, re.MULTILINE)
+        return (m.start() for m in matches)
+
+    _EOL = re.compile(b"$", re.MULTILINE)
+    def _find_eol(self, start: int) -> int:
+        return must(self._EOL.search(self.bytes, pos=start)).start()
+
+class UTF8Document(EncodedDocument):
+    ENCODING = "utf-8"
 
 class Notification(NamedTuple):
     obj: Any

@@ -25,7 +25,7 @@ from collections import deque
 from pathlib import Path
 from typing import Any, Iterable, List, Optional, Tuple
 
-from .core import REPLDriver, Positioned, Document, Hypothesis, Goal, \
+from .core import REPLDriver, Positioned, TextDocument, Hypothesis, Goal, \
     Message, Sentence, Text, Fragment, cwd
 
 try:
@@ -82,7 +82,7 @@ class Lean3(REPLDriver):
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
         self.instance_args = () if self.USE_THREADING else ("--threads=0",)
-        self.document = Document([], "")
+        self.document = TextDocument([], "")
         self.ast: AstData = []
         self.seq_num = -1
 
@@ -248,7 +248,7 @@ class Lean3(REPLDriver):
                       if "end_pos_line" in m and "end_pos_col" in m)
 
     def _add_messages(self, segments, messages):
-        segments = deque(Document.with_boundaries(segments))
+        segments = deque(TextDocument.with_boundaries(segments))
         messages = deque(self._collect_message_spans(messages, self.document))
 
         if not segments:
@@ -282,7 +282,7 @@ class Lean3(REPLDriver):
             yield fr
 
     def _annotate_doc(self):
-        _, messages = self._query("sync", content=self.document.contents)
+        _, messages = self._query("sync", content=self.document.str)
         fragments = self._add_messages(self.partition(), messages)
         return list(self.document.recover_chunks(fragments))
 
@@ -294,7 +294,7 @@ class Lean3(REPLDriver):
             tmpname: Path = Path(tmp_str).resolve()
             try:
                 with open(fdescriptor, "w", encoding="utf-8") as tmp:
-                    tmp.write(self.document.contents)
+                    tmp.write(self.document.str)
                 self.run_cli(more_args=[str(tmpname)])
                 self.ast = json.loads(tmpname.with_suffix(".ast.json").read_text("utf8"))["ast"]
             finally:
@@ -317,7 +317,7 @@ class Lean3(REPLDriver):
          [Sentence(contents='#check nat',
                    messages=[Message(contents='ℕ : Type')], goals=[])]]
         """
-        self.document = Document(chunks, "\n")
+        self.document = TextDocument(chunks, "\n")
         try:
             return self._annotate()
         except ValueError as e:

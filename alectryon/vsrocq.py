@@ -24,7 +24,7 @@ from typing import ClassVar, Iterable, Optional
 import dataclasses
 import re
 
-from .core import Document, EncodedDocument, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, Text, must
+from .core import Document, UTF8Document, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, Text, must
 from .lsp import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPServerException, LSPServerMessage, LSPServerNotification, LSPServerNotifications
 
 class Notifications(LSPServerNotifications):
@@ -249,7 +249,7 @@ class VsRocq(LSPDriver[VsRocqClient]):
     def _encode(self, chunks: Iterable[str]) -> Document:
         # FIXME: VsRocq sends vscoq/documentState info using utf-8 offsets but
         # uses codepoints (instead of utf-16?) in diagnostic line/char pairs.
-        return EncodedDocument(chunks, "\n", encoding="utf-8")
+        return UTF8Document(chunks, "\n")
 
     def _find_sentences(self, document: Document) -> Iterable[Positioned[Fragment]]:
         """Find sentences in the document using VsRocq."""
