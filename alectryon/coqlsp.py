@@ -22,7 +22,7 @@ from typing import Iterable
 
 import dataclasses
 
-from .core import Document, Fragment, Goal, Hypothesis, Message, Position, Positioned, Sentence, must
+from .core import Document, Fragment, Goal, Hypothesis, Message, Position, Positioned, Range, Sentence, must
 from .lsp import LSPDocument, LSPClient, LSPClientRequest, LSPDriver
 
 class Requests:
@@ -82,30 +82,26 @@ class CoqLSPFile:
         self.fpath, self.uri = driver.fpath, driver.uri
         self.doc = doc
 
-    def _get_ranges(self):
-        """Segment the document into a list of ranges (beginning/end) for each sentence."""
+    def _get_ranges(self) -> Iterable[Range]:
+        """Segment the document into sentence ranges."""
         json = must(CoqGetDocumentRequest(self.client, self.uri).send().result)
-        return [(span["range"]["start"], span["range"]["end"]) for span in json["spans"]]
+        for span in json["spans"]:
+            # According to Emilio we shouldn't trust the "offset" field of positions
+            # returned by coq-lsp.
+            r = Range.of_lsp(self.fpath, span["range"])
+            if r.beg != r.end: # Coq-lsp adds an empty sentence at the end.
+                yield r
 
-    def _get_sentence(self, js_beg, js_end) -> Positioned[Sentence]:
-        # According to Emilio we shouldn't trust the "offset" field of positions
-        # returned by coq-lsp.
-        beg, end = Position.of_lsp(self.fpath, js_beg), Position.of_lsp(self.fpath, js_end)
-        beg_ofs, end_ofs = self.doc.pos2offset(beg), self.doc.pos2offset(end)
-        info = must(ProofGoalsRequest(self.client, self.uri, beg).send().result)
+    def _get_sentence(self, rng: Range) -> Positioned[Sentence]:
+        info = must(ProofGoalsRequest(self.client, self.uri, rng.beg).send().result)
         messages = CoqLSPOutput.decode_messages(info["messages"])
         goals = CoqLSPOutput.decode_goals(g["goals"]) if (g := info.get("goals")) else []
-        return Positioned(beg_ofs, end_ofs, Sentence(self.doc[beg_ofs:end_ofs], messages, goals))
-
-    def _get_sentences(self) -> Iterable[Positioned[Sentence]]:
-        for (beg, end) in self._get_ranges():
-            sentence = self._get_sentence(beg, end)
-            if sentence.e.contents: # Coq-lsp adds an empty sentence at the end.
-                yield sentence
+        beg, end = self.doc.range2offsets(rng)
+        return Positioned(beg, end, Sentence(self.doc[beg:end], messages, goals))
 
     def process(self) -> Iterable[Positioned[Fragment]]:
         self.client.open(self.uri, self.doc.str)
-        return self._get_sentences()
+        return [self._get_sentence(r) for r in self._get_ranges()]
 
 class CoqLSPClient(LSPClient):
     LANGUAGE_ID = "coq"
