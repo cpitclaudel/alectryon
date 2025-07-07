@@ -26,7 +26,7 @@ from pathlib import Path
 from alectryon import json
 
 from alectryon.json import PlainSerializer
-from .core import CLIDriver, EncodedDocument, Text, Fragment
+from .core import CLIDriver, UTF8Document, Text, Fragment
 
 
 class Lean4(CLIDriver):
@@ -49,12 +49,12 @@ class Lean4(CLIDriver):
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args=args, fpath=fpath, binpath=binpath)
 
-    def run_leanInk_document(self, encoded_document: EncodedDocument) -> List[Any]:
-        """Run LeanInk with encoded_document file."""
+    def run_leanInk_document(self, document: UTF8Document) -> List[Any]:
+        """Run LeanInk with `document`."""
         with tempfile.TemporaryDirectory(prefix=self.TMP_PREFIX) as temp_directory:
             input_file_name = self.fpath.with_suffix(self.LEAN_FILE_EXT)
             input_file = Path(temp_directory) / os.path.basename(input_file_name)
-            input_file.write_bytes(encoded_document.contents)
+            input_file.write_bytes(document.bytes)
             working_directory = temp_directory
 
             try:
@@ -83,7 +83,7 @@ class Lean4(CLIDriver):
             return tuple_result
 
     def annotate(self, chunks):
-        document = EncodedDocument(chunks, "\n", encoding="utf-8")
+        document = UTF8Document(chunks, "\n")
         result: List[Fragment] = self.run_leanInk_document(document)
 
         if not result:

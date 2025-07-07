@@ -24,7 +24,7 @@ import tempfile
 import re
 from pathlib import Path
 
-from .core import CLIDriver, EncodedDocument, Positioned, Position, Sentence, Text, Fragment
+from .core import CLIDriver, UTF8Document, Positioned, Position, Sentence, Text, Fragment
 from .serapi import CoqIdents
 
 class CoqcTime(CLIDriver):
@@ -38,16 +38,16 @@ class CoqcTime(CLIDriver):
     COQ_TIME_RE = re.compile(r"^Chars (?P<beg>[0-9]+) - (?P<end>[0-9]+) ",
                              re.MULTILINE)
 
-    def _find_sentences(self, document: EncodedDocument):
+    def _find_sentences(self, document: UTF8Document):
         with tempfile.TemporaryDirectory(prefix="alectryon_coqc-time") as wd:
             source = Path(wd) / CoqIdents.topfile_of_fpath(self.fpath)
-            source.write_bytes(document.contents)
+            source.write(document.str)
             stdout = self.run_cli(more_args=[str(source)])
         for m in self.COQ_TIME_RE.finditer(stdout):
             beg, end = int(m.group("beg")), int(m.group("end"))
             yield Positioned(beg, end, Sentence(document[beg:end], [], []))
 
-    def partition(self, document: EncodedDocument):
+    def partition(self, document: UTF8Document):
         return document.intersperse_text_fragments(self._find_sentences(document))
 
     def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
@@ -61,7 +61,7 @@ class CoqcTime(CLIDriver):
         [[Sentence(contents='Check (* … *)', messages=[], goals=[])],
          [Sentence(contents='1.', messages=[], goals=[])]]
         """
-        document = EncodedDocument(chunks, "\n", encoding="utf-8")
+        document = UTF8Document(chunks, "\n")
         try:
             fragments = self.partition(document)
             return list(document.recover_chunks(fragments))
