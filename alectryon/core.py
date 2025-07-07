@@ -24,7 +24,6 @@ from typing import Any, ClassVar, DefaultDict, Dict, Generic, Iterable, IO, List
 from collections import deque, namedtuple, defaultdict
 from contextlib import contextmanager
 from importlib import import_module
-from io import TextIOWrapper
 from pathlib import Path
 from shlex import quote
 from shutil import which
@@ -56,7 +55,7 @@ def measure_indentation(line):
     return m.end() - m.start() if m else None
 
 def measure_min_indentation(lines):
-    indents = (measure_indentation(l) for l in lines)
+    indents = (measure_indentation(ln) for ln in lines)
     return min((i for i in indents if i is not None), default=0)
 
 def dedent(lines, amount):
@@ -106,7 +105,8 @@ def _enrich(nt):
 Goals = namedtuple("Goals", "goals")
 Messages = namedtuple("Messages", "messages")
 
-class Names(list): pass
+class Names(list):
+    pass
 RichHypothesis = _enrich(Hypothesis)
 RichGoal = _enrich(Goal)
 RichMessage = _enrich(Message)
@@ -182,6 +182,9 @@ class Backend:
             self.gen_txt(obj)
         else:
             raise TypeError("Unexpected object type: {}".format(type(obj)))
+
+    def gen_fragments(self, fragments, ids=(), classes=()):
+        raise NotImplementedError
 
     def gen(self, annotated):
         for fragments in annotated:
