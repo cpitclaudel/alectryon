@@ -838,15 +838,15 @@ COPY_FUNCTIONS = {
 }
 
 DRIVER_ARGS_BY_NAME: Dict[str, Optional[str]] = {
-    "noop": None,
-    "dafny_lsp": None,
-    "vsrocq": None,
-    "sertop": "sertop_args",
-    "sertop_noexec": "sertop_args",
     "coqc_time": "coqc_args",
-    "coq_lsp": None,
+    "coqlsp": None,
+    "dafny_lsp": None,
     "lean3_repl": None,
     "leanInk": "leanInk_args",
+    "noop": None,
+    "sertop": "sertop_args",
+    "sertop_noexec": "sertop_args",
+    "vsrocq": None,
 }
 """Map from driver name to field in argparse namespace.
 Used to populate ``args.driver_args_by_name`` in ``post_process_arguments``."""
