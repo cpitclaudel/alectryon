@@ -365,10 +365,14 @@ class LSPDiagnostic:
 class LSPClient:
     LANGUAGE_ID: ClassVar[str]
 
-    def __init__(self, repl: Popen):
-        self.repl = repl
+    def __init__(self, driver: "LSPDriver"):
+        self.driver = driver
         self.driver_info: Optional[DriverInfo] = None
         self.init()
+
+    @property
+    def repl(self):
+        return must(self.driver.repl)
 
     def receive_message(self) -> LSPServerMessage:
         return LSPServerMessage.from_stream(self.repl.stdout)
@@ -450,12 +454,15 @@ class LSPDriver(PopenDriver, Generic[T]):
 
     def reset(self):
         super().reset()
-        self.client = self.CLIENT(must(self.repl))
+        self.client = self.CLIENT(self)
 
     def kill(self):
-        if self.client:
-            self.client.kill()
-        super().kill()
+        try:
+            if self.client:
+                self.client.kill()
+        finally:
+            self.client = None
+            super().kill()
 
     @property
     def uri(self):
