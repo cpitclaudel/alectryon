@@ -152,7 +152,8 @@ class VsRocqOutput:
 
     @staticmethod
     def parse_hyp(hv):
-         # FIXME don't use string processing: parse the structure instead
+        # FIXME don't use string processing: parse the structure instead
+        # FIXME := from let will be parsed as hyp body
         full_str = VsRocqOutput.string_of_pp_string(hv)
         colon_count = full_str.count(':')
         if colon_count == 0:
