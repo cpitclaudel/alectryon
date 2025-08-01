@@ -1184,6 +1184,7 @@ def main():
         sys.exit(max(process_pipelines(args), default=0))
     except DocutilsException as e:
         print(e, file=sys.stderr)
+        sys.exit(1)
     except (ValueError, FileNotFoundError, ImportError, argparse.ArgumentTypeError) as e:
         if core.TRACEBACK:
             raise e
