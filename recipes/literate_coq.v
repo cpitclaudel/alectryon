@@ -136,7 +136,7 @@ Qed.
 
    \setlength{\emergencystretch}{4em}
 
-Alectryon defined a ``:coqid:`` role to link to definitions in Coqdoc-generated documentation; for example:
+Alectryon defines a ``:coqid:`` role to link to definitions in Coqdoc-generated documentation; for example:
 
     Note that the standard library already contains a :coqid:`boolean <Coq.Init.Nat.even>` :coqid:`predicate <Coq.Init.Nat#even>` for `even` (called :coqid:`Coq.Init.Nat.even`, or :coqid:`Coq.Init.Nat#even` for short), as well as an :coqid:`inductive one <Coq.Arith.PeanoNat#Nat.Even>` (called :coqid:`Coq.Arith.PeanoNat#Nat.Even` in module :coqid:`Coq.Arith.PeanoNat#`).
 
