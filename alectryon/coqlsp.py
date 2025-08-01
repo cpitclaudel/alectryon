@@ -107,11 +107,12 @@ class CoqLSPClient(LSPClient):
     LANGUAGE_ID = "coq"
 
 class CoqLSP(LSPDriver[CoqLSPClient]):
-    ID = "coq-lsp"
     BIN = "coq-lsp"
     NAME = "Coq LSP"
-
     VERSION_ARGS = ("--version",)
+
+    ID = "coqlsp"
+    LANGUAGE = "coq"
 
     CLIENT = CoqLSPClient
 

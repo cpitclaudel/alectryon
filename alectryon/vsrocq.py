@@ -238,11 +238,12 @@ class VsRocqClient(LSPClient):
     LANGUAGE_ID = "coq"
 
 class VsRocq(LSPDriver[VsRocqClient]):
-    ID = "vsrocq"
     BIN = "vscoqtop"
     NAME = "VsRocq"
-
     VERSION_ARGS = ("--version",)
+
+    ID = "vsrocq"
+    LANGUAGE = "coq"
 
     CLIENT = VsRocqClient
 
