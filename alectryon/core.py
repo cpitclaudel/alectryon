@@ -639,14 +639,16 @@ class PopenDriver(CLIDriver): # pylint: disable=abstract-method
 
     def kill(self):
         """Terminate this prover instance."""
-        if self.repl:
-            self.repl.kill()
-            try:
-                assert self.repl and self.repl.stdin and self.repl.stdout
-                self.repl.stdin.close()
-                self.repl.stdout.close()
-            finally:
-                self.repl.wait()
+        if not self.repl:
+            return
+        assert self.repl.stdin and self.repl.stdout
+        self.repl.kill()
+        try:
+            self.repl.stdin.close()
+            self.repl.stdout.close()
+        finally:
+            self.repl.wait()
+            self.repl = None
 
     def _start(self, stdin: _FILE=PIPE, stderr: _FILE=PIPE, stdout: _FILE=PIPE, more_args=()):
         cmd = [self.resolve_driver(),
