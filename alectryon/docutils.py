@@ -240,7 +240,8 @@ class Config:
 
     def read_docinfo(self):
         # Sphinx doesn't translate ``field_list`` to ``docinfo``
-        selector = lambda n: isinstance(n, (nodes.field_list, nodes.docinfo))
+        def selector(n):
+            return isinstance(n, (nodes.field_list, nodes.docinfo))
         for di in list(self.document.findall(selector)):
             for field in list(di.findall(nodes.field)):
                 name, body = field.children
@@ -431,7 +432,8 @@ class AlectryonTransform(OneTimeTransform):
         node.parent.children = pre
 
     def apply_toggle(self):
-        toggle = lambda id: nodes.raw('', TOGGLE_HTML.format(id=id), format='html')
+        def toggle(id):
+            return nodes.raw('', TOGGLE_HTML.format(id=id), format='html')
         toggles = list(self.document.findall(alectryon_pending_toggle))
         for idx, node in enumerate(toggles):
             self.insert_toggle_after(node, toggle(idx), False)
@@ -596,7 +598,8 @@ class AlectryonMrefTransform(OneTimeTransform):
                for node in self.document.findall(alectryon_pending_io)
                for id in node.get("names", ())}
         last_io = None
-        io_or_mref = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_mref))
+        def io_or_mref(n):
+            return isinstance(n, (alectryon_pending_io, alectryon_pending_mref))
         for node in list(self.document.findall(io_or_mref)):
             if isinstance(node, alectryon_pending_io):
                 last_io = node
@@ -668,7 +671,8 @@ class AlectryonPostTransform(OneTimeTransform):
             assert False
 
     def _apply(self, **_kwargs):
-        io_or_quote = lambda n: isinstance(n, (alectryon_pending_io, alectryon_pending_quote))
+        def io_or_quote(n) -> bool:
+            return isinstance(n, (alectryon_pending_io, alectryon_pending_quote))
         all_pending = by_lang(self.document.findall(io_or_quote))
         fmt, generator = self.init_generator() # Init once so gensym is shared
         for lang, pending_nodes in all_pending.items():
