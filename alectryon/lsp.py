@@ -416,15 +416,17 @@ class LSPDocument(EncodedDocument):
     @overload
     @staticmethod
     def _map_index(i: int) -> int: ...
+    @overload
+    @staticmethod
+    def _map_index(i: None) -> None: ...
 
     @staticmethod
-    def _map_index(i: int | slice) -> int | slice:
-        if isinstance(i, int):
-            return i * 2
+    def _map_index(i: int | slice | None) -> int | slice | None:
         if isinstance(i, slice):
             assert i.step in (1, None)
-            i.indices
-            return slice(i.start * 2, i.stop * 2 if i.stop is not None else None)
+            return slice(LSPDocument._map_index(i.start),
+                         LSPDocument._map_index(i.stop))
+        return i * 2 if i is not None else None
 
     @classmethod
     def _slice(cls, s: str, index: slice) -> str:
