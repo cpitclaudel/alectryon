@@ -46,10 +46,8 @@ class StepForwardNotification(LSPClientNotification):
     def params(self):
         return { "textDocument": { "uri": self.uri, "version": 0 } }
 
-    def process_message(self, message: LSPServerMessage) -> None:
-        super().process_message(message)
-        if not isinstance(message, LSPServerNotification):
-            return
+    def process_notification(self, message: LSPServerNotification):
+        super().process_notification(message)
         if message.method == Notifications.PROOF_VIEW:
             self.proof_view = message.params
         elif message.method == Notifications.BLOCK_ON_ERROR:
