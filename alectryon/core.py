@@ -539,7 +539,7 @@ class StderrObserver(Observer):
     def _notify(self, n: Notification):
         header = n.location.as_header() if n.location else "!!"
         message = n.message.rstrip().replace("\n", "\n   ")
-        level_name = {1: "INFO", 2: "WARNING", 3: "ERROR"}.get(n.level, "??")
+        level_name = {0: "DEBUG", 1: "INFO", 2: "WARNING", 3: "ERROR", 4: "SEVERE"}.get(n.level, "??")
         sys.stderr.write("{} ({}/{}) {}\n".format(header, level_name, n.level, message))
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")

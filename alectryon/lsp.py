@@ -25,7 +25,6 @@ import os
 import re
 import dataclasses
 from pathlib import Path
-from subprocess import Popen
 
 from alectryon.transforms import coalesce_text
 
@@ -103,9 +102,16 @@ class LSPClientQuery(LSPClientMessage):
     def params(self) -> dict[str, Any]:
         return {}
 
+    def process_notification(self, message: "LSPServerNotification"):
+        if message.method in (LSPServerNotifications.SHOW_MESSAGE,
+                              LSPServerNotifications.LOG_MESSAGE):
+            LSPMessage.of_json(message.params).notify(self.client.driver.observer)
+
     def process_message(self, message: LSPServerMessage):
         if isinstance(message, LSPServerRequest):
             LSPClientMethodNotFoundError(self.client, message.idx).send()
+        elif isinstance(message, LSPServerNotification):
+            self.process_notification(message)
 
     def json(self) -> JSON:
         """Serialize this query."""
@@ -182,6 +188,8 @@ class LSPServerNotification(LSPServerMessage):
 
 class LSPServerNotifications:
     PUBLISH_DIAGNOSTICS = "textDocument/publishDiagnostics"
+    SHOW_MESSAGE = "window/showMessage"
+    LOG_MESSAGE = "window/logMessage"
 
 @dataclasses.dataclass
 class LSPServerResponse(LSPServerMessage):
@@ -343,7 +351,7 @@ class LSPClientExitNotification(LSPClientNotification):
 
 @dataclasses.dataclass(frozen=True)
 class LSPDiagnostic:
-    SEVERITY_LEVELS: ClassVar[dict[int, int]] = { 1: 3, 2: 2, 3: 1, 4: 1 }
+    SEVERITY_LEVELS: ClassVar[dict[int, int]] = { 1: 3, 2: 2, 3: 1, 4: 0, 5: 0 }
 
     fpath: str
     range: Range
@@ -360,6 +368,19 @@ class LSPDiagnostic:
     def notify(self, obs: Observer, details: Optional[str]=""):
         level = self.SEVERITY_LEVELS[self.severity]
         obs.notify(None, self.message + (details or ""), self.range, level=level)
+
+@dataclasses.dataclass(frozen=True)
+class LSPMessage:
+    message: str
+    severity: int
+
+    @staticmethod
+    def of_json(js: JSON):
+        return LSPMessage(js["message"], js["type"])
+
+    def notify(self, obs: Observer):
+        level = LSPDiagnostic.SEVERITY_LEVELS[self.severity]
+        obs.notify(None, self.message, None, level=level)
 
 class LSPClient:
     LANGUAGE_ID: ClassVar[str]
