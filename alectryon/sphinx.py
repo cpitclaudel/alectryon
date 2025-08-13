@@ -32,24 +32,25 @@ from .pygments import LatexFormatter
 # Setup
 # =====
 
-# FIXME: Test
-
-def register_source_suffixes(app: "Sphinx", lang: str, markup: str):
-    for markup_ext in core.EXTENSIONS_BY_MARKUP[markup]:
-        for lang_ext in core.EXTENSIONS_BY_LANGUAGE[lang]:
-            suffix = "{}{}".format(markup_ext, lang_ext)
-            app.add_source_suffix(suffix, lang, override=True)
+def register_source_suffixes(app: "Sphinx", parser: docutils.PARSER_TYPES):
+    for markup_ext in core.EXTENSIONS_BY_MARKUP[parser.MARKUP]:
+        for lang_ext in core.EXTENSIONS_BY_LANGUAGE[parser.LANG]:
+            dot_suffix = markup_ext + lang_ext # .md.v
+            und_suffix = markup_ext.replace(".", "_") + lang_ext # _md.v
+            for suffix in [dot_suffix, und_suffix]:
+                for supported in parser.supported:
+                    app.add_source_suffix(suffix, supported, override=True)
 
 def register_default_source_suffixes(app: "Sphinx"):
     for lang, lang_exts in core.EXTENSIONS_BY_LANGUAGE.items():
+        supported = "{}+{}".format(lang, core.DEFAULT_MARKUP)
         for suffix in lang_exts:
-            supported = "{}+{}".format(lang, core.DEFAULT_MARKUP)
             app.add_source_suffix(suffix, supported, override=True)
 
 def register_code_parsers(app: "Sphinx"):
     for parser in docutils.CUSTOM_PARSERS.values():
         app.add_source_parser(parser)
-        register_source_suffixes(app, parser.LANG, parser.MARKUP)
+        register_source_suffixes(app, parser)
     register_default_source_suffixes(app)
 
 def add_assets(app: "Sphinx"):
