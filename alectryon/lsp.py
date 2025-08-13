@@ -493,5 +493,6 @@ class LSPDriver(PopenDriver, Generic[T]):
                 fragments = api.partition(document)
                 return list(document.recover_chunks(coalesce_text(fragments)))
             except LSPServerException as e:
-                api.observer.notify(None, str(e), Position(api.fpath, 1, 0).as_range(), level=3)
+                msg = f"LSP Server exception: {e}"
+                api.observer.notify(None, msg, Position(api.fpath, 1, 0).as_range(), level=3)
                 return [[Text(c)] for c in chunks]
