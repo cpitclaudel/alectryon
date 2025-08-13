@@ -25,9 +25,6 @@ import dataclasses
 from .core import Document, Fragment, Goal, Hypothesis, Message, Position, Positioned, Range, Sentence, must
 from .lsp import LSPDocument, LSPClient, LSPClientRequest, LSPDriver
 
-class Requests:
-    GOALS = "proof/goals"
-
 @dataclasses.dataclass
 class CoqGetDocumentRequest(LSPClientRequest):
     METHOD = "coq/getDocument"
