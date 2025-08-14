@@ -1,67 +1,72 @@
 # Configuration file for the Sphinx documentation builder.
+#
+# For the full list of built-in configuration values, see the documentation:
+# https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Path setup --------------------------------------------------------------
-
-import os
 import sys
-sys.path.insert(0, os.path.abspath('../../'))
+from pathlib import Path
+from importlib.util import find_spec
+sys.path.insert(0, str(Path('../../').resolve())) # Add Alectryon to path
 
 # -- Project information -----------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'alectryon-demo'
-copyright = '2019-2021, Clément Pit-Claudel'
+copyright = '2019-2025, Clément Pit-Claudel'
 author = 'Clément Pit-Claudel'
 today = " "
 
-# -- General configuration ---------------------------------------------------
-
-extensions = ["alectryon.sphinx", "sphinx.ext.mathjax"]
-
-try:
-    import myst_parser
-    extensions.append("myst_parser")
-except ImportError:
-    print("/!\\ `myst_parser` not found, skipping MyST tests /!\\", file=sys.stderr)
-myst_enable_extensions = ["dollarmath"]
-
-pygments_style = "emacs"
-
-# -- Options for HTML output -------------------------------------------------
+# -- Sphinx configuration ----------------------------------------------------
 
 html_theme = 'alabaster'
 html_static_path = ['_static']
 
+pygments_style = "emacs"
+
+myst_enable_extensions = ["dollarmath"]
+
 # -- Alectryon configuration -------------------------------------------------
+
+if find_spec("myst_parser"):
+    # Import Alectryon and turn on Markdown and math support
+    extensions = ["alectryon.sphinx", "myst_parser", "sphinx.ext.mathjax"]
+else:
+    # Skip Markdown files if ``myst_parser`` isn't available
+    extensions = ["alectryon.sphinx", "sphinx.ext.mathjax"]
+    print("/!\\ `myst_parser` not found, skipping MyST tests /!\\", file=sys.stderr)
 
 import alectryon.docutils
 alectryon.docutils.CACHE_DIRECTORY = "_build/alectryon/"
 
-# -- MathJax configuration ---------------------------------------------------
+# Change the following lines to adjust the default Markup language or driver:
 
-import sphinx
+from alectryon import core
+core.DEFAULT_MARKUP = core.DEFAULT_MARKUP # Change to "md" or "rst"
+core.DEFAULT_DRIVERS["coq"] = core.DEFAULT_DRIVERS["coq"] # Change to "coqlsp" or "vsrocq"
+
+# -- MathJax configuration ---------------------------------------------------
+# This configuration is explained in recipes/mathjax.rst
+
 from sphinx.ext import mathjax
 mathjax.MATHJAX_URL = alectryon.docutils.HtmlTranslator.MATHJAX_URL # MathJax 3
 
-# This configuration is explained in recipes/mathjax.rst
-# Use either this (Sphinx ≥ 4.0 only):
+# If you want to use MathJax to postprocess Alectryon's output (not just to
+# include math in your pages), you need a special MathJax config.  You have
+# three options:
+
+# 1. Inline your config in every generated file.  In that case, replace
+#    ``Path(…).read_text()`` below with the file's contents:
+
+html_js_files = [(None, { "body": Path("_static/mathjax_config.js").read_text(),
+                       "priority": 1000 } )]
+
+# 2. Put your MathJax config in a separate file in ``_static/``:
 
 html_js_files = ['mathjax_config.js']
 mathjax_options = { "priority": 1000 }
 
-# or this (but inline the configuration instead of Path(…).read_text()):
+# 3. Configure MathJax by hand in each source file.  In that case, include your
+#    MathJax configuration in an inline ``<script>`` block in your document in
+#    addition to the setting below.
 
-from pathlib import Path
-html_js_files = [
-    (None, {
-        "body": Path("_static/mathjax_config.js").read_text(),
-        # The required priority depends on the version of Sphinx
-        "priority": 0 if sphinx.version_info < (4,) else 1000
-    })
-]
-
-# or this:
-
-priority = 0 if sphinx.version_info < (4,) else 1000
-html_js_files = [('mathjax_config.js',
-                  # The required priority depends on the version of Sphinx
-                  { "priority": 0 if sphinx.version_info < (4,) else 1000 })]
+mathjax_loading_method = "defer"
