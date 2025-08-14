@@ -37,6 +37,7 @@ class Lean4(CLIDriver):
 
     ID = "leanInk"
     LANGUAGE = "lean4"
+    AUTOSELECT = True
 
     CLI_ARGS = ("analyze",)
 

@@ -74,6 +74,7 @@ class Lean3(REPLDriver):
 
     ID = "lean3_repl"
     LANGUAGE = "lean3"
+    AUTOSELECT = False
 
     TACTIC_CONTAINERS = ["begin", "{", "by"]
     TACTIC_NODES = ["tactic", "<|>", ";"]

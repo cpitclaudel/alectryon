@@ -34,6 +34,7 @@ class CoqcTime(CLIDriver):
 
     ID = "coqc_time"
     LANGUAGE = "coq"
+    AUTOSELECT = False
 
     COQ_TIME_RE = re.compile(r"^Chars (?P<beg>[0-9]+) - (?P<end>[0-9]+) ",
                              re.MULTILINE)
