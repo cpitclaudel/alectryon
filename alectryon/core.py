@@ -28,7 +28,7 @@ from importlib import import_module
 from pathlib import Path
 from shlex import quote
 from shutil import which
-from subprocess import PIPE
+from subprocess import PIPE, CompletedProcess
 import os
 import re
 import subprocess
@@ -382,7 +382,7 @@ class Document:
             yield Positioned(beg, end, item)
 
     @classmethod
-    def split_fragment(cls, fr: Fragment, cutoff):
+    def split_fragment(cls, fr: Fragment, cutoff: int):
         """Split `fr` at position `cutoff`.
 
         >>> TextDocument.split_fragment(Text("abcxyz"), 3)
@@ -547,11 +547,12 @@ PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
 class Driver():
     ID: ClassVar[str]
+    LANGUAGE: ClassVar[str | None]
 
     def __init__(self, args: Tuple[str, ...]=(), fpath: str="-"):
         self.observer: Observer = StderrObserver()
-        self.fpath = Path(fpath)
-        self.user_args = args
+        self.fpath: Path = Path(fpath)
+        self.user_args: Tuple[str, ...] = args
 
     @classmethod
     def autoselect(cls) -> bool:
@@ -580,10 +581,10 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
     NAME: ClassVar[str]
     AUTOSELECT: ClassVar[bool]
 
-    CLI_ARGS: Tuple[str, ...] = ()
-    VERSION_ARGS: Tuple[str, ...] = ("--version",)
+    CLI_ARGS: ClassVar[Tuple[str, ...]] = ()
+    VERSION_ARGS: ClassVar[Tuple[str, ...]] = ("--version",)
 
-    CLI_ENCODING = "utf-8"
+    CLI_ENCODING: ClassVar[str] = "utf-8"
 
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args, fpath)
@@ -613,7 +614,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         debug(" ".join(quote(s) for s in cmd), '# ')
 
     @classmethod
-    def _proc_out(cls, p):
+    def _proc_out(cls, p: CompletedProcess[str]) -> str:
         return p.stderr
 
     def run_cli(self, working_directory=None, capture_output=True, more_args=()):
@@ -631,7 +632,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         return p.stdout
 
 class PopenDriver(CLIDriver): # pylint: disable=abstract-method
-    REPL_ARGS: Tuple[str, ...] = ()
+    REPL_ARGS: ClassVar[Tuple[str, ...]] = ()
     REPL_ENCODING = None
 
     def __init__(self, args=(), fpath="-", binpath=None):
@@ -753,9 +754,9 @@ EXTENSIONS_BY_MARKUP = {
 assert EXTENSIONS_BY_MARKUP.keys() == ALL_MARKUPS
 
 DEFAULT_MARKUP = "rst"
-"""The default markup, assumed when the extension of a file doesn't allow us to guess."""
+"""The default markup, assumed when the suffix of a file name doesn't allow us to guess."""
 
-def resolve_driver(input_language, driver_name):
+def resolve_driver(input_language: str, driver_name: str) -> type[Driver]:
     if input_language not in DRIVERS_BY_LANGUAGE:
         raise ValueError("Unknown language: {}".format(input_language))
     known_drivers = DRIVERS_BY_LANGUAGE[input_language]
@@ -772,7 +773,7 @@ class DriverConfig:
     driver_args: dict[str, tuple[str, ...]]
     used: bool = False
 
-    def init_driver(self, fpath):
+    def init_driver(self, fpath: str) -> Driver:
         self.used = True
         name = self.drivers[self.lang]
         args = self.driver_args.get(name, ())
