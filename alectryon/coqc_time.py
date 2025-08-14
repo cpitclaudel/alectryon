@@ -42,7 +42,7 @@ class CoqcTime(CLIDriver):
     def _find_sentences(self, document: UTF8Document):
         with tempfile.TemporaryDirectory(prefix="alectryon_coqc-time") as wd:
             source = Path(wd) / CoqIdents.topfile_of_fpath(self.fpath)
-            source.write(document.str)
+            source.write_text(document.str)
             stdout = self.run_cli(more_args=[str(source)])
         for m in self.COQ_TIME_RE.finditer(stdout):
             beg, end = int(m.group("beg")), int(m.group("end"))
