@@ -21,7 +21,8 @@
 from typing import Any, ClassVar, DefaultDict, Dict, Generic, Iterable, IO, List, \
     NamedTuple, NoReturn, Optional, Tuple, TypeVar, Union
 
-from collections import deque, namedtuple, defaultdict
+from collections import UserDict, deque, namedtuple, defaultdict
+from dataclasses import dataclass
 from contextlib import contextmanager
 from importlib import import_module
 from pathlib import Path
@@ -552,6 +553,11 @@ class Driver():
         self.fpath = Path(fpath)
         self.user_args = args
 
+    @classmethod
+    def autoselect(cls) -> bool:
+        """Check whether this driver may be auto-selected and can be used."""
+        return False
+
     @property
     def metadata(self):
         return {"args": self.user_args}
@@ -572,6 +578,7 @@ class Driver():
 class CLIDriver(Driver): # pylint: disable=abstract-method
     BIN: ClassVar[str]
     NAME: ClassVar[str]
+    AUTOSELECT: ClassVar[bool]
 
     CLI_ARGS: Tuple[str, ...] = ()
     VERSION_ARGS: Tuple[str, ...] = ("--version",)
@@ -581,6 +588,10 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args, fpath)
         self.binpath: str = binpath or self.BIN
+
+    @classmethod
+    def autoselect(cls) -> bool:
+        return cls.AUTOSELECT and (which(cls.BIN) is not None)
 
     def version_info(self) -> DriverInfo:
         bs = subprocess.check_output([self.resolve_driver(), *self.VERSION_ARGS])
@@ -704,10 +715,23 @@ Keys in the driver dictionary are driver names; values are pairs of module names
 and class names.  In other words, each driver is a class within a module.
 """
 
+class DriverDict(UserDict[str, str]): # UserDict needed for proper ``copy`` behavior
+    """Subclass of ``dict`` for loading Alectryon drivers on demand."""
+    def __missing__(self, lang: str):
+        """Find the first available driver in ``DRIVERS_BY_LANGUAGE``.
+        If none can be found, return the first driver."""
+        all_drivers = DRIVERS_BY_LANGUAGE[lang]
+        for driver in all_drivers:
+            debug(f"autoselect: Trying to select {driver} for {lang}", prefix="# ")
+            if resolve_driver(lang, driver).autoselect():
+                self[lang] = driver
+                return driver
+        return next(iter(all_drivers)) # Return first if none is available (for better error messages)
+
 ALL_MARKUPS = {"md", "rst"}
 ALL_LANGUAGES = DRIVERS_BY_LANGUAGE.keys()
 ALL_DRIVERS = {d for ds in DRIVERS_BY_LANGUAGE.values() for d in ds}
-DEFAULT_DRIVERS = {lang: next(iter(drivers)) for lang, drivers in DRIVERS_BY_LANGUAGE.items()}
+DEFAULT_DRIVERS = DriverDict()
 
 EXTENSIONS_BY_LANGUAGE = {
     "coq": (".v",),
@@ -741,16 +765,18 @@ def resolve_driver(input_language, driver_name):
     mod, cls = known_drivers[driver_name]
     return getattr(import_module(mod, __package__), cls)
 
+@dataclass
 class DriverConfig:
-    def __init__(self, lang, language_drivers, driver_args_by_name):
-        self.lang = lang
-        self.name = language_drivers.get(lang)
-        self.args = driver_args_by_name.get(self.name, ())
-        self.used = False
+    lang: str
+    drivers: dict[str, str]
+    driver_args: dict[str, tuple[str, ...]]
+    used: bool = False
 
     def init_driver(self, fpath):
         self.used = True
-        driver_cls = resolve_driver(self.lang, self.name)
+        name = self.drivers[self.lang]
+        args = self.driver_args.get(name, ())
+        driver_cls = resolve_driver(self.lang, name)
         assert self.lang == driver_cls.LANGUAGE
-        assert self.name == driver_cls.ID
-        return driver_cls(self.args, fpath=fpath)
+        assert name == driver_cls.ID
+        return driver_cls(args, fpath=fpath)

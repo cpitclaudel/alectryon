@@ -51,6 +51,7 @@ class SerAPI(REPLDriver):
 
     ID = "sertop"
     LANGUAGE = "coq"
+    AUTOSELECT = True
 
     # Whether to silently continue past unexpected output
     EXPECT_UNEXPECTED: bool = False

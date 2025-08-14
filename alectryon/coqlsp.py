@@ -110,6 +110,7 @@ class CoqLSP(LSPDriver[CoqLSPClient]):
 
     ID = "coqlsp"
     LANGUAGE = "coq"
+    AUTOSELECT = True
 
     CLIENT = CoqLSPClient
 

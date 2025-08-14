@@ -243,6 +243,7 @@ class VsRocq(LSPDriver[VsRocqClient]):
 
     ID = "vsrocq"
     LANGUAGE = "coq"
+    AUTOSELECT = True
 
     CLIENT = VsRocqClient
 

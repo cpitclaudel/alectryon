@@ -865,10 +865,10 @@ def post_process_arguments(parser, args):
         "latex": args.latex_dialect
     }
 
-    args.language_drivers = {
-        language: getattr(args, "{}_driver".format(language))
-        for language in core.ALL_LANGUAGES
-    }
+    args.language_drivers = core.DEFAULT_DRIVERS.copy()
+    for lang in core.ALL_LANGUAGES:
+        if driver := getattr(args, "{}_driver".format(lang)):
+            args.language_drivers[lang] = driver
 
     coq_args = []
     for (dirpath,) in args.coq_args_I:
@@ -944,8 +944,7 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
         DRIVER_HELP = "Choose which driver to use to execute {} proofs.".format(language)
         DRIVER_CHOICES = sorted(drivers)
         in_.add_argument("--{}-driver".format(language),
-                         default=core.DEFAULT_DRIVERS[language],
-                         choices=DRIVER_CHOICES, help=DRIVER_HELP)
+                         default=None, choices=DRIVER_CHOICES, help=DRIVER_HELP)
 
     out = parser.add_argument_group("Output configuration")
 

@@ -31,7 +31,8 @@ class DafnyLSP(LSPDriver):
     VERSION_ARGS = ()
 
     ID = "dafny_lsp"
-    LSP_LANGUAGE_ID = LANGUAGE = "dafny"
+    LANGUAGE = "dafny"
+    AUTOSELECT = True
 
     LSP_TYPE_MAP: Dict[Tuple[str, ...], str] = {
         **LSPDriver.LSP_TYPE_MAP,
