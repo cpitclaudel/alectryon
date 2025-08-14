@@ -6,6 +6,10 @@ This example shows how to combine Alectryon with MathJax.  We'll do a pretty-pri
 
    alectryon mathjax.rst # reST → HTML; produces ‘mathjax.html’
 
+.. note::
+
+   This is only relevant if you want to use MathJax to postprocess Alectryon goals and messages.  You don't need this if you just want to use the `:math:` role of reStructuredText.
+
 First, we start with a definition of ``sum``:
 
 .. coq::
@@ -108,7 +112,7 @@ And finally we write the actual proofs:
 Configuring MathJax
 ===================
 
-MathJax needs to be configured before it is loaded.  This makes configuring it particularly tricky when you don't have full control on the generated webpage.
+MathJax needs to be configured before it is loaded.  This is tricky when you don't have full control on the generated webpage.
 
 - If you're using Docutils directly through Alectryon's command line, MathJax is loaded with the ``defer`` flag, so you can include a ``<script>`` block with your `MathJax config <https://docs.mathjax.org/en/latest/web/configuration.html>`__ anywhere in the document: use a ``.. raw:: html`` directive, like this::
 
@@ -118,7 +122,7 @@ MathJax needs to be configured before it is loaded.  This makes configuring it p
           MathJax = { options: { … } };
         </script>
 
-- If you're using Sphinx, MathJax is loaded with the `async` flag (see `this issue <https://github.com/sphinx-doc/sphinx/issues/9450>`__), so there's a race condition and you can't depend on your configuration being processed early: you need to move the config to a separate file, or use the ``mathjax3_config`` option of Sphinx if does enough for your needs.  See the tricks in ``recipes/sphinx/conf.py``.
+- If you're using Sphinx, MathJax is loaded with the `async` flag (see `this issue <https://github.com/sphinx-doc/sphinx/issues/9450>`__), so you must either use the ``mathjax3_config`` option of Sphinx if does enough for your needs, or move your config to a separate JS file loaded before MathJax, or set the ``mathjax_loading_method`` option of Sphinx to ``"defer"``.  See the example in ``recipes/sphinx/conf.py``.
 
 - For other processors like Pelican, you need to either move your configuration to a separate file and make sure that it is loaded first, as in Sphinx, or find a way to defer ``MathJax``.  The following usually works::
 
@@ -147,8 +151,8 @@ Instead of adding explicit ``mathjax_process`` classes on each math element, you
 
 3. Ensure that these definitions are processed *before* MathJax itself is loaded, since it's not easy to `reconfigure MathJax after loading it <http://docs.mathjax.org/en/latest/web/configuration.html#configuring-mathjax-after-it-is-loaded>`__.  Concretely, this means either adding ``defer`` to the MathJax ``<script>`` tag, moving the configuration to a separate script loaded before MathJax, or moving the MathJax ``<script>`` to the end of the file (past the configuration above).
 
-   The problem is that docutils automatically inserts the MathJax ``<script>`` tag for you if you use some math in the document, so you don't have much control over it (if you don't have any ``:math:`` roles then there's no problem: you can include the MathJax script yourself as explained in the previous section).
+   The problem is that Docutils automatically inserts the MathJax ``<script>`` tag for you if you use some math in the document, so you don't have much control over it (if you don't have any ``:math:`` roles then there's no problem: you can include the MathJax script yourself as explained in the previous section).
 
-Alectryon already configures docutils to load MathJax with the ``defer`` option, so the steps above should work reliably when using Alectryon in standalone mode (point [3.] is already taken care of).
+Alectryon's docutils module already configures docutils to load MathJax with the ``defer`` option, so the steps above should work reliably when using Alectryon in standalone mode (point [3.] is already taken care of).
 
-Sphinx loads MathJax in ``async`` mode by default, so the above won't work reliably, and the ``mathjax3_config`` option is not always enough (it does not let you customize the ``pageReady`` function; see `Sphinx issue 9450 <https://github.com/sphinx-doc/sphinx/issues/9450>`__).  Instead, put the configuration above in a separate script and include it in ``html_js_files`` with sufficiently low priority (must be < 500).  See `<sphinx/conf.py>`__ and `<sphinx/_static/mathjax_config.js>`__ for an example (you can also inline the body of the script directly in ``conf.py``).
+Sphinx loads MathJax in ``async`` mode by default, so the above won't work reliably, and the ``mathjax3_config`` option is not always enough (it does not let you customize the ``pageReady`` function; see `Sphinx issue 9450 <https://github.com/sphinx-doc/sphinx/issues/9450>`__).  Instead, either put the configuration above in a separate script and include it in ``html_js_files``, or set ``mathjax_loading_method`` to ``"defer"``   See `<sphinx/conf.py>`__ and `<sphinx/_static/mathjax_config.js>`__ for an example (you can also inline the body of the script directly in ``conf.py``).

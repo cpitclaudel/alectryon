@@ -22,6 +22,10 @@
 <pre class="literal-block">
 alectryon mathjax.rst # reST → HTML; produces ‘mathjax.html’
 </pre>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is only relevant if you want to use MathJax to postprocess Alectryon goals and messages.  You don't need this if you just want to use the <code class="highlight coq"><span class="o">:</span><span class="n">math</span><span class="o">:</span></code> role of reStructuredText.</p>
+</div>
 <p>First, we start with a definition of <tt class="docutils literal">sum</tt>:</p>
 <pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="mathjax-rst-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="mathjax-rst-chk0"><span class="kn">Require Import</span> PeanoNat ArithRing.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">[Loading ML file ring_plugin.cmxs (<span class="nb">using</span> legacy method) ... <span class="bp">done</span>]</blockquote></div></div></small><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
@@ -101,7 +105,7 @@ alectryon mathjax.rst # reST → HTML; produces ‘mathjax.html’
 </span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">ring</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><div class="section" id="configuring-mathjax">
 <h1>Configuring MathJax</h1>
-<p>MathJax needs to be configured before it is loaded.  This makes configuring it particularly tricky when you don't have full control on the generated webpage.</p>
+<p>MathJax needs to be configured before it is loaded.  This is tricky when you don't have full control on the generated webpage.</p>
 <ul>
 <li><p class="first">If you're using Docutils directly through Alectryon's command line, MathJax is loaded with the <tt class="docutils literal">defer</tt> flag, so you can include a <tt class="docutils literal">&lt;script&gt;</tt> block with your <a class="reference external" href="https://docs.mathjax.org/en/latest/web/configuration.html">MathJax config</a> anywhere in the document: use a <tt class="docutils literal">.. raw:: html</tt> directive, like this:</p>
 <pre class="literal-block">
@@ -112,7 +116,7 @@ alectryon mathjax.rst # reST → HTML; produces ‘mathjax.html’
    &lt;/script&gt;
 </pre>
 </li>
-<li><p class="first">If you're using Sphinx, MathJax is loaded with the <code class="highlight coq"><span class="n">async</span></code> flag (see <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/9450">this issue</a>), so there's a race condition and you can't depend on your configuration being processed early: you need to move the config to a separate file, or use the <tt class="docutils literal">mathjax3_config</tt> option of Sphinx if does enough for your needs.  See the tricks in <tt class="docutils literal">recipes/sphinx/conf.py</tt>.</p>
+<li><p class="first">If you're using Sphinx, MathJax is loaded with the <code class="highlight coq"><span class="n">async</span></code> flag (see <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/9450">this issue</a>), so you must either use the <tt class="docutils literal">mathjax3_config</tt> option of Sphinx if does enough for your needs, or move your config to a separate JS file loaded before MathJax, or set the <tt class="docutils literal">mathjax_loading_method</tt> option of Sphinx to <tt class="docutils literal">&quot;defer&quot;</tt>.  See the example in <tt class="docutils literal">recipes/sphinx/conf.py</tt>.</p>
 </li>
 <li><p class="first">For other processors like Pelican, you need to either move your configuration to a separate file and make sure that it is loaded first, as in Sphinx, or find a way to defer <tt class="docutils literal">MathJax</tt>.  The following usually works:</p>
 <pre class="literal-block">
@@ -143,11 +147,11 @@ MathJax.startup = {
 </pre>
 </li>
 <li><p class="first">Ensure that these definitions are processed <em>before</em> MathJax itself is loaded, since it's not easy to <a class="reference external" href="http://docs.mathjax.org/en/latest/web/configuration.html#configuring-mathjax-after-it-is-loaded">reconfigure MathJax after loading it</a>.  Concretely, this means either adding <tt class="docutils literal">defer</tt> to the MathJax <tt class="docutils literal">&lt;script&gt;</tt> tag, moving the configuration to a separate script loaded before MathJax, or moving the MathJax <tt class="docutils literal">&lt;script&gt;</tt> to the end of the file (past the configuration above).</p>
-<p>The problem is that docutils automatically inserts the MathJax <tt class="docutils literal">&lt;script&gt;</tt> tag for you if you use some math in the document, so you don't have much control over it (if you don't have any <tt class="docutils literal">:math:</tt> roles then there's no problem: you can include the MathJax script yourself as explained in the previous section).</p>
+<p>The problem is that Docutils automatically inserts the MathJax <tt class="docutils literal">&lt;script&gt;</tt> tag for you if you use some math in the document, so you don't have much control over it (if you don't have any <tt class="docutils literal">:math:</tt> roles then there's no problem: you can include the MathJax script yourself as explained in the previous section).</p>
 </li>
 </ol>
-<p>Alectryon already configures docutils to load MathJax with the <tt class="docutils literal">defer</tt> option, so the steps above should work reliably when using Alectryon in standalone mode (point [3.] is already taken care of).</p>
-<p>Sphinx loads MathJax in <tt class="docutils literal">async</tt> mode by default, so the above won't work reliably, and the <tt class="docutils literal">mathjax3_config</tt> option is not always enough (it does not let you customize the <tt class="docutils literal">pageReady</tt> function; see <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/9450">Sphinx issue 9450</a>).  Instead, put the configuration above in a separate script and include it in <tt class="docutils literal">html_js_files</tt> with sufficiently low priority (must be &lt; 500).  See <a class="reference external" href="sphinx/conf.py">sphinx/conf.py</a> and <a class="reference external" href="sphinx/_static/mathjax_config.js">sphinx/_static/mathjax_config.js</a> for an example (you can also inline the body of the script directly in <tt class="docutils literal">conf.py</tt>).</p>
+<p>Alectryon's docutils module already configures docutils to load MathJax with the <tt class="docutils literal">defer</tt> option, so the steps above should work reliably when using Alectryon in standalone mode (point [3.] is already taken care of).</p>
+<p>Sphinx loads MathJax in <tt class="docutils literal">async</tt> mode by default, so the above won't work reliably, and the <tt class="docutils literal">mathjax3_config</tt> option is not always enough (it does not let you customize the <tt class="docutils literal">pageReady</tt> function; see <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/9450">Sphinx issue 9450</a>).  Instead, either put the configuration above in a separate script and include it in <tt class="docutils literal">html_js_files</tt>, or set <tt class="docutils literal">mathjax_loading_method</tt> to <tt class="docutils literal">&quot;defer&quot;</tt>   See <a class="reference external" href="sphinx/conf.py">sphinx/conf.py</a> and <a class="reference external" href="sphinx/_static/mathjax_config.js">sphinx/_static/mathjax_config.js</a> for an example (you can also inline the body of the script directly in <tt class="docutils literal">conf.py</tt>).</p>
 </div>
 </div>
 </div></body>

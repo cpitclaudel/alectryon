@@ -11,6 +11,8 @@ Welcome to alectryon-demo's documentation!
    :caption: Contents:
 
    coqchapter
+   literate1
+   literate2
    math
    MyST
 

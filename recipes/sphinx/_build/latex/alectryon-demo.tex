@@ -112,6 +112,58 @@
 \sphinxstepscope
 
 
+\chapter{Explicit rst}
+\label{\detokenize{literate1:explicit-rst}}\label{\detokenize{literate1::doc}}
+\sphinxAtStartPar
+Files ending in \sphinxcode{\sphinxupquote{\_rst.v}} are processed as reStructuredText regardless of the \sphinxcode{\sphinxupquote{DEFAULT\_MARKUP}} setting:
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Compute}~\PYG{o}{((}\PYG{k}{fun}~\PYG{o}{(}\PYG{+nv}{n}\PYG{o}{:}~nat\PYG{o}{)}~\PYG{o}{(}\PYG{+nv}{opt}\PYG{o}{:}~option~nat\PYG{o}{)}~\PYG{o}{(}\PYG{+nv}{eq}\PYG{o}{:}~opt~\PYG{o}{=}~Some~n\PYG{o}{)}~\PYG{o}{=\PYGZgt{}}~n\PYG{o}{)}\Al{nl}
+      ~~~~~~~~~~~\PYGZus{}~\PYG{o}{(}Some~\PYG{l+m+mi}{3}\PYG{o}{)}~eq\PYGZus{}refl\PYG{o}{).}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PYG{o}{=}~\PYG{l+m+mi}{3}\Al{nl}
+          \PYG{o}{:}~nat
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+\sphinxstepscope
+
+
+\chapter{Explicit Markdown}
+\label{\detokenize{literate2:explicit-markdown}}\label{\detokenize{literate2::doc}}
+\sphinxAtStartPar
+Files ending in \sphinxcode{\sphinxupquote{\_md.v}} are processed as Markdown regardless of the \sphinxcode{\sphinxupquote{DEFAULT\_MARKUP}} setting:
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Compute}~\PYG{o}{((}\PYG{k}{fun}~\PYG{o}{(}\PYG{+nv}{n}\PYG{o}{:}~nat\PYG{o}{)}~\PYG{o}{(}\PYG{+nv}{opt}\PYG{o}{:}~option~nat\PYG{o}{)}~\PYG{o}{(}\PYG{+nv}{eq}\PYG{o}{:}~opt~\PYG{o}{=}~Some~n\PYG{o}{)}~\PYG{o}{=\PYGZgt{}}~n\PYG{o}{)}\Al{nl}
+      ~~~~~~~~~~~\PYGZus{}~\PYG{o}{(}Some~\PYG{l+m+mi}{3}\PYG{o}{)}~eq\PYGZus{}refl\PYG{o}{).}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PYG{o}{=}~\PYG{l+m+mi}{3}\Al{nl}
+          \PYG{o}{:}~nat
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+\sphinxstepscope
+
+
 \chapter{MathJax in Sphinx}
 \label{\detokenize{math:mathjax-in-sphinx}}\label{\detokenize{math::doc}}
 \sphinxAtStartPar
