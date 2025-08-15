@@ -18,12 +18,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, ClassVar, Dict, Generic, Iterable, Optional, Self, Type, TypeVar, overload
+from typing import IO, Any, ClassVar, Dict, Generic, Iterable, Optional, Self, Type, TypeVar, overload
 
 import json
 import os
 import re
-import dataclasses
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from alectryon.transforms import coalesce_text
@@ -35,7 +35,7 @@ JSON = Dict[str, Any]
 class LSPServerMessage:
     """Base class for all LSP messages"""
     @classmethod
-    def from_json(cls, data: Dict) -> "LSPServerMessage":
+    def from_json(cls, data: JSON) -> "LSPServerMessage":
         idx = data.get("id")
         method = data.get("method")
 
@@ -53,7 +53,7 @@ class LSPServerMessage:
     JRPC_HEADER_RE = re.compile(r"Content-Length: (?P<len>[0-9]+)\r\n")
 
     @staticmethod
-    def from_stream(stream) -> "LSPServerMessage":
+    def from_stream(stream: IO[bytes]) -> "LSPServerMessage":
         """Read and parse an LSP server message from a stream."""
         line, length = None, None
         while line not in ("", "\r\n"):
@@ -78,7 +78,7 @@ class LSPServerMessage:
 
         return LSPServerMessage.from_json(data)
 
-@dataclasses.dataclass
+@dataclass
 class LSPClientMessage:
     client: "LSPClient"
 
@@ -129,11 +129,15 @@ class LSPClientQuery(LSPClientMessage):
         """Check whether this query is done processing server messages."""
         raise NotImplementedError
 
-@dataclasses.dataclass
+@dataclass
 class LSPClientRequest(LSPClientQuery):
+    idx: int = field(init=False)
+    result: Optional[JSON] = field(init=False)
+    _done = field(init=False)
+
     def __post_init__(self):
-        self.idx: int = LSPClientRequest._gensym()
-        self.result: Optional[JSON] = None
+        self.idx = LSPClientRequest._gensym()
+        self.result = None
         self._done = False
 
     GENSYM: ClassVar[int] = -1
@@ -158,14 +162,14 @@ class LSPClientRequest(LSPClientQuery):
     def done(self) -> bool:
         return self._done
 
-@dataclasses.dataclass
+@dataclass
 class LSPServerRequest(LSPServerMessage):
     idx: int
     method: str
     params: dict[str, Any]
 
     @classmethod
-    def from_json(cls, data: Dict) -> "LSPServerRequest":
+    def from_json(cls, data: JSON) -> "Self":
         return cls(data["id"], data["method"], data.get("params", {}))
 
 class LSPClientNotification(LSPClientQuery):
@@ -177,13 +181,13 @@ class LSPClientNotification(LSPClientQuery):
     def done(self) -> bool:
         return True
 
-@dataclasses.dataclass
+@dataclass
 class LSPServerNotification(LSPServerMessage):
     method: str
     params: dict[str, Any]
 
     @classmethod
-    def from_json(cls, data: JSON) -> "LSPServerNotification":
+    def from_json(cls, data: JSON) -> "Self":
         return cls(data["method"], data.get("params", {}))
 
 class LSPServerNotifications:
@@ -191,14 +195,14 @@ class LSPServerNotifications:
     SHOW_MESSAGE = "window/showMessage"
     LOG_MESSAGE = "window/logMessage"
 
-@dataclasses.dataclass
+@dataclass
 class LSPServerResponse(LSPServerMessage):
     def __init__(self, idx: int, result: JSON):
         self.idx = idx
         self.result = result
 
     @classmethod
-    def from_json(cls, data: Dict) -> "Self":
+    def from_json(cls, data: JSON) -> "Self":
         return cls(data["id"], data.get("result", {}))
 
 class LSPClientResponse(LSPClientMessage):
@@ -219,7 +223,7 @@ class LSPServerException(Exception):
         super().__init__(message)
         self.code = code
 
-@dataclasses.dataclass
+@dataclass
 class LSPServerError(LSPServerMessage):
     idx: int
     code: int
@@ -230,11 +234,11 @@ class LSPServerError(LSPServerMessage):
         raise LSPServerException(self.message, self.code)
 
     @classmethod
-    def from_json(cls, data: Dict) -> "LSPServerError":
+    def from_json(cls, data: JSON) -> "Self":
         error_info = data["error"]
         return cls(data["id"], error_info["code"], error_info["message"])
 
-@dataclasses.dataclass
+@dataclass
 class LSPClientError(LSPClientMessage):
     idx: int
     CODE: ClassVar[int]
@@ -257,7 +261,7 @@ class LSPClientMethodNotFoundError(LSPClientError):
 class LSPClientSemanticTokensRequest(LSPClientRequest):
     METHOD = "textDocument/semanticTokens/full"
 
-    TOKEN_TYPES: Dict[str, str] = {
+    TOKEN_TYPES: ClassVar[Dict[str, str]] = {
         "namespace": "Name.Namespace",
         "type": "Keyword.Type",
         "class": "Name.Class",
@@ -287,11 +291,12 @@ class LSPClientSemanticTokensRequest(LSPClientRequest):
         'abstract', 'async', 'modification', 'documentation', 'defaultLibrary'
     }
 
+@dataclass
 class LSPClientInitializeRequest(LSPClientRequest):
     METHOD = "initialize"
 
     CLIENT_NAME = "LSPClient"
-    CAPABILITIES = {
+    CAPABILITIES: ClassVar[JSON] = {
         "workspace": { "configuration": False },
         "textDocument": {
              "workspace": {
@@ -313,7 +318,7 @@ class LSPClientInitializeRequest(LSPClientRequest):
     }
 
     @property
-    def params(self):
+    def params(self) -> JSON:
         return {
             "processId": __import__('os').getpid(),
             "clientInfo": {"name": self.CLIENT_NAME, "version": "1.0.0"},
@@ -322,7 +327,7 @@ class LSPClientInitializeRequest(LSPClientRequest):
         }
 
     @property
-    def driver_info(self):
+    def driver_info(self) -> Optional[DriverInfo]:
         assert self.done
         info = self.result.get("serverInfo")
         return DriverInfo(info["name"], info.get("version", "?")) if info else None
@@ -330,7 +335,7 @@ class LSPClientInitializeRequest(LSPClientRequest):
 class LSPInitializedNotification(LSPClientNotification):
     METHOD = "initialized"
 
-@dataclasses.dataclass
+@dataclass
 class LSPClientDidOpenNotification(LSPClientNotification):
     METHOD = "textDocument/didOpen"
 
@@ -349,7 +354,7 @@ class LSPClientShutdownRequest(LSPClientRequest):
 class LSPClientExitNotification(LSPClientNotification):
     METHOD = "exit"
 
-@dataclasses.dataclass(frozen=True)
+@dataclass(frozen=True)
 class LSPDiagnostic:
     SEVERITY_LEVELS: ClassVar[dict[int, int]] = { 1: 3, 2: 2, 3: 1, 4: 0, 5: 0 }
 
@@ -370,7 +375,7 @@ class LSPDiagnostic:
         level = self.SEVERITY_LEVELS[self.severity]
         obs.notify(None, self.message + (details or ""), self.range, level=level)
 
-@dataclasses.dataclass(frozen=True)
+@dataclass(frozen=True)
 class LSPMessage:
     message: str
     severity: int
@@ -383,11 +388,13 @@ class LSPMessage:
         level = LSPDiagnostic.SEVERITY_LEVELS[self.severity]
         obs.notify(None, self.message, None, level=level)
 
+TClientQuery = TypeVar("TClientQuery", bound=LSPClientQuery)
+
 class LSPClient:
     LANGUAGE_ID: ClassVar[str]
 
-    def __init__(self, driver: "LSPDriver"):
-        self.driver = driver
+    def __init__(self, driver: "LSPDriver[Self]"):
+        self.driver: "LSPDriver[Self]" = driver
         self.driver_info: Optional[DriverInfo] = None
         self.init()
 
@@ -396,6 +403,7 @@ class LSPClient:
         return must(self.driver.repl)
 
     def receive_message(self) -> LSPServerMessage:
+        assert self.repl.stdout
         return LSPServerMessage.from_stream(self.repl.stdout)
 
     def send_message(self, query: LSPClientMessage) -> None:
@@ -404,9 +412,7 @@ class LSPClient:
         self.repl.stdin.write(bs)
         self.repl.stdin.flush()
 
-    T = TypeVar("T", bound=LSPClientQuery)
-
-    def send_and_process(self, query: T) -> T:
+    def send_and_process(self, query: TClientQuery) -> TClientQuery:
         self.send_message(query)
         while not query.done:
             query.process_message(self.receive_message())
