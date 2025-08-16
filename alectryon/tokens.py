@@ -18,42 +18,44 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Any, ClassVar, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, TypeAlias, Union
+
 import bisect
+from dataclasses import dataclass, field
 import warnings
-from typing import Any, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union
 
-class Range(NamedTuple):
-    start: int
-    end: int
+from .core import Document, must
+from .lsp import JSON, LSPClient, LSPClientInitializeRequest, LSPClientRequest, LSPDriver, LSPServerConfig
 
-    @property
-    def slice(self):
-        return slice(self.start, self.end, None)
+Bounds: TypeAlias = "slice[int, int, None]"
+
+LSPTokenMap = dict[tuple[str, ...], str]
 
 class Token(NamedTuple):
-    rng: Range
+    rng: Bounds
     typ: Tuple[str, ...]
 
     def value(self, s: str) -> str:
         # Avoid overrides by calling ``__getitem__`` directly
-        return str.__getitem__(s, self.rng.slice)
+        return str.__getitem__(s, self.rng)
 
     def reposition(self, startpos: int, endpos: int) -> "Token":
         return self._replace(  # pylint: disable=no-member
-            rng=Range(start=max(self.rng.start, startpos) - startpos,
-                      end=min(self.rng.end, endpos) - startpos))
+            rng=slice(max(self.rng.start, startpos) - startpos,
+                      min(self.rng.stop, endpos) - startpos))
 
-    def resolve(self, type_map: Dict[Tuple[str, ...], str]) -> Optional[str]:
+    def resolve(self, type_map: LSPTokenMap) -> Optional[str]:
         tokstr = type_map.get(self.typ) or type_map.get((self.typ[0],))
         if tokstr is None:
             MSG = "!! Unexpected pre-tokenized token type {!r} with modifiers {!r}\n"
             warnings.warn(MSG.format(self.typ[0], self.typ[1:]))
         return tokstr
 
-class Tokens(NamedTuple):
-    toks: List[Token]
+@dataclass
+class Tokens:
+    toks: list[Token]
     view: slice # Slice of `toks`
-    rng: Range # Since of the original string
+    rng: Bounds # Slice of the original string
 
     @staticmethod
     def bisect_right(a, x, lo, hi, key):
@@ -67,24 +69,39 @@ class Tokens(NamedTuple):
     def filter(self, startpos: int, endpos: int) -> "Tokens":
         startpos, endpos = self.rng.start + startpos, self.rng.start + endpos
         start = self.bisect_right(self.toks, startpos, self.view.start, self.view.stop,
-                                  key=lambda t: t.rng.end)
+                                  key=lambda t: t.rng.stop)
         end = bisect.bisect_left(self.toks, ((endpos,),), self.view.start, self.view.stop)
-        return Tokens(self.toks, slice(start, end, None), Range(startpos, endpos))
+        return Tokens(self.toks, slice(start, end, None), slice(startpos, endpos))
 
-    def __iter__(self) -> Iterator[Token]: # type: ignore # LATER: dataclass
+    def __iter__(self) -> Iterator[Token]:
         for idx in range(self.view.start, self.view.stop):
-            yield self.toks[idx].reposition(self.rng.start, self.rng.end)
+            yield self.toks[idx].reposition(self.rng.start, self.rng.stop)
 
     def iter_contiguous(self) -> Iterator[Token]:
         pos = 0
         it: Iterable[Token] = self # type: ignore # LATER (≥ 3.10): Inherit
         for tok in it:
             if tok.rng.start > pos:
-                yield Token(Range(pos, tok.rng.start), ())
+                yield Token(slice(pos, tok.rng.start), ())
             yield tok
-            pos = tok.rng.end
-        if pos < self.rng.end:
-            yield Token(Range(pos, self.rng.end), ())
+            pos = tok.rng.stop
+        if pos < self.rng.stop:
+            yield Token(slice(pos, self.rng.stop), ())
+
+    @staticmethod
+    def remove_overlapping(tokens: Iterable[Token]) -> list[Token]:
+        """Remove overlapping token from a list of `tokens`.
+
+        Later tokens are preferred over earlier ones, so if two overlapping
+        tokens are found the first one is discarded.
+        """
+        filtered: list[Token] = []
+        tokens: list[Token] = sorted(tokens, key=lambda t: (t.rng.start, t.rng.stop))
+        for tok in tokens:
+            while filtered and tok.rng.start < filtered[-1].rng.stop:
+                _ = filtered.pop()
+            filtered.append(tok)
+        return filtered
 
 class TokenizedStr(str):
     def __new__(cls, s, *_args):
@@ -95,7 +112,7 @@ class TokenizedStr(str):
         assert tokens and type_map
         super().__init__()
         self.tokens = tokens
-        self.type_map = type_map
+        self.type_map: LSPTokenMap = type_map
 
     @staticmethod
     def _wrapidx(idx: Optional[int], dflt: int, mod: int):
@@ -137,7 +154,7 @@ class TokenizedStr(str):
             assert isinstance(tok, Token)
             rng, typ = tok.rng, tok.resolve(self.type_map)
             ttyp: Tuple[str, ...] = (typ,) if typ else ()
-            toks.extend((rng.start, rng.end, revmap[ttyp]))
+            toks.extend((rng.start, rng.stop, revmap[ttyp]))
 
     @classmethod
     def js_decode(cls, _serializer, source: Dict[str, Any],
@@ -156,8 +173,108 @@ class TokenizedStr(str):
         toks, enc = [], source["toks"]
         for i in range(0, len(enc), 3):
             start, end, typidx = enc[i], enc[i+1], enc[i+2]
-            toks.append(Token(Range(start, end), types[typidx]))
+            toks.append(Token(slice(start, end), types[typidx]))
 
         s = source["str"]
-        tokens = Tokens(toks, slice(0, len(toks)), Range(0, len(s)))
+        tokens = Tokens(toks, slice(0, len(toks)), slice(0, len(s)))
         return TokenizedStr(s, tokens, type_map)
+
+@dataclass
+class LSPTokenLegend:
+    types: list[str]
+    modifiers: list[str]
+    _modifiers_cache: dict[int, tuple[str, ...]] = field(init=False, default_factory=lambda: {})
+
+    @staticmethod
+    def of_json(js: JSON) -> "LSPTokenLegend":
+        return LSPTokenLegend(js["tokenTypes"], js["tokenModifiers"])
+
+    @staticmethod
+    def of_config(config: LSPServerConfig) -> "LSPTokenLegend":
+        return LSPTokenLegend.of_json(config.capabilities.get("semanticTokensProvider", {})["legend"])
+
+    def resolve_modifiers(self, bitset: int) -> tuple[str, ...]:
+        if (mods := self._modifiers_cache.get(bitset)) is None:
+            bits = enumerate(bin(bitset)[:1:-1], 0)
+            self._modifiers_cache[bitset] = mods = \
+                tuple(sorted(self.modifiers[i] for i, c in bits if c == '1'))
+        return mods
+
+    def resolve_one(self, doc: Document, l: int, c: int, length: int, itype: int, imods: int) -> Token:
+        typ = self.types[itype]
+        mods = self.resolve_modifiers(imods)
+        start = doc.lc2offset(l, c)
+        return Token(slice(start, start + length), (typ, *mods))
+
+    def resolve(self, doc: Document, tokens: Iterable[int]) -> Iterator[Token]:
+        l, c = 1, 0
+        groups: zip[tuple[int, ...]] = zip(*([iter(tokens)] * 5)) # type: ignore
+        for dl, dc, length, itype, imods in groups:
+            l, c = l + dl, (dc if dl != 0 else c + dc)
+            yield self.resolve_one(doc, l, c, length, itype, imods)
+
+@dataclass
+class LSPClientSemanticTokensRequest(LSPClientRequest):
+    METHOD = "textDocument/semanticTokens/full"
+
+    uri: str
+
+    @property
+    def params(self):
+        return { "textDocument": { "uri": self.uri, "version": 0 } }
+
+class LSPClientSemanticTokensMixin(LSPClient):
+    TOKEN_MAP: ClassVar[LSPTokenMap] = {
+        ("namespace",): "Name.Namespace",
+        ("type",): "Keyword.Type",
+        ("class",): "Name.Class",
+        ("enum",): "Name.Class",
+        ("interface",): "Name.Class",
+        ("struct",): "Name.Class",
+        ("typeParameter",): "Name.Entity",
+        ("parameter",): "Name.Variable",
+        ("variable",): "Name.Variable",
+        ("property",): "Name.Variable.Instance",
+        ("enumMember",): "Name.Constant",
+        ("event",): "Name.Class",
+        ("function",): "Name.Function",
+        ("method",): "Name.Function",
+        ("macro",): "Name.Function",
+        ("keyword",): "Keyword",
+        ("modifier",): "Keyword",
+        ("comment",): "Comment",
+        ("string",): "String",
+        ("number",): "Number",
+        ("regexp",): "String.Regex",
+        ("operator",): "Operator"
+    }
+
+    TOKEN_MODIFIERS: ClassVar[set[str]] = {
+        'declaration', 'definition', 'readonly', 'static', 'deprecated',
+        'abstract', 'async', 'modification', 'documentation', 'defaultLibrary'
+    }
+
+    def __init__(self, driver: "LSPDriver[Any]"):
+        super().__init__(driver)
+        self.legend: LSPTokenLegend = LSPTokenLegend.of_config(self.config)
+
+    def _init(self) -> LSPClientInitializeRequest:
+        req = super()._init()
+        req.params["textDocument"]["textDocument"]["semanticTokens"] = {
+            "requests": {"range": False, "full": True},
+            "tokenTypes": [t[0] for t in self.TOKEN_MAP],
+            "tokenModifiers": list(self.TOKEN_MODIFIERS | {m for t in self.TOKEN_MAP for m in t[1:]}),
+            "formats": ['relative'],
+            "overlappingTokenSupport": False,
+            "multilineTokenSupport": True,
+            "serverCancelSupport": False,
+            "augmentsSyntaxTokens": False,
+        }
+        return req
+
+    def get_tokens(self, doc: Document):
+        req = LSPClientSemanticTokensRequest(self, self.driver.uri)
+        data: list[int] = must(req.send().result)["data"]
+        tokens = self.legend.resolve(doc, data)
+        filtered = Tokens.remove_overlapping(tokens)
+        return Tokens(filtered, slice(0, len(filtered)), slice(0, len(doc)))

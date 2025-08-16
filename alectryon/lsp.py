@@ -26,8 +26,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from alectryon.transforms import coalesce_text
-
+from .transforms import coalesce_text
 from .core import Document, DriverInfo, EncodedDocument, Fragment, Observer, PopenDriver, Position, Positioned, Range, Text, debug as core_debug, must
 
 JSON = Dict[str, Any]
@@ -258,38 +257,16 @@ class LSPClientMethodNotFoundError(LSPClientError):
     CODE = -32601
     MESSAGE = "This client does not support server requests."
 
-class LSPClientSemanticTokensRequest(LSPClientRequest):
-    METHOD = "textDocument/semanticTokens/full"
+@dataclass
+class LSPServerConfig:
+    capabilities: JSON
+    driver_info: Optional[DriverInfo]
 
-    TOKEN_TYPES: ClassVar[Dict[str, str]] = {
-        "namespace": "Name.Namespace",
-        "type": "Keyword.Type",
-        "class": "Name.Class",
-        "enum": "Name.Class",
-        "interface": "Name.Class",
-        "struct": "Name.Class",
-        "typeParameter": "Name.Entity",
-        "parameter": "Name.Variable",
-        "variable": "Name.Variable",
-        "property": "Name.Variable.Instance",
-        "enumMember": "Name.Constant",
-        "event": "Name.Class",
-        "function": "Name.Function",
-        "method": "Name.Function",
-        "macro": "Name.Function",
-        "keyword": "Keyword",
-        "modifier": "Keyword",
-        "comment": "Comment",
-        "string": "String",
-        "number": "Number",
-        "regexp": "String.Regex",
-        "operator": "Operator"
-    }
-
-    TOKEN_MODIFIERS = {
-        'declaration', 'definition', 'readonly', 'static', 'deprecated',
-        'abstract', 'async', 'modification', 'documentation', 'defaultLibrary'
-    }
+    @staticmethod
+    def of_json(js: JSON) -> "LSPServerConfig":
+        info, capabilities = js.get("serverInfo"), js["capabilities"]
+        driver_info = DriverInfo(info["name"], info.get("version", "?")) if info else None
+        return LSPServerConfig(capabilities, driver_info)
 
 @dataclass
 class LSPClientInitializeRequest(LSPClientRequest):
@@ -303,16 +280,6 @@ class LSPClientInitializeRequest(LSPClientRequest):
                  "configuration": False,
              },
              "textDocument": {
-                 "semanticTokens": {
-                     "requests": {"range": False, "full": True},
-                     "tokenTypes": list(LSPClientSemanticTokensRequest.TOKEN_TYPES),
-                     "tokenModifiers": list(LSPClientSemanticTokensRequest.TOKEN_MODIFIERS),
-                     "formats": ['relative'],
-                     "overlappingTokenSupport": False,
-                     "multilineTokenSupport": True,
-                     "serverCancelSupport": False,
-                     "augmentsSyntaxTokens": False,
-                 }
              }
          }
     }
@@ -327,10 +294,8 @@ class LSPClientInitializeRequest(LSPClientRequest):
         }
 
     @property
-    def driver_info(self) -> Optional[DriverInfo]:
-        assert self.done
-        info = self.result.get("serverInfo")
-        return DriverInfo(info["name"], info.get("version", "?")) if info else None
+    def config(self) -> LSPServerConfig:
+        return LSPServerConfig.of_json(must(self.result))
 
 class LSPInitializedNotification(LSPClientNotification):
     METHOD = "initialized"
@@ -395,8 +360,8 @@ class LSPClient:
 
     def __init__(self, driver: "LSPDriver[Self]"):
         self.driver: "LSPDriver[Self]" = driver
-        self.driver_info: Optional[DriverInfo] = None
-        self.init()
+        self.config = self._init().send().config
+        LSPInitializedNotification(self).send()
 
     @property
     def repl(self):
@@ -418,16 +383,25 @@ class LSPClient:
             query.process_message(self.receive_message())
         return query
 
-    def init(self):
-        self.driver_info = LSPClientInitializeRequest(self).send().driver_info
-        LSPInitializedNotification(self).send()
+    def _init(self) -> LSPClientInitializeRequest:
+        return LSPClientInitializeRequest(self)
 
     def kill(self):
         LSPClientShutdownRequest(self).send()
         LSPClientExitNotification(self).send()
 
-    def open(self, uri: str, contents: str) -> None:
-        LSPClientDidOpenNotification(self, self.LANGUAGE_ID, uri, contents).send()
+TClient = TypeVar("TClient", bound=LSPClient, covariant=True)
+
+class LSPFile(Generic[TClient]):
+    def __init__(self, driver: "LSPDriver[TClient]", doc: Document):
+        self.client = must(driver.client)
+        self.observer = driver.observer
+        self.fpath, self.uri = driver.fpath, driver.uri
+        self.doc = doc
+        self._open()
+
+    def _open(self):
+        LSPClientDidOpenNotification(self.client, self.uri, self.doc.str).send()
 
 class LSPDocument(EncodedDocument):
     """Variant of ``Document`` in which positions are UTF-16 offsets, not char offsets."""
@@ -472,14 +446,13 @@ class LSPDocument(EncodedDocument):
     def _find_eol(self, start: int) -> int:
         return super()._find_eol(start * 2) // 2
 
-T = TypeVar("T", bound=LSPClient)
-class LSPDriver(PopenDriver, Generic[T]):
-    CLIENT: Type[T]
-    client: Optional[T] = None
+class LSPDriver(PopenDriver, Generic[TClient]):
+    CLIENT: ClassVar[Type[TClient]] # type: ignore
+    client: Optional[TClient] = None
 
     def version_info(self) -> DriverInfo:
         with self:
-            return self.client.driver_info or DriverInfo(self.NAME, "?")
+            return self.client.config.driver_info or DriverInfo(self.NAME, "?")
 
     def reset(self):
         super().reset()

@@ -77,12 +77,12 @@ class json(unittest.TestCase):
 
 class lsp(unittest.TestCase):
     def test_styles(self):
-        from alectryon.dafny import DafnyLSP
+        from alectryon.dafny import DafnyClient
         from alectryon.pygments_style import AlectryonStyle
         from alectryon.pygments_lexer import TokenizedStrLexer
 
         toks_by_style = {}
-        for tokstr in set(DafnyLSP.LSP_TYPE_MAP.values()):
+        for tokstr in set(DafnyClient.TOKEN_MAP.values()):
             tok = TokenizedStrLexer.resolve_pygments_token(tokstr)
             style = AlectryonStyle.styles[tok]
             toks_by_style.setdefault(style, []).append(tokstr)

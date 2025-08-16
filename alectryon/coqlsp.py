@@ -23,7 +23,7 @@ from typing import Iterable
 import dataclasses
 
 from .core import Document, Fragment, Goal, Hypothesis, Message, Position, Positioned, Range, Sentence, must
-from .lsp import LSPDocument, LSPClient, LSPClientRequest, LSPDriver
+from .lsp import LSPDocument, LSPClient, LSPClientRequest, LSPDriver, LSPFile
 
 @dataclasses.dataclass
 class CoqGetDocumentRequest(LSPClientRequest):
@@ -72,13 +72,10 @@ class CoqLSPOutput:
     def decode_messages(msgs):
         return [CoqLSPOutput._decode_message(m) for m in msgs]
 
-class CoqLSPFile:
-    def __init__(self, driver: "CoqLSP", doc: Document):
-        self.client = must(driver.client)
-        self.observer = driver.observer
-        self.fpath, self.uri = driver.fpath, driver.uri
-        self.doc = doc
+class CoqLSPClient(LSPClient):
+    LANGUAGE_ID = "coq"
 
+class CoqLSPFile(LSPFile[CoqLSPClient]):
     def _get_ranges(self) -> Iterable[Range]:
         """Segment the document into sentence ranges."""
         json = must(CoqGetDocumentRequest(self.client, self.uri).send().result)
@@ -97,11 +94,7 @@ class CoqLSPFile:
         return Positioned(beg, end, Sentence(self.doc[beg:end], messages, goals))
 
     def process(self) -> Iterable[Positioned[Fragment]]:
-        self.client.open(self.uri, self.doc.str)
         return [self._get_sentence(r) for r in self._get_ranges()]
-
-class CoqLSPClient(LSPClient):
-    LANGUAGE_ID = "coq"
 
 class CoqLSP(LSPDriver[CoqLSPClient]):
     BIN = "coq-lsp"
