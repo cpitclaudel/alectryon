@@ -27,9 +27,8 @@ import textwrap
 from copy import copy
 from collections import namedtuple
 
-from alectryon.literate import COQ, Code, Comment, partition
-
 from . import markers
+from .literate import COQ, Code, Comment, partition
 from .core import Goal, Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
     Goals, Messages, RichSentence, ALL_LANGUAGES, \

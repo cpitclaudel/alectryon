@@ -23,9 +23,9 @@ from typing import Any, List
 import tempfile
 import os
 from pathlib import Path
-from alectryon import json
 
-from alectryon.json import PlainSerializer
+from . import json
+from .json import PlainSerializer
 from .core import CLIDriver, UTF8Document, Text, Fragment
 
 
