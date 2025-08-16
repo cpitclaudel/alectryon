@@ -98,7 +98,7 @@ class LSPClientQuery(LSPClientMessage):
     METHOD: ClassVar[str]
 
     @property
-    def params(self) -> dict[str, Any]:
+    def params(self) -> dict[str, JSON]:
         return {}
 
     def process_notification(self, message: "LSPServerNotification"):
@@ -132,7 +132,7 @@ class LSPClientQuery(LSPClientMessage):
 class LSPClientRequest(LSPClientQuery):
     idx: int = field(init=False)
     result: Optional[JSON] = field(init=False)
-    _done = field(init=False)
+    _done: bool = field(init=False)
 
     def __post_init__(self):
         self.idx = LSPClientRequest._gensym()
@@ -304,13 +304,12 @@ class LSPInitializedNotification(LSPClientNotification):
 class LSPClientDidOpenNotification(LSPClientNotification):
     METHOD = "textDocument/didOpen"
 
-    languageId: str
     uri: str
     text: str
 
     @property
     def params(self):
-        return { "textDocument": { "uri": self.uri, "languageId": self.languageId,
+        return { "textDocument": { "uri": self.uri, "languageId": self.client.LANGUAGE_ID,
                                    "version": 0, "text": self.text } }
 
 class LSPClientShutdownRequest(LSPClientRequest):
