@@ -179,7 +179,7 @@ Use ``alectryon.vsrocq.annotate(chunks: list[str])``, which returns an object wi
      [# Each fragment is a list of records (each an instance of a namedtuple)
       Sentence(contents='Example xyz (H: False): True.',
                messages=[],
-               goals=[Goal(name=None,
+               goals=[Goal(name=2,
                            conclusion='True',
                            hypotheses=[Hypothesis(names=['H'],
                                                   body=None,
@@ -187,7 +187,7 @@ Use ``alectryon.vsrocq.annotate(chunks: list[str])``, which returns an object wi
       Text(contents=' (* ... *) '),
       Sentence(contents='exact I.', messages=[], goals=[]),
       Text(contents=' '),
-      Sentence(contents='Qed.', messages=[], goals=[])],
+      Sentence(contents='Qed.', messages=[Message(contents='xyz is defined')], goals=[])],
      [# This is the second fragment
       Sentence(contents='Check xyz.',
                messages=[Message(contents='xyz\n     : False -> True')],

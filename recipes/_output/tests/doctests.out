@@ -54,6 +54,8 @@ rst2dafny (alectryon.literate)
 Doctest: alectryon.literate.rst2dafny ... ok
 rst2lean3 (alectryon.literate)
 Doctest: alectryon.literate.rst2lean3 ... ok
+annotate (alectryon.lsp.LSPDriver)
+Doctest: alectryon.lsp.LSPDriver.annotate ... ok
 cli (alectryon.minimal)
 Doctest: alectryon.minimal.cli ... ok
 StripErrorsTokenFilter (alectryon.pygments)
@@ -84,6 +86,6 @@ partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
 
 ----------------------------------------------------------------------
-Ran 42 tests
+Ran 43 tests
 
 OK

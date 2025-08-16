@@ -482,11 +482,12 @@ class LSPDriver(PopenDriver, Generic[TClient]):
         return document.intersperse_text_fragments(self._find_sentences(document))
 
     def annotate(self, chunks: Iterable[str]) -> list[list[Fragment]]:
-        """Annotate chunks of code.
+        r"""Annotate chunks of code.
 
         >>> from .vsrocq import VsRocq
-        >>> VsRocq().annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Check xyz."])
-        [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
+        >>> VsRocq().annotate(["Check 1.", "Print False."])
+        [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])],
+         [Sentence(contents='Print False.', messages=[Message(contents='Inductive False : Prop :=  .')], goals=[])]]
         """
         document = self._encode(chunks)
 
