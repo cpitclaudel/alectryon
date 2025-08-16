@@ -18,24 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Dict, Tuple
+from collections.abc import Iterable
 
-from .lsp import LSPDriver
+from .core import Document, Fragment, Positioned, Text
+from .tokens import LSPClientSemanticTokensMixin, TokenizedStr
+from .lsp import LSPClient, LSPDocument, LSPDriver, LSPFile
 
-class DafnyLSP(LSPDriver):
-    BIN = "DafnyLanguageServer"
-    NAME = "Dafny LSP Server"
+class DafnyClient(LSPClientSemanticTokensMixin, LSPClient):
+    LANGUAGE_ID = "dafny"
 
-    CLI_ARGS = ()
-    REPL_ARGS = ()
-    VERSION_ARGS = ()
-
-    ID = "dafny_lsp"
-    LANGUAGE = "dafny"
-    AUTOSELECT = True
-
-    LSP_TYPE_MAP: Dict[Tuple[str, ...], str] = {
-        **LSPDriver.LSP_TYPE_MAP,
+    TOKEN_MAP = {
+        **LSPClientSemanticTokensMixin.TOKEN_MAP,
         ("string", "documentation"): "String.Doc",
         ("comment", "documentation"): "Comment.Special",
         ("macro",): "Name.Builtin.Pseudo", # Special
@@ -61,3 +54,27 @@ class DafnyLSP(LSPDriver):
         ("property", "definition"): "Name.Variable.Instance",
         ("property", "declaration"): "Name.Variable.Instance",
     }
+
+class DafnyFile(LSPFile[DafnyClient]):
+    def process(self):
+        tokens = self.client.get_tokens(self.doc)
+        tokenized = TokenizedStr(self.doc.str, tokens, self.client.TOKEN_MAP)
+        return [Positioned(0, len(self.doc), Text(tokenized))]
+
+class DafnyLSP(LSPDriver[DafnyClient]):
+    BIN = "DafnyLanguageServer"
+    NAME = "Dafny LSP Server"
+
+    VERSION_ARGS = ()
+
+    ID = "dafny_lsp"
+    LANGUAGE = "dafny"
+    AUTOSELECT = True
+
+    CLIENT = DafnyClient
+
+    def _encode(self, chunks: Iterable[str]) -> Document:
+        return LSPDocument(chunks, "\n")
+
+    def _find_sentences(self, document: Document) -> Iterable[Positioned[Fragment]]:
+        return DafnyFile(self, document).process()

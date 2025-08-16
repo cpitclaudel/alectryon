@@ -25,7 +25,7 @@ import dataclasses
 import re
 
 from .core import Document, UTF8Document, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, Text, must
-from .lsp import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPServerException, LSPServerMessage, LSPServerNotification, LSPServerNotifications
+from .lsp import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, LSPServerMessage, LSPServerNotification, LSPServerNotifications
 
 class Notifications(LSPServerNotifications):
     PROOF_VIEW = "vscoq/proofView"
@@ -180,13 +180,10 @@ class VsRocqOutput:
         goals = [VsRocqOutput.parse_goal(gv) for gv in (pv.get("proof") or {}).get("goals", [])]
         return messages, goals
 
-class VsRocqFile:
-    def __init__(self, driver: "VsRocq", doc: Document):
-        self.client = must(driver.client)
-        self.observer = driver.observer
-        self.fpath, self.uri = driver.fpath, driver.uri
-        self.doc = doc
+class VsRocqClient(LSPClient):
+    LANGUAGE_ID = "coq"
 
+class VsRocqFile(LSPFile[VsRocqClient]):
     def _compute_ranges(self):
         req = DocumentStateRequest(self.client, self.uri)
         document = must(req.send().result)["document"]
@@ -196,7 +193,6 @@ class VsRocqFile:
             yield int(m.group("beg")), int(m.group("end"))
 
     def process(self) -> Iterable[Positioned[Fragment]]:
-        self.client.open(self.uri, self.doc.str)
         VsRocqReadyMonitor(self.client, self.uri).wait()
 
         blocked_on_error: bool = False
@@ -232,9 +228,6 @@ class VsRocqFile:
         prefix = "\n".join(prefix.splitlines()[-3:])
         suffix = "\n".join(suffix.splitlines()[:3])
         return f"{prefix}>>>{substring}<<<{suffix}"
-
-class VsRocqClient(LSPClient):
-    LANGUAGE_ID = "coq"
 
 class VsRocq(LSPDriver[VsRocqClient]):
     BIN = "vscoqtop"
