@@ -71,6 +71,7 @@ class DafnyLSP(LSPDriver[DafnyClient]):
     LANGUAGE = "dafny"
     AUTOSELECT = True
 
+    STDIN_FILE_NAME = "stdin.dfy"
     CLIENT = DafnyClient
 
     def _encode(self, chunks: Iterable[str]) -> Document:

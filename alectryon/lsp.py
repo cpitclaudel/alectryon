@@ -445,6 +445,8 @@ class LSPDocument(EncodedDocument):
         return super()._find_eol(start * 2) // 2
 
 class LSPDriver(PopenDriver, Generic[TClient]):
+    STDIN_FILE_NAME: ClassVar[str]
+
     CLIENT: ClassVar[Type[TClient]] # type: ignore
     client: Optional[TClient] = None
 
@@ -464,7 +466,8 @@ class LSPDriver(PopenDriver, Generic[TClient]):
 
     @property
     def uri(self):
-        return self.fpath.absolute().as_uri()
+        fpath = Path(self.STDIN_FILE_NAME) if str(self.fpath) == "-" else self.fpath
+        return fpath.absolute().as_uri()
 
     def _encode(self, chunks: Iterable[str]) -> Document:
         """Construct a document from `chunks`."""
