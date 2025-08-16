@@ -105,6 +105,7 @@ class CoqLSP(LSPDriver[CoqLSPClient]):
     LANGUAGE = "coq"
     AUTOSELECT = True
 
+    STDIN_FILE_NAME = "stdin.v"
     CLIENT = CoqLSPClient
 
     def _encode(self, chunks: Iterable[str]) -> Document:

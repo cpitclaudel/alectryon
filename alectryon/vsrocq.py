@@ -238,6 +238,7 @@ class VsRocq(LSPDriver[VsRocqClient]):
     LANGUAGE = "coq"
     AUTOSELECT = True
 
+    STDIN_FILE_NAME = "stdin.v"
     CLIENT = VsRocqClient
 
     def _encode(self, chunks: Iterable[str]) -> Document:
