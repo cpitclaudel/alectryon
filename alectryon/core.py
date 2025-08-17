@@ -94,7 +94,7 @@ class Enriched():
     def markers(self):
         return getattr(self, "props", {}).setdefault("markers", [])
 
-def _enrich(nt):
+def _enrich(nt) -> type[Enriched]:
     # LATER: Use dataclass + multiple inheritance; change `ids` and `markers` to
     # mutable `id` and `marker` fields.
     name = "Rich" + nt.__name__
@@ -113,6 +113,7 @@ RichGoal = _enrich(Goal)
 RichMessage = _enrich(Message)
 RichCode = _enrich(namedtuple("Code", "contents"))
 RichSentence = _enrich(namedtuple("Sentence", "input outputs annots prefixes suffixes"))
+RichFragment = Union[Text, RichSentence]
 
 def b16(i):
     return hex(i)[len("0x"):]

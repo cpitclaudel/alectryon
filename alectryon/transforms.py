@@ -20,7 +20,8 @@
 
 """Post-process annotated fragments of source code."""
 
-from typing import Dict, Optional, Tuple, TypeVar
+from collections.abc import Iterable
+from typing import Dict, Optional, Tuple, TypeGuard, TypeVar
 
 import re
 import textwrap
@@ -28,11 +29,9 @@ from copy import copy
 from collections import namedtuple
 
 from . import markers
-from .literate import COQ, Code, Comment, partition
-from .core import Goal, Sentence, Text, Names, Enriched, \
+from .core import Fragment, RichFragment, Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
-    Goals, Messages, RichSentence, ALL_LANGUAGES, \
-    Message, Hypothesis
+    Goals, Messages, RichSentence, ALL_LANGUAGES
 
 PathAnnot = namedtuple("PathAnnot", "raw path key val must_match")
 
@@ -557,17 +556,35 @@ def group_hypotheses(fragments):
 COQ_FAIL_RE = re.compile(r"^Fail\s+")
 COQ_FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
 
-def is_coq_fail(fr):
-    return (isinstance(fr, RichSentence) and fr.annots.fails
-            and COQ_FAIL_RE.match(fr.input.contents))
+def is_coq_fail(fr) -> TypeGuard[RichSentence]:
+    return bool(isinstance(fr, RichSentence) and fr.annots.fails
+                and COQ_FAIL_RE.match(fr.input.contents))
 
-def strip_coq_failures(fragments):
+def strip_coq_failures(fragments: Iterable[RichFragment]) -> Iterable[RichFragment]:
     for fr in fragments:
         if is_coq_fail(fr):
             for msgs in fragment_message_sets(fr):
                 for idx, r in enumerate(msgs):
                     msgs[idx] = r._replace(contents=COQ_FAIL_MSG_RE.sub("", r.contents))
             fr = _replace_contents(fr, COQ_FAIL_RE.sub("", fr.input.contents))
+        yield fr
+
+def strip_numeric_goal_names(fragments: Iterable[RichFragment]) -> Iterable[RichFragment]:
+    r"""Remove goal names if they are just a number, as in VsRocq.
+
+    >>> from .core import Sentence as S, Goal as G
+    >>> frs = list(enrich_sentences([S("", [], [G(3, "True", [])])]))
+    >>> frs # doctest: +ELLIPSIS
+    [...goals=[...name=3...]...]
+    >>> list(strip_numeric_goal_names(frs)) # doctest: +ELLIPSIS
+    [...goals=[...name=None...]...]
+    """
+    for fr in fragments:
+        if isinstance(fr, RichSentence):
+            for goals in fragment_goal_sets(fr):
+                for idx, g in enumerate(goals):
+                    if isinstance(g.name, int):
+                        goals[idx] = g._replace(name=None)
         yield fr
 
 def dedent(fragments):
@@ -835,6 +852,7 @@ DEFAULT_TRANSFORMS = {
         read_io_comments("coq"),
         process_io_annots,
         strip_coq_failures,
+        strip_numeric_goal_names,
         dedent,
     ],
     "dafny": [

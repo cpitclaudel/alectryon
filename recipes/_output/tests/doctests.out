@@ -84,8 +84,10 @@ lean3_truncate_vernacs (alectryon.transforms)
 Doctest: alectryon.transforms.lean3_truncate_vernacs ... ok
 partition_fragments (alectryon.transforms)
 Doctest: alectryon.transforms.partition_fragments ... ok
+strip_numeric_goal_names (alectryon.transforms)
+Doctest: alectryon.transforms.strip_numeric_goal_names ... ok
 
 ----------------------------------------------------------------------
-Ran 43 tests
+Ran 44 tests
 
 OK
