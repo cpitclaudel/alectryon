@@ -19,10 +19,14 @@
 \definecolor{alectryon@tango@dark@gray}{HTML}{2E3436}
 
 \makeatletter
+% \alectryon@iflongtable{YES}{NO} produces YES inside longtables and NO outside.
+% We need this test because longtable (imported by docutils) redefines
+% \nopagebreak using \noalign, which makes it usable only after a \cr.
+\newcommand*{\alectryon@iflongtable}[2]{\ifx\hline\LT@hline#1\else#2\fi}
 % \alectryon@nopagebreak prevents a page break before output. It's not called in
 % before every Alectryon block because that's not how things traditionally work
 % in LaTeX, but it's reasonable to add it to the beginning of alectryon@env.
-\newcommand*{\alectryon@nopagebreak}{\nopagebreak[3]}
+\newcommand*{\alectryon@nopagebreak}{\alectryon@iflongtable{}{\nopagebreak[3]}}
 % \alectryon@nohyphens disables hyphenation and \discretionary
 % (though see https://tex.stackexchange.com/questions/606697/)
 \newcount{\alectryon@@hyphenpenalty}
