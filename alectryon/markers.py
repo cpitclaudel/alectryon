@@ -75,9 +75,9 @@ def find_sentences(objs, needle):
 
 def find_goals(goals, needle):
     if isinstance(needle, NameMatcher):
-        try:
-            yield goals[int(needle) - 1]
-        except (IndexError, ValueError):
+        if needle.isdigit() and (n := int(needle) - 1) < len(goals):
+            yield goals[n]
+        else:
             yield from find_named(goals, needle)
         return
     for g in goals:
