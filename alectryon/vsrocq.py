@@ -25,7 +25,8 @@ import dataclasses
 import re
 
 from .core import Document, UTF8Document, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, Text, must
-from .lsp import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, LSPServerMessage, LSPServerNotification, LSPServerNotifications
+from .lsp import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, LSPServerNotification, LSPServerNotifications
+from .coq import CoqIdents
 
 class Notifications(LSPServerNotifications):
     PROOF_VIEW = "vscoq/proofView"
@@ -238,8 +239,11 @@ class VsRocq(LSPDriver[VsRocqClient]):
     LANGUAGE = "coq"
     AUTOSELECT = True
 
-    STDIN_FILE_NAME = "stdin.v"
     CLIENT = VsRocqClient
+
+    @staticmethod
+    def _normalize_fpath(p: Path) -> Path:
+        return CoqIdents.toppath_of_fpath(p)
 
     def _encode(self, chunks: Iterable[str]) -> Document:
         # FIXME: VsRocq sends vscoq/documentState info using utf-8 offsets but

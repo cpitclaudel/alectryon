@@ -106,3 +106,9 @@ class CoqIdents:
         """
         stem, ext = cls.split_fpath(fpath, exts, strip)
         return (cls.make_ident(stem) if stem else default) + (ext or exts[0])
+
+    @classmethod
+    def toppath_of_fpath(cls, fpath: Path, default="Top", exts=COQ_EXTS, strip=STRIP) -> Path:
+        """Like ``topfile_of_fpath`` with `fpath`, `default`, `exts`, and `strip`, but return a full path."""
+        topfile = cls.topfile_of_fpath(fpath, default, exts, strip)
+        return fpath.with_name(topfile)
