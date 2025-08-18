@@ -298,7 +298,7 @@ class Config:
 
     def init_driver(self, lang):
         cfg = core.DriverConfig(lang, self.language_drivers, self.driver_args)
-        return cfg.init_driver(fpath=self.document['source'])
+        return cfg.init_driver(fpath=self.document['source'] or "-")
 
 class OneTimeTransform(Transform):
     is_post_transform = False
