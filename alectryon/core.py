@@ -551,6 +551,7 @@ class Driver():
     LANGUAGE: ClassVar[str]
 
     def __init__(self, args: Tuple[str, ...]=(), fpath: str="-"):
+        assert fpath != ''
         self.observer: Observer = StderrObserver()
         self.fpath: Path = Path(fpath)
         self.user_args: Tuple[str, ...] = args
