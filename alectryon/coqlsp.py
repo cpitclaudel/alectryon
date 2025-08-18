@@ -18,12 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from pathlib import Path
 from typing import Iterable
 
 import dataclasses
 
 from .core import Document, Fragment, Goal, Hypothesis, Message, Position, Positioned, Range, Sentence, must
 from .lsp import LSPDocument, LSPClient, LSPClientRequest, LSPDriver, LSPFile
+from .coq import CoqIdents
 
 @dataclasses.dataclass
 class CoqGetDocumentRequest(LSPClientRequest):
@@ -105,8 +107,11 @@ class CoqLSP(LSPDriver[CoqLSPClient]):
     LANGUAGE = "coq"
     AUTOSELECT = True
 
-    STDIN_FILE_NAME = "stdin.v"
     CLIENT = CoqLSPClient
+
+    @staticmethod
+    def _normalize_fpath(p: Path) -> Path:
+        return CoqIdents.toppath_of_fpath(p)
 
     def _encode(self, chunks: Iterable[str]) -> Document:
         return LSPDocument(chunks, "\n")
