@@ -65,14 +65,16 @@ class CoqLSPOutput:
     def decode_goals(goals):
         return [CoqLSPOutput._decode_goal(g) for g in goals]
 
+    LEVEL_INFO = 4
+
     @staticmethod
-    def _decode_message(msg):
-        # Messages can be either a string or an object which contains a string.
-        return Message(msg if isinstance(msg, str) else msg["text"])
+    def _decode_message(msg) -> Message | None:
+        # LATER: Attach level to message and filter later using a transform
+        return Message(msg["text"]) if msg.get("level", 0) < CoqLSPOutput.LEVEL_INFO else None
 
     @staticmethod
     def decode_messages(msgs):
-        return [CoqLSPOutput._decode_message(m) for m in msgs]
+        return [dec for m in msgs if (dec := CoqLSPOutput._decode_message(m))]
 
 class CoqLSPClient(LSPClient):
     LANGUAGE_ID = "coq"

@@ -147,6 +147,7 @@ class VsRocqOutput:
 
     @staticmethod
     def parse_message(mv: list[JSON]):
+        # TODO filter out low-level messages
         return Message(VsRocqOutput.string_of_pp_string(mv[1]))
 
     @staticmethod
