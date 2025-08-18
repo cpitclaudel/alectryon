@@ -57,8 +57,16 @@ class CoqLSPOutput:
         return [CoqLSPOutput._decode_hyp(h) for h in hyps]
 
     @staticmethod
+    def _decode_goal_name(name):
+        if not name:
+            return None
+        elif isinstance(name, list) and name[0] == "Id": # PPX encoding of Id.t
+            return name[1]
+        return str(name)
+
+    @staticmethod
     def _decode_goal(goal):
-        return Goal(goal["info"]["name"], goal["ty"],
+        return Goal(CoqLSPOutput._decode_goal_name(goal["info"]["name"]), goal["ty"],
                     CoqLSPOutput._decode_hyps(goal["hyps"]))
 
     @staticmethod
