@@ -21,7 +21,7 @@
 """Post-process annotated fragments of source code."""
 
 from collections.abc import Iterable
-from typing import Dict, Optional, Tuple, TypeGuard, TypeVar
+from typing import Optional, Tuple, TypeVar
 
 import re
 import textwrap
@@ -29,7 +29,7 @@ from copy import copy
 from collections import namedtuple
 
 from . import markers
-from .core import Fragment, RichFragment, Sentence, Text, Names, Enriched, \
+from .core import RichFragment, Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
     Goals, Messages, RichSentence, ALL_LANGUAGES
 
@@ -556,7 +556,7 @@ def group_hypotheses(fragments):
 COQ_FAIL_RE = re.compile(r"^Fail\s+")
 COQ_FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
 
-def is_coq_fail(fr) -> TypeGuard[RichSentence]:
+def is_coq_fail(fr): # LATER(3.10): -> TypeGuard[RichSentence]:
     return bool(isinstance(fr, RichSentence) and fr.annots.fails
                 and COQ_FAIL_RE.match(fr.input.contents))
 

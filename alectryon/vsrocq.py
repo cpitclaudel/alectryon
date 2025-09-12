@@ -121,29 +121,29 @@ class VsRocqOutput:
         if not isinstance(pp, list) or len(pp) == 0:
             return str(pp) if pp else ""
 
-        match pp[0]:
-            case "Ppcmd_empty":
-                return ""
-            case "Ppcmd_string":
-                return pp[1] if len(pp) > 1 else ""
-            case "Ppcmd_glue":
-                if len(pp) > 1 and isinstance(pp[1], list):
-                    return "".join(VsRocqOutput.string_of_pp_string(sub_pp) for sub_pp in pp[1])
-                return ""
-            case "Ppcmd_box":
-                return VsRocqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
-            case "Ppcmd_tag":
-                return VsRocqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
-            case "Ppcmd_print_break":
-                return " " * pp[1] if len(pp) > 1 and isinstance(pp[1], int) else ""
-            case "Ppcmd_force_newline":
-                return "\n"
-            case "Ppcmd_comment":
-                if len(pp) > 1 and isinstance(pp[1], list):
-                    return " ".join(pp[1])
-                return ""
-            case _:
-                return str(pp)
+        hd = pp[0]
+        if hd == "Ppcmd_empty":
+            return ""
+        if hd == "Ppcmd_string":
+            return pp[1] if len(pp) > 1 else ""
+        if hd == "Ppcmd_glue":
+            if len(pp) > 1 and isinstance(pp[1], list):
+                return "".join(VsRocqOutput.string_of_pp_string(sub_pp) for sub_pp in pp[1])
+            return ""
+        if hd == "Ppcmd_box":
+            return VsRocqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
+        if hd == "Ppcmd_tag":
+            return VsRocqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
+        if hd == "Ppcmd_print_break":
+            return " " * pp[1] if len(pp) > 1 and isinstance(pp[1], int) else ""
+        if hd == "Ppcmd_force_newline":
+            return "\n"
+        if hd == "Ppcmd_comment":
+            if len(pp) > 1 and isinstance(pp[1], list):
+                return " ".join(pp[1])
+            return ""
+        else:
+            return str(pp)
 
     @staticmethod
     def parse_message(mv: list[JSON]):
