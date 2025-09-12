@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import IO, Any, ClassVar, Dict, Generic, Iterable, Optional, Self, Type, TypeVar, overload
+from typing import IO, Any, ClassVar, Dict, Generic, Iterable, Optional, Type, TypeVar, overload
 
 import json
 import os
@@ -93,6 +93,7 @@ class LSPClientMessage:
     def send(self):
         raise NotImplementedError
 
+Self = TypeVar("Self", bound="LSPClientQuery")
 class LSPClientQuery(LSPClientMessage):
     """Base class for LSP requests and notifications."""
     METHOD: ClassVar[str]
@@ -120,7 +121,7 @@ class LSPClientQuery(LSPClientMessage):
             "params": self.params
         }
 
-    def send(self) -> Self:
+    def send(self: Self) -> Self:
         return self.client.send_and_process(self)
 
     @property
