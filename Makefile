@@ -48,7 +48,7 @@ lint-changes: $(dependencies)
 	etc/lint_changes.py CHANGES.rst
 
 lint: $(dependencies)
-	vermin --target=3.10- --eval-annotations --violations alectryon
+	vermin --target=3.9- --eval-annotations --violations alectryon
 	pylint --rcfile=setup.cfg alectryon
 	mypy alectryon/
 	pyright --project .
