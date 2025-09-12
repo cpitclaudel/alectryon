@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, ClassVar, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, TypeAlias, Union
+from typing import Any, ClassVar, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union
 
 import bisect
 from dataclasses import dataclass, field
@@ -27,7 +27,7 @@ import warnings
 from .core import Document, must
 from .lsp import JSON, LSPClient, LSPClientInitializeRequest, LSPClientRequest, LSPDriver, LSPServerConfig
 
-Bounds: TypeAlias = "slice[int, int, None]"
+Bounds = "slice[int, int, None]" # LATER: : TypeAlias
 
 LSPTokenMap = dict[tuple[str, ...], str]
 

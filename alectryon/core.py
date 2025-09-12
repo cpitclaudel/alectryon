@@ -287,7 +287,8 @@ class PosView(View):
                      self.translate_offset(end))
 
 TPositioned = TypeVar("TPositioned", covariant=True)
-class Positioned(NamedTuple, Generic[TPositioned]):
+@dataclass
+class Positioned(Generic[TPositioned]):
     beg: int
     end: int
     e: TPositioned
