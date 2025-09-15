@@ -286,12 +286,12 @@ class PosView(View):
         return Range(self.translate_offset(beg),
                      self.translate_offset(end))
 
-TPositioned = TypeVar("TPositioned", covariant=True)
-@dataclass
-class Positioned(Generic[TPositioned]):
+# TPositioned = TypeVar("TPositioned", covariant=True)
+# https://github.com/microsoft/pyright/issues/2203
+class Positioned(NamedTuple): #, Generic[TPositioned]):
     beg: int
     end: int
-    e: TPositioned
+    e: Any # TPositioned
 
 class Document:
     """A base class to handle conversions to and from a list of chunks.
