@@ -260,7 +260,7 @@ class LSPClientSemanticTokensMixin(LSPClient):
 
     def _init(self) -> LSPClientInitializeRequest:
         req = super()._init()
-        req.params["textDocument"]["textDocument"]["semanticTokens"] = {
+        req.params["capabilities"]["textDocument"]["semanticTokens"] = {
             "requests": {"range": False, "full": True},
             "tokenTypes": [t[0] for t in self.TOKEN_MAP],
             "tokenModifiers": list(self.TOKEN_MODIFIERS | {m for t in self.TOKEN_MAP for m in t[1:]}),

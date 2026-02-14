@@ -23,9 +23,11 @@ from typing import IO, Any, ClassVar, Dict, Generic, Iterable, Optional, Type, T
 import json
 import os
 import re
+from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from . import __version__
 from .transforms import coalesce_text
 from .core import Document, DriverInfo, EncodedDocument, Fragment, Observer, PopenDriver, Position, Positioned, Range, Text, debug as core_debug, must
 
@@ -273,7 +275,6 @@ class LSPServerConfig:
 class LSPClientInitializeRequest(LSPClientRequest):
     METHOD = "initialize"
 
-    CLIENT_NAME = "LSPClient"
     CAPABILITIES: ClassVar[JSON] = {
         "workspace": { "configuration": False },
         "textDocument": {
@@ -285,18 +286,24 @@ class LSPClientInitializeRequest(LSPClientRequest):
          }
     }
 
+    _params: JSON = field(init=False)
+
     @property
     def params(self) -> JSON:
-        return {
-            "processId": __import__('os').getpid(),
-            "clientInfo": {"name": self.CLIENT_NAME, "version": "1.0.0"},
-            "rootUri": Path(os.getcwd()).as_uri(),
-            "capabilities": self.CAPABILITIES
-        }
+        return self._params # Needs to be mutable by clients
 
     @property
     def config(self) -> LSPServerConfig:
         return LSPServerConfig.of_json(must(self.result))
+
+    def __post_init__(self):
+        super().__post_init__()
+        self._params = {
+            "clientInfo": self.client.CLIENT_INFO,
+            "processId": __import__("os").getpid(),
+            "rootUri": Path(os.getcwd()).as_uri(),
+            "capabilities": deepcopy(self.CAPABILITIES),
+        }
 
 class LSPInitializedNotification(LSPClientNotification):
     METHOD = "initialized"
@@ -356,6 +363,7 @@ TClientQuery = TypeVar("TClientQuery", bound=LSPClientQuery)
 
 class LSPClient:
     LANGUAGE_ID: ClassVar[str]
+    CLIENT_INFO: ClassVar[JSON] = {"name": "Alectryon", "version": __version__}
 
     def __init__(self, driver: "LSPDriver[Self]"):
         self.driver: "LSPDriver[Self]" = driver
