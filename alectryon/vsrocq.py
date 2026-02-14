@@ -177,7 +177,7 @@ class VsRocqOutput:
         return Goal(name, conclusion, hypotheses)
 
     @staticmethod
-    def parseproof_view(pv: JSON):
+    def parse_proofview(pv: JSON):
         goals = [VsRocqOutput.parse_goal(gv) for gv in (pv.get("proof") or {}).get("goals", [])]
         return goals
 
@@ -185,14 +185,12 @@ class VsRocqClient(LSPClient):
     LANGUAGE_ID = "coq"
 
 class VsRocqFile(LSPFile[VsRocqClient]):
-    def _compute_ranges(self):
+    def _compute_ranges(self): # FIXME get this info from VSRocq
         req = DocumentStateRequest(self.client, self.uri)
-        document = must(req.send().result)["document"]
-        # parsing with regexes in 2025.. I'll look the other way
-        first_section : str = document.split("Document using sentences_by_end map")[0]
-        first_section = first_section.replace("\n"," ")
+        document: str = must(req.send().result)["document"]
+        first_section: str = document.split("Document using sentences_by_end map")[0]
         PATTERN = re.compile(r"\[\d+\].*?[(](?P<beg>\d+) -> (?P<end>\d+)[)]")
-        for m in PATTERN.finditer(first_section):
+        for m in PATTERN.finditer(first_section.replace("\n"," ")):
             yield int(m.group("beg")), int(m.group("end"))
 
     def process(self) -> Iterable[Positioned[Fragment]]:
@@ -200,7 +198,7 @@ class VsRocqFile(LSPFile[VsRocqClient]):
 
         blocked_on_error: bool = False
         diagnostics: dict[LSPDiagnostic, None] = {}
-        sentences: dict[tuple[int, int], tuple[str,list[Goal]]] = {}
+        sentences: dict[tuple[int, int], tuple[str, list[Goal]]] = {}
         messages: dict[tuple[int, int], list[Message]] = {}
 
         for (beg, end) in self._compute_ranges():
@@ -209,7 +207,7 @@ class VsRocqFile(LSPFile[VsRocqClient]):
                 yield Positioned(beg, end, Text(contents))
                 continue
             pv = StepForwardNotification(self.client, self.fpath, self.uri).send()
-            goals = VsRocqOutput.parseproof_view(must(pv.proof_view))
+            goals = VsRocqOutput.parse_proofview(must(pv.proof_view))
             sentences[(beg,end)] = (contents, goals)
             diagnostics |= dict.fromkeys(pv.diagnostics)
             blocked_on_error |= pv.blocked_on_error
