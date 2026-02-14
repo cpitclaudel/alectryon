@@ -424,28 +424,29 @@ class LSPFile(Generic[TClient]):
 class LSPDocument(EncodedDocument):
     """Variant of ``Document`` in which positions are UTF-16 offsets, not char offsets."""
     ENCODING = "utf-16-le"
+    BYTES_PER_UNIT = 2 # Number of bytes per code unit
 
     @classmethod
     def _len(cls, s: str) -> int:
-        return super()._len(s) // 2
+        return super()._len(s) // cls.BYTES_PER_UNIT
 
     @overload
-    @staticmethod
-    def _map_index(i: slice) -> slice: ...
+    @classmethod
+    def _map_index(cls, i: slice) -> slice: ...
     @overload
-    @staticmethod
-    def _map_index(i: int) -> int: ...
+    @classmethod
+    def _map_index(cls, i: int) -> int: ...
     @overload
-    @staticmethod
-    def _map_index(i: None) -> None: ...
+    @classmethod
+    def _map_index(cls, i: None) -> None: ...
 
-    @staticmethod
-    def _map_index(i: int | slice | None) -> int | slice | None:
+    @classmethod
+    def _map_index(cls, i: int | slice | None) -> int | slice | None:
         if isinstance(i, slice):
             assert i.step in (1, None)
-            return slice(LSPDocument._map_index(i.start),
-                         LSPDocument._map_index(i.stop))
-        return i * 2 if i is not None else None
+            return slice(cls._map_index(i.start),
+                         cls._map_index(i.stop))
+        return i * cls.BYTES_PER_UNIT if i is not None else None
 
     @classmethod
     def _slice(cls, s: str, index: slice) -> str:
@@ -455,14 +456,19 @@ class LSPDocument(EncodedDocument):
         return super().__getitem__(self._map_index(index))
 
     def __len__(self) -> int:
-        return super().__len__() // 2
+        return super().__len__() // self.BYTES_PER_UNIT
 
     def _find_bols(self) -> Iterable[int]:
         for pos in super()._find_bols():
-            yield (pos + 1) // 2 # +1 because "\n" in UTF-16 is b"\n\x00"
+             # + BYTES_PER_UNIT-1 because "\n" in UTF-16 is b"\n\x00"
+            yield (pos + self.BYTES_PER_UNIT - 1) // self.BYTES_PER_UNIT
 
     def _find_eol(self, start: int) -> int:
-        return super()._find_eol(start * 2) // 2
+        return super()._find_eol(start * self.BYTES_PER_UNIT) // self.BYTES_PER_UNIT
+
+class LSPUtf32Document(LSPDocument):
+    ENCODING = "utf-32-le"
+    BYTES_PER_UNIT = 4
 
 class LSPDriver(PopenDriver, Generic[TClient]):
     CLIENT: ClassVar[Type[TClient]] # type: ignore
