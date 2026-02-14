@@ -177,7 +177,7 @@ class VsRocqOutput:
         name = gv.get("id", None)
         conclusion = VsRocqOutput.string_of_pp_string(gv["goal"])
         hypotheses = [VsRocqOutput.parse_hyp(hv) for hv in gv["hypotheses"]]
-        return Goal(name, conclusion, hypotheses)
+        return Goal(name if isinstance(name, str) else None, conclusion, hypotheses)
 
     @staticmethod
     def parseproof_view(pv: JSON):
