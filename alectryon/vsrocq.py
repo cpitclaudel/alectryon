@@ -148,9 +148,10 @@ class VsRocqOutput:
             return str(pp)
 
     @staticmethod
-    def parse_message(mv: list[JSON]):
-        # TODO filter out low-level messages
-        return Message(VsRocqOutput.string_of_pp_string(mv[1]))
+    def parse_message(mv: list[Any]) -> Message | None:
+        level: int = mv[0] # LATER: Include message level in message
+        pp: str = VsRocqOutput.string_of_pp_string(mv[1])
+        return Message(pp) # TODO: Filter info-level messages
 
     @staticmethod
     def parse_hyp(hv):
@@ -180,7 +181,7 @@ class VsRocqOutput:
 
     @staticmethod
     def parseproof_view(pv: JSON):
-        messages = [VsRocqOutput.parse_message(mv) for mv in pv.get("messages", [])]
+        messages = [m for mv in pv.get("messages", []) if (m := VsRocqOutput.parse_message(mv))]
         goals = [VsRocqOutput.parse_goal(gv) for gv in (pv.get("proof") or {}).get("goals", [])]
         return messages, goals
 
