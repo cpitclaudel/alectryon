@@ -216,21 +216,7 @@ class VsRocqFile(LSPFile[VsRocqClient]):
         for diag in diagnostics:
             if diag.severity >= 3:
                 continue
-            beg, end = self.doc.range2offsets(diag.range)
-            context = self._format_error_context(beg, end)
-            diag.notify(self.observer, context)
-
-    def _format_error_context(self, beg, end) -> str:
-        context = self._highlight_context(beg, end)
-        return ("\nThe offending range is delimited by >>>…<<< below:\n" +
-                "\n".join(f"  > {line}" for line in context.splitlines()))
-
-    def _highlight_context(self, beg: int, end: int) -> str:
-        """Highlight error location with >>> <<< markers."""
-        prefix, substring, suffix = self.doc[:beg], self.doc[beg:end], self.doc[end:]
-        prefix = "\n".join(prefix.splitlines()[-3:])
-        suffix = "\n".join(suffix.splitlines()[:3])
-        return f"{prefix}>>>{substring}<<<{suffix}"
+            diag.notify(self.doc, self.client)
 
 class VsRocq(LSPDriver[VsRocqClient]):
     BIN = "vsrocqtop"

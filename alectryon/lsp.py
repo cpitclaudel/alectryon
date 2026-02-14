@@ -336,9 +336,8 @@ class LSPDiagnostic:
             js["message"], js.get("severity", 1)
         )
 
-    def notify(self, obs: Observer, details: Optional[str]=""):
-        level = self.SEVERITY_LEVELS[self.severity]
-        obs.notify(None, self.message + (details or ""), self.range, level=level)
+    def notify(self, doc: Document, client: "LSPClient"):
+        client.report_error(doc, self.range, self.message, self.SEVERITY_LEVELS[self.severity])
 
 @dataclass(frozen=True)
 class LSPMessage:
@@ -382,6 +381,23 @@ class LSPClient:
         while not query.done:
             query.process_message(self.receive_message())
         return query
+
+    def _highlight_context(self, doc, beg: int, end: int) -> str:
+        """Highlight error location with >>> <<< markers."""
+        prefix, substring, suffix = doc[:beg], doc[beg:end], doc[end:]
+        prefix = "\n".join(prefix.splitlines()[-3:])
+        suffix = "\n".join(suffix.splitlines()[:3])
+        return f"{prefix}>>>{substring}<<<{suffix}"
+
+    def _format_error_context(self, doc, range: Range) -> str:
+        beg, end = doc.range2offsets(range)
+        context = self._highlight_context(doc, beg, end)
+        return ("\nThe offending range is delimited by >>>…<<< below:\n" +
+                "\n".join(f"  > {line}" for line in context.splitlines()))
+
+    def report_error(self, doc, range, message, level):
+        context = self._format_error_context(doc, range)
+        self.driver.observer.notify(None, message + context, range, level=level)
 
     def _init(self) -> LSPClientInitializeRequest:
         return LSPClientInitializeRequest(self)
