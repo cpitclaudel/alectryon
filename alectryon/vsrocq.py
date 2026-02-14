@@ -29,12 +29,12 @@ from .lsp import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDi
 from .coq import CoqIdents
 
 class Notifications(LSPServerNotifications):
-    PROOF_VIEW = "vscoq/proofView"
-    BLOCK_ON_ERROR = "vscoq/blockOnError"
+    PROOF_VIEW = "prover/proofView"
+    BLOCK_ON_ERROR = "prover/blockOnError"
 
 @dataclasses.dataclass
 class StepForwardNotification(LSPClientNotification):
-    METHOD = "vscoq/stepForward"
+    METHOD = "prover/stepForward"
     fpath: Path
     uri: str
 
@@ -71,10 +71,10 @@ class URIRequest(LSPClientRequest):
         return { "textDocument": { "uri": self.uri } }
 
 class DocumentProofsRequest(URIRequest):
-    METHOD = "vscoq/documentProofs"
+    METHOD = "prover/documentProofs"
 
 class DocumentStateRequest(URIRequest):
-    METHOD = "vscoq/documentState"
+    METHOD = "prover/documentState"
 
 @dataclasses.dataclass
 class ExponentialBackoff:
@@ -189,7 +189,9 @@ class VsRocqFile(LSPFile[VsRocqClient]):
     def _compute_ranges(self):
         req = DocumentStateRequest(self.client, self.uri)
         document = must(req.send().result)["document"]
-        first_section = document.split("Document using sentences_by_end map")[0]
+        # parsing with regexes in 2025.. I'll look the other way
+        first_section : str = document.split("Document using sentences_by_end map")[0]
+        first_section = first_section.replace("\n"," ")
         PATTERN = re.compile(r"\[\d+\].*?[(](?P<beg>\d+) -> (?P<end>\d+)[)]")
         for m in PATTERN.finditer(first_section):
             yield int(m.group("beg")), int(m.group("end"))
@@ -232,7 +234,7 @@ class VsRocqFile(LSPFile[VsRocqClient]):
         return f"{prefix}>>>{substring}<<<{suffix}"
 
 class VsRocq(LSPDriver[VsRocqClient]):
-    BIN = "vscoqtop"
+    BIN = "vsrocqtop"
     NAME = "VsRocq"
     VERSION_ARGS = ("--version",)
 
@@ -247,7 +249,7 @@ class VsRocq(LSPDriver[VsRocqClient]):
         return CoqIdents.toppath_of_fpath(p)
 
     def _encode(self, chunks: Iterable[str]) -> Document:
-        # FIXME: VsRocq sends vscoq/documentState info using utf-8 offsets but
+        # FIXME: VsRocq sends prover/documentState info using utf-8 offsets but
         # uses codepoints (instead of utf-16?) in diagnostic line/char pairs.
         return UTF8Document(chunks, "\n")
 
