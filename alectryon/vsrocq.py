@@ -116,90 +116,62 @@ PP = str | list["PP"]
 
 class VsRocqOutput:
     @staticmethod
-    def string_of_pp_string(pp: PP) -> str:
-        """Convert a Coq pretty-printed string to a regular string."""
-        # FIXME get VsRocq to return structured output
-
-        if not isinstance(pp, list) or len(pp) == 0:
-            return str(pp) if pp else ""
-
-        hd = pp[0]
-        if hd == "Ppcmd_empty":
-            return ""
-        if hd == "Ppcmd_string":
-            return str(pp[1]) if len(pp) > 1 else ""
-        if hd == "Ppcmd_glue":
-            if len(pp) > 1 and isinstance(pp[1], list):
-                return "".join(VsRocqOutput.string_of_pp_string(sub_pp) for sub_pp in pp[1])
-            return ""
-        if hd == "Ppcmd_box":
-            return VsRocqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
-        if hd == "Ppcmd_tag":
-            return VsRocqOutput.string_of_pp_string(pp[2]) if len(pp) > 2 else ""
-        if hd == "Ppcmd_print_break":
-            return " " * pp[1] if len(pp) > 1 and isinstance(pp[1], int) else ""
-        if hd == "Ppcmd_force_newline":
-            return "\n"
-        if hd == "Ppcmd_comment":
-            if len(pp) > 1 and isinstance(pp[1], list):
-                return " ".join(str(p) for p in pp[1])
-            return ""
-        else:
-            return str(pp)
-
-    @staticmethod
     def parse_message(mv: list[Any]) -> Message | None:
-        level: int = mv[0] # LATER: Include message level in message
-        pp: str = VsRocqOutput.string_of_pp_string(mv[1])
+        level, pp = mv # LATER: Include message level in message
         return Message(pp) # TODO: Filter info-level messages
 
     @staticmethod
     def parse_hyp(hv):
-        # FIXME don't use string processing: parse the structure instead
-        # FIXME := from let will be parsed as hyp body
-        full_str = VsRocqOutput.string_of_pp_string(hv)
-        colon_count = full_str.count(':')
-        if colon_count == 0:
-            return Hypothesis(names=[full_str.strip()], body=None, type="")
-        elif colon_count == 1:
-            name_part, type_part = full_str.split(':', 1)
-            return Hypothesis(names=[name_part.strip()], body=None, type=type_part.strip())
-        else:
-            first_colon_index = full_str.find(':')
-            last_colon_index = full_str.rfind(':')
-            name_part = full_str[:first_colon_index]
-            type_part = full_str[last_colon_index + 1:]
-            body_part = full_str[first_colon_index + 1:last_colon_index]
-            return Hypothesis(names=[name_part.strip()], body=body_part.strip(), type=type_part.strip())
+        return Hypothesis(names=hv.get("ids"), body=hv.get("body"), type=hv.get("_type"))
 
     @staticmethod
     def parse_goal(gv: JSON):
         name = gv.get("id", None)
-        conclusion = VsRocqOutput.string_of_pp_string(gv["goal"])
+        conclusion = gv["goal"]
         hypotheses = [VsRocqOutput.parse_hyp(hv) for hv in gv["hypotheses"]]
         return Goal(name if isinstance(name, str) else None, conclusion, hypotheses)
 
     @staticmethod
     def parseproof_view(pv: JSON):
-        messages = [m for mv in pv.get("messages", []) if (m := VsRocqOutput.parse_message(mv))]
-        goals = [VsRocqOutput.parse_goal(gv) for gv in (pv.get("proof") or {}).get("goals", [])]
+        pp_messages, pp_goals = pv.get("pp_messages", []), (pv.get("pp_proof") or {}).get("goals", [])
+        messages = [m for mv in pp_messages if (m := VsRocqOutput.parse_message(mv))]
+        goals = [VsRocqOutput.parse_goal(gv) for gv in pp_goals]
         return messages, goals
 
 class VsRocqClient(LSPClient):
     LANGUAGE_ID = "coq"
 
+    # The server freezes on missing settings, so start with default options…
     INITIALIZATION_OPTIONS: JSON = {
+        # "path": "",
+        # "args": [],
+        "memory": {"limit": 4},
         "goals": {
-            "ppmode": "String", # Don't return Pp boxes
-            "messages": { "full": True }, # Include errors and warnings with proof views
+            "auto": "true",
+            # "display": "List",
+            "ppmode": "Pp",
+            "messages": {"full": True},
+            # "maxDepth": 17,
         },
         "proof": {
-            "mode": 0, # Step manually
-            "block": False, # Continue past the first error
+            "mode": 0,
+            "pointInterpretationMode": 0,
+            # "cursor": {"sticky": True},
+            "delegation": "None",
+            "workers": 1,
+            "block": True,
+            # "display-buttons": True,
         },
-        "completion": { "enable": False },
-        "diagnostics": { "full": False } # Dual of messages.full (skip info diagnostics)
+        "completion": {"enable": False, "unificationLimit": 100, "algorithm": 1},
+        "diagnostics": {"full": False},
     }
+    # … and add our own config:
+    INITIALIZATION_OPTIONS["goals"]["ppmode"] = "String" # Don't return Pp boxes
+    INITIALIZATION_OPTIONS["goals"]["messages"]["full"] = True # Include errors and warnings with proof views
+    INITIALIZATION_OPTIONS["proof"]["mode"] = 0 # Step manually
+    INITIALIZATION_OPTIONS["proof"]["block"] = False # Continue past the first error
+    INITIALIZATION_OPTIONS["completion"]["enable"] = False
+    INITIALIZATION_OPTIONS["diagnostics"]["full"] = False # Skip info diagnostics
 
     def _init(self) -> LSPClientInitializeRequest:
         req = super()._init()
