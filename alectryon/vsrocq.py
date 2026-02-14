@@ -25,7 +25,7 @@ import dataclasses
 import re
 
 from .core import Document, UTF8Document, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, Text, must
-from .lsp import JSON, LSPClient, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, LSPServerNotification, LSPServerNotifications
+from .lsp import JSON, LSPClient, LSPClientInitializeRequest, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, LSPServerNotification, LSPServerNotifications
 from .coq import CoqIdents
 
 class Notifications(LSPServerNotifications):
@@ -187,6 +187,24 @@ class VsRocqOutput:
 
 class VsRocqClient(LSPClient):
     LANGUAGE_ID = "coq"
+
+    INITIALIZATION_OPTIONS: JSON = {
+        "goals": {
+            "ppmode": "String", # Don't return Pp boxes
+            "messages": { "full": True }, # Include errors and warnings with proof views
+        },
+        "proof": {
+            "mode": 0, # Step manually
+            "block": False, # Continue past the first error
+        },
+        "completion": { "enable": False },
+        "diagnostics": { "full": False } # Dual of messages.full (skip info diagnostics)
+    }
+
+    def _init(self) -> LSPClientInitializeRequest:
+        req = super()._init()
+        req.params["initializationOptions"] = self.INITIALIZATION_OPTIONS
+        return req
 
 class VsRocqFile(LSPFile[VsRocqClient]):
     def _compute_ranges(self):
