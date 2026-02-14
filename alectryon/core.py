@@ -65,10 +65,11 @@ def dedent(lines, amount):
     return indentation, contents
 
 def debug(v, prefix):
-    if isinstance(v, (bytes, bytearray)):
-        v = v.decode("utf-8", errors="replace")
     if DEBUG:
-        print(indent(str(v).rstrip(), prefix), flush=True)
+        if isinstance(v, (bytes, bytearray)):
+            v = v.decode("utf-8", errors="replace")
+        v = str(v).rstrip().replace("\r\n", "\n")
+        print(indent(v, prefix), flush=True)
 
 class DriverInfo(namedtuple("DriverInfo", "name version")):
     def fmt(self, include_version_info=True):
