@@ -178,9 +178,8 @@ class VsRocqOutput:
 
     @staticmethod
     def parseproof_view(pv: JSON):
-        messages = [VsRocqOutput.parse_message(mv) for mv in pv.get("messages", [])]
         goals = [VsRocqOutput.parse_goal(gv) for gv in (pv.get("proof") or {}).get("goals", [])]
-        return messages, goals
+        return goals
 
 class VsRocqClient(LSPClient):
     LANGUAGE_ID = "coq"
@@ -201,6 +200,8 @@ class VsRocqFile(LSPFile[VsRocqClient]):
 
         blocked_on_error: bool = False
         diagnostics: dict[LSPDiagnostic, None] = {}
+        sentences: dict[tuple[int, int], tuple[str,list[Goal]]] = {}
+        messages: dict[tuple[int, int], list[Message]] = {}
 
         for (beg, end) in self._compute_ranges():
             contents: str = self.doc[beg:end]
@@ -208,18 +209,24 @@ class VsRocqFile(LSPFile[VsRocqClient]):
                 yield Positioned(beg, end, Text(contents))
                 continue
             pv = StepForwardNotification(self.client, self.fpath, self.uri).send()
-            messages, goals = VsRocqOutput.parseproof_view(must(pv.proof_view))
-            yield Positioned(beg, end, Sentence(contents, messages, goals))
+            goals = VsRocqOutput.parseproof_view(must(pv.proof_view))
+            sentences[(beg,end)] = (contents, goals)
             diagnostics |= dict.fromkeys(pv.diagnostics)
             blocked_on_error |= pv.blocked_on_error
 
         # LATER: Adjust line numbers for code blocks embedded in literate documents.
         for diag in diagnostics:
+            beg, end = self.doc.range2offsets(diag.range)
+            messages[(beg,end)] = messages.get((beg,end),[]) + [Message(diag.message)]
             if diag.severity >= 3:
                 continue
-            beg, end = self.doc.range2offsets(diag.range)
             context = self._format_error_context(beg, end)
             diag.notify(self.observer, context)
+
+        for (beg, end) in self._compute_ranges():
+            contents, goals = sentences[(beg,end)]
+            more_messages = messages.get((beg,end), [])
+            yield Positioned(beg, end, Sentence(contents, more_messages, goals))
 
     def _format_error_context(self, beg, end) -> str:
         context = self._highlight_context(beg, end)
