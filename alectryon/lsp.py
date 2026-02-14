@@ -277,13 +277,7 @@ class LSPClientInitializeRequest(LSPClientRequest):
 
     CAPABILITIES: ClassVar[JSON] = {
         "workspace": { "configuration": False },
-        "textDocument": {
-             "workspace": {
-                 "configuration": False,
-             },
-             "textDocument": {
-             }
-         }
+        "textDocument": {}
     }
 
     _params: JSON = field(init=False)
