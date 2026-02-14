@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 from pathlib import Path
-from typing import ClassVar, Iterable, Optional
+from typing import Any, ClassVar, Iterable, Optional
 
 import dataclasses
 import re
@@ -112,9 +112,11 @@ class VsRocqReadyMonitor(ExponentialBackoff):
             raise e
         return True
 
+PP = str | list["PP"]
+
 class VsRocqOutput:
     @staticmethod
-    def string_of_pp_string(pp):
+    def string_of_pp_string(pp: PP) -> str:
         """Convert a Coq pretty-printed string to a regular string."""
         # FIXME get VsRocq to return structured output
 
@@ -125,7 +127,7 @@ class VsRocqOutput:
         if hd == "Ppcmd_empty":
             return ""
         if hd == "Ppcmd_string":
-            return pp[1] if len(pp) > 1 else ""
+            return str(pp[1]) if len(pp) > 1 else ""
         if hd == "Ppcmd_glue":
             if len(pp) > 1 and isinstance(pp[1], list):
                 return "".join(VsRocqOutput.string_of_pp_string(sub_pp) for sub_pp in pp[1])
@@ -140,7 +142,7 @@ class VsRocqOutput:
             return "\n"
         if hd == "Ppcmd_comment":
             if len(pp) > 1 and isinstance(pp[1], list):
-                return " ".join(pp[1])
+                return " ".join(str(p) for p in pp[1])
             return ""
         else:
             return str(pp)
