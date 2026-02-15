@@ -476,10 +476,7 @@ class LSPDriver(PopenDriver, Generic[TClient]):
 
     def version_info(self) -> DriverInfo:
         with self:
-            info = self.client.config.driver_info or DriverInfo(self.NAME, "?")
-        if cli := super().version_info().version:
-            info = info._replace(version=f"{cli} / {info.version}")
-        return info
+            return self.client.config.driver_info or DriverInfo(self.NAME, "?")
 
     def reset(self):
         super().reset()

@@ -586,7 +586,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
     AUTOSELECT: ClassVar[bool]
 
     CLI_ARGS: ClassVar[Tuple[str, ...]] = ()
-    VERSION_ARGS: ClassVar[Tuple[str, ...] | None] = ("--version",)
+    VERSION_ARGS: ClassVar[Tuple[str, ...]] = ("--version",)
 
     CLI_ENCODING: ClassVar[str] = "utf-8"
 
@@ -599,10 +599,8 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         return cls.AUTOSELECT and (which(cls.BIN) is not None)
 
     def version_info(self) -> DriverInfo:
-        if self.VERSION_ARGS is not None:
-            bs = subprocess.check_output([self.resolve_driver(), *self.VERSION_ARGS])
-            return DriverInfo(self.NAME, bs.decode('ascii', 'ignore').strip())
-        return DriverInfo(self.NAME, "?")
+        bs = subprocess.check_output([self.resolve_driver(), *self.VERSION_ARGS])
+        return DriverInfo(self.NAME, bs.decode('ascii', 'ignore').strip())
 
     @classmethod
     def driver_not_found(cls, binpath) -> NoReturn:

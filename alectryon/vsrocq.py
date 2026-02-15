@@ -24,7 +24,7 @@ from typing import Any, ClassVar, Iterable, Optional
 import dataclasses
 import re
 
-from .core import Document, Range, TextDocument, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, must
+from .core import Document, DriverInfo, Range, TextDocument, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, must
 from .lsp import JSON, LSPClient, LSPClientInitializeRequest, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, LSPServerNotification, LSPServerNotifications
 from .coq import CoqIdents
 
@@ -236,6 +236,10 @@ class VsRocq(LSPDriver[VsRocqClient]):
     AUTOSELECT = True
 
     CLIENT = VsRocqClient
+
+    def version_info(self) -> DriverInfo:
+        lsp, cli  = super().version_info(), super(LSPDriver, self).version_info()
+        return lsp._replace(version=f"{cli.version} / {lsp.version}")
 
     @staticmethod
     def _normalize_fpath(p: Path) -> Path:
