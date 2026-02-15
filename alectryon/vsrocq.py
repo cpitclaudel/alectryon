@@ -24,7 +24,7 @@ from typing import Any, ClassVar, Iterable, Optional
 import dataclasses
 import re
 
-from .core import Document, UTF8Document, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, Text, must
+from .core import Document, Range, TextDocument, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, must
 from .lsp import JSON, LSPClient, LSPClientInitializeRequest, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, LSPServerNotification, LSPServerNotifications
 from .coq import CoqIdents
 
@@ -132,7 +132,7 @@ class VsRocqOutput:
         return Goal(name if isinstance(name, str) else None, conclusion, hypotheses)
 
     @staticmethod
-    def parseproof_view(pv: JSON):
+    def parse_proof_view(pv: JSON):
         pp_messages, pp_goals = pv.get("pp_messages", []), (pv.get("pp_proof") or {}).get("goals", [])
         messages = [m for mv in pp_messages if (m := VsRocqOutput.parse_message(mv))]
         goals = [VsRocqOutput.parse_goal(gv) for gv in pp_goals]
@@ -180,6 +180,11 @@ class VsRocqClient(LSPClient):
 
 class VsRocqFile(LSPFile[VsRocqClient]):
     def _compute_ranges(self):
+        """Compute the utf-8 start and end positions of each sentence.
+
+        Since all other offsets in VSRocq are in codepoints, we use this method
+        only to count sentences, and we discard the sentence boundaries.
+        """
         req = DocumentStateRequest(self.client, self.uri)
         document: str = must(req.send().result)["document"]
         sep = document.find("Document using sentences_by_end map")
@@ -191,25 +196,24 @@ class VsRocqFile(LSPFile[VsRocqClient]):
     def process(self) -> Iterable[Positioned[Fragment]]:
         VsRocqReadyMonitor(self.client, self.uri).wait()
 
-        blocked_on_error: bool = False
-        diagnostics: dict[LSPDiagnostic, None] = {}
+        diagnostics: set[LSPDiagnostic] = set()
 
-        for (beg, end) in self._compute_ranges():
-            contents: str = self.doc[beg:end]
-            if blocked_on_error:
-                yield Positioned(beg, end, Text(contents))
-                continue
+        for _ in self._compute_ranges(): # Counting ranges is valuable, but the offsets are unusable
             pv = StepForwardNotification(self.client, self.fpath, self.uri).send()
-            messages, goals = VsRocqOutput.parseproof_view(must(pv.proof_view))
-            yield Positioned(beg, end, Sentence(contents, messages, goals))
-            diagnostics |= dict.fromkeys(pv.diagnostics)
-            blocked_on_error |= pv.blocked_on_error
+            messages, goals = VsRocqOutput.parse_proof_view(must(pv.proof_view))
+            beg, end = self.doc.range2offsets(Range.of_lsp(self.fpath, must(pv.proof_view)["range"]))
+            yield Positioned(beg, end, Sentence(self.doc[beg:end], messages, goals))
 
-        # LATER: Adjust line numbers for code blocks embedded in literate documents.
-        for diag in diagnostics:
-            if diag.severity >= 3:
-                continue
-            diag.notify(self.doc, self.client)
+            # Print severe diagnostics eagerly
+            for diag in pv.diagnostics:
+                # LATER: Adjust line numbers for code blocks embedded in literate documents.
+                if diag not in diagnostics:
+                    diagnostics.add(diag)
+                    if diag.severity < 3:
+                        diag.notify(self.doc, self.client)
+
+            if pv.blocked_on_error:
+                break
 
 class VsRocq(LSPDriver[VsRocqClient]):
     BIN = "vsrocqtop"
@@ -227,9 +231,10 @@ class VsRocq(LSPDriver[VsRocqClient]):
         return CoqIdents.toppath_of_fpath(p)
 
     def _encode(self, chunks: Iterable[str]) -> Document:
-        # FIXME: VsRocq sends prover/documentState info using utf-8 offsets but
-        # uses codepoints (instead of utf-16?) in diagnostic line/char pairs.
-        return UTF8Document(chunks, "\n")
+        # VsRocq sends prover/documentState info using utf-8 offsets, but uses
+        # codepoints in diagnostic line/char pairs.
+        # https://github.com/rocq-prover/vsrocq/issues/1199
+        return TextDocument(chunks, "\n")
 
     def _find_sentences(self, document: Document) -> Iterable[Positioned[Fragment]]:
         """Find sentences in the document using VsRocq."""
