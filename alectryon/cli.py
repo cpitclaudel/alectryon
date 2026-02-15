@@ -846,7 +846,7 @@ DRIVER_ARGS_BY_NAME: Dict[str, Optional[str]] = {
     "noop": None,
     "sertop": "sertop_args",
     "sertop_noexec": "sertop_args",
-    "vsrocq": None,
+    "vsrocq": "coqc_args",
 }
 """Map from driver name to field in argparse namespace.
 Used to populate ``args.driver_args_by_name`` in ``post_process_arguments``."""
@@ -1042,25 +1042,25 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
                       metavar="SERTOP_ARG",
                       help=SERTOP_ARGS_HELP)
 
-    COQC_ARGS_HELP = ("Pass a single argument to coqc, "
-                      "for use with the coqc_time driver. "
-                      "(e.g. --coqc-arg=-noinit).")
-    subp.add_argument("--coqc-arg", dest="coqc_args",
+    COQC_ARGS_HELP = ("Pass a single argument to Rocq, "
+                      "for use with the coqc_time and vsrocq drivers. "
+                      "(e.g. --rocq-arg=-noinit).")
+    subp.add_argument("--rocq-arg", "--coqc-arg", dest="coqc_args",
                       action="append", default=[],
                       metavar="COQC_ARG",
                       help=COQC_ARGS_HELP)
 
-    I_HELP = "Pass -I DIR to the SerAPI subprocess."
+    I_HELP = "Pass -I DIR to Rocq subprocess."
     subp.add_argument("-I", "--ml-include-path", dest="coq_args_I",
                       metavar="DIR", nargs=1, action="append",
                       default=[], help=I_HELP)
 
-    Q_HELP = "Pass -Q DIR COQDIR to the SerAPI subprocess."
+    Q_HELP = "Pass -Q DIR COQDIR to Rocq subprocess."
     subp.add_argument("-Q", "--load-path", dest="coq_args_Q",
                       metavar=("DIR", "COQDIR"), nargs=2, action="append",
                       default=[], help=Q_HELP)
 
-    R_HELP = "Pass -R DIR COQDIR to the SerAPI subprocess."
+    R_HELP = "Pass -R DIR COQDIR to Rocq subprocess."
     subp.add_argument("-R", "--rec-load-path", dest="coq_args_R",
                       metavar=("DIR", "COQDIR"), nargs=2, action="append",
                       default=[], help=R_HELP)
