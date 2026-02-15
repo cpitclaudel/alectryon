@@ -198,11 +198,13 @@ class VsRocqFile(LSPFile[VsRocqClient]):
 
         diagnostics: set[LSPDiagnostic] = set()
 
+        sentences: list[Positioned[Sentence]] = []
         for _ in self._compute_ranges(): # Counting ranges is valuable, but the offsets are unusable
             pv = StepForwardNotification(self.client, self.fpath, self.uri).send()
             messages, goals = VsRocqOutput.parse_proof_view(must(pv.proof_view))
             beg, end = self.doc.range2offsets(Range.of_lsp(self.fpath, must(pv.proof_view)["range"]))
-            yield Positioned(beg, end, Sentence(self.doc[beg:end], messages, goals))
+            sentence = Positioned(beg, end, Sentence(self.doc[beg:end], messages, goals))
+            sentences.append(sentence)
 
             # Print severe diagnostics eagerly
             for diag in pv.diagnostics:
@@ -214,6 +216,16 @@ class VsRocqFile(LSPFile[VsRocqClient]):
 
             if pv.blocked_on_error:
                 break
+
+        # https://github.com/rocq-prover/vsrocq/issues/1201
+        # We don't have a way to filter directly by importance in proof views,
+        # we postprocess to discard messages that did not appear in diagnostics.
+        # FIXME: This loses `idtac` messages.
+        important_messages = {d.message for d in diagnostics}
+        for ps in sentences:
+            messages = [m for m in ps.e.messages if m.contents in important_messages]
+            yield ps._replace(e=ps.e._replace(messages=messages))
+
 
 class VsRocq(LSPDriver[VsRocqClient]):
     BIN = "vsrocqtop"
