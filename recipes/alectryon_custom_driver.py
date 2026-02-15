@@ -22,7 +22,7 @@ sys.path.insert(0, root)
 ## Tweak a setting that is not exposed on the command line.
 
 from alectryon.serapi import SerAPI
-SerAPI.DEFAULT_PP_ARGS['pp_margin'] = 55
+SerAPI.DEFAULT_PP_ARGS['pp_margin'] = 55 # Same as `-set "Printing Width=55"`
 
 ## Teach the Coq lexer to highlight embedded C code
 

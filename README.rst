@@ -589,26 +589,25 @@ Prettification
 
 Programming fonts with ligatures are a good way to display prettified symbols without resorting to complex hacks.  Good candidates include *Fira Code* and *Iosevka* (with the latter, add ``.alectryon-io { font-feature-settings: 'XV00' 1; }`` to your CSS to pick Coq-specific ligatures).
 
-Passing arguments to SerAPI
----------------------------
+Passing command-line arguments to drivers
+-----------------------------------------
 
-When using the command line interface, you can use the ``-I``, ``-Q``, ``-R`` and ``--sertop-arg`` flags to specify custom SerAPI arguments, like this::
+When using Alectryon's command-line interface, you can use the ``-I``, ``-Q``, ``-R`` and ``--rocq-arg`` flags to specify custom Rocq arguments, like this (other drivers expose similarly-named flags)::
 
-   alectryon -R . Lib --sertop-arg=--async-workers=4
+   alectryon -R . Lib                                         # Map . to Lib in Rocq's loadpath
+   alectryon --rocq-arg=-noinit                               # Don't load the prelude on start
+   alectryon  --rocq-arg=-set --rocq-arg="Printing Width=10"  # Adjust the printing width
 
-When compiling reStructuredText documents, you can add custom SerAPI arguments in a docinfo section at the beginning of your document, like this:
+To set arguments for all input files, either create a ``_RocqProject`` file::
 
-.. code-block:: rst
+   -arg -w -arg -notation-for-abbreviation
+   -arg -set -arg "'Printing Depth=30'"
+   -arg -set -arg "'Printing Width=55'"
 
-   :alectryon/serapi/args: -R . Lib -I mldir
-
-To set SerAPI's arguments for all input files, modify ``AlectryonTransform.DRIVER_ARGS["sertop"]`` in ``alectryon.docutils``.  Here's an example that you could use in a Sphinx config file::
+… or, if using a build system like Sphinx or Pelican, add arguments to ``AlectryonTransform.DRIVER_ARGS`` in ``alectryon.docutils``.  Here is an example that you could use in a Sphinx config file::
 
    from alectryon.docutils import AlectryonTransform
-   AlectryonTransform.DRIVER_ARGS["sertop"] = ["-Q", "/coq/source/path/,LibraryName"]
-
-Note that the syntax of ``DRIVER_ARGS["sertop"]`` is the one of ``sertop``, not the one of
-``coqc`` (https://github.com/ejgallego/coq-serapi/issues/215).
+   AlectryonTransform.DRIVER_ARGS["vsrocq"] = ["-Q", "/coq/source/path/,LibraryName"]
 
 Adding custom keywords
 ----------------------
