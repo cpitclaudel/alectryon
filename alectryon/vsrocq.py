@@ -229,7 +229,7 @@ class VsRocqFile(LSPFile[VsRocqClient]):
 class VsRocq(LSPDriver[VsRocqClient]):
     BIN = "vsrocqtop"
     NAME = "VsRocq"
-    VERSION_ARGS = ("--version",)
+    VERSION_ARGS = ("-print-version",)
 
     ID = "vsrocq"
     LANGUAGE = "coq"
