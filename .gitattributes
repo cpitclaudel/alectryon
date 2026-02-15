@@ -1,1 +1,2 @@
+*.cache diff=alectryon
 *.cache.xz diff=xz
