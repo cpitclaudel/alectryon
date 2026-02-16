@@ -31,6 +31,7 @@ from .coq import CoqIdents
 class Notifications(LSPServerNotifications):
     PROOF_VIEW = "prover/proofView"
     BLOCK_ON_ERROR = "prover/blockOnError"
+    DEBUG_MESSAGE = "prover/debugMessage"
 
 @dataclasses.dataclass
 class StepForwardNotification(LSPClientNotification):
@@ -39,6 +40,7 @@ class StepForwardNotification(LSPClientNotification):
     uri: str
 
     def __post_init__(self):
+        self.debug_messages: list[list[Any]] = []
         self.blocked_on_error = False
         self.proof_view: Optional[JSON] = None
         self.diagnostics: list[LSPDiagnostic] = [] # Could be handled by a wrapper class
@@ -51,6 +53,10 @@ class StepForwardNotification(LSPClientNotification):
         super().process_notification(message)
         if message.method == Notifications.PROOF_VIEW:
             self.proof_view = message.params
+            # FIXME: Should be included by the server as a regular message
+            self.proof_view.setdefault("pp_messages", []).extend(self.debug_messages)
+        elif message.method == Notifications.DEBUG_MESSAGE:
+            self.debug_messages.append([5, message.params["message"]])
         elif message.method == Notifications.BLOCK_ON_ERROR:
             self.blocked_on_error = True
         elif message.method == Notifications.PUBLISH_DIAGNOSTICS:
