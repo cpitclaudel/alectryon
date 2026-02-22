@@ -872,14 +872,14 @@ def post_process_arguments(parser, args):
 
     coq_args = []
     for (dirpath,) in args.coq_args_I:
-        coq_args.extend(("-I", dirpath))
+        coq_args.append(("-I", dirpath))
     for pair in args.coq_args_R:
-        coq_args.extend(("-R", ",".join(pair)))
+        coq_args.append(("-R", *pair))
     for pair in args.coq_args_Q:
-        coq_args.extend(("-Q", ",".join(pair)))
+        coq_args.append(("-Q", *pair))
 
-    args.sertop_args.extend(coq_args)
-    args.coqc_args.extend(coq_args)
+    args.sertop_args.extend(arg for opt, *args in coq_args for arg in (opt, ",".join(args)))
+    args.coqc_args.extend(arg for args in coq_args for arg in args)
 
     args.leanInk_args = []
     if args.leanInk_args_lake is not None:
