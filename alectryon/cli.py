@@ -785,7 +785,7 @@ DEFAULT_BACKENDS = {
 }
 
 def _input_frontends(lang):
-    return [lang, lang + '+rst', lang + '.json', lang + '.io.json']
+    return [lang, lang + '+rst', lang + '+md', lang + '.json', lang + '.io.json']
 
 INPUT_LANGUAGE_BY_FRONTEND = {
     **{fr: lang
