@@ -743,19 +743,18 @@ FRONTENDS_BY_EXTENSION = {
     **{ext: frontend
        for lang, exts in core.EXTENSIONS_BY_LANGUAGE.items() for ext in exts
        for ext, frontend in _language_frontends_by_extension(ext, lang)},
-
-    '.rst': 'rst',
-    '.md': 'md',
+    **{ext: markup
+       for markup, exts in core.EXTENSIONS_BY_MARKUP.items() for ext in exts},
     '.html': 'html',
     '.tex': 'latex',
-
     '.json': 'json', # LATER: Remove
 }
 
 BACKENDS_BY_EXTENSION = {
     **{ext: lang
        for lang, exts in core.EXTENSIONS_BY_LANGUAGE.items() for ext in exts},
-    '.rst': 'rst',
+    **{ext: markup
+       for markup, exts in core.EXTENSIONS_BY_MARKUP.items() for ext in exts},
     '.lint.json': 'lint', '.json': 'json',
     '.snippets.html': 'snippets-html', '.snippets.tex': 'snippets-latex',
     '.html': 'webpage', '.tex': 'latex'
@@ -766,18 +765,17 @@ def _default_language_backends(lang):
         lang: 'webpage',
         lang + '.json': 'json',
         lang + '.io.json': 'webpage',
-        lang + '+md': 'webpage',
-        lang + '+rst': 'webpage',
+        **{f"{lang}+{markup}": 'webpage' for markup in core.EXTENSIONS_BY_MARKUP}
     }
 
 DEFAULT_BACKENDS = {
     **{fr: bk
        for lang in core.ALL_LANGUAGES
        for (fr, bk) in _default_language_backends(lang).items()},
+    **{markup: 'webpage'
+       for markup in core.EXTENSIONS_BY_MARKUP},
 
     'coqdoc': 'webpage',
-    'rst': 'webpage',
-    'md': 'webpage',
     'latex': 'latex',
     'html': 'webpage',
 
@@ -785,7 +783,8 @@ DEFAULT_BACKENDS = {
 }
 
 def _input_frontends(lang):
-    return [lang, lang + '+rst', lang + '+md', lang + '.json', lang + '.io.json']
+    return [lang, lang + '.json', lang + '.io.json',
+            *[f"{lang}+{markup}" for markup in core.EXTENSIONS_BY_MARKUP]]
 
 INPUT_LANGUAGE_BY_FRONTEND = {
     **{fr: lang

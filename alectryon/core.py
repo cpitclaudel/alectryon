@@ -751,7 +751,7 @@ Later entries take precedence over previous ones.
 assert EXTENSIONS_BY_LANGUAGE.keys() == ALL_LANGUAGES
 
 EXTENSIONS_BY_MARKUP = {
-    "md": (".md",),
+    "md": (".md", ".myst",),
     "rst": (".rst",),
 }
 """A map from markup language identifiers to file extensions."""
