@@ -813,6 +813,7 @@ class ExperimentalExerciseDirective(Topic, AlectryonDirective):
 
     def run(self):
         [node] = super().run()
+        node['classes'].append(self.name)
         node['difficulty'] = self.options.get('difficulty')
         node['optional'] = self.options.get('optional', False)
         for title in list(node.findall(nodes.title)):
