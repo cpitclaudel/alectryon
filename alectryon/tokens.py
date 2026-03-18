@@ -121,7 +121,7 @@ class TokenizedStr(str):
 
     def __getitem__(self, index: Union[int, slice]): # type: ignore # 3.6
         s = super().__getitem__(index)
-        if index is int:
+        if isinstance(index, int):
             return s
         assert isinstance(index, slice)
         assert index.step is None
