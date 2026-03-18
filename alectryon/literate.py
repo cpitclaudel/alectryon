@@ -36,7 +36,9 @@ class StringView:
             else:
                 end = self.beg + idx.stop
             return StringView(self.s, beg, end)
-        return StringView(self.s[self.beg + idx])
+        assert 0 <= idx < len(self)
+        idx = min(self.beg + idx, self.end)
+        return StringView(self.s, idx, idx + 1)
 
     def __add__(self, other) -> "StringView":
         if self.s is not other.s:
