@@ -817,10 +817,10 @@ def lean4_trim_sentences(fragments):
             if prefix_match is not None:
                 prefix = center[:prefix_match.start()]
                 center = center[prefix_match.start():]
-            postifx_match = LEAN_TRIM_POSTFIX.search(center)
-            if postifx_match is not None:
-                postfix = center[postifx_match.start():]
-                center = center[:postifx_match.start()]
+            postfix_match = LEAN_TRIM_POSTFIX.search(center)
+            if postfix_match is not None:
+                postfix = center[postfix_match.start():]
+                center = center[:postfix_match.start()]
             transformed.append(Text(prefix))
             new_input = fr.input._replace(contents=center)
             transformed.append(fr._replace(input=new_input))
