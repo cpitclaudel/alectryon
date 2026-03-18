@@ -233,7 +233,7 @@ class LSPServerError(LSPServerMessage):
 
     @property
     def exn(self) -> LSPServerException:
-        raise LSPServerException(self.message, self.code)
+        return LSPServerException(self.message, self.code)
 
     @classmethod
     def from_json(cls, data: JSON) -> "Self":
