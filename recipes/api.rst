@@ -16,9 +16,9 @@ To compile::
 Annotating Coq snippets
 =======================
 
-Use ``alectryon.serapi.annotate`` to transform a process a list of fragments of statements using SerAPI:
+Use ``alectryon.vsrocq.annotate`` to transform a process a list of fragments of statements using SerAPI:
 
-   >>> from alectryon.serapi import annotate
+   >>> from alectryon.vsrocq import annotate
    >>> annotate(["Check surjective_pairing."])
    [[Sentence(contents='Check surjective_pairing.',
               messages=[Message(contents='surjective_pairing\n
@@ -29,8 +29,7 @@ Use ``alectryon.serapi.annotate`` to transform a process a list of fragments of 
 Here is a larger example:
 
    >>> fragments = ["Check 1.", "Goal False -> True. intros H."]
-   >>> sertop_args = ("-Q", "{},lib".format(libdir))
-   >>> annotated = annotate(fragments, sertop_args=sertop_args)
+   >>> annotated = annotate(fragments, vsrocq_args=("-Q", libdir, "lib"))
    >>> pprint(annotated, width=65)
    [[Sentence(contents='Check 1.',
               messages=[Message(contents='1\n     : nat')],

@@ -11,7 +11,7 @@ Trying:
 Expecting nothing
 ok
 Trying:
-    from alectryon.serapi import annotate
+    from alectryon.vsrocq import annotate
 Expecting nothing
 ok
 Trying:
@@ -28,11 +28,7 @@ Trying:
 Expecting nothing
 ok
 Trying:
-    sertop_args = ("-Q", "{},lib".format(libdir))
-Expecting nothing
-ok
-Trying:
-    annotated = annotate(fragments, sertop_args=sertop_args)
+    annotated = annotate(fragments, vsrocq_args=("-Q", libdir, "lib"))
 Expecting nothing
 ok
 Trying:
@@ -199,7 +195,7 @@ Expecting:
     \end{alectryon}
 ok
 1 items passed all tests:
-  23 tests in api.rst
-23 tests in 1 items.
-23 passed and 0 failed.
+  22 tests in api.rst
+22 tests in 1 items.
+22 passed and 0 failed.
 Test passed.
