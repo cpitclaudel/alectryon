@@ -615,7 +615,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
 
     @staticmethod
     def _debug_start(cmd):
-        debug(" ".join(quote(s) for s in cmd), '# ')
+        debug(" ".join(quote(str(s)) for s in cmd), '# ')
 
     @classmethod
     def _proc_out(cls, p: CompletedProcess[str]) -> str:
