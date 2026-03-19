@@ -260,3 +260,13 @@ class VsRocq(LSPDriver[VsRocqClient]):
     def _find_sentences(self, document: Document) -> Iterable[Positioned[Fragment]]:
         """Find sentences in the document using VsRocq."""
         return VsRocqFile(self, document).process()
+
+
+def annotate(chunks: Iterable[str], vsrocq_args=(), fpath="-", binpath=None) \
+    -> list[list[Fragment]]:
+    r"""Annotate multiple `chunks` of Rocq code.
+
+    >>> annotate(["Check 1."])
+    [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
+    """
+    return VsRocq(args=vsrocq_args, fpath=fpath, binpath=binpath).annotate(chunks)
