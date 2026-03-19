@@ -2,7 +2,7 @@
  Alectryon
 ===========
 
-A library to process Coq and Lean 4 snippets embedded in text documents, showing goals and messages for each input sentence.  Also a literate programming toolkit.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix interactive proofs and prose.
+A library to process Rocq and Lean 4 snippets embedded in text documents, showing goals and messages for each input sentence.  Also a literate programming toolkit.  The goal of Alectryon is to make it easy to write textbooks, blog posts, and other documents that mix interactive proofs and prose.
 
 .. image:: etc/screenshot.svg
    :width: 100%
@@ -26,12 +26,12 @@ Setup
 =====
 
 To install from OPAM and PyPI:
-    | ``opam install "coq-serapi>=8.10.0+0.7.0"`` (from the `Coq OPAM archive <https://coq.inria.fr/opam-using.html>`__)
+    | ``opam install vsrocq-language-server`` (from the `Rocq OPAM archive <https://rocq-prover.org/docs/using-opam>`__)
     | ``python3 -m pip install alectryon``
 
 To install the latest version from Git, use ``python3 -m pip install git+https://github.com/cpitclaudel/alectryon.git``.  To install from a local clone, use ``python3 -m pip install .``.
 
-**A note on dependencies**: the ``serapi`` module only depends on the ``coq-serapi`` OPAM package.  ``dominate`` is used in ``alectryon.html`` to generate HTML output, and ``pygments`` is used by the command-line application for syntax highlighting.  reStructuredText support requires ``docutils`` (and optionally ``sphinx``); Markdown support requires ``myst_parser`` (`docs <https://myst-parser.readthedocs.io/en/latest/index.html>`__); Coqdoc support requires ``beautifulsoup4``.  Support for Coq versions follows SerAPI; Coq ≥ 8.10 works well and ≥ 8.12 works best.
+Support for Rocq ≥ 9 uses the VsRocq language server.  For version < 9, use the ``coq-serapi`` OPAM package.
 
 Usage
 =====
@@ -173,8 +173,8 @@ Use ``alectryon.vsrocq.annotate(chunks: list[str])``, which returns an object wi
 
 .. code-block:: python
 
-    >>> from alectryon.vsrocq import VsRocq
-    >>> VsRocq().annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Check xyz."])
+    >>> from alectryon.vsrocq import annotate
+    >>> annotate(["Example xyz (H: False): True. (* ... *) exact I. Qed.", "Check xyz."])
     [# A list of processed fragments
      [# Each fragment is a list of records (each an instance of a namedtuple)
       Sentence(contents='Example xyz (H: False): True.',
