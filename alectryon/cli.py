@@ -282,7 +282,7 @@ def gen_latex_snippets(annotated, input_language, pygments_style):
     highlighter = make_highlighter("latex", input_language, pygments_style)
     return LatexGenerator(highlighter).gen(annotated)
 
-COQDOC_OPTIONS = ['--body-only', '--no-glob', '--no-index', '--no-externals',
+COQDOC_OPTIONS = ['doc', '--body-only', '--no-glob', '--no-index', '--no-externals',
                   '-s', '--html', '--stdout', '--utf8']
 
 def _run_coqdoc(coq_snippets, coqdoc_bin=None):
@@ -290,7 +290,7 @@ def _run_coqdoc(coq_snippets, coqdoc_bin=None):
     from shutil import rmtree
     from tempfile import mkstemp, mkdtemp
     from subprocess import check_output
-    coqdoc_bin = coqdoc_bin or os.path.join(os.getenv("COQBIN", ""), "coqdoc")
+    coqdoc_bin = coqdoc_bin or os.path.join(os.getenv("COQBIN", ""), "rocq")
     dpath = mkdtemp(prefix="alectryon_coqdoc_")
     fd, filename = mkstemp(prefix="alectryon_coqdoc_", suffix=".v", dir=dpath)
     try:
