@@ -28,9 +28,9 @@ from .core import CLIDriver, UTF8Document, Positioned, Position, Sentence, Text,
 from .serapi import CoqIdents
 
 class CoqcTime(CLIDriver):
-    BIN = "coqc"
+    BIN = "rocq"
     NAME = "Coq+coqc-time"
-    CLI_ARGS = ("-time", "-color", "no", "-quiet", "-q")
+    CLI_ARGS = ("compile", "-time", "-color", "no", "-quiet", "-q")
 
     ID = "coqc_time"
     LANGUAGE = "coq"
