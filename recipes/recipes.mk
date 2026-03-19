@@ -29,16 +29,12 @@ recipes_targets += _output/caching.html
 
 # Coq+reST → HTML
 _output/coq_drivers.html: coq_drivers.v
-	$(alectryon) --coq-driver=sertop $< -o $@
+	$(alectryon) --coq-driver=vsrocq $< -o $@
 recipes_targets += _output/coq_drivers.html
 # Coq+reST → HTML
 _output/coq_drivers.coqc.html: coq_drivers.v
 	$(alectryon) --coq-driver=coqc_time $< -o $@
 recipes_targets += _output/coq_drivers.coqc.html
-# Coq+reST → HTML
-_output/coq_drivers.noexec.html: coq_drivers.v
-	$(alectryon) --coq-driver=sertop_noexec $< -o $@
-recipes_targets += _output/coq_drivers.noexec.html
 
 # Coqdoc → HTML
 _output/coqdoc.html: coqdoc.v

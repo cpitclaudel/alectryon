@@ -1,22 +1,19 @@
 (*|
 ===============================================
- Using ``coqc`` to compile Alectryon documents
+ Using ``rocq`` to compile Alectryon documents
 ===============================================
 
-The normal way to compile Coq documents with Alectryon is to use ``serapi``.
-When this is not possible, however, you can use ``coqc`` with (much) reduced
+The normal way to compile Coq documents with Alectryon is to use ``vsrocq``.
+When this is not possible, however, you can use ``rocq`` with (much) reduced
 functionality: Alectryon will be able to parse individual sentences and refer to
 them, but not to compute goals and messages.  To compile with ``coqc``, pass
-``--coq-driver={sertop|sertop_noexec|coqc_time}`` to Alectryon::
+``--coq-driver={sertop_noexec|coqc_time}`` to Alectryon::
 
-   alectryon --coq-driver=sertop coq_drivers.v -o coq_drivers.html
+   alectryon --coq-driver=vsrocq coq_drivers.v -o coq_drivers.html
      # Coq+reST → HTML; produces ‘coq_drivers.html’
 
    alectryon --coq-driver=coqc_time coq_drivers.v -o coq_drivers.coqc.html
      # Coq+reST → HTML; produces ‘coq_drivers.coqc.html’
-
-   alectryon --coq-driver=sertop_noexec coq_drivers.v -o coq_drivers.noexec.html
-     # Coq+reST → HTML; produces ‘coq_drivers.noexec.html’
 
 .. coq:: none
 |*)
