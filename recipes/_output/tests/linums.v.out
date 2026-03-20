@@ -1,0 +1,15 @@
+tests/linums.rst.v:(20:30)-(20:31): (WARNING/2) Ignoring implicit binder declaration in unexpected position.
+   [unexpected-implicit-declaration,syntax,default]
+   The offending range is delimited by >>>…<<< below:
+     > |*)
+     > 
+     > Definition warning := forall {>>>a<<<: nat}, a >= 0.
+     > 
+     > Definition error :=
+tests/linums.rst.v:(23:6)-(23:11): (ERROR/3) The term "false" has type "bool"
+   while it is expected to have type "nat".
+   The offending range is delimited by >>>…<<< below:
+     > 
+     > Definition error :=
+     >   1 + >>>false<<<.
+exit: 1

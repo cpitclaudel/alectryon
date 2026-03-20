@@ -150,6 +150,15 @@ _output/tests/lean3_error.out: tests/lean3_error.rst
 	$(alectryon) $< --backend webpage -o /dev/null 2>&1 | sed 's/^\( *\).*\?\([.]lean:\)/\1...\2/g' > $@; echo "exit: $$?" >> $@
 tests_targets += _output/tests/lean3_error.out
 
+# Plain Coq → HTML + errors
+_output/tests/linums.v.out: tests/linums.rst.v
+	$(alectryon) $< --frontend coq -o /dev/null 2> $@; echo "exit: $$?" >> $@
+tests_targets += _output/tests/linums.v.out
+# Plain Coq → HTML + errors
+_output/tests/linums.rst.v.out: tests/linums.rst.v
+	$(alectryon) $< -o /dev/null 2> linums.v+rst.out; echo "exit: $$?" >> $@
+tests_targets += _output/tests/linums.rst.v.out
+
 # Lean → HTML
 _output/tests/lists.lean3.html: tests/lists.lean3
 	$(alectryon) $< -o $@
