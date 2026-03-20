@@ -29,7 +29,7 @@ tests_targets += _output/tests/cache_v2.html
 
 # reST + assertions
 _output/tests/cli_flags.txt: tests/cli_flags.rst
-	$(alectryon) $< -o /dev/null --debug --traceback --expect-unexpected --long-line-threshold=-1 -I . -R ../recipes/ custom_flag_recipes -Q ../alectryon/ custom_flag_alectryon_tests; echo "exit: $$?" > $@
+	$(alectryon) $< -o /dev/null -I . -R ../recipes/ custom_flag_recipes -Q ../alectryon/ custom_flag_alectryon_tests; echo "exit: $$?" > $@
 tests_targets += _output/tests/cli_flags.txt
 
 # ReST → HTML

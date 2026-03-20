@@ -1,11 +1,10 @@
-==================================
- SerAPI flags on the command line
-==================================
+================================
+ Rocq flags on the command line
+================================
 
 To compile::
 
    alectryon cli_flags.rst -o /dev/null \
-       --debug --traceback --expect-unexpected --long-line-threshold=-1 \
        -I . -R ../recipes/ custom_flag_recipes \
        -Q ../alectryon/ custom_flag_alectryon_tests; \
      echo "exit: $?" > cli_flags.txt
