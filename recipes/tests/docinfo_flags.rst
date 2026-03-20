@@ -1,6 +1,6 @@
-=========================
- SerAPI flags in docinfo
-=========================
+=======================
+ Rocq flags in docinfo
+=======================
 
 To compile::
 
@@ -8,10 +8,10 @@ To compile::
      # reST + assertions; produces ‘docinfo_flags.txt’
 
 :date: August 30, 2021
-:alectryon/serapi/args: -I . -R ../recipes/ custom_flag_recipes
-:alectryon/serapi/args: -Q ../alectryon/ custom_flag_alectryon_tests
+:alectryon/rocq/args: -I . -R ../recipes/ custom_flag_recipes
+:alectryon/rocq/args: -Q ../alectryon/ custom_flag_alectryon_tests
 
-.. topic:: Checking for SerAPI flags
+.. topic:: Checking for Rocq flags
 
    Calling :mquote:`.io#lp.s(Print LoadPath).in` (:mref:`.io#lp.s(Print LoadPath)`) prints all know paths, and the assert below checks that the expected paths are found.
 

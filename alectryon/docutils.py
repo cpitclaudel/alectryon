@@ -281,9 +281,11 @@ class Config:
             # here, but the filter added by Pygment's ``added_tokens`` processes words
             # (“names”) one by one, so multi-word tokens would never match.
             self.tokens_by_lang[lang][token].extend(body.split())
-        elif name == "alectryon/serapi/args":
+        elif name in ("alectryon/serapi/args", "alectryon/rocq/args"):
             import shlex
-            self.driver_args["sertop"].extend(self.parse_args(shlex.split(body)))
+            args = shlex.split(body)
+            self.driver_args["vsrocq"].extend(args)
+            self.driver_args["sertop"].extend(a for flag, vals in self.parse_args(args) for a in (flag, ",".join(vals)))
         else:
             return
         node.parent.remove(node)
@@ -291,7 +293,7 @@ class Config:
     @staticmethod
     def parse_args(args):
         import argparse
-        p = argparse.ArgumentParser(prog=":alectryon/serapi/args:", add_help=False)
+        p = argparse.ArgumentParser(prog=":alectryon/rocq/args:", add_help=False)
         p.add_argument("-I", "--ml-include-path", dest="I", metavar="DIR",
                        nargs=1, action="append", default=[])
         p.add_argument("-Q", "--load-path", dest="Q", metavar=("DIR", "COQDIR"),
@@ -300,8 +302,7 @@ class Config:
                        nargs=2, action="append", default=[])
         for (arg, instances) in p.parse_args(args)._get_kwargs():
             for vals in instances:
-                yield "-" + arg
-                yield ",".join(vals)
+                yield "-" + arg, vals
 
     def init_driver(self, lang):
         cfg = core.DriverConfig(lang, self.language_drivers, self.driver_args)
