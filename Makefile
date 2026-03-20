@@ -11,8 +11,17 @@ dependencies := $(binaries)
 
 ## Main targets
 
+make := $(MAKE)
+ifneq (,$(wildcard $(HOME)/.opam/alectryon))
+make := eval $$(opam env --switch=alectryon); $(make)
+endif
+
 test: $(dependencies)
-	+$(MAKE) -C recipes --always-make rocq
+	+$(make) -C recipes clean
+	+$(make) -C recipes all
+
+rocq: $(dependencies)
+	+$(make) -C recipes --always-make rocq
 
 dist: $(dependencies)
 	python -m build
@@ -22,7 +31,7 @@ upload: dist
 
 FORCE:
 recipes/%: FORCE
-	+$(MAKE) -C recipes --always-make "$*"
+	+$(make) -C recipes --always-make "$*"
 
 ## Dependencies
 
@@ -53,11 +62,25 @@ lint: $(dependencies)
 	pyright --project .
 
 coverage: $(dependencies)
-	+$(MAKE) -C recipes coverage
+	+$(make) -C recipes coverage
 
 develop: $(dependencies)
 	(which opam || { echo "OPAM not found; please install it"; exit 1; })
-	eval $$(opam env); opam install coq-serapi
 	pip install mypy coverage[toml]
 	python -m mypy --install-types alectryon/
 	pip install -e .[full]
+
+opam_switch := alectryon
+opam_flags := --switch=$(opam_switch)
+opam_ocaml_version := 5.4.0
+rocq_pin := 9.1.0
+vsrocq_pin := https://github.com/rocq-prover/vsrocq.git --subpath=language-server
+_opam:
+	@[ -d ~/.opam/$(opam_switch) ] || opam switch create $(opam_switch) $(opam_ocaml_version)
+	opam repo $(opam_flags) add rocq-released https://rocq-prover.org/opam/released
+	opam update $(opam_flags)
+	opam pin $(opam_flags) add -n rocq-core $(rocq_pin)
+	opam pin $(opam_flags) add -n rocq-runtime $(rocq_pin)
+	opam pin $(opam_flags) add -n vsrocq-language-server.dev $(vsrocq_pin)
+	opam install --yes $(opam_flags) rocq-core rocq-stdlib rocq-runtime vsrocq-language-server
+	opam switch link $(opam_switch)
