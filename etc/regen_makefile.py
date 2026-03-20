@@ -2,7 +2,7 @@
 
 import sys
 import re
-from pathlib import PurePosixPath as Path
+from pathlib import Path
 from fnmatch import fnmatch
 
 CMD_RE = re.compile(r"""
@@ -13,14 +13,8 @@ CMD_RE = re.compile(r"""
     ‘(?P<out>.+?)’
 """, re.VERBOSE | re.MULTILINE)
 
-def parse_rules(path: str):
-    try:
-        with open(path) as f:
-            contents = f.read()
-    except UnicodeDecodeError as e:
-        e.reason += " (in {})".format(path)
-        raise e
-    for m in CMD_RE.finditer(contents):
+def parse_rules(path: Path):
+    for m in CMD_RE.finditer(path.read_text()):
         yield m.groupdict()
 
 RULE_TEMPLATE = """\

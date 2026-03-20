@@ -180,13 +180,8 @@ tests_targets += _output/tests/misc.html
 
 # Coq → HTML
 _output/tests/plain_cli.noext.html: tests/plain_cli.rst | _output/tests/
-	$(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage <(echo "Check nat.") -o - > $@
+	TMP=$$(mktemp --tmpdir alectryon-XXXXX-tmp); echo "Check nat." > $$TMP; $(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage $$TMP -o - | sed 's/alectryon-.....-tmp/tmp/g' > $@
 tests_targets += _output/tests/plain_cli.noext.html
-# Coq → HTML
-_output/tests/plain_cli.tmp.html: tests/plain_cli.rst | _output/tests/
-	TMP=$$(mktemp); \
-     $(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage $$TMP && cp $$TMP $@
-tests_targets += _output/tests/plain_cli.tmp.html
 # Coq → HTML
 _output/tests/plain_cli.stdin.html: tests/plain_cli.rst | _output/tests/
 	echo "Check nat." | $(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage - > $@
