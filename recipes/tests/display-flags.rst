@@ -76,7 +76,7 @@ This file tests various combinations of display flags.  To compile::
    :name: pr
 
    Require Import Coq.Sorting.Permutation. (* .none *)
-   Check let t := nat in forall {n: t}, n >= 0. (* .unfold *)
+   Check let t := nat in forall n: t, n >= 0. (* .unfold *)
    Theorem Permutation_In {A} (l l' : list A) (a: A) :
      Permutation l l' -> List.In a l -> List.In a l'. (* .unfold *)
    Proof.
