@@ -1,6 +1,5 @@
-tests/unterminated.rst:13: (ERROR/3) Coq raised an exception:
-  > Syntax Error: Lexer: Unterminated string
-The offending chunk is delimited by >>>…<<< below:
-  > (* >>>"This string is unterminated. *)<<<
-Results past this point may be unreliable.
+tests/unterminated.rst:(13:6)-(14:3): (ERROR/3) Syntax Error: Lexer: Unterminated string
+   The offending range is delimited by >>>…<<< below:
+     > (* >>>"This string is unterminated. *)
+     > <<<
 exit: 13
