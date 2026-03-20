@@ -296,10 +296,10 @@ class ParsingError(ValueError):
     def line_col_of_pos(self, pos):
         assert pos >= 0
         # TODO use the binary search code from core
-        # Lines and columns are 1-based
+        # Lines are 1-based, columns are 0-based
         bol = self.document.rfind("\n", 0, pos) + 1 # 0 if not found
         line = 1 + self.document.count("\n", 0, pos)
-        column = 1 + pos - bol
+        column = pos - bol
         return line, column
 
     @property

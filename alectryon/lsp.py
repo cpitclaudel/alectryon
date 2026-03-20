@@ -29,7 +29,7 @@ from pathlib import Path
 
 from . import __version__
 from .transforms import coalesce_text
-from .core import Document, DriverInfo, EncodedDocument, Fragment, Observer, PopenDriver, Position, Positioned, Range, Text, debug as core_debug, must
+from .core import Document, DriverInfo, EncodedDocument, Fragment, Observer, PopenDriver, Positioned, Range, Text, debug as core_debug, must
 
 JSON = Dict[str, Any]
 
@@ -527,5 +527,5 @@ class LSPDriver(PopenDriver, Generic[TClient]):
                 return list(document.recover_chunks(coalesce_text(fragments)))
             except LSPServerException as e:
                 msg = f"LSP Server exception: {e}"
-                api.observer.notify(None, msg, Position(api.fpath, 1, 0).as_range(), level=3)
+                api.observer.notify(None, msg, Range.default(api.fpath), level=3)
                 return [[Text(c)] for c in chunks]

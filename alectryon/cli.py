@@ -47,7 +47,7 @@ def read_json(_, fpath, input_is_stdin):
     return loads(read_plain(None, fpath, input_is_stdin))
 
 def parse_plain(contents, fpath):
-    return [core.PosStr(contents, core.Position(fpath, 1, 1), 0)]
+    return [core.PosStr(contents, core.Position.default(fpath), 0)]
 
 class CodeSnippet(NamedTuple):
     contents: Any

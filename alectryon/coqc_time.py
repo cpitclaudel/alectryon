@@ -24,7 +24,7 @@ import tempfile
 import re
 from pathlib import Path
 
-from .core import CLIDriver, UTF8Document, Positioned, Position, Sentence, Text, Fragment
+from .core import CLIDriver, UTF8Document, Positioned, Range, Sentence, Text, Fragment
 from .serapi import CoqIdents
 
 class CoqcTime(CLIDriver):
@@ -67,5 +67,5 @@ class CoqcTime(CLIDriver):
             fragments = self.partition(document)
             return list(document.recover_chunks(fragments))
         except ValueError as e:
-            self.observer.notify(None, str(e), Position(self.fpath, 1, 0).as_range(), level=3)
+            self.observer.notify(None, str(e), Range.default(self.fpath), level=3)
             return [[Text(c)] for c in chunks]

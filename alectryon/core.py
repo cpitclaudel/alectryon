@@ -206,6 +206,11 @@ class Position(NamedTuple):
     line: int # 1-based
     col: int # 0-based
 
+    @staticmethod
+    def default(fpath):
+        """Return a position at the beginning of the current buffer."""
+        return Position(fpath, 1, 0)
+
     def as_range(self):
         return Range(self, None)
 
@@ -219,6 +224,11 @@ class Position(NamedTuple):
 class Range(NamedTuple):
     beg: Position
     end: Optional[Position]
+
+    @staticmethod
+    def default(fpath):
+        """Return an empty range at the beginning of the current buffer."""
+        return Position.default(fpath).as_range()
 
     def as_header(self):
         assert self.end is None or self.beg.fpath == self.end.fpath
@@ -265,14 +275,14 @@ class PosView(View):
 
     def translate_offset(self, offset):
         r"""Translate a character-based `offset` into a (line, column) pair.
-        Columns are 1-based.
+        Columns are 0-based.
 
         >>> text = "abc\ndef\nghi"
         >>> s = PosView(PosStr(text, Position("f", 3, 2), 5))
         >>> s.translate_offset(0)
         Position(fpath='f', line=3, col=2)
-        >>> s.translate_offset(10) # col=3, + offset (5) = 8
-        Position(fpath='f', line=5, col=8)
+        >>> s.translate_offset(10) # col=2, + offset (5) = 7
+        Position(fpath='f', line=5, col=7)
         """
         nl = self.rfind(self.NL, 0, offset)
         if nl == -1: # First line
@@ -280,7 +290,7 @@ class PosView(View):
         else:
             line = self.pos.line + self.count(self.NL, 0, offset)
             prefix = bytes(self[nl+1:offset]).decode("utf-8", 'ignore')
-            col = 1 + self.col_offset + len(prefix)
+            col = self.col_offset + len(prefix)
         return Position(self.pos.fpath, line, col)
 
     def translate_span(self, beg, end):
