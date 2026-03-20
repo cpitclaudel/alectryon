@@ -388,7 +388,7 @@ class AlectryonTransform(OneTimeTransform):
             return
         for linum, s in transforms.find_long_lines(fragments, threshold=LONG_LINE_THRESHOLD):
             msg = "Long line ({} characters)\n   {}".format(len(s), s)
-            contents_line = getattr(node, "contents_line", None)
+            contents_line = getattr(node, "details", {}).get("contents_line")
             opts = {"line": contents_line + linum} if contents_line else {}
             _system_message(self.document, self.document.reporter.WARNING_LEVEL, msg, base_node=node, **opts)
 

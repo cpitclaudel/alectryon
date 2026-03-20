@@ -182,6 +182,11 @@ _output/tests/literate.marked-empty.rst: tests/literate.v
 	$(alectryon) --frontend coq --backend rst /dev/null -o - --mark-point 42000 "F"IN | nl | grep "F"IN > $@
 tests_targets += _output/tests/literate.marked-empty.rst
 
+# Long lines
+_output/tests/long_lines.txt: tests/long_lines.rst
+	$(alectryon) $< -o /dev/null --long-line-threshold=18 2> $@
+tests_targets += _output/tests/long_lines.txt
+
 # Plain Coq → HTML (minified)
 _output/tests/minification.v.html: tests/minification.v
 	$(alectryon) --frontend coq --html-minification $<

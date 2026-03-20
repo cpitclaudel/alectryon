@@ -1,0 +1,4 @@
+tests/long_lines.rst:13: (WARNING/2) Long line (31 characters)
+   Definition over_seventeen := 1.
+tests/long_lines.rst:14: (WARNING/2) Long line (104 characters)
+   Definition very_very_long_name := 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1.
