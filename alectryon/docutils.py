@@ -362,9 +362,10 @@ class DocutilsObserver(core.Observer):
 
     def _notify(self, n: core.Notification):
         loc = n.location
+        src = {"source": loc.beg.fpath} if loc else {}
         beg = {"line": loc.beg.line, "column": loc.beg.col} if loc else {}
         end = {"end_line": loc.end.line, "end_column": loc.end.col} if loc and loc.end else {}
-        _system_message(self.document, n.level, n.message, **beg, **end)
+        _system_message(self.document, n.level, n.message, **src, **beg, **end)
 
 def by_lang(pending_nodes: Iterable[nodes.pending]) -> Dict[str, List[nodes.pending]]:
     partitioned: Dict[str, List[nodes.pending]] = {}
@@ -764,12 +765,15 @@ class ProverDirective(AlectryonDirective):
         indent, contents = recompute_contents(self, ProverDirective.EXPECTED_INDENTATION)
         source, contents_line = self.state_machine.get_source_and_line(self.content_offset + 1)
 
-        col_offset = indent
         if document.get('source', "") == source \
            and alectryon_state(document).root_is_code:
-            col_offset = 0
+            indent = 0
 
-        pos = Position(source, contents_line, col_offset)
+        # We record two things:
+        #   1. Where this directive appeared in the source document (`pos`)
+        #   2. How much its contents were indented by (`indent`)
+        # `pos` is the dedented position (so its column number is 0)
+        pos = Position(source, contents_line, 0) # pos refers to indent-relative coordinates
         contents = PosStr(contents, pos, indent)
 
         roles.set_classes(self.options)

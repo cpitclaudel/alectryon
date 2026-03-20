@@ -18,6 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from functools import cached_property
 from typing import Any, ClassVar, DefaultDict, Dict, Generic, Iterable, IO, List, \
     NamedTuple, NoReturn, Optional, Tuple, TypeVar, Union
 
@@ -221,6 +222,16 @@ class Position(NamedTuple):
     def to_lsp(self):
         return { "line": self.line - 1, "character": self.col }
 
+    def __add__(self, other):
+        line = self.line + other.line - 1
+        col = (self.col if other.line == 1 else 0) + other.col
+        return Position(self.fpath, line, col)
+
+    def __sub__(self, other):
+        line = self.line - other.line + 1
+        col = self.col - (other.col if line == 1 else 0)
+        return Position(self.fpath, line, col)
+
 class Range(NamedTuple):
     beg: Position
     end: Optional[Position]
@@ -246,9 +257,23 @@ class PosStr(str):
     def __new__(cls, s, *_args):
         return super().__new__(cls, s)
 
-    def __init__(self, _s, pos: Position, col_offset):
+    def __init__(self, _s, pos: Position, indent: int):
         super().__init__()
-        self.pos, self.col_offset = pos, col_offset
+        self.pos, self.indent = pos, indent
+
+    def remap(s: str, base: Position, pos: Position):
+        """Express `pos` in coordinate space of `s`, relative to `base`.
+
+        `base` indicates the coordinates of `s` starts in the document that
+        `pos` is taken from.  If `s` is a ``PosStr``; recompute `pos` relative
+        to the real coordinates of `s` instead of `base`.  Otherwise, return
+        `pos` unchanged.
+        """
+        if not isinstance(s, PosStr):
+            return pos
+        abs = s.pos + (pos - base)
+        # print(f"Remapping:\n  {pos=},\n  {base=},\n  {pos - base=},\n  {s.pos=},\n= {abs=}", file=sys.stderr)
+        return Position(pos.fpath, abs.line, s.indent + abs.col)
 
 class View(bytes):
     def __getitem__(self, key):
@@ -276,7 +301,6 @@ class Document:
         self.with_separator = [c + chunk_separator for c in self.chunks]
         self.str: str = chunk_separator[0:0].join(self.with_separator)
         self.separator = chunk_separator
-        self._bol_offsets = None
 
     @classmethod
     def _len(cls, s: str) -> int:
@@ -302,11 +326,13 @@ class Document:
         grouped = self._recover_chunks(self.with_separator, fragments)
         return self.strip_separators(grouped, self.separator)
 
-    @property
-    def bol_offsets(self):
-        if self._bol_offsets is None:
-            self._bol_offsets = list(self._find_bols())
-        return self._bol_offsets
+    @cached_property
+    def bol_offsets(self) -> list[int]:
+        return list(self._find_bols())
+
+    @cached_property
+    def chunk_offsets(self) -> list[int]:
+        return [p.beg for p in self.with_boundaries(self.with_separator)]
 
     def offset2lc(self, offset) -> Tuple[int, int]:
         import bisect
@@ -331,6 +357,20 @@ class Document:
         beg = self.pos2offset(range.beg)
         end = self.pos2offset(range.end) if range.end else self._find_eol(beg)
         return beg, end
+
+    def offset2chunk(self, offset: int) -> int:
+        """Return the index of the chunk that contains `offset`."""
+
+    def remap_pos(self, pos: Position) -> Position:
+        """Translate `pos` from document to source-file space."""
+        import bisect
+        idx = bisect.bisect_right(self.chunk_offsets, self.pos2offset(pos)) - 1
+        base = self.offset2pos(pos.fpath, self.chunk_offsets[idx])
+        return PosStr.remap(self.chunks[idx], base, pos)
+
+    def remap_range(self, range: Range) -> Range:
+        """Translate `range` from document to source-file space."""
+        return Range(self.remap_pos(range.beg), range.end and self.remap_pos(range.end))
 
     def intersperse_text_fragments(self, pfragments: Iterable[Positioned[Fragment]]) -> Iterable[Fragment]:
         """Split document into fragments.

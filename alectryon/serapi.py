@@ -54,7 +54,7 @@ class PosView(View):
 
     def __init__(self, s):
         super().__init__(s)
-        self.pos, self.col_offset = s.pos, s.col_offset
+        self.pos, self.indent = s.pos, s.indent
 
     def __getitem__(self, key):
         return memoryview(self).__getitem__(key)
@@ -76,7 +76,7 @@ class PosView(View):
         else:
             line = self.pos.line + self.count(self.NL, 0, offset)
             prefix = bytes(self[nl+1:offset]).decode("utf-8", 'ignore')
-            col = self.col_offset + len(prefix)
+            col = self.indent + len(prefix)
         return Position(self.pos.fpath, line, col)
 
     def translate_range(self, beg, end):

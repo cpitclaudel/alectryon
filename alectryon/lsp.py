@@ -338,7 +338,7 @@ class LSPDiagnostic:
         )
 
     def notify(self, doc: Document, client: "LSPClient"):
-        client.report_error(doc, self.range, self.message, self.SEVERITY_LEVELS[self.severity])
+        client.report_diagnostic(doc, self.range, self.message, self.SEVERITY_LEVELS[self.severity])
 
 @dataclass(frozen=True)
 class LSPMessage:
@@ -397,9 +397,9 @@ class LSPClient:
         return ("\nThe offending range is delimited by >>>…<<< below:\n" +
                 "\n".join(f"  > {line}" for line in context.splitlines()))
 
-    def report_error(self, doc, range, message, level):
+    def report_diagnostic(self, doc, range, message, level):
         context = self._format_error_context(doc, range)
-        self.driver.observer.notify(None, message + context, range, level=level)
+        self.driver.observer.notify(None, message + context, doc.remap_range(range), level=level)
 
     def _init(self) -> LSPClientInitializeRequest:
         return LSPClientInitializeRequest(self)
