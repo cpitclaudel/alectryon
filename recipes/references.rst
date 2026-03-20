@@ -145,12 +145,12 @@ Newlines in quoted objects are removed, and line breaks are allowed:
 
     The first sentence is :mquote:`.s(Record).in`.  [#f1]_
 
-    .. [#f1] The second sentence is :mquote:`.s(Goal).in`.  Later on we'll see a message: :mquote:`.io#pr.s(Check).msg(implicit binder)`.
+    .. [#f1] The second sentence is :mquote:`.s(Goal).in`.  Later on we'll see a message: :mquote:`.io#pr.s(Check).msg(nat)`.
 
 To preserve newlines, use the ``.. mquote::`` directive instead:
 
     .. mquote:: .s(Goal).in
-    .. mquote:: .io#pr.s(Check).msg(implicit binder)
+    .. mquote:: .io#pr.s(Check).msg(nat)
 
 There, too, you may want to define aliases:
 
@@ -180,7 +180,7 @@ References can also be used to customize the display of goals and hypotheses.  I
        :name: pr
 
        Require Import Coq.Sorting.Permutation. (* .none *)
-       Check let t := nat in forall {n: t}, n >= 0. (* .unfold *)
+       Check let t := nat in forall n: t, n >= 0. (* .unfold *)
        Theorem Permutation_In {A} (l l' : list A) (a: A) :
          Permutation l l' -> List.In a l -> List.In a l'. (* .unfold *)
        Proof.
@@ -199,7 +199,7 @@ A constant concern when displaying proof states to readers is that what is displ
 
        Print plus.
 
-To show the recursive definition of addition.   But as Coq's standard library got reorganized, the definition of `plus` changed to being an alias for `Nat.add`, making the output of `Print plus` uninteresting.  In general, the recommended way to prevent this issue is by recording and versioning the prover's output using Alectryon caching facility (``--cache-directory``).  For small checks, however, Alectryon provides the ``massert`` directive, which checks that all references in its body resolve to a part of Coq's output.  For example, the following checks that `plus` is indeed an alias and `Nat.add` a `Fixpoint`.
+To show the recursive definition of addition.   But as Coq's standard library got reorganized, the definition of `plus` changed to being an alias for `Nat.add`, making the output of `Print plus` less interesting.  In general, the recommended way to prevent this issue is by recording and versioning the prover's output using Alectryon caching facility (``--cache-directory``).  For small checks, however, Alectryon provides the ``massert`` directive, which checks that all references in its body resolve to a part of Coq's output.  For example, the following checks that `plus` is indeed an alias and `Nat.add` a `Fixpoint`.
 
     .. coq::
 

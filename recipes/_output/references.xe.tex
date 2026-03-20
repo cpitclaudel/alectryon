@@ -414,9 +414,11 @@ The following commands print information about an identifier \hyperref[reference
           \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\Al{nl}
           \Al{nl}
           \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{k}{is}~\PY{n}{not}~\PY{n}{universe}~\PY{n}{polymorphic}\Al{nl}
-          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}\Al{nl}
+          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{\PYZus{}nat\PYZus{}scope}\Al{nl}
           \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{k}{is}~\PY{n}{transparent}\Al{nl}
-          \PY{n}{Expands}~\PY{n}{to}\PY{o}{:}~\PY{n}{Constant}~\PY{n}{Coq}\PY{o}{.}\PY{n}{Init}\PY{o}{.}\PY{n}{Nat}\PY{o}{.}\PY{n}{add}
+          \PY{n}{Expands}~\PY{n}{to}\PY{o}{:}~\PY{n}{Constant}~\PY{n}{Corelib}\PY{o}{.}\PY{n}{Init}\PY{o}{.}\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\Al{nl}
+          \PY{n}{Declared}~\PY{k}{in}\Al{nl}
+          \PY{n}{library}~\PY{n}{Corelib}\PY{o}{.}\PY{n}{Init}\PY{o}{.}\PY{n}{Nat}\PY{o}{,}~\PY{n}{line}~\PY{l+m+mi}{47}\PY{o}{,}~\PY{n}{characters}~\PY{l+m+mi}{9}\PY{o}{\PYZhy{}}\PY{l+m+mi}{12}
         \end{\al{message}}
       \end{\al{messages}}
     \end{\al{output}}
@@ -438,7 +440,7 @@ The following commands print information about an identifier \hyperref[reference
           ~~\PY{k}{end}\Al{nl}
           ~~~~~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\Al{nl}
           \Al{nl}
-          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}
+          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{\PYZus{}nat\PYZus{}scope}
         \end{\al{message}}
       \end{\al{messages}}
     \end{\al{output}}
@@ -738,8 +740,8 @@ The second sentence is \alectryonInline{\PY{k+kn}{Goal}~\PY{k}{forall}~\PY{o}{\P
 ~~\PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k}{in}\Al{nl}
 ~~\PY{o}{\PYZob{}|}~\PY{n}{p\PYZus{}first}~\PY{o}{:=}~\PY{n}{a\PYZus{}first}\PY{o}{;}\Al{nl}
 ~~~~~\PY{n}{p\PYZus{}second}~\PY{o}{:=}~\PY{n}{b\PYZus{}second}~\PY{o}{|\PYZcb{}}~\PY{o}{=}~\PY{n}{p}\PY{o}{.}}.  Later on we'll see a message: \alectryonInline{\begin{\al{message}}
-  \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\Al{nl}
-  \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{,}\PY{n}{default}\PY{o}{]}
+  \PY{k}{let}~\PY{n+nv}{t}~\PY{o}{:=}~\PY{n}{nat}~\PY{k}{in}~\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{t}\PY{o}{,}~\PY{n}{n}~\PY{o}{\PYZgt{}=}~\PY{l+m+mi}{0}\Al{nl}
+  ~~~~~\PY{o}{:}~\PY{k+kt}{Prop}
 \end{\al{message}}}.
 }
 \end{quote}
@@ -757,8 +759,8 @@ To preserve newlines, use the \texttt{.. mquote::} directive instead:
 
 \begin{alectryon}
   \begin{\al{message}}
-    \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\Al{nl}
-    \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{,}\PY{n}{default}\PY{o}{]}
+    \PY{k}{let}~\PY{n+nv}{t}~\PY{o}{:=}~\PY{n}{nat}~\PY{k}{in}~\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{t}\PY{o}{,}~\PY{n}{n}~\PY{o}{\PYZgt{}=}~\PY{l+m+mi}{0}\Al{nl}
+    ~~~~~\PY{o}{:}~\PY{k+kt}{Prop}
   \end{\al{message}}
 \end{alectryon}
 \end{quote}
@@ -802,17 +804,8 @@ References can also be used to customize the display of goals and hypotheses.  I
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kn}{Check}~\PY{k}{let}~\PY{n+nv}{t}~\PY{o}{:=}~\PY{n}{nat}~\PY{k}{in}~\PY{k}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{n}\PY{o}{:}~\PY{n}{t}\PY{o}{\PYZcb{},}~\PY{n}{n}~\PY{o}{\PYZgt{}=}~\PY{l+m+mi}{0}\PY{o}{.}
+      \PY{k+kn}{Check}~\PY{k}{let}~\PY{n+nv}{t}~\PY{o}{:=}~\PY{n}{nat}~\PY{k}{in}~\PY{k}{forall}~\PY{n+nv}{n}\PY{o}{:}~\PY{n}{t}\PY{o}{,}~\PY{n}{n}~\PY{o}{\PYZgt{}=}~\PY{l+m+mi}{0}\PY{o}{.}\Al{nl}
     \end{\al{input}}
-    \Al{sep}
-    \begin{\al{output}}
-      \begin{\al{messages}}
-        \begin{\al{message}}
-          \PY{n}{Ignoring}~\PY{n}{implicit}~\PY{k+kn}{binder}~\PY{n}{declaration}~\PY{k}{in}~\PY{n}{unexpected}~\PY{n}{position}\PY{o}{.}\Al{nl}
-          \PY{o}{[}\PY{n}{unexpected}\PY{o}{\PYZhy{}}\PY{n}{implicit}\PY{o}{\PYZhy{}}\PY{n}{declaration}\PY{o}{,}\PY{n}{syntax}\PY{o}{,}\PY{n}{default}\PY{o}{]}
-        \end{\al{message}}
-      \end{\al{messages}}
-    \end{\al{output}}
   \end{\al{sentence}}
   \Al{sep}
   \begin{\al{sentence}}
@@ -923,7 +916,17 @@ A constant concern when displaying proof states to readers is that what is displ
     \begin{\al{output}}
       \begin{\al{messages}}
         \begin{\al{message}}
-          \PY{k+kn}{Notation}~\PY{n+nf}{plus}~\PY{o}{:=}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}
+          \PY{k+kn}{Notation}~\PY{n+nf}{plus}~\PY{o}{:=}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}\Al{nl}
+          \Al{nl}
+          \PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{=}\Al{nl}
+          \PY{k}{fix}~\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}~\PY{o}{:}~\PY{n}{nat}\PY{o}{)}~\PY{o}{\PYZob{}}\PY{k}{struct}~\PY{n}{n}\PY{o}{\PYZcb{}}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{:=}\Al{nl}
+          ~~\PY{k}{match}~\PY{n}{n}~\PY{k}{with}\Al{nl}
+          ~~\PY{o}{|}~\PY{l+m+mi}{0}~\PY{o}{=\PYZgt{}}~\PY{n}{m}\Al{nl}
+          ~~\PY{o}{|}~\PY{n}{S}~\PY{n}{p}~\PY{o}{=\PYZgt{}}~\PY{n}{S}~\PY{o}{(}\PY{n}{add}~\PY{n}{p}~\PY{n}{m}\PY{o}{)}\Al{nl}
+          ~~\PY{k}{end}\Al{nl}
+          ~~~~~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\Al{nl}
+          \Al{nl}
+          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{\PYZus{}nat\PYZus{}scope}
         \end{\al{message}}
       \end{\al{messages}}
     \end{\al{output}}
@@ -931,7 +934,7 @@ A constant concern when displaying proof states to readers is that what is displ
 \end{alectryon}
 \end{quote}
 
-To show the recursive definition of addition.   But as Coq's standard library got reorganized, the definition of \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{plus}}}}} changed to being an alias for \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{Nat}\DUrole{o}{.}\DUrole{n}{add}}}}}, making the output of \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{kn}{Print} \DUrole{n}{plus}}}}} uninteresting.  In general, the recommended way to prevent this issue is by recording and versioning the prover's output using Alectryon caching facility (\texttt{--cache-directory}).  For small checks, however, Alectryon provides the \texttt{massert} directive, which checks that all references in its body resolve to a part of Coq's output.  For example, the following checks that \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{plus}}}}} is indeed an alias and \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{Nat}\DUrole{o}{.}\DUrole{n}{add}}}}} a \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{kn}{Fixpoint}}}}}.
+To show the recursive definition of addition.   But as Coq's standard library got reorganized, the definition of \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{plus}}}}} changed to being an alias for \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{Nat}\DUrole{o}{.}\DUrole{n}{add}}}}}, making the output of \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{kn}{Print} \DUrole{n}{plus}}}}} less interesting.  In general, the recommended way to prevent this issue is by recording and versioning the prover's output using Alectryon caching facility (\texttt{--cache-directory}).  For small checks, however, Alectryon provides the \texttt{massert} directive, which checks that all references in its body resolve to a part of Coq's output.  For example, the following checks that \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{plus}}}}} is indeed an alias and \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{Nat}\DUrole{o}{.}\DUrole{n}{add}}}}} a \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{kn}{Fixpoint}}}}}.
 
 \begin{quote}
 \begin{alectryon}
@@ -951,7 +954,7 @@ To show the recursive definition of addition.   But as Coq's standard library go
           ~~\PY{k}{end}\Al{nl}
           ~~~~~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\Al{nl}
           \Al{nl}
-          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{nat\PYZus{}scope}
+          \PY{k+kn}{Arguments}~\PY{n}{Nat}\PY{o}{.}\PY{n}{add}~\PY{o}{(}\PY{n}{n}~\PY{n}{m}\PY{o}{)\PYZpc{}}\PY{n}{\PYZus{}nat\PYZus{}scope}
         \end{\al{message}}
       \end{\al{messages}}
     \end{\al{output}}
