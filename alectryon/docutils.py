@@ -80,7 +80,7 @@ from docutils import nodes
 from docutils.parsers.rst import directives, roles, states, Directive # type: ignore
 from docutils.parsers.rst.directives.body import Topic # type: ignore
 from docutils.parsers.rst.directives.misc import Role # type: ignore
-from docutils.readers.standalone import Reader as StandaloneReader
+from docutils.readers.standalone import Reader
 from docutils.transforms import Transform
 from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
@@ -149,10 +149,10 @@ def _node_error(document, node, msg):
 
 def _format_errors(src, *errs):
     msg = "\n".join(map(str, errs))
-    msg = "\n" + core.indent(msg, "   ") if len(errs) > 1 else  " " + msg
+    sep = ":\n" if len(errs) > 1 else ": "
     if isinstance(src, nodes.Element):
         src = getattr(src, "text", src.rawsource)
-    return "In {}:{}".format(src, msg)
+    return f"In {src}{sep}{msg}"
 
 def _try(document, fn, node, *args, **kwargs):
     try:
@@ -361,11 +361,7 @@ class DocutilsObserver(core.Observer):
         self.document = document
 
     def _notify(self, n: core.Notification):
-        loc = n.location
-        src = {"source": loc.beg.fpath} if loc else {}
-        beg = {"line": loc.beg.line, "column": loc.beg.col} if loc else {}
-        end = {"end_line": loc.end.line, "end_column": loc.end.col} if loc and loc.end else {}
-        _system_message(self.document, n.level, n.message, **src, **beg, **end)
+        _system_message(self.document, **n.as_docutils())
 
 def by_lang(pending_nodes: Iterable[nodes.pending]) -> Dict[str, List[nodes.pending]]:
     partitioned: Dict[str, List[nodes.pending]] = {}
@@ -387,7 +383,7 @@ class AlectryonTransform(OneTimeTransform):
         if LONG_LINE_THRESHOLD is None:
             return
         for linum, s in transforms.find_long_lines(fragments, threshold=LONG_LINE_THRESHOLD):
-            msg = "Long line ({} characters)\n   {}".format(len(s), s)
+            msg = f"Long line ({len(s)} characters)\n{s}"
             contents_line = getattr(node, "details", {}).get("contents_line")
             opts = {"line": contents_line + linum} if contents_line else {}
             _system_message(self.document, self.document.reporter.WARNING_LEVEL, msg, base_node=node, **opts)
@@ -1144,6 +1140,20 @@ class MAssertDirective(AlectryonDirective):
 # Error printer
 # -------------
 
+class StderrErrorObserver:
+    @staticmethod
+    def notification_of_message(msg) -> core.Notification:
+        return core.Notification.of_docutils(nodes.Element.astext(msg).strip(), msg["level"], msg)
+
+    def __init__(self, stream, settings):
+        self.stream = stream
+        self.settings = settings
+
+    def __call__(self, msg):
+        if self.stream and msg['level'] >= self.settings.report_level:
+            self.stream.write(self.notification_of_message(msg).as_text())
+            self.stream.write("\n")
+
 class JsErrorObserver:
     @staticmethod
     def json_of_message(msg):
@@ -1161,12 +1171,12 @@ class JsErrorObserver:
     def __init__(self, stream, settings):
         self.errors = []
         self.stream = stream
-        self.report_level = settings.report_level
+        self.settings = settings
 
     def __call__(self, msg):
         import json
         self.errors.append(msg)
-        if self.stream and msg['level'] >= self.report_level:
+        if self.stream and msg['level'] >= self.settings.report_level:
             js = self.json_of_message(msg)
             json.dump(js, self.stream)
             self.stream.write('\n')
@@ -1419,20 +1429,28 @@ class EarlyTransformer(docutils.transforms.Transformer):
         self.transforms = [t for t in self.transforms if t[0] < self.PRIORITY_THRESHOLD]
         super().apply_transforms()
 
-class LintingReader(StandaloneReader):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        from io import StringIO
-        self.error_stream = kwargs.get("error_stream", StringIO())
+class StandaloneReader(Reader):
+    """Custom reader that sets up line-column error reporting."""
 
+    def new_document(self):
+        import sys
+        doc = super().new_document()
+        observer = StderrErrorObserver(sys.stderr, self.settings)
+        doc.reporter.stream = False # Disable default text logging (line only)
+        doc.reporter.attach_observer(observer) # Attach custom text logging (line+col)
+        return doc
+
+class LintingReader(Reader):
     def get_transforms(self):
         return super().get_transforms() + [LoadConfigTransform]
 
     def new_document(self):
+        from io import StringIO
+
         doc = super().new_document()
         doc.transformer = EarlyTransformer(doc)
 
-        js_observer = JsErrorObserver(self.error_stream, self.settings)
+        js_observer = JsErrorObserver(StringIO(), self.settings)
         doc.reporter.report_level = 0 # Report all messages
         doc.reporter.halt_level = docutils.utils.Reporter.SEVERE_LEVEL + 1 # Do not exit early
         doc.reporter.stream = False # Disable textual reporting

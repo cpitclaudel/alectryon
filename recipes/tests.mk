@@ -156,7 +156,7 @@ _output/tests/linums.v.out: tests/linums.rst.v
 tests_targets += _output/tests/linums.v.out
 # Plain Coq → HTML + errors
 _output/tests/linums.rst.v.out: tests/linums.rst.v
-	$(alectryon) $< -o /dev/null 2> linums.v+rst.out; echo "exit: $$?" >> $@
+	$(alectryon) $< -o /dev/null 2> $@; echo "exit: $$?" >> $@
 tests_targets += _output/tests/linums.rst.v.out
 
 # Lean → HTML

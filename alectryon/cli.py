@@ -240,7 +240,7 @@ def _docutils_cmdline(description, frontend, backend, dialect):
 
     pipeline = get_pipeline(frontend, backend, dialect)
     return publish_cmdline(
-        parser=pipeline.parser(), writer=pipeline.writer(),
+        reader=pipeline.reader(), parser=pipeline.parser(), writer=pipeline.writer(),
         settings_overrides={'stylesheet_path': None,
                             **DOCUTILS_FUTURE_WARNINGS_SETTINGS_OVERRIDES},
         description="{} {}".format(description, default_description))

@@ -215,6 +215,9 @@ class Position(NamedTuple):
     def as_range(self):
         return Range(self, None)
 
+    def as_header(self) -> str:
+        return f"{self.line}:{self.col}" if self.col else f"{self.line}"
+
     @classmethod
     def of_lsp(cls, fpath: Union[str, Path], js: dict[str, Any]):
         return Position(fpath, js["line"] + 1, js["character"])
@@ -243,15 +246,27 @@ class Range(NamedTuple):
 
     def as_header(self):
         assert self.end is None or self.beg.fpath == self.end.fpath
-        beg = "{}:{}".format(self.beg.line, self.beg.col)
-        end = "{}:{}".format(self.end.line, self.end.col) if self.end else ""
-        pos = ("({})-({})" if end else "{}:{}").format(beg, end)
-        return "{}:{}:".format(self.beg.fpath or "<unknown>", pos)
+        beg, end = self.beg.as_header(), self.end and self.end.as_header()
+        pos = f"({beg})-({end})" if end else f"{beg}"
+        return f"{self.beg.fpath or '<unknown>'}:{pos}:"
 
     @classmethod
     def of_lsp(cls, fpath: Union[str, Path], js: dict[str, Any]):
         return cls(Position.of_lsp(fpath, js["start"]),
                    Position.of_lsp(fpath, js["end"]))
+
+    def as_docutils(self):
+        beg = {"line": self.beg.line, "column": self.beg.col}
+        end = {"end_line": self.end.line, "end_column": self.end.col} if self.end else {}
+        return {"source": self.beg.fpath, **beg, **end}
+
+    @classmethod
+    def of_docutils(cls, msg: dict[str, Any]):
+        src = msg["source"]
+        l, c = msg.get("line", 1), msg.get("column")
+        endl, endc = msg.get("end_line"), msg.get("end_column")
+        beg, end = Position(src, l, c), endl and Position(src, endl, endc)
+        return Range(beg, end) if beg else None
 
 class PosStr(str):
     def __new__(cls, s, *_args):
@@ -539,6 +554,20 @@ class Notification(NamedTuple):
     location: Optional[Range]
     level: int
 
+    def as_text(self):
+        header = self.location.as_header() if self.location else "!!"
+        message = re.sub("\n(?!$)", "\n   ", self.message.rstrip(), flags=re.MULTILINE)
+        LEVELS = {0: "DEBUG", 1: "INFO", 2: "WARNING", 3: "ERROR", 4: "SEVERE"}
+        return f"{header} ({LEVELS.get(self.level, '??')}/{self.level}) {message}"
+
+    def as_docutils(self):
+        dc = self.location.as_docutils() if self.location else {}
+        return {"level": self.level, "message": self.message, **dc}
+
+    @classmethod
+    def of_docutils(cls, message, level, n):
+        return cls(None, message, Range.of_docutils(n), level)
+
 class Observer:
     def __init__(self):
         self.exit_code = 0
@@ -552,10 +581,8 @@ class Observer:
 
 class StderrObserver(Observer):
     def _notify(self, n: Notification):
-        header = n.location.as_header() if n.location else "!!"
-        message = n.message.rstrip().replace("\n", "\n   ")
-        level_name = {0: "DEBUG", 1: "INFO", 2: "WARNING", 3: "ERROR", 4: "SEVERE"}.get(n.level, "??")
-        sys.stderr.write("{} ({}/{}) {}\n".format(header, level_name, n.level, message))
+        sys.stderr.write(n.as_text())
+        sys.stderr.write("\n")
 
 PrettyPrinted = namedtuple("PrettyPrinted", "sid pp")
 
@@ -643,7 +670,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         if p.returncode != 0:
             MSG = "Driver {} ({}) exited with code {}:\n{}"
             raise ValueError(MSG.format(self.NAME, self.binpath, p.returncode,
-                                        indent(self._proc_out(p), "   ")))
+                                        self._proc_out(p)))
         return p.stdout
 
 class PopenDriver(CLIDriver): # pylint: disable=abstract-method
