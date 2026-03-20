@@ -135,6 +135,11 @@ _output/tests/frontend_warnings.json.out: tests/frontend_warnings.json
 	$(alectryon) $< -o - > $@ 2>&1
 tests_targets += _output/tests/frontend_warnings.json.out
 
+# Coq → HTML
+_output/tests/goal_names.v.html: tests/goal_names.v
+	$(alectryon) --frontend coq $<
+tests_targets += _output/tests/goal_names.v.html
+
 # Coq+reST → LaTeX
 _output/tests/latex_formatting.tex: tests/latex_formatting.v
 	$(alectryon) $< --backend latex
