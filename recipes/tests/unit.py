@@ -51,18 +51,18 @@ class json(unittest.TestCase):
             return caches[lang].update(chunks, driver)
 
     def test_validation(self):
-        from alectryon.serapi import SerAPI
+        from alectryon.vsrocq import VsRocq
         with TemporaryDirectory() as cache_root:
             cache_root = Path(cache_root)
             docpath = cache_root / "test.v"
 
-            driver = SerAPI(fpath=docpath)
+            driver = VsRocq(fpath=docpath)
 
             chunks = ["Goal True."]
             self.cache(chunks, driver, cache_root, docpath, "coq", "none")
 
             with redirected_std() as (out, _):
-                driver.user_args = ("--disallow-sprop",)
+                driver.user_args = ("-disallow-sprop",)
                 self.cache(chunks, driver, cache_root, docpath, "coq", "none")
                 self.assertRegex(out.getvalue().strip(), r"\AOutdated metadata.*\Z")
 

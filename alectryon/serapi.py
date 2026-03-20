@@ -343,9 +343,5 @@ class SerAPI_noexec(SerAPI):
 
 def annotate(chunks: Iterable[str], sertop_args=(), fpath="-", binpath=None) \
     -> List[List[Fragment]]:
-    r"""Annotate multiple `chunks` of Coq code.
-
-    >>> annotate(["Check 1."])
-    [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
-    """
+    r"""Annotate multiple `chunks` of Coq code."""
     return SerAPI(args=sertop_args, fpath=fpath, binpath=binpath).annotate(chunks)
