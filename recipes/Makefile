@@ -99,6 +99,11 @@ alectryon: $(targets)
 
 all: $(targets) $(other)
 
+rocq := $(targets) $(other)
+rocq := $(shell printf '%s\n' $(rocq) | grep -v lean)
+rocq := $(shell printf '%s\n' $(rocq) | grep -v polyglot)
+rocq: $(rocq)
+
 coverage:
 	mkdir -p coverage
 	+$(MAKE) clean

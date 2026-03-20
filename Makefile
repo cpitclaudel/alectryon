@@ -12,8 +12,7 @@ dependencies := $(binaries)
 ## Main targets
 
 test: $(dependencies)
-	+$(MAKE) -C recipes clean
-	+$(MAKE) -C recipes
+	+$(MAKE) -C recipes --always-make rocq
 
 dist: $(dependencies)
 	python -m build
