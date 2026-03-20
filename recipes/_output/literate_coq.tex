@@ -517,7 +517,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
             \begin{\al{hyps}}
               \Al{hyp}{n}{\PY{n}{nat}}
               \Al{sep}
-              \Al{hyp}{IHn}{\PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}~\PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}}
+              \Al{hyp}{IHn}{\PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}\Al{nl}
+              \PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}}
             \end{\al{hyps}}
             \Al{sep}
             \Al{infrule}{}
@@ -643,7 +644,8 @@ The usual approach is to strengthen the spec to work around the weakness of the 
           \begin{\al{hyps}}
             \Al{hyp}{n}{\PY{n}{nat}}
             \Al{sep}
-            \Al{hyp}{IHn}{\PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}~\PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}}
+            \Al{hyp}{IHn}{\PY{o}{(}\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}\PY{o}{)}~\PY{o}{/\PYZbs{}}\Al{nl}
+            \PY{o}{(}\PY{n}{even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{)}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{o}{(}\PY{n}{S}~\PY{n}{n}\PY{o}{))}}
           \end{\al{hyps}}
           \Al{sep}
           \Al{infrule}{}
@@ -841,8 +843,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{\al{goals}}
         \begin{\al{goal}}
           \begin{\al{hyps}}
-            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-            \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \Al{sep}
             \Al{hyp}{n}{\PY{n}{nat}}
           \end{\al{hyps}}
@@ -866,8 +867,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{\al{goals}}
         \begin{\al{goal}}
           \begin{\al{hyps}}
-            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-            \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \Al{sep}
             \Al{hyp}{n}{\PY{n}{nat}}
           \end{\al{hyps}}
@@ -891,8 +891,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{\al{goals}}
         \begin{\al{goal}}
           \begin{\al{hyps}}
-            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-            \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
           \end{\al{hyps}}
           \Al{sep}
           \Al{infrule}{}
@@ -905,8 +904,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
         \begin{\al{extragoals}}
           \begin{\al{goal}}
             \begin{\al{hyps}}
-              \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-              \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+              \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \end{\al{hyps}}
             \Al{sep}
             \Al{infrule}{}
@@ -918,8 +916,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
           \Al{sep}
           \begin{\al{goal}}
             \begin{\al{hyps}}
-              \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-              \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+              \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
               \Al{sep}
               \Al{hyp}{n}{\PY{n}{nat}}
             \end{\al{hyps}}
@@ -944,8 +941,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{\al{goals}}
         \begin{\al{goal}}
           \begin{\al{hyps}}
-            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-            \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
           \end{\al{hyps}}
           \Al{sep}
           \Al{infrule}{}
@@ -973,8 +969,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{\al{goals}}
         \begin{\al{goal}}
           \begin{\al{hyps}}
-            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-            \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
           \end{\al{hyps}}
           \Al{sep}
           \Al{infrule}{}
@@ -1002,8 +997,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{\al{goals}}
         \begin{\al{goal}}
           \begin{\al{hyps}}
-            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-            \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \Al{sep}
             \Al{hyp}{n}{\PY{n}{nat}}
           \end{\al{hyps}}
@@ -1027,8 +1021,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{\al{goals}}
         \begin{\al{goal}}
           \begin{\al{hyps}}
-            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-            \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \Al{sep}
             \Al{hyp}{n}{\PY{n}{nat}}
           \end{\al{hyps}}
@@ -1043,8 +1036,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
         \begin{\al{extragoals}}
           \begin{\al{goal}}
             \begin{\al{hyps}}
-              \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-              \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+              \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
               \Al{sep}
               \Al{hyp}{n}{\PY{n}{nat}}
             \end{\al{hyps}}
@@ -1069,8 +1061,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{\al{goals}}
         \begin{\al{goal}}
           \begin{\al{hyps}}
-            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-            \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \Al{sep}
             \Al{hyp}{n}{\PY{n}{nat}}
           \end{\al{hyps}}
@@ -1100,8 +1091,7 @@ But writing a fixpoint (either with the \texttt{\DUrole{code}{\DUrole{highlight}
       \begin{\al{goals}}
         \begin{\al{goal}}
           \begin{\al{hyps}}
-            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}\Al{nl}
-            \PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
+            \Al{hyp}{even\char`\_Even\char`\_fp}{\PY{k}{forall}~\PY{n+nv}{n}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{even}~\PY{n}{n}~\PY{o}{=}~\PY{n}{true}~\PY{o}{\PYZlt{}\PYZhy{}\PYZgt{}}~\PY{n}{Even}~\PY{n}{n}}
             \Al{sep}
             \Al{hyp}{n}{\PY{n}{nat}}
           \end{\al{hyps}}
