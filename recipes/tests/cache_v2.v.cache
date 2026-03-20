@@ -3,12 +3,12 @@
     "cache_version": "2"
   },
   "&coq": {
-    "generator": [
-      "Coq+SerAPI",
-      "8.13.0+0.13.0"
+    "driver": [
+      "vsrocq-language-server",
+      "9.0.1 4.14.2 / 2.3.4"
     ],
     "metadata": {
-      "sertop_args": []
+      "args": []
     },
     "chunks": [
       "Check 1."

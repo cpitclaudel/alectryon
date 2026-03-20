@@ -4,11 +4,11 @@
   },
   "&coq": {
     "driver": [
-      "Coq+SerAPI",
-      "8.18.0+0.18.2"
+      "vsrocq-language-server",
+      "9.0.1 5.4.0 / 2.3.4"
     ],
     "metadata": {
-      "sertop_args": []
+      "args": []
     },
     "chunks": [
       "Notation \"\\mathbb{N}\" := nat.\nPrint nat. (* .unfold *)",

@@ -4,11 +4,11 @@
   },
   "&coq": {
     "driver": [
-      "Coq+SerAPI",
-      "8.18.0+0.18.2"
+      "vsrocq-language-server",
+      "9.0.1 5.4.0 / 2.3.4"
     ],
     "metadata": {
-      "sertop_args": []
+      "args": []
     },
     "chunks": [
       "Definition example_from_sphinx: nat. (* .unfold *)\nProof. (* .no-goals *)\n  simple apply Nat.add.\n  exact 1.\n  assert (n: nat).\n  2: clear n.\n  exact 3.\n  exact 2.\nDefined.\n\nPrint example_from_sphinx. (* .unfold *)"
