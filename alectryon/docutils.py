@@ -223,6 +223,13 @@ def _gensym_stem(document, suffix=""):
     parts = Path(source).parts[-GENSYM_PATH_DEPTH:]
     return nodes.make_id("-".join(parts)) + (source and suffix)
 
+def _system_message(document: nodes.document, level: int, message: str, **kwargs):
+    msg = document.reporter.system_message(level, message, **kwargs)
+    if level < document.reporter.ERROR_LEVEL and msg in (msgs := document.transform_messages):
+        # We want a message on the command line but not in the document, so
+        # remove the node created by ``Reporter.system_message``:
+        msgs.remove(msg)
+
 class Config:
     @staticmethod
     def _token_dict(): # Not a lambda because of pickling
@@ -348,7 +355,7 @@ class ActivateMathJaxTransform(OneTimeTransform):
             node.attributes.setdefault("classes", []).append("mathjax_process")
 
 class DocutilsObserver(core.Observer):
-    def __init__(self, document):
+    def __init__(self, document: nodes.document):
         super().__init__()
         self.document = document
 
@@ -356,7 +363,7 @@ class DocutilsObserver(core.Observer):
         loc = n.location
         beg = {"line": loc.beg.line, "column": loc.beg.col} if loc else {}
         end = {"end_line": loc.end.line, "end_column": loc.end.col} if loc and loc.end else {}
-        self.document.reporter.system_message(n.level, n.message, **beg, **end)
+        _system_message(self.document, n.level, n.message, **beg, **end)
 
 def by_lang(pending_nodes: Iterable[nodes.pending]) -> Dict[str, List[nodes.pending]]:
     partitioned: Dict[str, List[nodes.pending]] = {}
@@ -381,10 +388,7 @@ class AlectryonTransform(OneTimeTransform):
             msg = "Long line ({} characters)\n   {}".format(len(s), s)
             contents_line = getattr(node, "contents_line", None)
             opts = {"line": contents_line + linum} if contents_line else {}
-            w = self.document.reporter.warning(msg, base_node=node, **opts)
-            # We want a message on the command line but not in the document, so
-            # remove the node created by ``Reporter.system_message``:
-            self.document.transform_messages.remove(w)
+            _system_message(self.document, self.document.reporter.WARNING_LEVEL, msg, base_node=node, **opts)
 
     def annotate(self, pending_nodes, lang, cache):
         driver = alectryon_state(self.document).config.init_driver(lang)
