@@ -2,7 +2,7 @@
     Docutils pipeline, all errors are immediately fatal.
 
     To run:
-       alectryon fatal.v --frontend coq -o - > /dev/null \
+       alectryon fatal.v --frontend coq -o /dev/null \
          2> fatal.v.out; echo "exit: $?" >> fatal.v.out
            # Plain Coq → HTML + errors; produces ‘fatal.v.out’ **)
 

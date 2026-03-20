@@ -29,7 +29,7 @@ tests_targets += _output/tests/cache_v2.html
 
 # reST + assertions
 _output/tests/cli_flags.txt: tests/cli_flags.rst
-	$(alectryon) $< -o - >/dev/null --debug --traceback --expect-unexpected --long-line-threshold=-1 -I . -R ../recipes/ custom_flag_recipes -Q ../alectryon/ custom_flag_alectryon_tests; echo "exit: $$?" > $@
+	$(alectryon) $< -o /dev/null --debug --traceback --expect-unexpected --long-line-threshold=-1 -I . -R ../recipes/ custom_flag_recipes -Q ../alectryon/ custom_flag_alectryon_tests; echo "exit: $$?" > $@
 tests_targets += _output/tests/cli_flags.txt
 
 # ReST → HTML
@@ -88,7 +88,7 @@ tests_targets += _output/tests/display-flags.html
 
 # reST + assertions
 _output/tests/docinfo_flags.txt: tests/docinfo_flags.rst
-	$(alectryon) $< -o - >/dev/null; echo "exit: $$?" > $@
+	$(alectryon) $< -o /dev/null; echo "exit: $$?" > $@
 tests_targets += _output/tests/docinfo_flags.txt
 
 # Run doctests
@@ -122,12 +122,12 @@ tests_targets += _output/tests/excepthook.v.out
 
 # Plain Coq → HTML + errors
 _output/tests/fatal.v.out: tests/fatal.v
-	$(alectryon) $< --frontend coq -o - > /dev/null 2> $@; echo "exit: $$?" >> $@
+	$(alectryon) $< --frontend coq -o /dev/null 2> $@; echo "exit: $$?" >> $@
 tests_targets += _output/tests/fatal.v.out
 
 # Plain Coq → HTML + errors
 _output/tests/fatal_transform.v.out: tests/fatal_transform.v
-	$(alectryon) $< --frontend coq -o - > /dev/null 2> $@; echo "exit: $$?" >> $@
+	$(alectryon) $< --frontend coq -o /dev/null 2> $@; echo "exit: $$?" >> $@
 tests_targets += _output/tests/fatal_transform.v.out
 
 # Frontend warnings

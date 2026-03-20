@@ -4,7 +4,7 @@
 
 To compile::
 
-   alectryon docinfo_flags.rst -o - >/dev/null; echo "exit: $?" > docinfo_flags.txt
+   alectryon docinfo_flags.rst -o /dev/null; echo "exit: $?" > docinfo_flags.txt
      # reST + assertions; produces ‘docinfo_flags.txt’
 
 :date: August 30, 2021
