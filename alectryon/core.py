@@ -246,7 +246,7 @@ class PosStr(str):
     def __new__(cls, s, *_args):
         return super().__new__(cls, s)
 
-    def __init__(self, _s, pos, col_offset):
+    def __init__(self, _s, pos: Position, col_offset):
         super().__init__()
         self.pos, self.col_offset = pos, col_offset
 
@@ -257,45 +257,6 @@ class View(bytes):
     def __init__(self, s):
         super().__init__()
         self.s = s
-
-class PosView(View):
-    NL = b"\n"
-
-    def __new__(cls, s):
-        bs = s.encode("utf-8")
-        # https://stackoverflow.com/questions/20221858/
-        return super().__new__(cls, bs) if isinstance(s, PosStr) else View(bs)
-
-    def __init__(self, s):
-        super().__init__(s)
-        self.pos, self.col_offset = s.pos, s.col_offset
-
-    def __getitem__(self, key):
-        return memoryview(self).__getitem__(key)
-
-    def translate_offset(self, offset):
-        r"""Translate a character-based `offset` into a (line, column) pair.
-        Columns are 0-based.
-
-        >>> text = "abc\ndef\nghi"
-        >>> s = PosView(PosStr(text, Position("f", 3, 2), 5))
-        >>> s.translate_offset(0)
-        Position(fpath='f', line=3, col=2)
-        >>> s.translate_offset(10) # col=2, + offset (5) = 7
-        Position(fpath='f', line=5, col=7)
-        """
-        nl = self.rfind(self.NL, 0, offset)
-        if nl == -1: # First line
-            line, col = self.pos.line, self.pos.col + offset
-        else:
-            line = self.pos.line + self.count(self.NL, 0, offset)
-            prefix = bytes(self[nl+1:offset]).decode("utf-8", 'ignore')
-            col = self.col_offset + len(prefix)
-        return Position(self.pos.fpath, line, col)
-
-    def translate_span(self, beg, end):
-        return Range(self.translate_offset(beg),
-                     self.translate_offset(end))
 
 # TPositioned = TypeVar("TPositioned", covariant=True)
 # https://github.com/microsoft/pyright/issues/2203

@@ -26,7 +26,7 @@ import sys
 from . import sexp as sx
 from .core import UnexpectedError, REPLDriver, \
     Hypothesis, Goal, Message, Sentence, Text, Fragment, \
-    PrettyPrinted, PosView, indent, debug
+    PrettyPrinted, PosStr, View, Position, Range, indent, debug
 from .coq import CoqIdents
 
 def sexp_hd(sexp):
@@ -43,6 +43,45 @@ ApiAdded = namedtuple("ApiAdded", "sid loc")
 ApiExn = namedtuple("ApiExn", "sids exn loc")
 ApiMessage = namedtuple("ApiMessage", "sid level msg")
 ApiString = namedtuple("ApiString", "string")
+
+class PosView(View):
+    NL = b"\n"
+
+    def __new__(cls, s):
+        bs = s.encode("utf-8")
+        # https://stackoverflow.com/questions/20221858/
+        return super().__new__(cls, bs) if isinstance(s, PosStr) else View(bs)
+
+    def __init__(self, s):
+        super().__init__(s)
+        self.pos, self.col_offset = s.pos, s.col_offset
+
+    def __getitem__(self, key):
+        return memoryview(self).__getitem__(key)
+
+    def translate_offset(self, offset):
+        r"""Translate a character-based `offset` into a (line, column) pair.
+        Columns are 0-based.
+
+        >>> text = "abc\ndef\nghi"
+        >>> s = PosView(PosStr(text, Position("f", 3, 2), 5))
+        >>> s.translate_offset(0)
+        Position(fpath='f', line=3, col=2)
+        >>> s.translate_offset(10) # col=2, + offset (5) = 7
+        Position(fpath='f', line=5, col=7)
+        """
+        nl = self.rfind(self.NL, 0, offset)
+        if nl == -1: # First line
+            line, col = self.pos.line, self.pos.col + offset
+        else:
+            line = self.pos.line + self.count(self.NL, 0, offset)
+            prefix = bytes(self[nl+1:offset]).decode("utf-8", 'ignore')
+            col = self.col_offset + len(prefix)
+        return Position(self.pos.fpath, line, col)
+
+    def translate_range(self, beg, end):
+        return Range(self.translate_offset(beg),
+                     self.translate_offset(end))
 
 class SerAPI(REPLDriver):
     BIN = "sertop"
@@ -198,7 +237,7 @@ class SerAPI(REPLDriver):
 
     @staticmethod
     def _range_of_span(span, chunk):
-        return chunk.translate_span(*span) if isinstance(chunk, PosView) else None
+        return chunk.translate_range(*span) if isinstance(chunk, PosView) else None
 
     def _warn_on_exn(self, response, chunk):
         QUOTE = '  > '
