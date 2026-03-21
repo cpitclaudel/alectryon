@@ -421,12 +421,13 @@ def dump_html_standalone(snippets, fname, webpage_style,
                          assets, html_classes, ctx) -> str:
     from dominate import tags, document
     from dominate.util import raw
-    from .html import wrap_classes
+    from .html import wrap_classes, HTML4_VIEWPORT
 
     doc = document(title=fname)
     doc.set_attribute("class", "alectryon-standalone")
 
     doc.head.add(tags.meta(charset="utf-8"))
+    doc.head.add(raw(s) for s in HTML4_VIEWPORT)
     doc.head.add(_gen_html_header(html_minification, assets))
 
     _add_html_minification_class(html_classes, html_minification)

@@ -1346,6 +1346,7 @@ def make_HtmlTranslator(base):
 
 HtmlTranslator = make_HtmlTranslator(html4css1.HTMLTranslator)
 Html5Translator = make_HtmlTranslator(html5_polyglot.HTMLTranslator)
+HtmlTranslator.ADDITIONAL_HEADS.extend(html.HTML4_VIEWPORT)
 
 def opt_validate_style(setting, value, option_parser,
                        config_parser=None, config_section=None):
