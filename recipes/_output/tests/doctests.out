@@ -12,6 +12,10 @@ split_fragments (alectryon.core.Document)
 Doctest: alectryon.core.Document.split_fragments ... ok
 strip_separators (alectryon.core.Document)
 Doctest: alectryon.core.Document.strip_separators ... ok
+as_header (alectryon.core.Position)
+Doctest: alectryon.core.Position.as_header ... ok
+as_header (alectryon.core.Range)
+Doctest: alectryon.core.Range.as_header ... ok
 DeduplicatingSerializer (alectryon.json)
 Doctest: alectryon.json.DeduplicatingSerializer ... ok
 FullyDeduplicatingSerializer (alectryon.json)
@@ -88,6 +92,6 @@ annotate (alectryon.vsrocq)
 Doctest: alectryon.vsrocq.annotate ... ok
 
 ----------------------------------------------------------------------
-Ran 44 tests
+Ran 46 tests
 
 OK

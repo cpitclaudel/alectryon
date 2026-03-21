@@ -1,4 +1,4 @@
-tests/fatal.v:(9:5)-(9:14): (ERROR/3) The reference not_found was not found in the current
+tests/fatal.v:9:5-14: (ERROR/3) The reference not_found was not found in the current
    environment.
    The offending range is delimited by >>>…<<< below:
      >            # Plain Coq → HTML + errors; produces ‘fatal.v.out’ **)

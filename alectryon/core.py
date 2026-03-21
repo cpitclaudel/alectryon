@@ -205,34 +205,44 @@ class Asset(str):
 class Position(NamedTuple):
     fpath: Union[str, Path]
     line: int # 1-based
-    col: int # 0-based
+    col: Optional[int] # 0-based
 
     @staticmethod
     def default(fpath):
         """Return a position at the beginning of the current buffer."""
-        return Position(fpath, 1, 0)
+        return Position(fpath, 1, None)
 
     def as_range(self):
         return Range(self, None)
 
-    def as_header(self) -> str:
-        return f"{self.line}:{self.col}" if self.col else f"{self.line}"
+    def as_header(self, wrap: bool=False) -> str:
+        """Format this position as a string, without the path.
+
+        >>> l = Position("input.rst", 3, None)
+        >>> l.as_header(True), l.as_header(False)
+        ('3', '3')
+        >>> lc = Position("input.v", 10, 0)
+        >>> lc.as_header(False), lc.as_header(True)
+        ('10:0', '(10:0)')
+        """
+        header = f"{self.line}:{self.col}" if self.col is not None else f"{self.line}"
+        return f"({header})" if self.col is not None and wrap else header
 
     @classmethod
     def of_lsp(cls, fpath: Union[str, Path], js: dict[str, Any]):
         return Position(fpath, js["line"] + 1, js["character"])
 
     def to_lsp(self):
-        return { "line": self.line - 1, "character": self.col }
+        return { "line": self.line - 1, "character": self.col or 0 }
 
     def __add__(self, other):
         line = self.line + other.line - 1
-        col = (self.col if other.line == 1 else 0) + other.col
+        col = ((self.col or 0) if other.line == 1 else 0) + (other.col or 0)
         return Position(self.fpath, line, col)
 
     def __sub__(self, other):
         line = self.line - other.line + 1
-        col = self.col - (other.col if line == 1 else 0)
+        col = (self.col or 0) - ((other.col or 0) if line == 1 else 0)
         return Position(self.fpath, line, col)
 
 class Range(NamedTuple):
@@ -245,10 +255,33 @@ class Range(NamedTuple):
         return Position.default(fpath).as_range()
 
     def as_header(self):
-        assert self.end is None or self.beg.fpath == self.end.fpath
-        beg, end = self.beg.as_header(), self.end and self.end.as_header()
-        pos = f"({beg})-({end})" if end else f"{beg}"
-        return f"{self.beg.fpath or '<unknown>'}:{pos}:"
+        """Format `self` as a string.
+        >>> Range(Position("", 1, None), None).as_header()
+        '<unknown>:1:'
+        >>> Range(Position("f", 5, None), None).as_header()
+        'f:5:'
+        >>> Range(Position("f", 5, 0), None).as_header()
+        'f:5:0:'
+        >>> Range(Position("f", 5, 3), Position("f", 5, None)).as_header()
+        'f:5:3:'
+        >>> Range(Position("f", 5, 3), Position("f", 5, 3)).as_header()
+        'f:5:3:'
+        >>> Range(Position("f", 5, 3), Position("f", 5, 4)).as_header()
+        'f:5:3-4:'
+        >>> Range(Position("f", 5, 3), Position("f", 6, None)).as_header()
+        'f:(5:3)-6:'
+        >>> Range(Position("f", 5, 3), Position("f", 6, 4)).as_header()
+        'f:(5:3)-(6:4):'
+        """
+        beg, end = self.beg, self.end or self.beg
+        assert beg.fpath == end.fpath
+        if end.line != beg.line and end.line is not None:
+            pos = f"{beg.as_header(True)}-{end.as_header(True)}"
+        elif end.line == beg.line and end.col != beg.col and beg.col is not None and end.col is not None:
+            pos = f"{beg.line}:{beg.col}-{end.col}"
+        else:
+            pos = beg.as_header(False)
+        return f"{beg.fpath or '<unknown>'}:{pos}:"
 
     @classmethod
     def of_lsp(cls, fpath: Union[str, Path], js: dict[str, Any]):
@@ -288,7 +321,7 @@ class PosStr(str):
             return pos
         abs = s.pos + (pos - base)
         # print(f"Remapping:\n  {pos=},\n  {base=},\n  {pos - base=},\n  {s.pos=},\n= {abs=}", file=sys.stderr)
-        return Position(pos.fpath, abs.line, s.indent + abs.col)
+        return Position(pos.fpath, abs.line, s.indent + (abs.col or 0))
 
 class View(bytes):
     def __getitem__(self, key):
@@ -363,7 +396,7 @@ class Document:
         return Position(fpath, *self.offset2lc(offset))
 
     def pos2offset(self, pos: Position) -> int:
-        return self.lc2offset(pos.line, pos.col)
+        return self.lc2offset(pos.line, pos.col or 0)
 
     def offsets2range(self, fpath: Union[str, Path], beg: int, end: int) -> Range:
         return Range(self.offset2pos(fpath, beg), self.offset2pos(fpath, end))
@@ -669,8 +702,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
                            check=False, encoding=self.CLI_ENCODING)
         if p.returncode != 0:
             MSG = "Driver {} ({}) exited with code {}:\n{}"
-            raise ValueError(MSG.format(self.NAME, self.binpath, p.returncode,
-                                        self._proc_out(p)))
+            raise ValueError(MSG.format(self.NAME, self.binpath, p.returncode, self._proc_out(p)))
         return p.stdout
 
 class PopenDriver(CLIDriver): # pylint: disable=abstract-method

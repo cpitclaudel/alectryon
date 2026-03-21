@@ -72,14 +72,14 @@ tests/errors.rst:117: (ERROR/3) Error in "coq" directive:
       Check nat.
 tests/errors.rst:5: (WARNING/2) In `:alectryon/pygments/tacn:`: Missing language name (did you mean `:alectryon/pygments/coq/tacn:`?).
 tests/errors.rst:6: (ERROR/3) In `:alectryon/pygments/coq/xyz:`: Unknown token kind: xyz
-tests/errors.rst:(146:37)-(146:39): (ERROR/3) Syntax error: '.' expected after [syntax_command] (in [vernac_aux]).
+tests/errors.rst:146:37-39: (ERROR/3) Syntax error: '.' expected after [syntax_command] (in [vernac_aux]).
    The offending range is delimited by >>>…<<< below:
      > Abort. (* .msg{*} *)
      > Check nat. (* .fold *)
      > Notation "'🆄🄽🅘ⓒ⒪𝖉∈' α ⊕ ⤋ β" := α >>>++<<< β. (* Bytes vs. str *)
      > Definition a
      >   : true := 1. (* Next line *)
-tests/errors.rst:(151:7)-(151:11): (ERROR/3) The term "true" has type "bool"
+tests/errors.rst:151:7-11: (ERROR/3) The term "true" has type "bool"
    which should be Set, Prop or Type.
    The offending range is delimited by >>>…<<< below:
      > Notation "'🆄🄽🅘ⓒ⒪𝖉∈' α ⊕ ⤋ β" := α ++ β. (* Bytes vs. str *)

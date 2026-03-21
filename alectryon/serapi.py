@@ -72,7 +72,7 @@ class PosView(View):
         """
         nl = self.rfind(self.NL, 0, offset)
         if nl == -1: # First line
-            line, col = self.pos.line, self.pos.col + offset
+            line, col = self.pos.line, (self.pos.col or 0) + offset
         else:
             line = self.pos.line + self.count(self.NL, 0, offset)
             prefix = bytes(self[nl+1:offset]).decode("utf-8", 'ignore')
