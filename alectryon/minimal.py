@@ -68,7 +68,7 @@ DIRECTIVES = {**{lang: ProverDirective for lang in ALL_LANGUAGES},
 
 def custom_code_role(lang):
     def _code_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
-        options = {**options, "language": lang, "classes": "highlight"}
+        options = {**options, "language": lang, "classes": ["highlight"]}
         return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
     return _code_role
 
