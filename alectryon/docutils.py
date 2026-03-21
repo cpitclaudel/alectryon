@@ -766,19 +766,29 @@ class ProverDirective(AlectryonDirective):
         annots, errors = self._try(transforms.read_all_io_flags,
                                    annotstr, False, default=transforms.IOAnnots())
 
-        indent, contents = recompute_contents(self, ProverDirective.EXPECTED_INDENTATION)
+        rel_indent, contents = recompute_contents(self, ProverDirective.EXPECTED_INDENTATION)
         source, contents_line = self.state_machine.get_source_and_line(self.content_offset + 1)
 
-        if document.get('source', "") == source \
-           and alectryon_state(document).root_is_code:
-            indent = 0
+        if source is None or document.get('source', "") == source and alectryon_state(document).root_is_code:
+            abs_indent = 0
+        else:
+            # Add indentation of current directive in original source.  This is
+            # needed because Docutils dedents ``self.contents`` before passing
+            # control to us, so a ``.. coq::`` block within a ``.. note::`` looks
+            # the same as a top-level one.
+            _, header_line = self.state_machine.get_source_and_line(self.lineno)
+            if not (header := __import__("linecache").getline(source, header_line)):
+                errors.append(self.state.reporter.error( # FIXME confirm that this error works
+                    f"Directive header line not found in file ({source=}, {self.lineno=})",
+                    line=self.lineno))
+            abs_indent = rel_indent + core.measure_indentation(header or "")
 
         # We record two things:
         #   1. Where this directive appeared in the source document (`pos`)
         #   2. How much its contents were indented by (`indent`)
-        # `pos` is the dedented position (so its column number is 0)
+        # `pos` is the fully dedented position (so its column number is 0)
         pos = Position(source, contents_line, 0) # pos refers to indent-relative coordinates
-        contents = PosStr(contents, pos, indent)
+        contents = PosStr(contents, pos, abs_indent)
 
         _set_classes(self.options)
         details = {"lang": self.name, "directive_annots": annots,
