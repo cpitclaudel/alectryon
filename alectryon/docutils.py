@@ -219,7 +219,7 @@ def _gensym_stem(document, suffix=""):
     Use the file name when ``GENSYM_PATH_DEPTH`` is set to 1, or more of the
     file path with higher values.
     """
-    source = document.get('source', "")
+    source = document.get('source') or ""
     parts = Path(source).parts[-GENSYM_PATH_DEPTH:]
     return nodes.make_id("-".join(parts)) + (source and suffix)
 
@@ -229,6 +229,14 @@ def _system_message(document: nodes.document, level: int, message: str, **kwargs
         # We want a message on the command line but not in the document, so
         # remove the node created by ``Reporter.system_message``:
         msgs.remove(msg)
+
+if docutils.__version_info__[:2] < (0, 22):
+    _set_classes = roles.set_classes
+else:
+    def _set_classes(options):
+        norm = roles.normalize_options(options)
+        options.clear()
+        options.update(norm)
 
 class Config:
     @staticmethod
@@ -772,7 +780,7 @@ class ProverDirective(AlectryonDirective):
         pos = Position(source, contents_line, 0) # pos refers to indent-relative coordinates
         contents = PosStr(contents, pos, indent)
 
-        roles.set_classes(self.options)
+        _set_classes(self.options)
         details = {"lang": self.name, "directive_annots": annots,
                    "contents": contents, "contents_line": contents_line}
         pending = alectryon_pending(AlectryonTransform, details=details,
@@ -908,7 +916,7 @@ def mk_code_role(lang):
     def code_role(role, rawtext, text, lineno, inliner,
                   options: Dict[str, Any]={}, content=[]):
         options = {**options, "language": lang}
-        roles.set_classes(options)
+        _set_classes(options)
         options.setdefault("classes", []).append("highlight")
         return roles.code_role(role, rawtext, text, lineno, inliner, options, content)
     code_role.name = lang
@@ -974,7 +982,7 @@ def coq_id_role(role, rawtext, text, lineno, inliner,
     from string import Template
     uri = Template(url).safe_substitute(modpath=modpath, ident=ident)
 
-    roles.set_classes(options)
+    _set_classes(options)
     node = nodes.reference(rawtext, title, refuri=uri, **options)
     set_line(node, lineno, inliner.reporter)
 
@@ -1040,7 +1048,7 @@ def _marker_ref(rawtext, text, lineno, document, reporter, options):
                "inline": inline,
                "language": language}
 
-    roles.set_classes(options)
+    _set_classes(options)
     node = alectryon_pending_mref(AlectryonMrefTransform, details, rawtext, **options)
     set_line(node, lineno, reporter)
     _note_pending(document, node)

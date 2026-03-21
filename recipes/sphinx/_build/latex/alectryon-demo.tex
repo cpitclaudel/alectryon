@@ -7,6 +7,7 @@
 \ifdefined\pdfimageresolution
     \pdfimageresolution= \numexpr \dimexpr1in\relax/\sphinxpxdimen\relax
 \fi
+\newdimen\sphinxremdimen\sphinxremdimen = 10pt
 %% let collapsible pdf bookmarks panel have high depth per default
 \PassOptionsToPackage{bookmarksdepth=5}{hyperref}
 
@@ -476,15 +477,15 @@ The default role produces Coq code: \sphinxcode{\sphinxupquote{\DUrole{k}{let} \
 \label{\detokenize{index:indices-and-tables}}\begin{itemize}
 \item {} 
 \sphinxAtStartPar
-\DUrole{xref,std,std-ref}{genindex}
+\DUrole{xref}{\DUrole{std}{\DUrole{std-ref}{genindex}}}
 
 \item {} 
 \sphinxAtStartPar
-\DUrole{xref,std,std-ref}{modindex}
+\DUrole{xref}{\DUrole{std}{\DUrole{std-ref}{modindex}}}
 
 \item {} 
 \sphinxAtStartPar
-\DUrole{xref,std,std-ref}{search}
+\DUrole{xref}{\DUrole{std}{\DUrole{std-ref}{search}}}
 
 \end{itemize}
 
