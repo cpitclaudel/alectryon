@@ -2,14 +2,26 @@
  Major changes
 ===============
 
-Unreleased
-==========
+1.5.0
+=====
 
-- Alectryon is now compatible with Python 3.10, Sphinx 6.1.3, Docutils 0.19, and Pygments 2.14 (other reasonably recent versions should still work). [39535f4]
+- Alectryon is now compatible with Python 3.10, Sphinx 6.1.3, Docutils 0.19, and Pygments 2.14 (other reasonably recent versions should still work). [c6db43a, 40ff2af, 578a1db, 39535f4]
 
-- Alectryon now supports Lean 4. [GH-76]
+- Alectryon now has partial support for Lean 3 and 4.  The ``.lean`` file extension is now associated with Lean 4; Lean 3 files should use ``.lean3``.  [GH-76, GH-64] [601174b, 27ea5b8, 90bd555]
 
-- Alectryon now has partial support for Lean 3. [GH-64]
+Bug fixes
+---------
+
+- (Emacs) Fix initialization of ``-executable`` when installing from MELPA. [5505e00]
+
+- (Emacs) Don't assume that ``flyspell`` is loaded when starting ``alectryon-mode``. [8a1f305]
+
+- (CLI) ``--long-line-threshold 0`` can now be used to disable long-line warnings. [e317465]
+
+Breaking changes
+----------------
+
+- (Pygments) ``replace_builtin_coq_lexer()`` has been renamed to ``replace_builtin_lexers()``. [7b26c83]
 
 Version 1.4.0
 =============
