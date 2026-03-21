@@ -10,7 +10,7 @@ There are multiple ways to add custom stylesheets to an Alectryon document:
 
          <link rel="stylesheet" href="custom.css" />
 
-2. Use a custom Alectryon driver and modify ``alectyron.html.ASSETS.DOCUTILS_CSS``::
+2. Use a custom Alectryon driver and modify ``alectryon.html.ASSETS.DOCUTILS_CSS``::
 
       alectryon.html.ASSETS.DOCUTILS_CSS += ("custom.css",)
 

@@ -8,7 +8,7 @@ Alectryon can generate cache files to memoize Coq's output, yielding faster comp
    alectryon --cache-directory _output/ --cache-compression=xz caching.v
    # Coq+reST → HTML, cached to _output/caching.v.cache; produces ‘caching.html’
 
-(The ``--cache-compression`` flag is option; the default is to not compress caches.)
+(The ``--cache-compression`` flag is optional; the default is to not compress caches.)
 |*)
 
 Print nat.

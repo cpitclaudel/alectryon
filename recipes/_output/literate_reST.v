@@ -37,7 +37,7 @@ Qed.
 Goal forall x y z, x <= y <= z -> x <= z.
 
 (*|
-They can be nested nested into other reST directives, such as tables:
+They can be nested into other reST directives, such as tables:
 
 .. list-table:: Coq commands
    :header-rows: 1

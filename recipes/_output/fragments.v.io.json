@@ -2,7 +2,7 @@
     [
         {
             "_type": "text",
-            "contents": "(* Alectyron can process individual chunks of Coq Code fed to in in a JSON file. *)"
+            "contents": "(* Alectryon can process individual chunks of Coq Code fed to it in a JSON file. *)"
         }
     ],
     [
