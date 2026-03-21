@@ -103,7 +103,7 @@ tests_targets += _output/tests/errors.py.out
 
 # reST → JSON errors
 _output/tests/errors.lint.json: tests/errors.rst
-	$(alectryon) $< --backend lint; echo "exit: $$?" >> $@
+	$(alectryon) $< --backend lint > $@; echo "exit: $$?" >> $@
 tests_targets += _output/tests/errors.lint.json
 # reST → HTML + errors
 _output/tests/errors.txt: tests/errors.rst

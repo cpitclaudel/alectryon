@@ -7,7 +7,7 @@
 
 The ``lint`` backend in Alectryon runs the compiler and reports errors on ``stderr``::
 
-   alectryon errors.rst --backend lint; echo "exit: $?" >> errors.lint.json
+   alectryon errors.rst --backend lint > errors.lint.json; echo "exit: $?" >> errors.lint.json
      # reST → JSON errors; produces ‘errors.lint.json’
    alectryon errors.rst --copy-assets none --backend webpage -o /dev/null 2> errors.txt; echo "exit: $?" >> errors.txt
      # reST → HTML + errors; produces ‘errors.txt’
