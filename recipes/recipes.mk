@@ -91,6 +91,10 @@ recipes_targets += _output/literate_LaTeX.annotated.tex
 _output/literate_MyST.html: literate_MyST.md
 	$(alectryon) $<
 recipes_targets += _output/literate_MyST.html
+# MyST → Coq
+_output/literate_MyST.v: literate_MyST.md
+	$(alectryon) $< --backend coq
+recipes_targets += _output/literate_MyST.v
 
 # Coq+reST → HTML
 _output/literate_coq.html: literate_coq.v

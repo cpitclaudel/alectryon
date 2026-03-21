@@ -18,9 +18,13 @@
 <div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running vsrocq-language-server. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="writing-alectryon-documents-in-markdown-with-myst">
 <h1 class="title">Writing Alectryon documents in Markdown with MyST</h1>
 
-<p>To compile this file, use the following command:</p>
+<p>To compile this file, use one of the following commands:</p>
 <pre class="code literal-block">
-$ alectryon literate_MyST.md # MyST → HTML, produces ‘literate_MyST.html’
+$ alectryon literate_MyST.md
+  # MyST → HTML, produces ‘literate_MyST.html’
+
+$ alectryon literate_MyST.md --backend coq
+  # MyST → Coq, produces ‘literate_MyST.v’
 
 </pre>
 <p>Alectryon supports input files written in MyST (a Markdown variant) in addition to Coq and reStructuredText.</p>
