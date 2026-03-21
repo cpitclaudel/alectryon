@@ -3,12 +3,11 @@
 % rubber: set program xelatex
 \usepackage{fontspec}
 % \defaultfontfeatures{Scale=MatchLowercase}
-% straight double quotes (defined T1 but missing in TU):
+% straight double quotes (defined in T1 but missing in TU):
 \ifdefined \UnicodeEncodingName
   \DeclareTextCommand{\textquotedbl}{\UnicodeEncodingName}{%
     {\addfontfeatures{RawFeature=-tlig,Mapping=}\char34}}%
 \fi
-\usepackage{ifthen}
 \usepackage{alltt}
 \setcounter{secnumdepth}{0}
 
@@ -27,12 +26,13 @@
 % class handling for environments (block-level elements)
 % \begin{DUclass}{spam} tries \DUCLASSspam and
 % \end{DUclass}{spam} tries \endDUCLASSspam
-\ifx\DUclass\undefined % poor man's "provideenvironment"
- \newenvironment{DUclass}[1]%
-  {% "#1" does not work in end-part of environment.
-   \def\DocutilsClassFunctionName{DUCLASS#1}
+\ifdefined\DUclass
+\else % poor man's "provideenvironment"
+  \newenvironment{DUclass}[1]%
+    {% "#1" does not work in end-part of environment.
+     \def\DocutilsClassFunctionName{DUCLASS#1}
      \csname \DocutilsClassFunctionName \endcsname}%
-  {\csname end\DocutilsClassFunctionName \endcsname}%
+    {\csname end\DocutilsClassFunctionName \endcsname}%
 \fi
 
 % custom inline roles: \DUrole{#1}{#2} tries \DUrole#1{#2}
@@ -44,11 +44,13 @@
   \fi%
 }
 % hyperlinks:
-\ifthenelse{\isundefined{\hypersetup}}{
-  \usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\ifdefined\hypersetup
+\else
+  \usepackage[hyperfootnotes=false,
+              colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
   \usepackage{bookmark}
   \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
-}{}
+\fi
 \hypersetup{
   pdftitle={Corner cases},
 }

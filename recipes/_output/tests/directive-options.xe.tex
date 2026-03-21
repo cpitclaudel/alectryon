@@ -3,12 +3,11 @@
 % rubber: set program xelatex
 \usepackage{fontspec}
 % \defaultfontfeatures{Scale=MatchLowercase}
-% straight double quotes (defined T1 but missing in TU):
+% straight double quotes (defined in T1 but missing in TU):
 \ifdefined \UnicodeEncodingName
   \DeclareTextCommand{\textquotedbl}{\UnicodeEncodingName}{%
     {\addfontfeatures{RawFeature=-tlig,Mapping=}\char34}}%
 \fi
-\usepackage{ifthen}
 \usepackage{alltt}
 
 %%% Custom LaTeX preamble
@@ -23,11 +22,13 @@
 
 %%% Fallback definitions for Docutils-specific commands
 % hyperlinks:
-\ifthenelse{\isundefined{\hypersetup}}{
-  \usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\ifdefined\hypersetup
+\else
+  \usepackage[hyperfootnotes=false,
+              colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
   \usepackage{bookmark}
   \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
-}{}
+\fi
 \hypersetup{
   pdftitle={Coq directive options},
 }
@@ -55,7 +56,7 @@ alectryon directive-options.rst --latex-dialect xelatex -o directive-options.xe.
 \end{alltt}
 \end{quote}
 
-\begin{alectryon}
+\phantomsection\label{test}\begin{alectryon}
   \Al{anchor}{test}
   \Al{sep}
   \begin{\al{sentence}}

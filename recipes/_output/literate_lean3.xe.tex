@@ -3,12 +3,11 @@
 % rubber: set program xelatex
 \usepackage{fontspec}
 % \defaultfontfeatures{Scale=MatchLowercase}
-% straight double quotes (defined T1 but missing in TU):
+% straight double quotes (defined in T1 but missing in TU):
 \ifdefined \UnicodeEncodingName
   \DeclareTextCommand{\textquotedbl}{\UnicodeEncodingName}{%
     {\addfontfeatures{RawFeature=-tlig,Mapping=}\char34}}%
 \fi
-\usepackage{ifthen}
 \usepackage{alltt}
 \usepackage{color}
 \setcounter{secnumdepth}{0}
@@ -46,11 +45,13 @@
   \vskip 0.5\baselineskip
 }
 % hyperlinks:
-\ifthenelse{\isundefined{\hypersetup}}{
-  \usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\ifdefined\hypersetup
+\else
+  \usepackage[hyperfootnotes=false,
+              colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
   \usepackage{bookmark}
   \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
-}{}
+\fi
 \hypersetup{
   pdftitle={Literate programming with Alectryon (Lean3 input)},
 }
@@ -92,7 +93,7 @@ Alectryon captures the results of \texttt{\DUrole{code}{\DUrole{highlight}{\DUro
 \begin{alectryon}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k}{\PYZsh{}reduce}~\PY{k}{let}~\PY{n}{x}~\PY{o}{:=}~\PY{l+m+mi}{5}~\PY{k}{in}~\PY{n}{x}~\PY{n+nb+bp}{+}~\PY{l+m+mi}{3}
+      \PY{k}{\PYZsh{}reduce}\PY{+w}{~}\PY{k}{let}\PY{+w}{~}\PY{n}{x}\PY{+w}{~}\PY{o}{:=}\PY{+w}{~}\PY{l+m+mi}{5}\PY{+w}{~}\PY{k}{in}\PY{+w}{~}\PY{n}{x}\PY{+w}{~}\PY{n+nb+bp}{+}\PY{+w}{~}\PY{l+m+mi}{3}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
@@ -110,13 +111,13 @@ By default, these results are folded and are displayed upon hovering or clicking
 \begin{alectryon}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k}{\PYZsh{}check}~\PY{n}{nat}
+      \PY{k}{\PYZsh{}check}\PY{+w}{~}\PY{n}{nat}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
       \begin{\al{messages}}
         \begin{\al{message}}
-          \PY{n}{ℕ}~\PY{o}{:}~\PY{k+kt}{Type}
+          \PY{n}{ℕ}\PY{+w}{~}\PY{o}{:}\PY{+w}{~}\PY{k+kt}{Type}
         \end{\al{message}}
       \end{\al{messages}}
     \end{\al{output}}
@@ -126,13 +127,13 @@ By default, these results are folded and are displayed upon hovering or clicking
 \begin{alectryon}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k}{\PYZsh{}check}~\PY{n}{bool}
+      \PY{k}{\PYZsh{}check}\PY{+w}{~}\PY{n}{bool}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
       \begin{\al{messages}}
         \begin{\al{message}}
-          \PY{n}{bool}~\PY{o}{:}~\PY{k+kt}{Type}
+          \PY{n}{bool}\PY{+w}{~}\PY{o}{:}\PY{+w}{~}\PY{k+kt}{Type}
         \end{\al{message}}
       \end{\al{messages}}
     \end{\al{output}}
@@ -140,7 +141,7 @@ By default, these results are folded and are displayed upon hovering or clicking
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k}{\PYZsh{}eval}~\PY{l+m+mi}{1}~\PY{n+nb+bp}{+}~\PY{l+m+mi}{1}
+      \PY{k}{\PYZsh{}eval}\PY{+w}{~}\PY{l+m+mi}{1}\PY{+w}{~}\PY{n+nb+bp}{+}\PY{+w}{~}\PY{l+m+mi}{1}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
@@ -160,10 +161,10 @@ Other flags can be used to control display, like \texttt{.no-in}:
     \begin{\al{output}}
       \begin{\al{messages}}
         \begin{\al{message}}
-          \PY{k+kd}{structure}~\PY{n}{iff}~\PY{o}{:}~\PY{k+kt}{Prop}~\PY{n+nb+bp}{→}~\PY{k+kt}{Prop}~\PY{n+nb+bp}{→}~\PY{k+kt}{Prop}\Al{nl}
+          \PY{k+kd}{structure}\PY{+w}{~}\PY{n}{iff}\PY{+w}{~}\PY{o}{:}\PY{+w}{~}\PY{k+kt}{Prop}\PY{+w}{~}\PY{n+nb+bp}{→}\PY{+w}{~}\PY{k+kt}{Prop}\PY{+w}{~}\PY{n+nb+bp}{→}\PY{+w}{~}\PY{k+kt}{Prop}\Al{nl}
           \PY{n}{fields}\PY{o}{:}\Al{nl}
-          \PY{n}{iff.mp}~\PY{o}{:}~\PY{n+nb+bp}{∀}~\PY{o}{\PYZob{}}\PY{n}{a}~\PY{n}{b}~\PY{o}{:}~\PY{k+kt}{Prop}\PY{o}{\PYZcb{},}~\PY{o}{(}\PY{n}{a}~\PY{n+nb+bp}{↔}~\PY{n}{b}\PY{o}{)}~\PY{n+nb+bp}{→}~\PY{n}{a}~\PY{n+nb+bp}{→}~\PY{n}{b}\Al{nl}
-          \PY{n}{iff.mpr}~\PY{o}{:}~\PY{n+nb+bp}{∀}~\PY{o}{\PYZob{}}\PY{n}{a}~\PY{n}{b}~\PY{o}{:}~\PY{k+kt}{Prop}\PY{o}{\PYZcb{},}~\PY{o}{(}\PY{n}{a}~\PY{n+nb+bp}{↔}~\PY{n}{b}\PY{o}{)}~\PY{n+nb+bp}{→}~\PY{n}{b}~\PY{n+nb+bp}{→}~\PY{n}{a}
+          \PY{n}{iff.mp}\PY{+w}{~}\PY{o}{:}\PY{+w}{~}\PY{n+nb+bp}{∀}\PY{+w}{~}\PY{o}{\PYZob{}}\PY{n}{a}\PY{+w}{~}\PY{n}{b}\PY{+w}{~}\PY{o}{:}\PY{+w}{~}\PY{k+kt}{Prop}\PY{o}{\PYZcb{},}\PY{+w}{~}\PY{o}{(}\PY{n}{a}\PY{+w}{~}\PY{n+nb+bp}{↔}\PY{+w}{~}\PY{n}{b}\PY{o}{)}\PY{+w}{~}\PY{n+nb+bp}{→}\PY{+w}{~}\PY{n}{a}\PY{+w}{~}\PY{n+nb+bp}{→}\PY{+w}{~}\PY{n}{b}\Al{nl}
+          \PY{n}{iff.mpr}\PY{+w}{~}\PY{o}{:}\PY{+w}{~}\PY{n+nb+bp}{∀}\PY{+w}{~}\PY{o}{\PYZob{}}\PY{n}{a}\PY{+w}{~}\PY{n}{b}\PY{+w}{~}\PY{o}{:}\PY{+w}{~}\PY{k+kt}{Prop}\PY{o}{\PYZcb{},}\PY{+w}{~}\PY{o}{(}\PY{n}{a}\PY{+w}{~}\PY{n+nb+bp}{↔}\PY{+w}{~}\PY{n}{b}\PY{o}{)}\PY{+w}{~}\PY{n+nb+bp}{→}\PY{+w}{~}\PY{n}{b}\PY{+w}{~}\PY{n+nb+bp}{→}\PY{+w}{~}\PY{n}{a}
         \end{\al{message}}
       \end{\al{messages}}
     \end{\al{output}}
@@ -180,13 +181,13 @@ Alectryon also captures goals and hypotheses as proofs progress:
 \begin{alectryon}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \PY{k+kd}{example}~\PY{o}{(}\PY{n}{p}~\PY{n}{q}~\PY{n}{r}~\PY{o}{:}~\PY{k+kt}{Prop}\PY{o}{)}~\PY{o}{:}~\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}~\PY{n+nb+bp}{↔}~\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}~\PY{o}{:=}\Al{nl}
+      \PY{k+kd}{example}\PY{+w}{~}\PY{o}{(}\PY{n}{p}\PY{+w}{~}\PY{n}{q}\PY{+w}{~}\PY{n}{r}\PY{+w}{~}\PY{o}{:}\PY{+w}{~}\PY{k+kt}{Prop}\PY{o}{)}\PY{+w}{~}\PY{o}{:}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{↔}\PY{+w}{~}\PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{o}{:=}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~\PY{n}{apply}~\PY{n}{iff.intro}\PY{o}{,}
+      ~~\PY{n}{apply}\PY{+w}{~}\PY{n}{iff.intro}\PY{o}{,}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
@@ -199,7 +200,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
           \Al{infrule}{}
           \Al{sep}
           \begin{\al{conclusion}}
-            \PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}~\PY{n+nb+bp}{→}~\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}
+            \PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{→}\PY{+w}{~}\PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{p}
           \end{\al{conclusion}}
         \end{\al{goal}}
         \Al{sep}
@@ -212,7 +213,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
             \Al{infrule}{}
             \Al{sep}
             \begin{\al{conclusion}}
-              \PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}~\PY{n+nb+bp}{→}~\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}
+              \PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{→}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{q}
             \end{\al{conclusion}}
           \end{\al{goal}}
         \end{\al{extragoals}}
@@ -235,7 +236,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
           \Al{infrule}{}
           \Al{sep}
           \begin{\al{conclusion}}
-            \PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}~\PY{n+nb+bp}{→}~\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}
+            \PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{→}\PY{+w}{~}\PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{p}
           \end{\al{conclusion}}
         \end{\al{goal}}
       \end{\al{goals}}
@@ -244,7 +245,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      \Al{anchor}{literate-lean3-lean-s-intro-h-0}~~~~\PY{n}{intro}~\PY{n}{H}\PY{o}{,}\Al{mrefmarker}{1}
+      \Al{anchor}{literate-lean3-lean-s-intro-h-0}~~~~\PY{n}{intro}\PY{+w}{~}\PY{n}{H}\PY{o}{,}\Al{mrefmarker}{1}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
@@ -253,13 +254,13 @@ Alectryon also captures goals and hypotheses as proofs progress:
           \begin{\al{hyps}}
             \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
             \Al{sep}
-            \Al{hyp}{H}{\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}}
+            \Al{hyp}{H}{\PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{q}}
           \end{\al{hyps}}
           \Al{sep}
           \Al{infrule}{}
           \Al{sep}
           \begin{\al{conclusion}}
-            \PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}
+            \PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{p}
           \end{\al{conclusion}}
         \end{\al{goal}}
       \end{\al{goals}}
@@ -268,7 +269,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{n}{apply}~\PY{n}{and.intro}\PY{o}{,}
+      ~~~~\PY{n}{apply}\PY{+w}{~}\PY{n}{and.intro}\PY{o}{,}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
@@ -277,7 +278,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
           \begin{\al{hyps}}
             \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
             \Al{sep}
-            \Al{hyp}{H}{\Al{anchor}{literate-lean3-lean-s-and-intro-h-h-0}\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}\Al{mrefmarker}{2}}
+            \Al{hyp}{H}{\Al{anchor}{literate-lean3-lean-s-and-intro-h-h-0}\PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{q}\Al{mrefmarker}{2}}
           \end{\al{hyps}}
           \Al{sep}
           \Al{infrule}{}
@@ -292,7 +293,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
             \begin{\al{hyps}}
               \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
               \Al{sep}
-              \Al{hyp}{H}{\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}}
+              \Al{hyp}{H}{\PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{q}}
             \end{\al{hyps}}
             \Al{sep}
             \Al{infrule}{}
@@ -308,7 +309,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{n}{apply}~\PY{o}{(}\PY{n}{and.elim\PYZus{}right}~\PY{n}{H}\PY{o}{),}
+      ~~~~\PY{n}{apply}\PY{+w}{~}\PY{o}{(}\PY{n}{and.elim\PYZus{}right}\PY{+w}{~}\PY{n}{H}\PY{o}{),}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
@@ -317,7 +318,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
           \begin{\al{hyps}}
             \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
             \Al{sep}
-            \Al{hyp}{H}{\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}}
+            \Al{hyp}{H}{\PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{q}}
           \end{\al{hyps}}
           \Al{sep}
           \Al{infrule}{}
@@ -332,7 +333,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{n}{apply}~\PY{o}{(}\PY{n}{and.elim\PYZus{}left}~\PY{n}{H}\PY{o}{),}\Al{nl}
+      ~~~~\PY{n}{apply}\PY{+w}{~}\PY{o}{(}\PY{n}{and.elim\PYZus{}left}\PY{+w}{~}\PY{n}{H}\PY{o}{),}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}
@@ -357,7 +358,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
           \Al{infrule}{}
           \Al{sep}
           \begin{\al{conclusion}}
-            \PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}~\PY{n+nb+bp}{→}~\PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}
+            \PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{→}\PY{+w}{~}\PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{q}
           \end{\al{conclusion}}
         \end{\al{goal}}
       \end{\al{goals}}
@@ -366,7 +367,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{n}{intro}~\PY{n}{H}\PY{o}{,}
+      ~~~~\PY{n}{intro}\PY{+w}{~}\PY{n}{H}\PY{o}{,}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
@@ -375,13 +376,13 @@ Alectryon also captures goals and hypotheses as proofs progress:
           \begin{\al{hyps}}
             \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
             \Al{sep}
-            \Al{hyp}{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
+            \Al{hyp}{H}{\PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{p}}
           \end{\al{hyps}}
           \Al{sep}
           \Al{infrule}{}
           \Al{sep}
           \begin{\al{conclusion}}
-            \PY{n}{p}~\PY{n+nb+bp}{∧}~\PY{n}{q}
+            \PY{n}{p}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{q}
           \end{\al{conclusion}}
         \end{\al{goal}}
       \end{\al{goals}}
@@ -390,7 +391,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{n}{apply}~\PY{n}{and.intro}\PY{o}{,}
+      ~~~~\PY{n}{apply}\PY{+w}{~}\PY{n}{and.intro}\PY{o}{,}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
@@ -399,7 +400,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
           \begin{\al{hyps}}
             \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
             \Al{sep}
-            \Al{hyp}{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
+            \Al{hyp}{H}{\PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{p}}
           \end{\al{hyps}}
           \Al{sep}
           \Al{infrule}{}
@@ -414,7 +415,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
             \begin{\al{hyps}}
               \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
               \Al{sep}
-              \Al{hyp}{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
+              \Al{hyp}{H}{\PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{p}}
             \end{\al{hyps}}
             \Al{sep}
             \Al{infrule}{}
@@ -430,7 +431,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{n}{apply}~\PY{o}{(}\PY{n}{and.elim\PYZus{}right}~\PY{n}{H}\PY{o}{),}
+      ~~~~\PY{n}{apply}\PY{+w}{~}\PY{o}{(}\PY{n}{and.elim\PYZus{}right}\PY{+w}{~}\PY{n}{H}\PY{o}{),}
     \end{\al{input}}
     \Al{sep}
     \begin{\al{output}}
@@ -439,7 +440,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
           \begin{\al{hyps}}
             \Al{hyp}{p, q, r}{\PY{k+kt}{Prop}}
             \Al{sep}
-            \Al{hyp}{H}{\PY{n}{q}~\PY{n+nb+bp}{∧}~\PY{n}{p}}
+            \Al{hyp}{H}{\PY{n}{q}\PY{+w}{~}\PY{n+nb+bp}{∧}\PY{+w}{~}\PY{n}{p}}
           \end{\al{hyps}}
           \Al{sep}
           \Al{infrule}{}
@@ -454,7 +455,7 @@ Alectryon also captures goals and hypotheses as proofs progress:
   \Al{sep}
   \begin{\al{sentence}}
     \begin{\al{input}}
-      ~~~~\PY{n}{apply}~\PY{o}{(}\PY{n}{and.elim\PYZus{}left}~\PY{n}{H}\PY{o}{),}\Al{nl}
+      ~~~~\PY{n}{apply}\PY{+w}{~}\PY{o}{(}\PY{n}{and.elim\PYZus{}left}\PY{+w}{~}\PY{n}{H}\PY{o}{),}\Al{nl}
     \end{\al{input}}
   \end{\al{sentence}}
   \Al{sep}

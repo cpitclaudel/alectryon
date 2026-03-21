@@ -3,12 +3,11 @@
 % rubber: set program xelatex
 \usepackage{fontspec}
 % \defaultfontfeatures{Scale=MatchLowercase}
-% straight double quotes (defined T1 but missing in TU):
+% straight double quotes (defined in T1 but missing in TU):
 \ifdefined \UnicodeEncodingName
   \DeclareTextCommand{\textquotedbl}{\UnicodeEncodingName}{%
     {\addfontfeatures{RawFeature=-tlig,Mapping=}\char34}}%
 \fi
-\usepackage{ifthen}
 \usepackage{alltt}
 \usepackage{color}
 \setcounter{secnumdepth}{0}
@@ -36,15 +35,15 @@
 \providecommand*\DUrolekeyword[1]{\textbf{#1}}
 \providecommand*\DUrolestring[1]{\textit{#1}}
 
-% numerical or symbol footnotes with hyperlinks and backlinks
+% numbered or symbol footnotes with hyperlinks and backlinks
 \providecommand*{\DUfootnotemark}[3]{%
   \raisebox{1em}{\hypertarget{#1}{}}%
-  \hyperlink{#2}{\textsuperscript{#3}}%
+  \hyperref[#2]{\textsuperscript{#3}}%
 }
 \providecommand{\DUfootnotetext}[4]{%
   \begingroup%
   \renewcommand{\thefootnote}{%
-    \protect\raisebox{1em}{\protect\hypertarget{#1}{}}%
+    \protect\phantomsection\protect\label{#1}
     \protect\hyperlink{#2}{#3}}%
   \footnotetext{#4}%
   \endgroup%
@@ -59,11 +58,13 @@
   \fi%
 }
 % hyperlinks:
-\ifthenelse{\isundefined{\hypersetup}}{
-  \usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\ifdefined\hypersetup
+\else
+  \usepackage[hyperfootnotes=false,
+              colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
   \usepackage{bookmark}
   \urlstyle{same} % normal text font (alternatives: tt, rm, sf)
-}{}
+\fi
 \hypersetup{
   pdftitle={Using the marker-placement mini-language},
 }
@@ -97,7 +98,7 @@ $ DOCUTILSCONFIG=references.docutils.conf alectryon \textbackslash{}
 Alectryon supports references to individual sentences and hypotheses within a code fragment.  The easiest way to reference a sentence is to use \texttt{:mref:`search-term`}.  Alectryon will search for that text and automatically add a label to the first matching sentence of the proof.  For example:
 
 \begin{quote}
-\begin{alectryon}
+\phantomsection\label{setup}\begin{alectryon}
   \Al{anchor}{setup}
   \Al{sep}
   \begin{\al{sentence}}
@@ -400,7 +401,7 @@ Here is how it looks:
 \begin{quote}
 The following commands print information about an identifier \hyperref[references-rst-io-cp-s-about-0]{α}, print its definition \hyperref[references-rst-io-cp-s-print-0]{β}, and compute the type of a term \hyperref[references-rst-io-cp-s-check-0]{γ} or its reduction \hyperref[references-rst-io-cp-s-compute-0]{δ}.
 
-\begin{alectryon}
+\phantomsection\label{cp}\begin{alectryon}
   \Al{anchor}{cp}
   \Al{sep}
   \begin{\al{sentence}}
@@ -734,7 +735,7 @@ The first sentence is \alectryonInline{\PY{k+kn}{Record}~\PY{n+nf}{P}~\PY{o}{\PY
 ~~\PY{o}{\PYZob{}}~\PY{n}{p\PYZus{}first}\PY{o}{:}~\PY{n}{A}\PY{o}{;}\Al{nl}
 ~~~~\PY{n}{p\PYZus{}second}\PY{o}{:}~\PY{n}{B}~\PY{o}{\PYZcb{}.}}.\DUfootnotemark{footnote-reference-1}{f1}{1}
 %
-\DUfootnotetext{f1}{footnote-reference-1}{1}{\phantomsection\label{f1}%
+\DUfootnotetext{f1}{footnote-reference-1}{1}{%
 The second sentence is \alectryonInline{\PY{k+kn}{Goal}~\PY{k}{forall}~\PY{o}{\PYZob{}}\PY{n+nv}{A}~\PY{n+nv}{B}\PY{o}{\PYZcb{}}~\PY{o}{(}\PY{n+nv}{p}\PY{o}{:}~\PY{o}{@}\PY{n}{P}~\PY{n}{A}~\PY{n}{B}\PY{o}{),}\Al{nl}
 ~~\PY{k}{let}~\PY{n+nv}{a\PYZus{}first}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}first}\PY{o}{)}~\PY{k}{in}\Al{nl}
 ~~\PY{k}{let}~\PY{n+nv}{b\PYZus{}second}~\PY{o}{:=}~\PY{n}{p}\PY{o}{.(}\PY{n}{p\PYZus{}second}\PY{o}{)}~\PY{k}{in}\Al{nl}
@@ -799,7 +800,7 @@ Finally, you may chose a different Pygments lexer to highlight a quote.  For exa
 References can also be used to customize the display of goals and hypotheses.  In the following, hypotheses whose name start with \texttt{l} are omitted, and so are hypotheses named \texttt{a} and \texttt{A}.  After the call to \texttt{induction} (\hyperref[references-rst-io-pr-s-induction-1-0]{12}) the output is further limited to just goals 2 and 4, by excluding all goals and re-including only 2 and 4.  In goal 4, hypotheses whose type is exactly \texttt{list A} are shown, regardless of previous status, so \texttt{l}, \texttt{l'}, \texttt{l''} are visible (\hyperref[references-rst-io-pr-s-induction-1-g-4-h-l-0]{13}).  Finally, the \texttt{-.s(…).msg(…)} annotation reduces output for the second line (\texttt{Check …}) to include only the warning that it produces (and not its regular output); and the \texttt{-.s\{Proof.\}} annotation completely hides the \texttt{Proof.} line.
 
 \begin{quote}
-\begin{alectryon}
+\phantomsection\label{pr}\begin{alectryon}
   \Al{anchor}{pr}
   \Al{sep}
   \begin{\al{sentence}}
@@ -905,7 +906,7 @@ References can also be used to customize the display of goals and hypotheses.  I
 A constant concern when displaying proof states to readers is that what is displayed to the user may go stale.  Alectryon mitigates the issue by automatically collecting proof states, but simply recording the prover's output doesn't fully solve the issue.  That is because the output of a command may change in an unexpected way, without raising an error.  For example, we may have written, with an early version of Coq:
 
 \begin{quote}
-\begin{alectryon}
+\phantomsection\label{plus}\begin{alectryon}
   \Al{anchor}{plus}
   \Al{sep}
   \begin{\al{sentence}}
