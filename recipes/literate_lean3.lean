@@ -1,4 +1,4 @@
-/-!
+/-|
 ==================================================
  Literate programming with Alectryon (Lean3 input)
 ==================================================
@@ -26,24 +26,24 @@ Alectryon captures the results of `#check`, `#eval`, and the like:
 
 #reduce let x := 5 in x + 3
 
-/-!
+/-|
 By default, these results are folded and are displayed upon hovering or clicking.  We can unfold them by default using annotations or directives:
 -/
 
 #check nat /- .unfold -/
 
-/-!
+/-|
 .. lean3:: unfold
 -/
 
 #check bool
 #eval 1 + 1
 
-/-! Other flags can be used to control display, like ``.no-in``: -/
+/-| Other flags can be used to control display, like ``.no-in``: -/
 
 #print iff /- .unfold .no-in -/
 
-/-!
+/-|
 Documenting proofs
 ==================
 
@@ -65,7 +65,7 @@ begin /- .none -/
   }
 end
 
-/-!
+/-|
 Most features available for Coq are also available for Lean3; in particular, references (:mref:`.s(intro H)`, :mref:`.s(and.intro).h#H`), quotes (:mquote:`.s(and.intro).h#H.type`) and assertions should work.
 
 .. massert:: .s(apply iff.intro).g#2
