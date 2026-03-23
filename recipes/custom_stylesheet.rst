@@ -25,7 +25,7 @@ There are multiple ways to add custom stylesheets to an Alectryon document:
 
    As of this writing, the ``stylesheet_path`` option does not work with Alectryon.
 
-To compile this file using the last option:
+To compile this file using the last option::
 
    $ DOCUTILSCONFIG=custom_stylesheet.docutils.conf alectryon \
      custom_stylesheet.rst

@@ -56,7 +56,7 @@ class ASSETS:
 # pylint: disable=line-too-long
 HEADER = (
     '<div class="alectryon-banner">'
-    'Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running {}. '
+    'Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>{}. '
     'Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. '
     'Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. '
     'On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.'
@@ -64,7 +64,8 @@ HEADER = (
 )
 
 def gen_banner(driver_info, include_version_info=True):
-    return HEADER.format(", ".join(di.fmt(include_version_info) for di in driver_info))
+    drivers = ", ".join(di.fmt(include_version_info) for di in driver_info)
+    return HEADER.format(f", running {drivers}" if drivers else "")
 
 def wrap_classes(*cls):
     return " ".join("alectryon-" + c for c in ("root", *cls))

@@ -15,7 +15,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
-<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running . Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="using-a-custom-css-stylesheet-with-alectryon">
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="using-a-custom-css-stylesheet-with-alectryon">
 <h1 class="title">Using a custom CSS stylesheet with Alectryon</h1>
 
 <p>There are multiple ways to add custom stylesheets to an Alectryon document:</p>
@@ -46,16 +46,11 @@ stylesheet=custom.css
 </li>
 </ol>
 <p>To compile this file using the last option:</p>
-<blockquote>
-<dl class="docutils">
-<dt>$ DOCUTILSCONFIG=custom_stylesheet.docutils.conf alectryon </dt>
-<dd><dl class="first last docutils">
-<dt>custom_stylesheet.rst</dt>
-<dd># Coq+reST → HTML; produces ‘custom_stylesheet.html’</dd>
-</dl>
-</dd>
-</dl>
-</blockquote>
+<pre class="literal-block">
+$ DOCUTILSCONFIG=custom_stylesheet.docutils.conf alectryon \
+  custom_stylesheet.rst
+    # Coq+reST → HTML; produces ‘custom_stylesheet.html’
+</pre>
 </div>
 </div></body>
 </html>
