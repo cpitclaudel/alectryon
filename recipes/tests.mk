@@ -43,7 +43,7 @@ tests_targets += _output/tests/comments_in_definition.v.rst
 
 # ReST → HTML
 _output/tests/coqc_time_error.out: tests/coqc_time_error.rst
-	$(alectryon) --coq-driver=coqc_time --backend webpage -o /dev/null $< > $@ 2>&1; echo "exit: $$?" >> $@; sed -i 's/in file [^:]*//' $@
+	$(alectryon) --coq-driver=coqc_time --backend webpage -o /dev/null $< > $@ 2>&1; echo "exit: $$?" >> $@; sed -i 's/in file [^:]*//' $@; sed -i 's|/home/.*/bin/||g' $@
 tests_targets += _output/tests/coqc_time_error.out
 
 # Lean → HTML
@@ -156,7 +156,7 @@ tests_targets += _output/tests/latex_formatting.tex
 
 # ReST → HTML
 _output/tests/lean3_error.out: tests/lean3_error.rst
-	$(alectryon) $< --backend webpage -o /dev/null 2>&1 | sed 's/^\( *\).*\?\([.]lean:\)/\1...\2/g' > $@; echo "exit: $$?" >> $@
+	$(alectryon) --backend webpage -o /dev/null $< > $@ 2>&1; echo "exit: $$?" >> $@; sed -i 's/^\( *\).*\?\([.]lean:\)/\1...\2/g' $@; sed -i 's|/home/.*/bin/||g' $@
 tests_targets += _output/tests/lean3_error.out
 
 # RST → HTML + errors

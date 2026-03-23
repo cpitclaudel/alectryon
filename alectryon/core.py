@@ -683,16 +683,16 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
 
     CLI_ENCODING: ClassVar[str | None] = "utf-8"
 
-    def __init__(self, args=(), fpath="-", binpath=None):
+    def __init__(self, args=(), fpath="-", binpath: str | None=None):
         super().__init__(args, fpath)
-        self.binpath: str = binpath or self.BIN
+        self.binpath = binpath
 
     @classmethod
     def autoselect(cls) -> bool:
         return cls.AUTOSELECT and (which(cls.BIN) is not None)
 
     def version_info(self) -> DriverInfo:
-        bs = subprocess.check_output([self.resolve_driver(), *self.VERSION_ARGS])
+        bs = subprocess.check_output([*self.resolve_driver(), *self.VERSION_ARGS])
         return DriverInfo(self.NAME, bs.decode('ascii', 'ignore').strip())
 
     @classmethod
@@ -700,11 +700,14 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         """Raise an error to indicate that ``binpath`` cannot be found."""
         raise ValueError("{} binary not found (bin={!r}).".format(cls.NAME, binpath))
 
-    def resolve_driver(self) -> str:
-        path: Optional[str] = which(self.binpath)
-        if path is None:
-            self.driver_not_found(self.binpath)
+    @classmethod
+    def _which(cls, path: str) -> str:
+        if (path := which(path)) is None:
+            cls.driver_not_found(path)
         return path
+
+    def resolve_driver(self) -> list[str | Path]:
+        return [self._which(self.binpath or self.BIN)]
 
     @staticmethod
     def _debug_start(cmd):
@@ -715,8 +718,8 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         return str(p.stderr)
 
     def run_cli(self, cwd=None, more_args=(), input=None, capture_output=True):
-        cmd = [self.resolve_driver(),
-               *self.CLI_ARGS, *self.user_args, *more_args]
+        driver = self.resolve_driver()
+        cmd = [*driver, *self.CLI_ARGS, *self.user_args, *more_args]
         self._debug_start(cmd)
         p = subprocess.run(cmd, cwd=cwd, input=input,
                            stderr=subprocess.PIPE,
@@ -724,7 +727,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
                            check=False, **({"encoding": self.CLI_ENCODING} if self.CLI_ENCODING else {}))
         if p.returncode != 0:
             MSG = "Driver {} ({}) exited with code {}:\n{}"
-            raise ValueError(MSG.format(self.NAME, self.binpath, p.returncode, self._proc_out(p)))
+            raise ValueError(MSG.format(self.NAME, driver, p.returncode, self._proc_out(p)))
         return p.stdout
 
 class PopenDriver(CLIDriver): # pylint: disable=abstract-method
@@ -761,7 +764,7 @@ class PopenDriver(CLIDriver): # pylint: disable=abstract-method
             self.repl = None
 
     def _start(self, stdin: _FILE=PIPE, stderr: _FILE=PIPE, stdout: _FILE=PIPE, more_args=()):
-        cmd = [self.resolve_driver(),
+        cmd = [*self.resolve_driver(),
                *self.REPL_ARGS, *self.user_args, *self.instance_args, *more_args]
         self._debug_start(cmd)
         return subprocess.Popen(cmd, stdin=stdin, stderr=stderr, stdout=stdout, encoding=self.REPL_ENCODING)
