@@ -423,6 +423,15 @@ class Document:
         """Translate `range` from document to source-file space."""
         return Range(self.remap_pos(range.beg), range.end and self.remap_pos(range.end))
 
+    def format_error_context(self, beg: int, end: int) -> str:
+        """Format a >>>…<<< context snippet for the encoded range [beg, end)."""
+        prefix, substring, suffix = self[:beg], self[beg:end], self[end:]
+        prefix = "\n".join(prefix.splitlines()[-3:])
+        suffix = "\n".join(suffix.splitlines()[:3])
+        context = f"{prefix}>>>{substring}<<<{suffix}"
+        return ("\nThe offending range is delimited by >>>…<<< below:\n" +
+                "\n".join(f"  > {line}" for line in context.splitlines()))
+
     def intersperse_text_fragments(self, pfragments: Iterable[Positioned[Fragment]]) -> Iterable[Fragment]:
         """Split document into fragments.
 

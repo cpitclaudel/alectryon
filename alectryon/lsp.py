@@ -384,21 +384,8 @@ class LSPClient:
             query.process_message(self.receive_message())
         return query
 
-    def _highlight_context(self, doc, beg: int, end: int) -> str:
-        """Highlight error location with >>> <<< markers."""
-        prefix, substring, suffix = doc[:beg], doc[beg:end], doc[end:]
-        prefix = "\n".join(prefix.splitlines()[-3:])
-        suffix = "\n".join(suffix.splitlines()[:3])
-        return f"{prefix}>>>{substring}<<<{suffix}"
-
-    def _format_error_context(self, doc, range: Range) -> str:
-        beg, end = doc.range2offsets(range)
-        context = self._highlight_context(doc, beg, end)
-        return ("\nThe offending range is delimited by >>>…<<< below:\n" +
-                "\n".join(f"  > {line}" for line in context.splitlines()))
-
     def report_diagnostic(self, doc, range, message, level):
-        context = self._format_error_context(doc, range)
+        context = doc.format_error_context(*doc.range2offsets(range))
         self.driver.observer.notify(None, message + context, doc.remap_range(range), level=level)
 
     def _init(self) -> LSPClientInitializeRequest:
