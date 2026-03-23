@@ -764,8 +764,8 @@ class REPLDriver(PopenDriver):
 
 DRIVERS_BY_LANGUAGE = {
     "coq": {
-        "sertop": (".serapi", "SerAPI"),
         "vsrocq": (".vsrocq", "VsRocq"),
+        "sertop": (".serapi", "SerAPI"),
         "coqlsp": (".coqlsp", "CoqLSP"),
         "sertop_noexec": (".serapi", "SerAPI_noexec"),
         "coqc_time": (".coqc_time", "CoqcTime"),
