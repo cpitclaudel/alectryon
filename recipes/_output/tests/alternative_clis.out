@@ -18,7 +18,7 @@
 <div class="alectryon-root alectryon-centered"><div class="document">
 
 
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="chk0"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="chk0"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
      : <span class="kt">Set</span></blockquote></div></div></small></span></pre>
 </div>
 </div></body>
@@ -45,7 +45,7 @@
 <div class="alectryon-root alectryon-centered"><div class="document">
 
 
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="chk1"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="chk1"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
      : <span class="kt">Set</span></blockquote></div></div></small></span></pre>
 </div>
 </div></body>

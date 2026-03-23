@@ -644,9 +644,15 @@ class AlectryonPostTransform(OneTimeTransform):
         raise NotImplementedError("Unknown output format")
 
     @staticmethod
-    def replace_one(node, fmt, rawtext, gen, *args, **kwargs):
+    def lang_class(node):
+        lang = node.details["lang"]
+        return "lang-" + {"coq": "rocq"}.get(lang, lang)
+
+    @classmethod
+    def replace_one(cls, node, fmt, rawtext, gen, *args, **kwargs):
         ids = node.attributes.get("ids", ())
         classes = node.attributes.pop("classes", ()) # visit_raw adds a <div> if it finds classes
+        classes += (cls.lang_class(node),)
         dom = gen(*args, ids=ids, classes=classes, **kwargs)
         node.replace_self(nodes.raw(rawtext, dom.render(pretty=False), format=fmt))
 

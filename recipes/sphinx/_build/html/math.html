@@ -44,7 +44,7 @@
 <p>If you want to highlight pieces of code with MathJax, too, then you can either:</p>
 <ul>
 <li><p>Use a custom mathjax config script (see the discussion in <code class="docutils literal notranslate"><span class="pre">recipes/mathjax.rst</span></code>, the configuration in <code class="docutils literal notranslate"><span class="pre">conf.py</span></code>, and the implementation in <code class="docutils literal notranslate"><span class="pre">recipes/sphinx/_static/mathjax_config.js</span></code>).  Math in the following snippet is highlighted using this technique; look for the link to <code class="docutils literal notranslate"><span class="pre">mathjax_config.js</span></code> in the <code class="docutils literal notranslate"><span class="pre">&lt;head&gt;</span></code> of this webpage:</p>
-<pre class="alectryon-io highlight coq-math"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;\mathbb{N}&quot;</span> := nat.</span><span class="alectryon-wsp">
+<pre class="alectryon-io highlight coq-math lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;\mathbb{N}&quot;</span> := nat.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="math-rst-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="math-rst-chk0"><span class="kn">Print</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kn">Inductive</span> <span class="nf">nat</span> : <span class="kt">Set</span> :=
     O : \mathbb{N} | S : \mathbb{N} -&gt; \mathbb{N}.
 
@@ -64,7 +64,7 @@
      // Force reprocessing if MathJax already ran
      window.MathJax?.typesetPromise?.(blocks);
   });
-</script><pre class="alectryon-io highlight coq-math-2"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;\mathbb{B}&quot;</span> := bool.</span><span class="alectryon-wsp">
+</script><pre class="alectryon-io highlight coq-math-2 lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Notation</span> <span class="s2">&quot;\mathbb{B}&quot;</span> := bool.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="math-rst-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="math-rst-chk1"><span class="kn">Print</span> bool.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kn">Inductive</span> <span class="nf">bool</span> : <span class="kt">Set</span> :=
     true : \mathbb{B} | false : \mathbb{B}.</blockquote></div></div></small></span></pre></li>
 </ul>

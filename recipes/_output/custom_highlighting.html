@@ -33,7 +33,7 @@ alectryon custom_highlighting.v # Coq → HTML, produces ‘custom_highlighting.
 <li><tt class="docutils literal">tacn</tt>: <code class="highlight coq"><span class="nb">absurd</span></code>, <code class="highlight coq"><span class="nb">admit</span></code>, <code class="highlight coq"><span class="nb">etransitivity</span></code>, …</li>
 <li><tt class="docutils literal"><span class="pre">tacn-solve</span></tt>: <code class="highlight coq"><span class="bp">assumption</span></code>, <code class="highlight coq"><span class="bp">by</span></code>, <code class="highlight coq"><span class="bp">congruence</span></code>, <code class="highlight coq"><span class="bp">tauto</span></code>, …</li>
 </ul>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Tactic Notation</span> <span class="s2">&quot;app&quot;</span> <span class="kp">constr</span>(thm) <span class="s2">&quot;but_first&quot;</span> tactic1(t) :=
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Tactic Notation</span> <span class="s2">&quot;app&quot;</span> <span class="kp">constr</span>(thm) <span class="s2">&quot;but_first&quot;</span> tactic1(t) :=
   t; <span class="nb">simple apply</span> thm.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-txt">
 </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Ltac</span> <span class="bp">must_eauto</span> := <span class="nb">eauto</span>; <span class="kp">fail</span>.</span><span class="alectryon-wsp">
@@ -58,14 +58,14 @@ alectryon custom_highlighting.v # Coq → HTML, produces ‘custom_highlighting.
 <div class="section" id="using-a-different-lexer">
 <h1>Using a different lexer</h1>
 <p>You can use the marker-placement mini-language to select a message and set its <tt class="docutils literal">lang</tt> property:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Extraction Language Haskell</span>.</span><span class="alectryon-wsp">
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Extraction Language Haskell</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="custom-highlighting-v-chk7" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk7"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="nf">add</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Nat</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Nat</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Nat</span>
 <span class="nf">add</span><span class="w"> </span>n<span class="w"> </span>m<span class="w"> </span><span class="ow">=</span>
 <span class="w">  </span><span class="kr">case</span><span class="w"> </span>n<span class="w"> </span><span class="kr">of</span><span class="w"> </span><span class="p">{</span>
 <span class="w">   </span><span class="kt">O</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span>m<span class="p">;</span>
 <span class="w">   </span><span class="kt">S</span><span class="w"> </span>p<span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">S</span><span class="w"> </span><span class="p">(</span>add<span class="w"> </span>p<span class="w"> </span>m<span class="p">)}</span>
 
-</blockquote></div></div></small></span></pre><pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Extraction Language Scheme</span>.</span><span class="alectryon-wsp">
+</blockquote></div></div></small></span></pre><pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Extraction Language Scheme</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="custom-highlighting-v-chk8" style="display: none" type="checkbox"><label class="alectryon-input" for="custom-highlighting-v-chk8"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="p">(</span><span class="k">define</span><span class="w"> </span><span class="nv">add</span><span class="w"> </span><span class="p">(</span><span class="nf">lambdas</span><span class="w"> </span><span class="p">(</span><span class="nf">n</span><span class="w"> </span><span class="nv">m</span><span class="p">)</span>
 <span class="w">  </span><span class="p">(</span><span class="k">match</span><span class="w"> </span><span class="nv">n</span>
 <span class="w">     </span><span class="p">((</span><span class="nf">O</span><span class="p">)</span><span class="w"> </span><span class="nv">m</span><span class="p">)</span>
@@ -81,9 +81,9 @@ $ python alectryon_custom_driver.py custom_highlighting.v -o custom_highlighting
     # Custom driver; produces ‘custom_highlighting.with_driver.html’
 </pre>
 <p>The following demonstrates three examples: highlighting C code within strings, highlighting Markdown within comments, and highlighting a custom mini-language within <tt class="docutils literal"><span class="pre">calc:()</span></tt> delimiters:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Coq.Strings.String.</span><span class="alectryon-wsp">
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Require Import</span> Coq.Strings.String.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Open Scope</span> string_scope.</span></span></pre><p>The Pygments lexer in <tt class="docutils literal">custom_lexer.py</tt> is set up to highlight text within <tt class="docutils literal"><span class="pre">C:{{…}}</span></tt> blocks as C code:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">c_program</span> := <span class="s2">&quot;C:{{</span>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">c_program</span> := <span class="s2">&quot;C:{{</span>
 <span class="s2">  #include &lt;stdio.h&gt;</span>
 
 <span class="s2">  int main(int argc, char** argv) {</span>
@@ -95,7 +95,7 @@ $ python alectryon_custom_driver.py custom_highlighting.v -o custom_highlighting
 <span class="s2">    return 0;</span>
 <span class="s2">  }</span>
 <span class="s2">}}&quot;</span>.</span></span></pre><p>Additionally, the lexer recognizes Coq comments and highlights them as Markdown:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Fixpoint</span> <span class="nf">dmap</span> {<span class="nv">A</span> <span class="nv">B</span>} (<span class="nv">l</span>: list A) (<span class="nv">f</span>: <span class="k">forall</span> <span class="nv">a</span>: A, List.In a l -&gt; B) :=
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Fixpoint</span> <span class="nf">dmap</span> {<span class="nv">A</span> <span class="nv">B</span>} (<span class="nv">l</span>: list A) (<span class="nv">f</span>: <span class="k">forall</span> <span class="nv">a</span>: A, List.In a l -&gt; B) :=
   <span class="c">(* Apply function `f` to each element of list `l`.</span>
 
 <span class="c">     Note the **order of arguments**: `f` comes second because its</span>
@@ -107,7 +107,7 @@ $ python alectryon_custom_driver.py custom_highlighting.v -o custom_highlighting
     cons (f h (or_introl eq_refl))
          (dmap t (<span class="k">fun</span> <span class="nv">a</span> <span class="nv">pr</span> =&gt; f a (or_intror pr)))
   <span class="k">end</span> f.</span></span></pre><p>And finally, the lexer is set up to highlight text within <tt class="docutils literal"><span class="pre">calc:()</span></tt> blocks using a custom lexer:</p>
-<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Declare Custom Entry</span> calc.</span><span class="alectryon-wsp">
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Declare Custom Entry</span> calc.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Infix</span> <span class="s2">&quot;add&quot;</span> := Nat.add (<span class="kn">in custom</span> calc <span class="kn">at level</span> <span class="mi">50</span>, <span class="kn">left associativity</span>).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Infix</span> <span class="s2">&quot;sub&quot;</span> := Nat.sub (<span class="kn">in custom</span> calc <span class="kn">at level</span> <span class="mi">50</span>, <span class="kn">left associativity</span>).</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Infix</span> <span class="s2">&quot;mul&quot;</span> := Nat.mul (<span class="kn">in custom</span> calc <span class="kn">at level</span> <span class="mi">50</span>, <span class="kn">left associativity</span>).</span><span class="alectryon-wsp">
