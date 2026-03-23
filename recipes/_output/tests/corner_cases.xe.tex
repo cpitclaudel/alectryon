@@ -10,6 +10,7 @@
 \fi
 \usepackage{alltt}
 \setcounter{secnumdepth}{0}
+\usepackage{tabularx}
 
 %%% Custom LaTeX preamble
 
@@ -35,6 +36,17 @@
     {\csname end\DocutilsClassFunctionName \endcsname}%
 \fi
 
+% Provide a length variable and set default, if it is new
+\providecommand*{\DUprovidelength}[2]{%
+  \ifdefined#1
+  \else
+    \newlength{#1}\setlength{#1}{#2}%
+  \fi
+}
+
+% width of docinfo table
+\DUprovidelength{\DUdocinfowidth}{0.9\linewidth}
+
 % custom inline roles: \DUrole{#1}{#2} tries \DUrole#1{#2}
 \providecommand*{\DUrole}[2]{%
   \ifcsname DUrole#1\endcsname%
@@ -43,6 +55,10 @@
     #2%
   \fi%
 }
+
+% title for topics, admonitions, unsupported section levels, and sidebar
+\providecommand*{\DUtitle}[1]{%
+  \smallskip\noindent\textbf{#1}\smallskip}
 % hyperlinks:
 \ifdefined\hypersetup
 \else
@@ -63,6 +79,16 @@
 %%% Body
 \begin{document}
 \maketitle
+
+% Docinfo
+\begin{center}
+\begin{tabularx}{\DUdocinfowidth}{lX}
+\textbf{Date}: & Test \\
+\end{tabularx}
+\end{center}
+
+% The ``:date:`` field above tests that the auto-toggle is inserted
+% after a docinfo block.
 
 To compile:
 
@@ -542,5 +568,40 @@ Bubble: \DUrole{alectryon-bubble}{}
 }
 
 \hyperref[corner-cases-rst-s-pose-h-a-body-0]{1}, \hyperref[corner-cases-rst-s-pose-h-a-type-0]{2}, \hyperref[corner-cases-rst-s-pose-h-a-0]{3}.
+
+
+\section{Exercise directive%
+  \label{exercise-directive}%
+}
+
+\begin{DUclass}{topic}
+\begin{DUclass}{exercise}
+\begin{quote}
+\DUtitle{Exercise: Commutativity of addition}
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Goal}~\PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{y}\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{+}~\PY{n}{y}~\PY{o}{=}~\PY{n}{y}~\PY{o}{+}~\PY{n}{x}\PY{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{+}~\PY{n}{y}~\PY{o}{=}~\PY{n}{y}~\PY{o}{+}~\PY{n}{x}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+\end{quote}
+\end{DUclass}
+\end{DUclass}
 
 \end{document}

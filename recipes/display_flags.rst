@@ -4,7 +4,7 @@
 
 This file tests various combinations of display flags.  To compile::
 
-   alectryon display-flags.rst # reST → HTML; produces ‘display-flags.html’
+   alectryon display_flags.rst # reST → HTML; produces ‘display_flags.html’
 
 .. coq:: none
 

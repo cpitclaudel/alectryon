@@ -12,11 +12,6 @@ _output/tests/alternative_clis.out: tests/alternative_clis.py | _output/tests/
 	$(PYTHON) $< > $@
 tests_targets += _output/tests/alternative_clis.out
 
-# reST → HTML
-_output/tests/auto_toggle.html: tests/auto_toggle.rst
-	$(alectryon) $<
-tests_targets += _output/tests/auto_toggle.html
-
 # Coq → HTML (cached)
 _output/tests/cache_v1.html: tests/cache_v1.v
 	$(alectryon) $< --cache-directory tests/
@@ -59,41 +54,6 @@ tests_targets += _output/tests/corner_cases.html
 _output/tests/corner_cases.xe.tex: tests/corner_cases.rst
 	$(alectryon) $< -o $@ --latex-dialect xelatex
 tests_targets += _output/tests/corner_cases.xe.tex
-
-# HTML4
-_output/tests/dialects.4.html: tests/dialects.rst
-	$(alectryon) --html-dialect=html4 -o $@ $<
-tests_targets += _output/tests/dialects.4.html
-# HTML5
-_output/tests/dialects.5.html: tests/dialects.rst
-	$(alectryon) --html-dialect=html5 -o $@ $<
-tests_targets += _output/tests/dialects.5.html
-# LaTeX
-_output/tests/dialects.tex: tests/dialects.rst
-	$(alectryon) --latex-dialect=pdflatex -o $@ $<
-tests_targets += _output/tests/dialects.tex
-# XeLaTeX
-_output/tests/dialects.xe.tex: tests/dialects.rst
-	$(alectryon) --latex-dialect=xelatex -o $@ $<
-tests_targets += _output/tests/dialects.xe.tex
-# LuaLaTeX
-_output/tests/dialects.lua.tex: tests/dialects.rst
-	$(alectryon) --latex-dialect=lualatex -o $@ $<
-tests_targets += _output/tests/dialects.lua.tex
-
-# reST → Coq
-_output/tests/directive-options.html: tests/directive-options.rst
-	$(alectryon) $<
-tests_targets += _output/tests/directive-options.html
-# reST → LaTeX
-_output/tests/directive-options.xe.tex: tests/directive-options.rst
-	$(alectryon) $< --latex-dialect xelatex -o $@
-tests_targets += _output/tests/directive-options.xe.tex
-
-# reST → HTML
-_output/tests/display-flags.html: tests/display-flags.rst
-	$(alectryon) $<
-tests_targets += _output/tests/display-flags.html
 
 # reST + assertions
 _output/tests/docinfo_flags.txt: tests/docinfo_flags.rst
@@ -206,11 +166,6 @@ _output/tests/minification.v.html: tests/minification.v
 	$(alectryon) --frontend coq --html-minification $<
 tests_targets += _output/tests/minification.v.html
 
-# reST → HTML
-_output/tests/misc.html: tests/misc.rst
-	$(alectryon) $<
-tests_targets += _output/tests/misc.html
-
 # Coq → HTML
 _output/tests/plain_cli.noext.html: tests/plain_cli.rst | _output/tests/
 	TMP=$$(mktemp --tmpdir alectryon-XXXXX-tmp); echo "Check nat." > $$TMP; $(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage $$TMP -o - | sed 's/alectryon-.....-tmp/tmp/g' > $@
@@ -219,11 +174,6 @@ tests_targets += _output/tests/plain_cli.noext.html
 _output/tests/plain_cli.stdin.html: tests/plain_cli.rst | _output/tests/
 	echo "Check nat." | $(PYTHON) -m "alectryon" --no-header --copy-assets none --frontend coq --backend webpage - > $@
 tests_targets += _output/tests/plain_cli.stdin.html
-
-# Coq → JSON
-_output/tests/recording.v.io.json: tests/recording.v
-	$(alectryon) $< --frontend coq --backend json
-tests_targets += _output/tests/recording.v.io.json
 
 # IO → HTML
 _output/tests/recording.v.html: tests/recording.v.io.json
@@ -237,11 +187,6 @@ tests_targets += _output/tests/recording.snippets.html
 _output/tests/recording.snippets.tex: tests/recording.v.io.json
 	$(alectryon) $< --backend snippets-latex
 tests_targets += _output/tests/recording.snippets.tex
-
-# reST → HTML
-_output/tests/references.html: tests/references.rst
-	$(alectryon) $<
-tests_targets += _output/tests/references.html
 
 # Coq → HTML
 _output/tests/screenshot.html: tests/screenshot.v

@@ -4,6 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="Docutils 0.22.4: https://docutils.sourceforge.io/" />
+<meta name="date" content="Test" />
 <title>Corner cases</title>
 <link rel="stylesheet" href="alectryon.css" type="text/css" />
 <link rel="stylesheet" href="docutils_basic.css" type="text/css" />
@@ -16,7 +17,16 @@
 <body>
 <div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running vsrocq-language-server. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="corner-cases">
 <h1 class="title">Corner cases</h1>
-
+<table class="docinfo" frame="void" rules="none">
+<col class="docinfo-name" />
+<col class="docinfo-content" />
+<tbody valign="top">
+<tr><th class="docinfo-name">Date:</th>
+<td>Test</td></tr>
+</tbody>
+</table>
+<!-- The ``:date:`` field above tests that the auto-toggle is inserted
+after a docinfo block. -->
 <p>To compile:</p>
 <pre class="literal-block">
 alectryon --stdin-filename corner_cases.rst --frontend rst \
@@ -59,6 +69,12 @@ alectryon corner_cases.rst -o corner_cases.xe.tex \
 <div class="section" id="references">
 <h1>References</h1>
 <p><a class="reference internal alectryon-mref" href="#corner-cases-rst-s-pose-h-a-body-0">1</a>, <a class="reference internal alectryon-mref" href="#corner-cases-rst-s-pose-h-a-type-0">2</a>, <a class="reference internal alectryon-mref" href="#corner-cases-rst-s-pose-h-a-0">3</a>.</p>
+</div>
+<div class="section" id="exercise-directive">
+<h1>Exercise directive</h1>
+<div class="exercise topic">
+<p class="topic-title">Exercise: Commutativity of addition</p>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk12" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk12"><span class="kn">Goal</span> <span class="k">forall</span> <span class="nv">x</span> <span class="nv">y</span>: nat, x + y = y + x.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="k">forall</span> <span class="nv">x</span> <span class="nv">y</span> : nat, x + y = y + x</div></blockquote></div></div></small></span></pre></div>
 </div>
 </div>
 </div></body>

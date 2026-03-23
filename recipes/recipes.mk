@@ -26,6 +26,10 @@ recipes_targets += _output/api.rst.out
 _output/caching.html: caching.v
 	$(alectryon) --cache-directory _output/ --cache-compression=xz $<
 recipes_targets += _output/caching.html
+# Coq → JSON recording
+_output/caching.v.io.json: caching.v
+	$(alectryon) --frontend coq --backend json $<
+recipes_targets += _output/caching.v.io.json
 
 # Coq+reST → HTML
 _output/coq_drivers.html: coq_drivers.v
@@ -54,6 +58,11 @@ recipes_targets += _output/custom_highlighting.with_driver.html
 _output/custom_stylesheet.html: custom_stylesheet.rst
 	DOCUTILSCONFIG=custom_stylesheet.docutils.conf $(alectryon) $<
 recipes_targets += _output/custom_stylesheet.html
+
+# reST → HTML
+_output/display_flags.html: display_flags.rst
+	$(alectryon) $<
+recipes_targets += _output/display_flags.html
 
 # JSON → JSON
 _output/fragments.v.io.json: fragments.v.json
@@ -100,10 +109,22 @@ recipes_targets += _output/literate_MyST.v
 _output/literate_coq.html: literate_coq.v
 	$(alectryon) $<
 recipes_targets += _output/literate_coq.html
+# Coq+reST → HTML5
+_output/literate_coq.5.html: literate_coq.v
+	$(alectryon) --html-dialect=html5 $< -o $@
+recipes_targets += _output/literate_coq.5.html
 # Coq+reST → LaTeX
 _output/literate_coq.tex: literate_coq.v
 	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex
 recipes_targets += _output/literate_coq.tex
+# Coq+reST → XeLaTeX
+_output/literate_coq.xe.tex: literate_coq.v
+	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex --latex-dialect xelatex -o $@
+recipes_targets += _output/literate_coq.xe.tex
+# Coq+reST → LuaLaTeX
+_output/literate_coq.lua.tex: literate_coq.v
+	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex --latex-dialect lualatex -o $@
+recipes_targets += _output/literate_coq.lua.tex
 # Coq+reST → reST
 _output/literate_coq.v.rst: literate_coq.v
 	$(alectryon) $< --backend rst
@@ -151,6 +172,10 @@ recipes_targets += _output/literate_reST.html
 _output/literate_reST.tex: literate_reST.rst
 	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex
 recipes_targets += _output/literate_reST.tex
+# reST+Coq → LaTeX
+_output/literate_reST.xe.tex: literate_reST.rst
+	$(alectryon) $< --latex-dialect xelatex -o $@
+recipes_targets += _output/literate_reST.xe.tex
 # reST+Coq → Coq
 _output/literate_reST.v: literate_reST.rst
 	$(alectryon) $< --backend coq

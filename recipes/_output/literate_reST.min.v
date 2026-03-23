@@ -14,6 +14,8 @@ Alectryon supports literate programs and documents (combinations of code and pro
    $ DOCUTILSCONFIG=literate.docutils.conf alectryon \
      literate_reST.rst --backend latex
        # reST+Coq → LaTeX; produces ‘literate_reST.tex’
+   alectryon literate_reST.rst --latex-dialect xelatex -o literate_reST.xe.tex
+       # reST+Coq → LaTeX; produces ‘literate_reST.xe.tex’
    alectryon literate_reST.rst --backend coq
        # reST+Coq → Coq;   produces ‘literate_reST.v’
 
@@ -96,4 +98,31 @@ They can be nested into other reST directives, such as tables:
 
 (*|
      * Solve inductive case using the `le_l` lemma.
+
+Directive options
+=================
+
+The ``.. coq::`` directive supports ``:class:`` and ``:name:`` attributes.  Adding ``:name:`` makes the block a referenceable target, and ``:class:`` attaches CSS classes:
+
+.. coq:: none
+|*)
+
+From Coq Require Import String.
+Open Scope string_scope.
+
+(*|
+.. raw:: html
+
+   <style type="text/css">.upside-down { transform: rotate(180deg) } #test { border: solid; } </style>
+
+.. coq::
+   :class: upside-down
+   :name: test
+|*)
+
+Definition test := " =: ʇsǝʇ uoıʇıuıɟǝᗡ".
+
+(*|
+Link to `first Coq fragment <test_>`_.
+Another `link <first Coq fragment_>`__.
 |*)

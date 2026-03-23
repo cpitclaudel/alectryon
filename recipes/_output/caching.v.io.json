@@ -1,0 +1,23 @@
+[
+    [
+        {
+            "_type": "text",
+            "contents": "(*|\n======================================\n Caching results for faster execution\n======================================\n\nAlectryon can generate cache files to memoize Coq's output, yielding faster compilation when Coq fragments embedded in a document have not changed::\n\n   alectryon --cache-directory _output/ --cache-compression=xz caching.v\n     # Coq+reST \u2192 HTML, cached to _output/caching.v.cache; produces \u2018caching.html\u2019\n\n(The ``--cache-compression`` flag is optional; the default is to not compress caches.)\n\nIndependently of caching, Alectryon can also record its output as JSON, for later replay or as input to other pipelines::\n\n   alectryon --frontend coq --backend json caching.v\n     # Coq \u2192 JSON recording; produces \u2018caching.v.io.json\u2019\n\n.. coq::\n|*)\n\n"
+        },
+        {
+            "_type": "sentence",
+            "contents": "Print nat.",
+            "messages": [
+                {
+                    "_type": "message",
+                    "contents": "Inductive nat : Set :=  O : nat | S : nat -> nat.\n\nArguments S _%_nat_scope"
+                }
+            ],
+            "goals": []
+        },
+        {
+            "_type": "text",
+            "contents": "\n"
+        }
+    ]
+]

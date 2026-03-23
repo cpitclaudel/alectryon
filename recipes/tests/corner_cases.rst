@@ -2,6 +2,11 @@
  Corner cases
 ==============
 
+:date: Test
+
+.. The ``:date:`` field above tests that the auto-toggle is inserted
+   after a docinfo block.
+
 To compile::
 
    alectryon --stdin-filename corner_cases.rst --frontend rst \
@@ -68,3 +73,13 @@ References
 
 .. role:: mq(mref)
    :kind: quote
+
+Exercise directive
+==================
+
+.. exercise:: Commutativity of addition
+   :difficulty: 1
+
+   .. coq::
+
+      Goal forall x y: nat, x + y = y + x.

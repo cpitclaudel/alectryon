@@ -7,9 +7,20 @@ Alectryon supports literate programs and documents (combinations of code and pro
 
    alectryon literate_coq.v
        # Coq+reST → HTML;  produces ‘literate_coq.html’
+   alectryon --html-dialect=html5 literate_coq.v \
+     -o literate_coq.5.html
+       # Coq+reST → HTML5; produces ‘literate_coq.5.html’
    $ DOCUTILSCONFIG=literate.docutils.conf alectryon \
      literate_coq.v --backend latex
        # Coq+reST → LaTeX; produces ‘literate_coq.tex’
+   $ DOCUTILSCONFIG=literate.docutils.conf alectryon \
+     literate_coq.v --backend latex --latex-dialect xelatex \
+     -o literate_coq.xe.tex
+       # Coq+reST → XeLaTeX; produces ‘literate_coq.xe.tex’
+   $ DOCUTILSCONFIG=literate.docutils.conf alectryon \
+     literate_coq.v --backend latex --latex-dialect lualatex \
+     -o literate_coq.lua.tex
+       # Coq+reST → LuaLaTeX; produces ‘literate_coq.lua.tex’
    alectryon literate_coq.v --backend rst
        # Coq+reST → reST;  produces ‘literate_coq.v.rst’
 

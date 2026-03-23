@@ -227,6 +227,24 @@ Nat.add =
 
 <span class="kn">Arguments</span> Nat.add (n m)%_nat_scope</blockquote></div></div></small></span></pre></blockquote>
 </div>
+<div class="section" id="corner-cases">
+<h1>Corner cases</h1>
+<p>reST normalizes block names, so <tt class="docutils literal">.io</tt> references are CSS-normalized and compared case-insensitively:</p>
+<blockquote>
+<pre class="alectryon-io highlight lang-rocq" id="named-block"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="references-rst-chk1c" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chk1c"><span class="kn">Print</span> eq.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kn">Inductive</span> <span class="nf">eq</span> (<span class="nv">A</span> : <span class="kt">Type</span>) (<span class="nv">x</span> : A) : A -&gt; <span class="kt">Prop</span> :=
+    eq_refl : x = x.
+
+<span class="kn">Arguments</span> eq {A}%_type_scope x _
+<span class="kn">Arguments</span> eq_refl {A}%_type_scope {x}, [_] _</blockquote></div></div></small></span></pre><ul class="simple">
+<li><samp class="alectryon-inline highlight lang-rocq"><!-- Generator: Alectryon --><span class="kn">Print</span> eq.</samp>.</li>
+<li><samp class="alectryon-inline highlight lang-rocq"><!-- Generator: Alectryon --><span class="kn">Inductive</span> <span class="nf">eq</span> (<span class="nv">A</span> : <span class="kt">Type</span>) (<span class="nv">x</span> : A) : A -&gt; <span class="kt">Prop</span> :=
+    eq_refl : x = x.
+
+<span class="kn">Arguments</span> eq {A}%_type_scope x _
+<span class="kn">Arguments</span> eq_refl {A}%_type_scope {x}, [_] _</samp>.</li>
+</ul>
+</blockquote>
+</div>
 </div>
 </div></body>
 </html>

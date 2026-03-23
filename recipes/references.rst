@@ -209,3 +209,16 @@ To show the recursive definition of addition.   But as Coq's standard library go
 
        .io#plus.s(Print).msg{*Notation*}
        .s(Print).msg{*Nat.add*=*fix add*}
+
+Corner cases
+============
+
+reST normalizes block names, so ``.io`` references are CSS-normalized and compared case-insensitively:
+
+    .. coq::
+       :name: Named_Block
+
+       Print eq.
+
+    - :mquote:`.io#NAMED_BLOCK.s(Print).in`.
+    - :mquote:`.io#named_block.s(Print).msg`.
