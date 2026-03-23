@@ -138,15 +138,15 @@ _output/literate_coq.min.stdin.rst: literate_coq.v | _output/
 	cd ..; $(PYTHON) -m alectryon.literate --from coq --to rst - < recipes/$< > recipes/$@
 recipes_targets += _output/literate_coq.min.stdin.rst
 
-# Coq+reST → HTML
+# Lean3+reST → HTML
 _output/literate_lean3.html: literate_lean3.lean
 	$(alectryon) --frontend lean3+rst $<
 recipes_targets += _output/literate_lean3.html
-# Coq+reST → LaTeX
+# Lean3+reST → LaTeX
 _output/literate_lean3.xe.tex: literate_lean3.lean
 	$(alectryon) --frontend lean3+rst $< --backend latex --latex-dialect xelatex -o $@
 recipes_targets += _output/literate_lean3.xe.tex
-# Coq+reST → reST
+# Lean3+reST → reST
 _output/literate_lean3.lean3.rst: literate_lean3.lean
 	$(alectryon) --frontend lean3+rst $< --backend rst
 recipes_targets += _output/literate_lean3.lean3.rst

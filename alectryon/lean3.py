@@ -183,7 +183,6 @@ class Lean3(REPLDriver):
 
         for start, end, idx, parent in sorted(self._find_sentence_ranges()):
             if end <= last_end: # Skip overlapping ranges
-                print("Skip")
                 continue
             if last_span:
                 last_state = None
