@@ -71,16 +71,5 @@ develop: $(dependencies)
 	pip install -e .[full]
 
 opam_switch := alectryon
-opam_flags := --switch=$(opam_switch)
-opam_ocaml_version := 5.4.0
-rocq_pin := 9.1.0
-vsrocq_pin := https://github.com/rocq-prover/vsrocq.git --subpath=language-server
 _opam:
-	@[ -d ~/.opam/$(opam_switch) ] || opam switch create $(opam_switch) $(opam_ocaml_version)
-	opam repo $(opam_flags) add rocq-released https://rocq-prover.org/opam/released
-	opam update $(opam_flags)
-	opam pin $(opam_flags) add -n rocq-core $(rocq_pin)
-	opam pin $(opam_flags) add -n rocq-runtime $(rocq_pin)
-	opam pin $(opam_flags) add -n vsrocq-language-server.dev $(vsrocq_pin)
-	opam install --yes $(opam_flags) rocq-core rocq-stdlib rocq-runtime vsrocq-language-server
-	opam switch link $(opam_switch)
+	deps/opam.sh 5.4.0 9.1.0
