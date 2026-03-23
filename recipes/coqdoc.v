@@ -10,8 +10,8 @@
     - You can't switch back and forth between a code view and a prose view: all
       prose editing happens in comments.
     - Annotations can't be applied to whole blocks, so if you want to unfold all
-      sentences in a block you have to say (* .unfold *) on every sentence, for
-      example.
+      sentences in a block you have to add a [.unfold] comment on every
+      sentence, for example.
 
     Use the following command to compile this file:
 
