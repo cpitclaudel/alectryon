@@ -69,7 +69,7 @@ class Lean4(CLIDriver):
 
             input_file_path = str(os.path.abspath(input_file))
             self.run_cli(
-                working_directory=working_directory,
+                cwd=working_directory,
                 capture_output=False,
                 more_args=[input_file_path],
             )

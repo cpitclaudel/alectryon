@@ -678,10 +678,10 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
     NAME: ClassVar[str]
     AUTOSELECT: ClassVar[bool]
 
-    CLI_ARGS: ClassVar[Tuple[str, ...]] = ()
-    VERSION_ARGS: ClassVar[Tuple[str, ...]] = ("--version",)
+    CLI_ARGS: ClassVar[Tuple[str | Path, ...]] = ()
+    VERSION_ARGS: ClassVar[Tuple[str | Path, ...]] = ("--version",)
 
-    CLI_ENCODING: ClassVar[str] = "utf-8"
+    CLI_ENCODING: ClassVar[str | None] = "utf-8"
 
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args, fpath)
@@ -711,17 +711,17 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
         debug(" ".join(quote(str(s)) for s in cmd), '# ')
 
     @classmethod
-    def _proc_out(cls, p: CompletedProcess[str]) -> str:
-        return p.stderr
+    def _proc_out(cls, p: CompletedProcess) -> str:
+        return str(p.stderr)
 
-    def run_cli(self, working_directory=None, capture_output=True, more_args=()):
+    def run_cli(self, cwd=None, more_args=(), input=None, capture_output=True):
         cmd = [self.resolve_driver(),
                *self.CLI_ARGS, *self.user_args, *more_args]
         self._debug_start(cmd)
-        p = subprocess.run(cmd, cwd=working_directory,
+        p = subprocess.run(cmd, cwd=cwd, input=input,
                            stderr=subprocess.PIPE,
                            stdout=subprocess.PIPE if capture_output else None,
-                           check=False, encoding=self.CLI_ENCODING)
+                           check=False, **({"encoding": self.CLI_ENCODING} if self.CLI_ENCODING else {}))
         if p.returncode != 0:
             MSG = "Driver {} ({}) exited with code {}:\n{}"
             raise ValueError(MSG.format(self.NAME, self.binpath, p.returncode, self._proc_out(p)))
