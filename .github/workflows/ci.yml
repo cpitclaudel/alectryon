@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main, next]
+  pull_request:
+  schedule:
+    - cron: '0 6 * * 5'  # Every Friday at 6am UTC
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  OCAML_VERSION: "5.4.0"
+  ROCQ_VERSIONS: "9.0.1 9.1.0"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+    - uses: actions/checkout@v4
+    - uses: docker/setup-buildx-action@v3
+    - uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: deps/Dockerfile.ci
+        tags: alectryon:latest
+        load: true
+        build-args: |
+          OCAML_VERSION=${{ env.OCAML_VERSION }}
+          ROCQ_VERSIONS=${{ env.ROCQ_VERSIONS }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Run tests
+      run: |
+        for switch in $(etc/docker.sh opam switch list -s); do
+          echo "::group::$switch"
+          etc/docker.sh opam exec --switch="$switch" -- sh etc/test.sh
+          echo "::endgroup::"
+        done
+
+    - name: Test packaging
+      run: >
+        etc/docker.sh opam exec --switch=rocq-${ROCQ_VERSIONS##* } -- sh etc/test_package.sh
+
+    - name: Test with Rocq dev
+      if: github.event_name == 'schedule'
+      continue-on-error: true
+      run: >
+        etc/docker.sh sh -c
+        'bash deps/opam.sh ${{ env.OCAML_VERSION }} --switch rocq-dev --rocq-version dev
+          && opam exec --switch=rocq-dev -- sh etc/test.sh'

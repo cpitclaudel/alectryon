@@ -1,0 +1,34 @@
+FROM python:3.14
+
+## APT
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl \
+    m4 libgmp-dev zlib1g-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+## OPAM
+
+RUN curl -sSfL -o /usr/local/bin/opam https://github.com/ocaml/opam/releases/download/2.5.0/opam-2.5.0-x86_64-linux \
+    && chmod +x /usr/local/bin/opam
+
+## Python
+
+# `=` lines are non-dev dependencies
+COPY deps/requirements.txt /tmp/requirements.txt
+RUN grep '=' /tmp/requirements.txt | pip install --no-cache-dir -r /dev/stdin
+
+## OPAM
+
+ARG OCAML_VERSION
+ARG ROCQ_VERSIONS
+
+COPY deps/opam.sh /tmp/opam.sh
+RUN opam init --bare --auto-setup --disable-sandboxing \
+    && for v in $ROCQ_VERSIONS; do \
+         bash /tmp/opam.sh "$OCAML_VERSION" --switch "rocq-$v" --rocq-version "$v"; \
+       done
+
+ENV PYTHON_VENV=/usr/local

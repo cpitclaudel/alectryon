@@ -1,19 +1,25 @@
+export OPAM_SWITCH ?= alectryon
+export OCAML_VERSION ?= 5.4.0
+export ROCQ_VERSION ?= 9.1.0
+export EASYCRYPT_VERSION ?= r2026.03
+
 PYTHON ?= python3
-python_venv := deps/.venv.$(shell hostname)
-python_bin := $(python_venv)/bin
+PYTHON_VENV ?= deps/.venv.$(shell hostname)
+
+python_bin := $(PYTHON_VENV)/bin
 export PATH := $(abspath $(python_bin)):$(PATH)
 export PYTHONIOENCODING ?= utf-8
 
-binaries := $(python_bin)/pip
-dependencies := $(binaries)
+dependencies := $(python_bin)/pip
 
 .PHONY: test coverage develop dist upload lint-changes lint
 
 ## Main targets
 
 make := $(MAKE)
-ifneq (,$(wildcard $(HOME)/.opam/alectryon))
-make := eval $$(opam env --switch=alectryon); $(make)
+
+ifneq (,$(wildcard $(HOME)/.opam/$(OPAM_SWITCH)))
+make := eval $$(opam env --switch=$(OPAM_SWITCH)); $(make)
 endif
 
 test: $(dependencies)
@@ -37,10 +43,10 @@ recipes/%: FORCE
 
 ifeq ($(MAKECMDGOALS), init)
 
-$(python_venv):
-	$(PYTHON) -m venv $(python_venv)
+$(PYTHON_VENV):
+	$(PYTHON) -m venv $(PYTHON_VENV)
 
-init: $(python_venv)
+init: $(PYTHON_VENV)
 	pip install -r deps/requirements.txt
 
 else
@@ -51,6 +57,8 @@ $(dependencies):
 endif
 
 ## Local development
+
+.PHONY: _opam
 
 lint-changes: $(dependencies)
 	etc/lint_changes.py CHANGES.rst
@@ -70,6 +78,19 @@ develop: $(dependencies)
 	python -m mypy --install-types alectryon/
 	pip install -e .[full]
 
-opam_switch := alectryon
 _opam:
-	deps/opam.sh 5.4.0 9.1.0
+	deps/opam.sh $(OCAML_VERSION) \
+		--switch $(OPAM_SWITCH) \
+		--rocq-version $(ROCQ_VERSION) \
+		--easycrypt-version $(EASYCRYPT_VERSION)
+
+## Docker
+
+### Use `etc/docker.sh make …` to run in docker
+
+docker-build:
+	docker build -t alectryon -f deps/Dockerfile \
+		--build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) \
+		--build-arg OPAM_SWITCH --build-arg OCAML_VERSION \
+		--build-arg ROCQ_VERSION --build-arg EASYCRYPT_VERSION \
+		.
