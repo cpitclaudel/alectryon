@@ -5,7 +5,7 @@
   "&coq": {
     "driver": [
       "vsrocq-language-server",
-      "9.0.1 5.4.0 / 2.3.4"
+      "9.1.0 5.4.0 / 2.3.4"
     ],
     "metadata": {
       "args": []
@@ -32,7 +32,7 @@
           "messages": [
             {
               "_type": "message",
-              "contents": "Inductive nat : Set :=\n    O : \\mathbb{N} | S : \\mathbb{N} -> \\mathbb{N}.\n\nArguments S _%nat_scope"
+              "contents": "Inductive nat : Set :=\n    O : \\mathbb{N} | S : \\mathbb{N} -> \\mathbb{N}.\n\nArguments S _%_nat_scope"
             }
           ],
           "goals": []
