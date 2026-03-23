@@ -35,7 +35,7 @@ A checkbox and an accompanying label (with classes ``alectryon-toggle`` and
 ``alectryon-toggle-label``) allowing users to reveal all goals and responses at
 once is automatically added right before the document's first paragraph.  You
 can change its location by inserting an explicit ``.. alectryon-toggle::``
-directive in your document, and you can ommit it entirely by setting
+directive in your document, and you can omit it entirely by setting
 ``AlectryonTransform.auto_toggle`` to ``False`` (to make styling easier, all
 contents following the checkbox are wrapped in a container with class
 ``alectryon-container``).

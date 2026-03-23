@@ -1,4 +1,4 @@
-# Copyright © 2025 Falvien Jaquerod, Clément Pit-Claudel
+# Copyright © 2025 Flavien Jaquerod, Clément Pit-Claudel
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
