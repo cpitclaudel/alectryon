@@ -120,7 +120,7 @@ Open Scope string_scope.
    :name: test
 |*)
 
-Definition test := " =: ʇsǝʇ uoıʇıuıɟǝᗡ".
+Definition test := "Hello, World!".
 
 (*|
 Link to `first Coq fragment <test_>`_.

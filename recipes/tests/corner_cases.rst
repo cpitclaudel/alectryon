@@ -83,3 +83,15 @@ Exercise directive
    .. coq::
 
       Goal forall x y: nat, x + y = y + x.
+
+Unicode in code
+================
+
+.. coq:: none
+
+   From Coq Require Import String.
+   Open Scope string_scope.
+
+.. coq::
+
+   Definition test := " =: ʇsǝʇ uoıʇıuıɟǝᗡ".

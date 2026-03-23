@@ -101,7 +101,7 @@ The ``.. coq::`` directive supports ``:class:`` and ``:name:`` attributes.  Addi
    :class: upside-down
    :name: test
 
-   Definition test := " =: ʇsǝʇ uoıʇıuıɟǝᗡ".
+   Definition test := "Hello, World!".
 
 Link to `first Coq fragment <test_>`_.
 Another `link <first Coq fragment_>`__.

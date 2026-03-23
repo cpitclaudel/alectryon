@@ -604,4 +604,31 @@ Bubble: \DUrole{alectryon-bubble}{}
 \end{DUclass}
 \end{DUclass}
 
+
+\section{Unicode in code%
+  \label{unicode-in-code}%
+}
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Definition}~\PY{n+nf}{test}~\PY{o}{:=}~\PY{l+s+s2}{\PYZdq{}~=:~ʇsǝʇ~uoıʇıuıɟǝᗡ\PYZdq{}}\PY{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k}{forall}~\PY{n+nv}{x}~\PY{n+nv}{y}~\PY{o}{:}~\PY{n}{nat}\PY{o}{,}~\PY{n}{x}~\PY{o}{+}~\PY{n}{y}~\PY{o}{=}~\PY{n}{y}~\PY{o}{+}~\PY{n}{x}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+
 \end{document}
