@@ -190,15 +190,12 @@ def alectryon_state(document):
         st = document["alectryon_state"] = AlectryonState(document)
     return st
 
-def _sphinx_attr(document, attr):
-    env = getattr(document.settings, "env", None)
-    return env and getattr(env, attr)
-
-def _sphinx_app(document):
-    return _sphinx_attr(document, "app")
+def _sphinx_env(document):
+    return getattr(document.settings, "env", None)
 
 def _sphinx_config(document):
-    return _sphinx_attr(document, "config")
+    env = _sphinx_env(document)
+    return env and getattr(env, "config")
 
 def _docutils_config(document, attr, default=None):
     """Look up `attr` in Sphinx config, falling back to docutils settings."""
@@ -208,8 +205,7 @@ def _docutils_config(document, attr, default=None):
 
 def _note_pending(document, node: nodes.pending):
     """Register the transform associated to a pending node."""
-    app = _sphinx_app(document)
-    if app and node.transform.is_post_transform: # type: ignore
+    if _sphinx_env(document) and node.transform.is_post_transform: # type: ignore
         return # Post-transforms are handled in sphinx.py
     document.note_pending(node)
 
@@ -626,13 +622,13 @@ class AlectryonPostTransform(OneTimeTransform):
     is_post_transform = True
 
     def _formats(self):
-        app = _sphinx_app(self.document)
-        if app:
+        if env := _sphinx_env(self.document):
             # https://github.com/sphinx-doc/sphinx/issues/9632: Sphinx sets
             # ``document.transformer`` to ``None`` when reading from cache and
             # ``transformer.components`` to ``[]`` when writing, so we can't use
             # the writer's list of supported formats when compiling with Sphinx.
-            return app.tags
+            tags = getattr(env, "_tags", None)
+            return tags if tags is not None else env.app.tags # LATER: Drop else (Sphinx < 11)
         return self.document.transformer.components['writer'].supported
 
     def init_generator(self):
