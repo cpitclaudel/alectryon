@@ -24,8 +24,8 @@ import bisect
 from dataclasses import dataclass, field
 import warnings
 
-from .core import Document, must
-from .lsp import JSON, LSPClient, LSPClientInitializeRequest, LSPClientRequest, LSPDriver, LSPServerConfig
+from .core import Document, JSON, must
+from .lsp import LSPClient, LSPClientInitializeRequest, LSPClientRequest, LSPDriver, LSPServerConfig
 
 Bounds = "slice[int, int, None]" # LATER: : TypeAlias
 

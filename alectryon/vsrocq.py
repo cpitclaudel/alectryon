@@ -24,8 +24,8 @@ from typing import Any, ClassVar, Iterable, Optional
 import dataclasses
 import re
 
-from .core import Document, DriverInfo, Range, TextDocument, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, must
-from .lsp import JSON, LSPClient, LSPClientInitializeRequest, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, LSPServerNotification, LSPServerNotifications
+from .core import Document, DriverInfo, JSON, Range, TextDocument, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, must
+from .lsp import LSPClient, LSPClientInitializeRequest, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, LSPServerNotification, LSPServerNotifications
 from .coq import CoqIdents
 
 class Notifications(LSPServerNotifications):

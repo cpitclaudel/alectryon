@@ -29,9 +29,7 @@ from pathlib import Path
 
 from . import __version__
 from .transforms import coalesce_text
-from .core import Document, DriverInfo, EncodedDocument, Fragment, Observer, PopenDriver, Positioned, Range, Text, debug as core_debug, must
-
-JSON = Dict[str, Any]
+from .core import Document, DriverInfo, EncodedDocument, Fragment, JSON, Observer, PopenDriver, Positioned, Range, Text, debug as core_debug, must
 
 class LSPServerMessage:
     """Base class for all LSP messages"""

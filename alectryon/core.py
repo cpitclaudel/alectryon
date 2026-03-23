@@ -37,6 +37,7 @@ import sys
 import textwrap
 
 _FILE = Union[None, int, IO[Any]]
+JSON = Dict[str, Any]
 
 DEBUG = False
 TRACEBACK = False
