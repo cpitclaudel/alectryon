@@ -320,7 +320,6 @@ class PosStr(str):
         if not isinstance(s, PosStr):
             return pos
         abs = s.pos + (pos - base)
-        # print(f"Remapping:\n  {pos=},\n  {base=},\n  {pos - base=},\n  {s.pos=},\n= {abs=}", file=sys.stderr)
         return Position(pos.fpath, abs.line, s.indent + (abs.col or 0))
 
 class View(bytes):
@@ -370,6 +369,10 @@ class Document:
     def _find_eol(self, start: int) -> int:
         raise NotImplementedError
 
+    def _decode_column(self, pos: Position) -> Position:
+        """Translate the ``column`` part of `pos` to a character offset."""
+        raise NotImplementedError
+
     def recover_chunks(self, fragments):
         grouped = self._recover_chunks(self.with_separator, fragments)
         return self.strip_separators(grouped, self.separator)
@@ -414,7 +417,7 @@ class Document:
         import bisect
         idx = bisect.bisect_right(self.chunk_offsets, self.pos2offset(pos)) - 1
         base = self.offset2pos(pos.fpath, self.chunk_offsets[idx])
-        return PosStr.remap(self.chunks[idx], base, pos)
+        return PosStr.remap(self.chunks[idx], self._decode_column(base), self._decode_column(pos))
 
     def remap_range(self, range: Range) -> Range:
         """Translate `range` from document to source-file space."""
@@ -546,6 +549,9 @@ class TextDocument(Document):
     def _find_eol(self, start: int) -> int:
         return must(self._EOL.search(self.str, pos=start)).start()
 
+    def _decode_column(self, pos: Position):
+        return pos
+
 class EncodedDocument(Document):
     """Variant of ``Document`` in which positions are byte offsets, not char offsets."""
     ENCODING: ClassVar[str]
@@ -577,6 +583,12 @@ class EncodedDocument(Document):
     _EOL = re.compile(b"$", re.MULTILINE)
     def _find_eol(self, start: int) -> int:
         return must(self._EOL.search(self.bytes, pos=start)).start()
+
+    def _decode_column(self, pos: Position) -> Position:
+        """Translate the ``column`` part of `pos` to a character offset."""
+        line_start = self.bol_offsets[pos.line - 1]
+        text_col = len(self[line_start:line_start + pos.col])
+        return pos._replace(col=text_col)
 
 class UTF8Document(EncodedDocument):
     ENCODING = "utf-8"
