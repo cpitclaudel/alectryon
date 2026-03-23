@@ -14,12 +14,24 @@ To run::
      echo "exit: $?" >> linums.rst.v.out
        # Coq+RST → HTML + errors; produces ‘linums.rst.v.out’
 
-.. note::
+.. note:: Rocq
 
-   This block is nested and the directive is implicit in the reST file:
+   This block is nested and the ``..coq::`` directive
+   is implicit in the reST file:
 |*)
 
-Definition warning := forall {a: nat}, a >= 0.
+Definition n₀ := 0.
+Definition αβγ := 1.
+Notation "'鳥'" := 0.
+Notation "'✗✗✗'" := false.
+Infix "∧" := and (at level 80).
+
+(*||*)
+
+Definition warning :=
+  n₀ + 鳥 + αβγ = αβγ ∧ forall {ん: nat}, ん >= 0.
+
+(*||*)
 
 Definition error :=
-  1 + false.
+  αβγ - 鳥 + ✗✗✗ = n₀.

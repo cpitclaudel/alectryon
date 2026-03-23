@@ -107,7 +107,7 @@ _output/tests/errors.lint.json: tests/errors.rst
 tests_targets += _output/tests/errors.lint.json
 # reST → HTML + errors
 _output/tests/errors.txt: tests/errors.rst
-	$(alectryon) $< --copy-assets none --backend webpage -o /dev/null 2> $@; echo "exit: $$?" >> $@
+	$(alectryon) $< --backend webpage -o /dev/null 2> $@; echo "exit: $$?" >> $@
 tests_targets += _output/tests/errors.txt
 
 # Errors and warnings

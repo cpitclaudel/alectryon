@@ -1,13 +1,15 @@
-tests/linums.rst:16:36-37: (WARNING/2) Ignoring implicit binder declaration in unexpected position.
+tests/linums.rst:25:37-38: (WARNING/2) Ignoring implicit binder declaration in unexpected position.
    [unexpected-implicit-declaration,syntax,default]
    The offending range is delimited by >>>…<<< below:
-     > Definition warning := forall {>>>a<<<: nat}, a >= 0.
+     > Infix "∧" := and (at level 80).
+     > Definition warning :=
+     >   n₀ + 鳥 + αβγ = αβγ ∧ forall {>>>ん<<<: nat}, ん >= 0.
      > Definition error :=
-     >   1 + false.
-tests/linums.rst:21:12-17: (ERROR/3) The term "false" has type "bool"
+     >   αβγ - 鳥 + ✗✗✗ = n₀.
+tests/linums.rst:30:18-21: (ERROR/3) The term "✗✗✗" has type "bool"
    while it is expected to have type "nat".
    The offending range is delimited by >>>…<<< below:
-     > Definition warning := forall {a: nat}, a >= 0.
+     >   n₀ + 鳥 + αβγ = αβγ ∧ forall {ん: nat}, ん >= 0.
      > Definition error :=
-     >   1 + >>>false<<<.
+     >   αβγ - 鳥 + >>>✗✗✗<<< = n₀.
 exit: 13

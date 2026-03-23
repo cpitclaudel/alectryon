@@ -9,13 +9,22 @@ To run::
      echo "exit: $?" >> linums.rst.out
        # RST → HTML + errors; produces ‘linums.rst.out’
 
-.. note::
+.. note:: Rocq
 
    .. coq::
 
-      Definition warning := forall {a: nat}, a >= 0.
+      Definition n₀ := 0.
+      Definition αβγ := 1.
+      Notation "'鳥'" := 0.
+      Notation "'✗✗✗'" := false.
+      Infix "∧" := and (at level 80).
+
+   .. coq::
+
+      Definition warning :=
+        n₀ + 鳥 + αβγ = αβγ ∧ forall {ん: nat}, ん >= 0.
 
    .. coq::
 
       Definition error :=
-        1 + false.
+        αβγ - 鳥 + ✗✗✗ = n₀.
