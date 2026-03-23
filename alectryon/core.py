@@ -19,7 +19,7 @@
 # SOFTWARE.
 
 from functools import cached_property
-from typing import Any, ClassVar, DefaultDict, Dict, Generic, Iterable, IO, List, \
+from typing import Any, ClassVar, DefaultDict, Dict, Iterable, IO, List, \
     NamedTuple, NoReturn, Optional, Tuple, TypeVar, Union
 
 from collections import UserDict, deque, namedtuple, defaultdict

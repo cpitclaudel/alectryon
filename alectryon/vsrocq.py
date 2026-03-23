@@ -252,8 +252,8 @@ class VsRocq(LSPDriver[VsRocqClient]):
         lsp, cli  = super().version_info(), super(LSPDriver, self).version_info()
         return lsp._replace(version=f"{cli.version} / {lsp.version}")
 
-    @staticmethod
-    def _normalize_fpath(p: Path) -> Path:
+    @classmethod
+    def _normalize_fpath(cls, p: Path) -> Path:
         return CoqIdents.toppath_of_fpath(p)
 
     def _encode(self, chunks: Iterable[str]) -> Document:

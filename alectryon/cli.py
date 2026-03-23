@@ -482,7 +482,6 @@ def unparse_html(chunks, document, html_minification, include_banner,
     body["class"] = body.get("class", []) + [wrap_classes(webpage_style, *html_classes)]
 
     if include_banner:
-        from bs4.element import PreformattedString
         body.insert(0, PreformattedString(ctx_invoke(_get_banner, ctx)))
 
     return str(document.soup)
