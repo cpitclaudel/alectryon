@@ -1334,7 +1334,7 @@ def make_HtmlTranslator(base):
                 self.stylesheet.extend(html.JS_UNMINIFY + "\n")
 
             cls = html.wrap_classes(*classes)
-            self.body_prefix.append('<div class="{}">'.format(cls))
+            self.body_prefix.append(f'<div class="{cls}">')
 
             if self.settings.alectryon_banner:
                 drivers_info = alectryon_state(document).drivers_info
@@ -1345,8 +1345,10 @@ def make_HtmlTranslator(base):
     return Translator
 
 HtmlTranslator = make_HtmlTranslator(html4css1.HTMLTranslator)
-Html5Translator = make_HtmlTranslator(html5_polyglot.HTMLTranslator)
 HtmlTranslator.ADDITIONAL_HEADS.extend(html.HTML4_VIEWPORT)
+
+Html5Translator = make_HtmlTranslator(html5_polyglot.HTMLTranslator)
+Html5Translator.head_prefix_template = '<html class="alectryon-standalone" lang="%(lang)s">\n<head>\n'
 
 def opt_validate_style(setting, value, option_parser,
                        config_parser=None, config_section=None):
