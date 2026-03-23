@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import IO, Any, ClassVar, Dict, Generic, Iterable, Optional, Type, TypeVar, overload
+from typing import IO, Any, ClassVar, Generic, Iterable, Optional, Type, TypeVar, overload
 
 import json
 import os
