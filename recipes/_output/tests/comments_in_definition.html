@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" class="alectryon-standalone" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="Docutils 0.22.4: https://docutils.sourceforge.io/" />
+<title>Comments in definitions</title>
+<link rel="stylesheet" href="alectryon.css" type="text/css" />
+<link rel="stylesheet" href="docutils_basic.css" type="text/css" />
+<link rel="stylesheet" href="pygments.css" type="text/css" />
+<script type="text/javascript" src="alectryon.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/IBM-type/0.5.4/css/ibm-type.min.css" integrity="sha512-sky5cf9Ts6FY1kstGOBHSybfKqdHR41M0Ldb0BjNiv3ifltoQIsg0zIaQ+wwdwgQ0w9vKFW7Js50lxH9vqNSSw==" crossorigin="anonymous" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/firacode/5.2.0/fira_code.min.css" integrity="sha512-MbysAYimH1hH2xYzkkMHB6MqxBqfP0megxsCLknbYqHVwXTCg9IqHbk+ZP/vnhO8UEW6PaXAkKe2vQ+SWACxxA==" crossorigin="anonymous" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running vsrocq-language-server. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="comments-in-definitions">
+<h1 class="title">Comments in definitions</h1>
+
+<p>To compile:</p>
+<pre class="literal-block">
+$ alectryon comments_in_definition.v
+    # Coq → HTML; produces ‘comments_in_definition.html’
+
+$ alectryon comments_in_definition.v --backend rst
+    # Coq → reST; produces ‘comments_in_definition.v.rst’
+</pre>
+<p>Some Alectryon drivers support mixing prose directly <em>inside</em> definitions, not just <em>between</em> them.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Mixing literate comments into definitions can be confusing when working in an indentation-sensitive language like Markdown or reST.  Keep in mind that alectryon strips all spaces directly following|preceding a literate comment opener|closer, so a literate comment on its own line will always end up starting at column 0.</p>
+<p class="last">If you're not sure of how Alectryon sees your file after processing comments, convert it to <code class="highlight coq"><span class="o">.</span><span class="n">rst</span></code> to check.</p>
+</div>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Module</span> <span class="nf">Example1</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">Nat</span> :=</span></span></pre><p><code class="highlight coq"><span class="mi">0</span></code> is written as <code class="highlight coq"><span class="n">O</span></code></p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">  | O</span></span></pre><p><code class="highlight coq"><span class="mi">1</span> <span class="o">+</span> <span class="n">n</span></code> is written as <code class="highlight coq"><span class="n">Succ</span> <span class="n">n</span></code></p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">  | Succ</span></span></pre><p>Notice that the <code class="highlight coq"><span class="n">n</span></code> is written as an argument to Succ:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">      (n: Nat)</span></span></pre><p>The return type is <code class="highlight coq"><span class="n">Nat</span></code></p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">    : Nat.</span></span></pre><p>This also works with definitions:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">is_zero</span> (<span class="nv">n</span>: Nat): bool :=
+    <span class="k">match</span> n <span class="k">with</span>
+    | O =&gt;</span></span></pre><p>Base case…</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">        true
+    | Succ _ =&gt;</span></span></pre><p>… and another base case</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">        false
+    <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">End</span> <span class="nf">Example1</span>.</span></span></pre><p>Internally, Alectryon sees this example in just the same way as the following one:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Module</span> <span class="nf">Example2</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Inductive</span> <span class="nf">Nat</span> :=</span></span></pre><p><code class="highlight coq"><span class="mi">0</span></code> is written as <code class="highlight coq"><span class="n">O</span></code></p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">  | O</span></span></pre><p><code class="highlight coq"><span class="mi">1</span> <span class="o">+</span> <span class="n">n</span></code> is written as <code class="highlight coq"><span class="n">Succ</span> <span class="n">n</span></code></p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">  | Succ</span></span></pre><p>Notice that the <code class="highlight coq"><span class="n">n</span></code> is written as an argument to Succ:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">      (n: Nat)</span></span></pre><p>The return type is <code class="highlight coq"><span class="n">Nat</span></code></p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">    : Nat.</span></span></pre><p>This also works with definitions:</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">is_zero</span> (<span class="nv">n</span>: Nat): bool :=
+    <span class="k">match</span> n <span class="k">with</span>
+    | O =&gt;</span></span></pre><p>Base case…</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">        true
+    | Succ _ =&gt;</span></span></pre><p>… and another base case</p>
+<pre class="alectryon-io highlight"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input">        false
+    <span class="k">end</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">End</span> <span class="nf">Example2</span>.</span></span></pre>
+</div>
+</div></body>
+</html>

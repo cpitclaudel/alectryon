@@ -32,6 +32,15 @@ _output/tests/cli_flags.txt: tests/cli_flags.rst
 	$(alectryon) $< -o /dev/null -I . -R ../recipes/ custom_flag_R -Q ../etc/ custom_flag_Q; echo "exit: $$?" > $@
 tests_targets += _output/tests/cli_flags.txt
 
+# Coq → HTML
+_output/tests/comments_in_definition.html: tests/comments_in_definition.v
+	$(alectryon) $<
+tests_targets += _output/tests/comments_in_definition.html
+# Coq → reST
+_output/tests/comments_in_definition.v.rst: tests/comments_in_definition.v
+	$(alectryon) $< --backend rst
+tests_targets += _output/tests/comments_in_definition.v.rst
+
 # ReST → HTML
 _output/tests/coqc_time_error.out: tests/coqc_time_error.rst
 	$(alectryon) --coq-driver=coqc_time --backend webpage -o /dev/null $< > $@ 2>&1; echo "exit: $$?" >> $@; sed -i 's/in file [^:]*//' $@
