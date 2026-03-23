@@ -86,14 +86,14 @@ Translate a literate Coq file into a reStructuredText document:
       alectryon literate_coq.v -o literate_coq.v.rst
       alectryon --frontend coq+rst --backend rst literate_coq.v -o literate_coq.v.rst
 
-Annotate snippets (``pre.alectryon``) within an HTML document:
+Annotate snippets (``pre.alectryon``) within an HTML document (see `<recipes/literate_HTML.html>`__):
 
    .. code::
 
       alectryon coq.html
       alectryon --frontend html --backend webpage coq.html -o coq.annotated.html
 
-Annotate snippets (``\begin{alectryon}{coq}{unfold}``) within a TeX/LaTeX document (make sure to add ``\usepackage{alectryon}`` and ``\usepackage{pygments}`` to your preamble):
+Annotate snippets (``\begin{alectryon}{coq}{unfold}``) within a TeX/LaTeX document (see `<recipes/literate_LaTeX.tex>`__; make sure to add ``\usepackage{alectryon}`` and ``\usepackage{pygments}`` to your preamble):
 
    .. code::
 
@@ -194,6 +194,8 @@ Use ``alectryon.vsrocq.annotate(chunks: list[str])``, which returns an object wi
                goals=[])]]
 
 The results of ``annotate`` can be fed to ``alectryon.html.HtmlGenerator(highlighter).gen()`` to generate HTML (with CSS classes defined in ``alectryon.css``).  Pass ``highlighter=alectryon.pygments.highlight_html`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
+
+See `<recipes/api.py>`__ and `<recipes/api.rst>`__ for examples of using Alectryon as a library.
 
 As a docutils or Sphinx module
 ------------------------------
@@ -305,7 +307,7 @@ Finally, you can use a ``[lang]=…`` annotation to chose which Pygments lexer t
 ``.msg[lang]=haskell``
   Highlight the bodies of all messages produced by this sentence using the Haskell lexer.
 
-**These last two features are experimental**; the syntax might change.
+**These last two features are experimental**; the syntax might change.  See `<recipes/display_flags.rst>`__ for more examples.
 
 .. _marker-language:
 
@@ -485,6 +487,8 @@ From Python, set ``alectryon.docutils.CACHE_DIRECTORY`` to enable caching.  For 
    import alectryon.docutils
    alectryon.docutils.CACHE_DIRECTORY = "content"
 
+See `<recipes/caching.v>`__ for an example.
+
 With a custom driver
 --------------------
 
@@ -625,6 +629,8 @@ When compiling reStructuredText documents, you can add per-document highlighting
    :alectryon/pygments/coq/tacn: intuition_eauto simplify invert
    :alectryon/pygments/coq/tacn-solve: map_tauto solve_eq
 
+See `<recipes/custom_highlighting.v>`__ for an example.
+
 Interactivity
 -------------
 
@@ -673,6 +679,8 @@ From Python, use ``alectryon.docutils.HTML_MINIFICATION = True`` and ``alectryon
 
 A minification algorithm for JSON is implemented in ``json.py`` but not exposed on the command line.
 
+See `<recipes/minification.rst>`__ for an example.
+
 Diffing compressed caches
 -------------------------
 
@@ -689,7 +697,7 @@ Compressed caches kept in a Git repository can be inspected by `automatically de
 Building without SerAPI
 -----------------------
 
-Alectryon can compile documents using ``coqc``.  Sentences be split correctly, but goals and messages will not be collected, and error reporting will be less precise.  To use this feature, pass ``--coq-driver=coqc_time`` to Alectryon.
+Alectryon can compile documents using ``coqc``.  Sentences be split correctly, but goals and messages will not be collected, and error reporting will be less precise.  To use this feature, pass ``--coq-driver=coqc_time`` to Alectryon.  See `<recipes/coq_drivers.v>`__ for an example.
 
 Building without Alectryon
 --------------------------
