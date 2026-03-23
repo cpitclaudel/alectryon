@@ -61,7 +61,7 @@ class CodeSnippet(NamedTuple):
 
     @staticmethod
     def _by_lang(snippets: list["CodeSnippet"]) -> "SnippetCollection":
-        bylang = {}
+        bylang: "SnippetCollection" = {}
         for snippet in snippets:
             bylang.setdefault(snippet.lang, []).append(snippet)
         return bylang
@@ -496,7 +496,8 @@ class ParsedLaTeXDocument:
     """, re.VERBOSE | re.MULTILINE)
 
     def __init__(self, latex: str):
-        self.blocks, end = [], 0
+        self.blocks: list[str | CodeSnippet] = []
+        end = 0
         for m in self.LATEX_IO_RE.finditer(latex):
             if end < m.start():
                 self.blocks.append(latex[end:m.start()])

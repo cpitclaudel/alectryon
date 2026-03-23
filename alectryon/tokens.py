@@ -96,7 +96,7 @@ class Tokens:
         tokens are found the first one is discarded.
         """
         filtered: list[Token] = []
-        tokens: list[Token] = sorted(tokens, key=lambda t: (t.rng.start, t.rng.stop))
+        tokens = sorted(tokens, key=lambda t: (t.rng.start, t.rng.stop))
         for tok in tokens:
             while filtered and tok.rng.start < filtered[-1].rng.stop:
                 _ = filtered.pop()

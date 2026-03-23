@@ -18,13 +18,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from functools import cached_property
+from collections.abc import MutableMapping
 from typing import Any, ClassVar, DefaultDict, Dict, Iterable, IO, List, \
-    NamedTuple, NoReturn, Optional, Tuple, TypeVar, Union
+    NamedTuple, NoReturn, Optional, overload, Tuple, TypeVar, Union
 
 from collections import UserDict, deque, namedtuple, defaultdict
-from dataclasses import dataclass
 from contextlib import contextmanager
+from dataclasses import dataclass
+from functools import cached_property
 from importlib import import_module
 from pathlib import Path
 from shlex import quote
@@ -248,7 +249,7 @@ class Position(NamedTuple):
 
 class Range(NamedTuple):
     beg: Position
-    end: Optional[Position]
+    end: Position | None
 
     @staticmethod
     def default(fpath):
@@ -398,7 +399,12 @@ class Document:
         assert line >= 1
         return self.bol_offsets[line - 1] + col
 
-    def offset2pos(self, fpath: Union[str, Path], offset: int | None) -> Position:
+    @overload
+    def offset2pos(self, fpath: str | Path, offset: int) -> Position: ...
+    @overload
+    def offset2pos(self, fpath: str | Path, offset: None) -> None: ...
+
+    def offset2pos(self, fpath: Union[str, Path], offset: int | None) -> Position | None:
         return Position(fpath, *self.offset2lc(offset)) if offset is not None else None
 
     def pos2offset(self, pos: Position) -> int:
@@ -412,15 +418,14 @@ class Document:
         end = self.pos2offset(range.end) if range.end else self._find_eol(beg)
         return beg, end
 
-    def offset2chunk(self, offset: int) -> int:
-        """Return the index of the chunk that contains `offset`."""
-
     def remap_pos(self, pos: Position) -> Position:
         """Translate `pos` from document to source-file space."""
         import bisect
         idx = bisect.bisect_right(self.chunk_offsets, self.pos2offset(pos)) - 1
         base = self.offset2pos(pos.fpath, self.chunk_offsets[idx])
-        return PosStr.remap(self.chunks[idx], self._decode_column(base), self._decode_column(pos))
+        return PosStr.remap(self.chunks[idx],
+                       self._decode_column(base),
+                       self._decode_column(pos))
 
     def remap_range(self, range: Range) -> Range:
         """Translate `range` from document to source-file space."""
@@ -554,8 +559,7 @@ class TextDocument(Document):
 
     _BOL = re.compile("^", re.MULTILINE)
     def _find_bols(self) -> Iterable[int]:
-        matches = self._BOL.finditer(self.str)
-        return (m.start() for m in matches)
+        return (m.start() for m in self._BOL.finditer(self.str))
 
     _EOL = re.compile("$", re.MULTILINE)
     def _find_eol(self, start: int) -> int:
@@ -588,9 +592,7 @@ class EncodedDocument(Document):
 
     _BOL = re.compile(b"^", re.MULTILINE)
     def _find_bols(self) -> Iterable[int]:
-        matches = self._BOL.finditer(self.bytes)
-        matches = list(matches)
-        return (m.start() for m in matches)
+        return (m.start() for m in self._BOL.finditer(self.bytes))
 
     _EOL = re.compile(b"$", re.MULTILINE)
     def _find_eol(self, start: int) -> int:
@@ -598,6 +600,7 @@ class EncodedDocument(Document):
 
     def _decode_column(self, pos: Position) -> Position:
         """Translate the ``column`` part of `pos` to a character offset."""
+        assert pos.col is not None
         line_start = self.bol_offsets[pos.line - 1]
         text_col = len(self[line_start:line_start + pos.col])
         return pos._replace(col=text_col)
@@ -704,9 +707,9 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
 
     @classmethod
     def _which(cls, path: str) -> str:
-        if (path := which(path)) is None:
+        if (resolved := which(path)) is None:
             cls.driver_not_found(path)
-        return path
+        return resolved
 
     def resolve_driver(self) -> list[str | Path]:
         return [self._which(self.binpath or self.BIN)]
@@ -734,7 +737,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
 
 class PopenDriver(CLIDriver): # pylint: disable=abstract-method
     REPL_ARGS: ClassVar[Tuple[str, ...]] = ()
-    REPL_ENCODING = None
+    REPL_ENCODING: str | None = None
 
     def __init__(self, args=(), fpath="-", binpath=None):
         super().__init__(args, fpath, binpath)

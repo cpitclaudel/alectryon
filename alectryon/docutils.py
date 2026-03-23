@@ -60,6 +60,7 @@ To work around this issue we use a writer-dependent transform on the docutils
 side, and a doctree-resolved event on the Sphinx side.
 """
 
+from collections.abc import MutableMapping
 from typing import Any, ClassVar, DefaultDict, Dict, Iterable, \
     List, Tuple, Type, Union
 
@@ -383,7 +384,7 @@ class AlectryonTransform(OneTimeTransform):
     SERTOP_ARGS = ()
     """DEPRECATED; use DRIVER_ARGS["sertop"] instead."""
 
-    LANGUAGE_DRIVERS: Dict[str, str] = core.DEFAULT_DRIVERS
+    LANGUAGE_DRIVERS: MutableMapping[str, str] = core.DEFAULT_DRIVERS
     DRIVER_ARGS: Dict[str, Iterable[str]] = {d: () for d in core.ALL_DRIVERS}
 
     def check_for_long_lines(self, node, fragments):
@@ -1456,7 +1457,7 @@ class DummyTranslator:
 class EarlyTransformer(docutils.transforms.Transformer):
     """A transformer that only applies transforms below a certain threshold."""
     PRIORITY_THRESHOLD = "700-000"
-    transforms: Iterable[Tuple[str, docutils.transforms.Transform, Any, Any]] # LATER
+    transforms: list[tuple[str, type[docutils.transforms.Transform], Any, dict[str, Any]]]
 
     def apply_transforms(self):
         self.transforms = [t for t in self.transforms if t[0] < self.PRIORITY_THRESHOLD]

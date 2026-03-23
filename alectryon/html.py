@@ -30,8 +30,8 @@ from .core import b16, nullctx, Gensym, Backend, Text, RichSentence, Goals, Mess
 
 _SELF_PATH = path.dirname(path.realpath(__file__))
 
-ADDITIONAL_HEADS = []
-HTML4_VIEWPORT = ['<meta name="viewport" content="width=device-width, initial-scale=1">']
+ADDITIONAL_HEADS: list[str] = []
+HTML4_VIEWPORT: list[str] = ['<meta name="viewport" content="width=device-width, initial-scale=1">']
 
 class ASSETS:
     PATH = path.join(_SELF_PATH, "assets")
