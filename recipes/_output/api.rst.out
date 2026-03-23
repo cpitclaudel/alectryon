@@ -194,8 +194,8 @@ Expecting:
       \end{\al{sentence}}
     \end{alectryon}
 ok
-1 items passed all tests:
+1 item passed all tests:
   22 tests in api.rst
-22 tests in 1 items.
-22 passed and 0 failed.
+22 tests in 1 item.
+22 passed.
 Test passed.

@@ -1,8 +1,8 @@
 $PYTHON -m alectryon.literate -; echo $?
-literate.py: error: the following arguments are required: --to
+python3 -m alectryon.literate: error: the following arguments are required: --to
 2
 $PYTHON -m alectryon.literate xyz.unsupported; echo $?
-literate.py: error: the following arguments are required: --to
+python3 -m alectryon.literate: error: the following arguments are required: --to
 2
 $ALECTRYON xyz.unsupported; echo $?
 Exiting early due to an error; use --traceback to diagnose:
