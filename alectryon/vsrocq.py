@@ -24,8 +24,11 @@ from typing import Any, ClassVar, Iterable, Optional
 import dataclasses
 import re
 
-from .core import Document, DriverInfo, JSON, Range, TextDocument, Fragment, Goal, Hypothesis, Message, Positioned, Sentence, must
-from .lsp import LSPClient, LSPClientInitializeRequest, LSPClientNotification, LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, LSPServerNotification, LSPServerNotifications
+from .core import Document, DriverInfo, JSON, Range, TextDocument, Fragment, \
+    Goal, Hypothesis, Message, Positioned, Sentence, must
+from .lsp import LSPClient, LSPClientInitializeRequest, LSPClientNotification, \
+    LSPClientRequest, LSPDiagnostic, LSPDriver, LSPFile, LSPServerException, \
+    LSPServerNotification, LSPServerNotifications
 from .coq import CoqIdents
 
 class Notifications(LSPServerNotifications):
@@ -62,7 +65,8 @@ class StepForwardNotification(LSPClientNotification):
         elif message.method == Notifications.PUBLISH_DIAGNOSTICS:
             uri = message.params["uri"]
             fpath = str(self.fpath) if uri == self.uri else uri
-            self.diagnostics.extend(LSPDiagnostic.of_json(fpath, d) for d in message.params["diagnostics"])
+            self.diagnostics.extend(LSPDiagnostic.of_json(fpath, d)
+                                    for d in message.params["diagnostics"])
 
     @property
     def done(self) -> bool:
@@ -133,7 +137,7 @@ class VsRocqOutput:
     def parse_message(mv: list[Any]) -> Message | None:
          # LATER: Include message level in message and do filtering by level, as
          # a transform.  Needs a fix for rocq-prover/vsrocq#1201.
-        level, pp = mv
+        _level, pp = mv
         return Message(pp) if not MESSAGE_FILTER.search(pp) else None
 
     @staticmethod
@@ -149,7 +153,8 @@ class VsRocqOutput:
 
     @staticmethod
     def parse_proof_view(pv: JSON):
-        pp_messages, pp_goals = pv.get("pp_messages", []), (pv.get("pp_proof") or {}).get("goals", [])
+        pp_messages = pv.get("pp_messages", [])
+        pp_goals = (pv.get("pp_proof") or {}).get("goals", [])
         messages = [m for mv in pp_messages if (m := VsRocqOutput.parse_message(mv))]
         goals = [VsRocqOutput.parse_goal(gv) for gv in pp_goals]
         return messages, goals
@@ -218,8 +223,8 @@ class VsRocqFile(LSPFile[VsRocqClient]):
             pv = StepForwardNotification(self.client, self.fpath, self.uri).send()
             messages, goals = VsRocqOutput.parse_proof_view(must(pv.proof_view))
             beg, end = self.doc.range2offsets(Range.of_lsp(self.fpath, must(pv.proof_view)["range"]))
-            sentence = Positioned(beg, end, Sentence(self.doc[beg:end], messages, goals))
-            yield sentence
+            sentence = Sentence(self.doc[beg:end], messages, goals)
+            yield Positioned(beg, end, sentence)
 
             # Print severe diagnostics eagerly
             for diag in pv.diagnostics:

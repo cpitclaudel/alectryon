@@ -20,13 +20,13 @@
 
 """Post-process annotated fragments of source code."""
 
-from collections.abc import Iterable
 from typing import Optional, Tuple, TypeVar
 
 import re
 import textwrap
 from copy import copy
 from collections import namedtuple
+from collections.abc import Iterable
 
 from . import markers
 from .core import RichFragment, Sentence, Text, Names, Enriched, \

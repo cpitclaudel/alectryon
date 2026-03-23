@@ -191,7 +191,8 @@ class LSPTokenLegend:
 
     @staticmethod
     def of_config(config: LSPServerConfig) -> "LSPTokenLegend":
-        return LSPTokenLegend.of_json(config.capabilities.get("semanticTokensProvider", {})["legend"])
+        js = config.capabilities.get("semanticTokensProvider", {})["legend"]
+        return LSPTokenLegend.of_json(js)
 
     def resolve_modifiers(self, bitset: int) -> tuple[str, ...]:
         if (mods := self._modifiers_cache.get(bitset)) is None:
@@ -200,7 +201,8 @@ class LSPTokenLegend:
                 tuple(sorted(self.modifiers[i] for i, c in bits if c == '1'))
         return mods
 
-    def resolve_one(self, doc: Document, l: int, c: int, length: int, itype: int, imods: int) -> Token:
+    def resolve_one(self, doc: Document, l: int, c: int, length: int,
+                    itype: int, imods: int) -> Token:
         typ = self.types[itype]
         mods = self.resolve_modifiers(imods)
         start = doc.lc2offset(l, c)
@@ -208,6 +210,7 @@ class LSPTokenLegend:
 
     def resolve(self, doc: Document, tokens: Iterable[int]) -> Iterator[Token]:
         l, c = 1, 0
+        # pylint: disable=unsubscriptable-object
         groups: zip[tuple[int, ...]] = zip(*([iter(tokens)] * 5)) # type: ignore
         for dl, dc, length, itype, imods in groups:
             l, c = l + dl, (dc if dl != 0 else c + dc)
@@ -260,10 +263,11 @@ class LSPClientSemanticTokensMixin(LSPClient):
 
     def _init(self) -> LSPClientInitializeRequest:
         req = super()._init()
+        modifiers = self.TOKEN_MODIFIERS | {m for t in self.TOKEN_MAP for m in t[1:]}
         req.params["capabilities"]["textDocument"]["semanticTokens"] = {
             "requests": {"range": False, "full": True},
             "tokenTypes": [t[0] for t in self.TOKEN_MAP],
-            "tokenModifiers": list(self.TOKEN_MODIFIERS | {m for t in self.TOKEN_MAP for m in t[1:]}),
+            "tokenModifiers": list(modifiers),
             "formats": ['relative'],
             "overlappingTokenSupport": False,
             "multilineTokenSupport": True,

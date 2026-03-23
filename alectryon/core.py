@@ -144,7 +144,7 @@ def nullctx():
     yield
 
 @contextmanager
-def cwd(wd: Union[str, os.PathLike]):
+def cwd_mgr(wd: Union[str, os.PathLike]):
     old_cwd = os.getcwd()
     os.chdir(wd)
     try:
@@ -306,10 +306,12 @@ class PosStr(str):
     def __new__(cls, s, *_args):
         return super().__new__(cls, s)
 
+    # pylint: disable=redefined-outer-name
     def __init__(self, _s, pos: Position, indent: int):
         super().__init__()
         self.pos, self.indent = pos, indent
 
+    @staticmethod
     def remap(s: str, base: Position, pos: Position):
         """Express `pos` in coordinate space of `s`, relative to `base`.
 
@@ -774,7 +776,7 @@ class PopenDriver(CLIDriver): # pylint: disable=abstract-method
         self.kill()
         self.repl = self._start(stderr=None)
 
-class REPLDriver(PopenDriver):
+class REPLDriver(PopenDriver): # pylint: disable=abstract-method
     def _read(self):
         assert self.repl and self.repl.stdout
         response = self.repl.stdout.readline()

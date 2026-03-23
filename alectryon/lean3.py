@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Any, Iterable, List, Optional, Tuple
 
 from .core import REPLDriver, Positioned, TextDocument, Hypothesis, Goal, \
-    Message, Sentence, Text, Fragment, cwd
+    Message, Sentence, Text, Fragment, cwd_mgr
 
 try:
     from typing import TypedDict # novm
@@ -288,7 +288,7 @@ class Lean3(REPLDriver):
         return list(self.document.recover_chunks(fragments))
 
     def _annotate(self):
-        with cwd(self.fpath.parent.resolve()):
+        with cwd_mgr(self.fpath.parent.resolve()):
             # We use this instead of the ``NamedTemporaryFile`` API
             # because it works with Windows file locking.
             (fdescriptor, tmp_str) = tempfile.mkstemp(suffix=".lean")

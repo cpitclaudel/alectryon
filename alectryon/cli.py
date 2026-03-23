@@ -76,7 +76,8 @@ class CodeSnippet(NamedTuple):
         iters = { k: iter(vs) for k, vs in by_lang.items() }
         for snippet in snippets:
             if isinstance(snippet, CodeSnippet):
-                snippet = next(iters[snippet.lang])
+                snippet = next(iters[snippet.lang], None)
+                assert snippet
             yield snippet
 
 SnippetCollection = dict[str, list[CodeSnippet]]

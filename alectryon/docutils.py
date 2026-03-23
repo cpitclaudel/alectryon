@@ -289,7 +289,10 @@ class Config:
             import shlex
             args = shlex.split(body)
             self.driver_args["vsrocq"].extend(args)
-            self.driver_args["sertop"].extend(a for flag, vals in self.parse_args(args) for a in (flag, ",".join(vals)))
+            self.driver_args["sertop"].extend(
+                a for flag, vals in self.parse_args(args)
+                for a in (flag, ",".join(vals))
+            )
         else:
             return
         node.parent.remove(node)
@@ -390,7 +393,8 @@ class AlectryonTransform(OneTimeTransform):
             msg = f"Long line ({len(s)} characters)\n{s}"
             contents_line = getattr(node, "details", {}).get("contents_line")
             opts = {"line": contents_line + linum} if contents_line else {}
-            _system_message(self.document, self.document.reporter.WARNING_LEVEL, msg, base_node=node, **opts)
+            _system_message(self.document, self.document.reporter.WARNING_LEVEL,
+                            msg, base_node=node, **opts)
 
     def annotate(self, pending_nodes, lang, cache):
         driver = alectryon_state(self.document).config.init_driver(lang)
@@ -759,6 +763,10 @@ class ProverDirective(AlectryonDirective):
     def header(self):
         return "`{}`".format(self.block_text.partition('\n')[0])
 
+    def _root_is_code(self, source: str):
+        doc = self.state_machine.document
+        return source == doc.get('source', "") and alectryon_state(doc).root_is_code
+
     def run(self):
         self.assert_has_content()
 
@@ -771,15 +779,16 @@ class ProverDirective(AlectryonDirective):
         rel_indent, contents = recompute_contents(self, ProverDirective.EXPECTED_INDENTATION)
         source, contents_line = self.state_machine.get_source_and_line(self.content_offset + 1)
 
-        if source is None or document.get('source', "") == source and alectryon_state(document).root_is_code:
+        if source is None or self._root_is_code(source):
             abs_indent = 0
         else:
             # Add indentation of current directive in original source.  This is
             # needed because Docutils dedents ``self.contents`` before passing
             # control to us, so a ``.. coq::`` block within a ``.. note::`` looks
             # the same as a top-level one.
+            import linecache
             _, header_line = self.state_machine.get_source_and_line(self.lineno)
-            if not (header := __import__("linecache").getline(source, header_line)):
+            if not (header := linecache.getline(source, header_line)):
                 errors.append(self.state.reporter.error( # FIXME confirm that this error works
                     f"Directive header line not found in file ({source=}, {self.lineno=})",
                     line=self.lineno))
@@ -1350,7 +1359,8 @@ HtmlTranslator = make_HtmlTranslator(html4css1.HTMLTranslator)
 HtmlTranslator.ADDITIONAL_HEADS.extend(html.HTML4_VIEWPORT)
 
 Html5Translator = make_HtmlTranslator(html5_polyglot.HTMLTranslator)
-Html5Translator.head_prefix_template = '<html class="alectryon-standalone" lang="%(lang)s">\n<head>\n'
+Html5Translator.head_prefix_template = \
+    '<html class="alectryon-standalone" lang="%(lang)s">\n<head>\n'
 
 def opt_validate_style(setting, value, option_parser,
                        config_parser=None, config_section=None):

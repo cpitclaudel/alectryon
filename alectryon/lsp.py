@@ -29,7 +29,8 @@ from pathlib import Path
 
 from . import __version__
 from .transforms import coalesce_text
-from .core import Document, DriverInfo, EncodedDocument, Fragment, JSON, Observer, PopenDriver, Positioned, Range, Text, debug as core_debug, must
+from .core import Document, DriverInfo, EncodedDocument, Fragment, JSON, Observer, \
+    PopenDriver, Positioned, Range, Text, debug as core_debug, must
 
 class LSPServerMessage:
     """Base class for all LSP messages"""
@@ -41,13 +42,10 @@ class LSPServerMessage:
         if method is not None:
             if idx is not None:
                 return LSPServerRequest.from_json(data)
-            else:
-                return LSPServerNotification.from_json(data)
-        else:
-            if "error" in data:
-                raise LSPServerError.from_json(data).exn
-            else:
-                return LSPServerResponse.from_json(data)
+            return LSPServerNotification.from_json(data)
+        if "error" in data:
+            raise LSPServerError.from_json(data).exn
+        return LSPServerResponse.from_json(data)
 
     JRPC_HEADER_RE = re.compile(r"Content-Length: (?P<len>[0-9]+)\r\n")
 
@@ -501,8 +499,12 @@ class LSPDriver(PopenDriver, Generic[TClient]):
 
         >>> from .vsrocq import VsRocq
         >>> VsRocq().annotate(["Check 1.", "Print False."])
-        [[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])],
-         [Sentence(contents='Print False.', messages=[Message(contents='Inductive False : Prop :=  .')], goals=[])]]
+        [[Sentence(contents='Check 1.',
+                   messages=[Message(contents='1\n     : nat')],
+                   goals=[])],
+         [Sentence(contents='Print False.',
+                   messages=[Message(contents='Inductive False : Prop :=  .')],
+                   goals=[])]]
         """
         document = self._encode(chunks)
 

@@ -23,7 +23,8 @@ from typing import Iterable
 
 import dataclasses
 
-from .core import Document, Fragment, Goal, Hypothesis, Message, Position, Positioned, Range, Sentence, must
+from .core import Document, Fragment, Goal, Hypothesis, Message, Position, Positioned, \
+    Range, Sentence, must
 from .lsp import LSPDocument, LSPClient, LSPClientRequest, LSPDriver, LSPFile
 from .coq import CoqIdents
 
@@ -60,7 +61,7 @@ class CoqLSPOutput:
     def _decode_goal_name(name):
         if not name:
             return None
-        elif isinstance(name, list) and name[0] == "Id": # PPX encoding of Id.t
+        if isinstance(name, list) and name[0] == "Id": # PPX encoding of Id.t
             return name[1]
         return str(name)
 
