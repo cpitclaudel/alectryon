@@ -2,15 +2,66 @@
  Major changes
 ===============
 
-Unreleased
-==========
+Version 2.0.0
+=============
+
+- Alectryon is now compatible with Rocq 9, Docutils 22, Sphinx 9.1, Pygments 2.19, and Python 3.9+.
+
+- Alectryon now supports the two main Rocq LSP servers: VsRocq and coq-lsp.  VsRocq is the default for Rocq files, replacing SerAPI; it is reasonably well supported. Coq-lsp is experimental.  SerAPI is still supported for Coq versions < 9.  Known limitations are documented in VsRocq issues `#1198`_, `#1199`_, `#1201`_, `#1203`_, `#1204`_, `#1205`_, `#1206`_, `#1209`_, and `#1210`_; help is welcome to fix these issues and improve VsRocq support (for now, Alectryon bundles mitigation for most of them). [ffffc913, 9ff1e752, c28fb384, 81dcd0ac, 830f41e2, 8c4f256f]
+
+- Settings from ``_RocqProject`` files are now recognized and applied.  This makes it easy to configure dependencies (``-Q …``), warnings (``-arg -w -arg -notation-for-abbreviation``), printing parameters (``-arg -set -arg "'Printing Depth=30'"``, ``-arg -set -arg "'Printing Width=55'"``), etc.
+
+- Alectryon now has experimental support for Dafny, including a literate-programming mode (conversions between Dafny files with ``///`` comments and reST/Markdown documents) and semantic highlighting via the Dafny LSP server. [1f8370e, ca1b0784, 6bdcd555]
+
+- Alectryon now supports literate programming in Markdown in addition to reStructuredText.  Markdown files (``.md``, ``.myst``) containing ``{coq}`` code blocks can be rendered to LaTeX or HTML through Docutils, or converted to Rocq files (``.v``) with ``(*| … |*)`` comments using the ``coq`` backend, and vice versa using the ``coq+md`` frontend.  [e17fe936, 46f037b5, c5253aaa, 85632183, 901247db]
+
+- HTML and LaTeX files containing Rocq snippets can now be ingested by Alectryon and rewritten to insert recorded goals and prover outputs, using the new ``html`` and ``latex`` frontends.  This makes it possible to process code blocks embedded in HTML or LaTeX documents without going through Docutils. [cc169410, 49f7ec1a]
+
+- ``alectryon-mode`` now supports Dafny, Lean 4, and markdown-mode buffers. [cf948f95, b7313ae1, 32f0e1e5, bec2575f]
+
+- Exporting to LaTeX now displays hypotheses bodies in addition to hypothesis types. [7eb70b00, 20e30444]
+
+- A ``noop`` driver is now available for all languages, skipping prover execution entirely. [929066a1]
 
 Bug fixes
 ---------
 
-- (LaTeX) Fix an incompatibility with the hyperref package by namespacing alectryon macros (``\al{xyz}`` expands to ``alectryon@xyz``). [669f84a]
+- (HTML) Do not add an HTML4 xmlns attribute to HTML5 outputs. [fab53849]
 
-- (LaTeX export) Prevent narrow spaces in ``\alectryonInline{}`` macros from propagating to ``\begin{alectryon}`` environments. [07a49c6]
+- (LaTeX) Fix an incompatibility with the hyperref package by namespacing alectryon macros (``\al{xyz}`` expands to ``alectryon@xyz``). [716454dc]
+
+- (LaTeX export) Prevent narrow spaces in ``\alectryonInline{}`` macros from propagating to ``\begin{alectryon}`` environments. [76fc9e07]
+
+- (LaTeX) Fix a compatibility issue with the ``longtable`` package. [b5c3bfb2]
+
+Breaking changes
+----------------
+
+- (CLI) Error messages from Rocq now include column information. [1fdcd006]
+
+- (Rocq) The default Coq driver is now ``vsrocq`` (was ``sertop``).  SerAPI is still available using ``--coq-driver sertop``. [81dcd0ac]
+
+- (Rocq) The ``coqdoc`` frontend now invokes ``rocq doc`` instead of ``coqdoc``. [829fde48]
+
+- (Rocq) The default printing width and depth are now determined by Rocq, not Alectryon.  To recover the previous behavior, create a ``_RocqProject`` file with ``-arg -set -arg "'Printing Depth=30'"`` and ``-arg -set -arg "'Printing Width=55'"``.
+
+- (Lean) The literate-programming comment delimiters for Lean files have changed from ``/-! … !-/`` to ``/-| … |-/``. [278fb597]
+
+- (LaTeX) The ``alectryon`` and ``alectryon@inline`` environments have been simplified to make it easier to redefine them. [2be83289]
+
+- (LaTeX) All Alectryon macros are now wrapped in ``\al`` / ``\Al`` commands (e.g., ``\al{xyz}`` expands to ``alectryon@xyz``). [424709a5]
+
+- (HTML) The HTML class ``alectryon-wsp`` has been renamed to ``alectryon-txt``. [872e83d1]
+
+.. _#1198: https://github.com/rocq-prover/vsrocq/issues/1198
+.. _#1199: https://github.com/rocq-prover/vsrocq/issues/1199
+.. _#1201: https://github.com/rocq-prover/vsrocq/issues/1201
+.. _#1203: https://github.com/rocq-prover/vsrocq/issues/1203
+.. _#1204: https://github.com/rocq-prover/vsrocq/issues/1204
+.. _#1205: https://github.com/rocq-prover/vsrocq/issues/1205
+.. _#1206: https://github.com/rocq-prover/vsrocq/issues/1206
+.. _#1209: https://github.com/rocq-prover/vsrocq/issues/1209
+.. _#1210: https://github.com/rocq-prover/vsrocq/issues/1210
 
 1.5.0
 =====
