@@ -8,8 +8,8 @@ To compile::
      # reST + assertions; produces ‘docinfo_flags.txt’
 
 :date: August 30, 2021
-:alectryon/rocq/args: -I . -R ../recipes/ custom_flag_recipes
-:alectryon/rocq/args: -Q ../alectryon/ custom_flag_alectryon_tests
+:alectryon/rocq/args: -I . -R ../recipes/ custom_flag_R
+:alectryon/rocq/args: -Q ../etc/ custom_flag_Q
 
 .. topic:: Checking for Rocq flags
 
@@ -17,8 +17,8 @@ To compile::
 
 .. massert:: .io#lp
 
-   .s(LoadPath).msg{*custom_flag_recipes*alectryon/recipes*}
-   .s(LoadPath).msg{*alectryon*custom_flag_alectryon_tests*}
+   .s(LoadPath).msg{*custom_flag_R*/recipes*}
+   .s(LoadPath).msg{*custom_flag_Q*/etc*}
 
 .. coq::
    :name: lp
