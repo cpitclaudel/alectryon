@@ -5,6 +5,7 @@
 
 :alectryon/pygments/coq/tacn: app but_first
 :alectryon/pygments/coq/tacn-solve: must_eauto
+:alectryon/pygments/coq/gallina-constants: n⓪ n①
 
 This file shows how to customize syntax highlighting in Alectryon.  To compile it, use::
 
@@ -33,6 +34,18 @@ Goal forall x, x = 1 -> x >= 0.
   unfold ge.
   app le_S but_first intros ? ->.
   must_eauto.
+Qed.
+
+Notation "'n⓪'" := 0.
+Notation "'n①'" := 1.
+Definition αβγ := n① + n①.
+
+Require Import Unicode.Utf8.
+Goal forall ν, ν = n⓪ \/ ν = n① \/ ∃ ο, ν = αβγ + ο.
+Proof.
+  unfold αβγ. (* .unfold *)
+  cbv. (* .unfold *)
+  destruct ν as [ | [ | [ | ] ] ]; eauto.
 Qed.
 
 (*|
