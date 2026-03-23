@@ -31,7 +31,7 @@ To install from OPAM and PyPI:
 
 To install the latest version from Git, use ``python3 -m pip install git+https://github.com/cpitclaudel/alectryon.git``.  To install from a local clone, use ``python3 -m pip install .``.
 
-Support for Rocq ≥ 9 uses the VsRocq language server.  For version < 9, use the ``coq-serapi`` OPAM package.
+Support for Rocq ≥ 9 uses the VsRocq server.  For versions < 9, use the ``coq-serapi`` OPAM package.
 
 Usage
 =====
@@ -251,7 +251,7 @@ Various settings are exposed as global constants in the docutils module:
 - ``alectryon.docutils.CACHE_DIRECTORY`` (same as ``--cache-directory``)
 - ``alectryon.docutils.CACHE_COMPRESSION`` (same as ``--cache-compression``)
 - ``alectryon.docutils.HTML_MINIFICATION`` (same as ``--html-minification``)
-- ``alectryon.docutils.AlectryonTransform.SERTOP_ARGS`` (same as ``--sertop-arg``)
+- ``alectryon.docutils.AlectryonTransform.DRIVER_ARGS`` (same as ``--sertop-arg`` / ``--rocq-arg``)
 
 Controlling output
 ~~~~~~~~~~~~~~~~~~
@@ -694,10 +694,15 @@ Compressed caches kept in a Git repository can be inspected by `automatically de
    # In .gitattributes:
    *.cache.xz diff=xz
 
-Building without SerAPI
+Building without VsRocq
 -----------------------
 
-Alectryon can compile documents using ``coqc``.  Sentences be split correctly, but goals and messages will not be collected, and error reporting will be less precise.  To use this feature, pass ``--coq-driver=coqc_time`` to Alectryon.  See `<recipes/coq_drivers.v>`__ for an example.
+In addition to VsRocq, Alectryon can compile documents using ``coqc`` and ``coq-lsp``.
+
+- ``coqc`` support (``--coq-driver=coqc_time``) is minimal.  Sentences will be split correctly, but goals and messages will not be collected, and error reporting will be less precise.
+- ``coq-lsp`` support  (``--coq-driver=coqlsp``) is unstable.  Simple examples should work.
+
+See `<recipes/coq_drivers.v>`__ for examples.
 
 Building without Alectryon
 --------------------------
@@ -751,7 +756,7 @@ I do not work on the following tasks, but it would be very useful to complete th
 
 - Add support for prettification in Pygments (display ``forall`` as ``∀``, etc.).  This require (1) Adding a pygments filter for prettification and (2) special-casing the rendering of prettified symbols somehow, so that copy-pasting them produces the original, unprettified rendering.
 
-- Add support for diffing (displaying only changed hypotheses). See https://github.com/ejgallego/coq-serapi/issues/251
+- Add support for diffing (displaying only changed hypotheses).
 
 - Add support for ``mquote``-ing full goals and sentences.  This requires revamping the CSS (right now it assumes a specific nesting order of classes, and subparts of a proof state except the currently supported ones do not display correctly).
 
