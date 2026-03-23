@@ -395,13 +395,13 @@ class Document:
         assert line >= 1
         return self.bol_offsets[line - 1] + col
 
-    def offset2pos(self, fpath: Union[str, Path], offset: int) -> Position:
-        return Position(fpath, *self.offset2lc(offset))
+    def offset2pos(self, fpath: Union[str, Path], offset: int | None) -> Position:
+        return Position(fpath, *self.offset2lc(offset)) if offset is not None else None
 
     def pos2offset(self, pos: Position) -> int:
         return self.lc2offset(pos.line, pos.col or 0)
 
-    def offsets2range(self, fpath: Union[str, Path], beg: int, end: int) -> Range:
+    def offsets2range(self, fpath: Union[str, Path], beg: int, end: int | None) -> Range:
         return Range(self.offset2pos(fpath, beg), self.offset2pos(fpath, end))
 
     def range2offsets(self, range: Range) -> Tuple[int, int]:
