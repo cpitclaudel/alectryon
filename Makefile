@@ -1,5 +1,5 @@
 PYTHON ?= python3
-python_venv := deps/.venv
+python_venv := deps/.venv.$(shell hostname)
 python_bin := $(python_venv)/bin
 export PATH := $(abspath $(python_bin)):$(PATH)
 export PYTHONIOENCODING ?= utf-8

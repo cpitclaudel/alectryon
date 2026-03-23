@@ -1,5 +1,5 @@
 /_opam
-/deps/.venv
+/deps/.venv.*
 /dist/
 __pycache__/
 alectryon.egg-info/*
