@@ -171,6 +171,12 @@ QUERY_MATCHERS = {
 }
 
 def parse_path(path, start=0, endpos=None):
+    r"""Parse a marker-placement path into a dict of matchers.
+
+    >>> p = parse_path(".s(Check).g#1")
+    >>> isinstance(p["s"], PlainMatcher) and isinstance(p["g"], NameMatcher)
+    True
+    """
     parsed = {"str": path}
     endpos = len(path) if endpos is None else endpos
     while start < endpos:

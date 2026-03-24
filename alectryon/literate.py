@@ -27,6 +27,12 @@ class StringView:
         return len(self) > 0
 
     def __getitem__(self, idx) -> "StringView":
+        """Slice from this view.
+
+        >>> sv = StringView("abcdefghijkl", 3, 10)
+        >>> str(sv[:2]), str(sv[4:])
+        ('de', 'hij')
+        """
         if isinstance(idx, slice):
             beg = min(self.beg + (idx.start or 0), self.end)
             if idx.stop is None:
@@ -67,6 +73,12 @@ class StringView:
         return repr(str(self))
 
     def split(self, sep: str, nsplits=None, keepsep=False) -> List["StringView"]:
+        r"""Split this view on `sep`.
+
+        >>> sv = StringView("a\nbc\ndef\ng\nhi", 2, 12)
+        >>> [str(p) for p in sv.split("\n", keepsep=True)]
+        ['bc\n', 'def\n', 'g\n', 'h']
+        """
         beg = self.beg
         chunks: List[StringView] = []
         while beg <= self.end:

@@ -104,6 +104,13 @@ class Tokens:
         return filtered
 
 class TokenizedStr(str):
+    r"""A string annotated with LSP semantic tokens.
+
+    >>> toks = [Token(slice(0, 5), ("keyword",)), Token(slice(6, 11), ("variable",))]
+    >>> ts = TokenizedStr("abcd 012345", Tokens(toks, slice(0, 2), slice(0, 11)), {("keyword",): "kw"})
+    >>> str(ts) == "abcd 012345"
+    True
+    """
     def __new__(cls, s, *_args):
         return super().__new__(cls, s)
 

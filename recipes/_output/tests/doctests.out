@@ -6,6 +6,8 @@ split_fpath (alectryon.coq.CoqIdents)
 Doctest: alectryon.coq.CoqIdents.split_fpath ... ok
 annotate (alectryon.coqc_time.CoqcTime)
 Doctest: alectryon.coqc_time.CoqcTime.annotate ... ok
+offset2lc (alectryon.core.Document)
+Doctest: alectryon.core.Document.offset2lc ... ok
 split_fragment (alectryon.core.Document)
 Doctest: alectryon.core.Document.split_fragment ... ok
 split_fragments (alectryon.core.Document)
@@ -36,8 +38,12 @@ __iter__ (alectryon.literate.Line)
 Doctest: alectryon.literate.Line.__iter__ ... ok
 __len__ (alectryon.literate.Line)
 Doctest: alectryon.literate.Line.__len__ ... ok
+__getitem__ (alectryon.literate.StringView)
+Doctest: alectryon.literate.StringView.__getitem__ ... ok
 __iter__ (alectryon.literate.StringView)
 Doctest: alectryon.literate.StringView.__iter__ ... ok
+split (alectryon.literate.StringView)
+Doctest: alectryon.literate.StringView.split ... ok
 coq2rst (alectryon.literate)
 Doctest: alectryon.literate.coq2rst ... ok
 dafny2md (alectryon.literate)
@@ -58,6 +64,8 @@ rst2lean3 (alectryon.literate)
 Doctest: alectryon.literate.rst2lean3 ... ok
 annotate (alectryon.lsp.LSPDriver)
 Doctest: alectryon.lsp.LSPDriver.annotate ... ok
+parse_path (alectryon.markers)
+Doctest: alectryon.markers.parse_path ... ok
 cli (alectryon.minimal)
 Doctest: alectryon.minimal.cli ... ok
 StripErrorsTokenFilter (alectryon.pygments)
@@ -68,6 +76,10 @@ highlight_html (alectryon.pygments)
 Doctest: alectryon.pygments.highlight_html ... ok
 translate_offset (alectryon.serapi.PosView)
 Doctest: alectryon.serapi.PosView.translate_offset ... ok
+load (alectryon.sexp)
+Doctest: alectryon.sexp.load ... ok
+TokenizedStr (alectryon.tokens)
+Doctest: alectryon.tokens.TokenizedStr ... ok
 _all_sub_objects (alectryon.transforms)
 Doctest: alectryon.transforms._all_sub_objects ... ok
 _attach_comments_to_code (alectryon.transforms)
@@ -92,6 +104,6 @@ annotate (alectryon.vsrocq)
 Doctest: alectryon.vsrocq.annotate ... ok
 
 ----------------------------------------------------------------------
-Ran 46 tests
+Ran 52 tests
 
 OK

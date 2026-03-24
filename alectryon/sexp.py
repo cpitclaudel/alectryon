@@ -76,6 +76,12 @@ def parse(tokens):
     return top[0]
 
 def load(bs):
+    r"""Parse an S-expression from bytes.
+
+    >>> sexp = b'("Response"("Answer"()("1")"Ack"))'
+    >>> dump(load(sexp)) == sexp
+    True
+    """
     try:
         return parse(tokenize(bs))
     except IndexError as e:

@@ -390,6 +390,12 @@ class Document:
         return [p.beg for p in self.with_boundaries(self.with_separator)]
 
     def offset2lc(self, offset) -> Tuple[int, int]:
+        r"""Convert a character offset to a (line, column) pair.
+
+        >>> d = TextDocument(["abc\n", "def"], "\n")
+        >>> all(d.lc2offset(*d.offset2lc(o)) == o for o in range(len(d)))
+        True
+        """
         import bisect
         line = bisect.bisect_right(self.bol_offsets, offset)
         bol = self.bol_offsets[line - 1]
