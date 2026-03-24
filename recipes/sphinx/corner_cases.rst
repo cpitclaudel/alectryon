@@ -72,6 +72,7 @@ Bubble: :alectryon-bubble:`-`
 .. alectryon-toggle::
 
 .. coq::
+   :name: named_block
 
    (* xyz *) Goal True /\ True.
      - idtac.
@@ -87,7 +88,7 @@ Bubble: :alectryon-bubble:`-`
 References
 ==========
 
-:mref:`.s(pose).h#a.body`, :mref:`.s(pose).h#a.type`, :mref:`.s(pose).h#a`.
+:mref:`.s(pose).h#a.body`, :mref:`.s(pose).h#a.type`, :mref:`.s(pose).h#a`, `named_block`_.
 
 .. role:: mq(mref)
    :kind: quote

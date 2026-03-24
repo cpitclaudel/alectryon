@@ -152,7 +152,7 @@ class Raw:
         "\n": "\\Al{nl}\n"})
 
     def __init__(self, s, verbatim=False):
-        self.s = s
+        self.s = str(s)
         self.parent = None
         self.verbatim = verbatim
         add_top(self)

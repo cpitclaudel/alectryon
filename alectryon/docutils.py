@@ -62,7 +62,7 @@ side, and a doctree-resolved event on the Sphinx side.
 
 from collections.abc import MutableMapping
 from typing import Any, ClassVar, DefaultDict, Dict, Iterable, \
-    List, Tuple, Type, Union
+    List, NamedTuple, Tuple, Type, Union
 
 import re
 from pathlib import Path
@@ -193,6 +193,19 @@ def alectryon_state(document):
 
 def _sphinx_env(document):
     return getattr(document.settings, "env", None)
+
+class Id:
+    """IDs with a document-name prefix, to match Sphinx.
+
+    Sphinx adds ``docname:`` to references automatically.  We generate ``mref``
+    target labels ourselves, so we need to track prefixes.
+    """
+    def __init__(self, document, refid):
+        self.refid = refid
+        self.docprefix = f"{env.docname}:" if (env := _sphinx_env(document)) else ""
+
+    def __str__(self):
+        return self.docprefix + self.refid
 
 def _sphinx_config(document):
     env = _sphinx_env(document)
@@ -415,6 +428,7 @@ class AlectryonTransform(OneTimeTransform):
         io = alectryon_pending_io(AlectryonPostTransform, details)
         _note_pending(self.document, io)
         pending.replace_self(io)
+        io["ids"] = [Id(self.document, i) for i in io.get("ids", ())]
 
     def apply_drivers(self):
         from .json import CacheSet
@@ -568,11 +582,11 @@ class AlectryonMrefTransform(OneTimeTransform):
     def format_one_ref(self, target, node):
         if not target.ids:
             target_id = nodes.make_id(node.details["target"])
-            target.ids.append(self.gensym(target_id + "-")) # “-” avoids collisions
+            target.ids.append(Id(self.document, self.gensym(target_id + "-")))
         if not target.markers:
             style = node.details["counter-style"]
             target.markers.append(node.details["title"] or self.refcounter.next(style))
-        marker, refid = target.markers[-1], target.ids[-1]
+        marker, refid = target.markers[-1], target.ids[-1].refid
         return nodes.reference(node.rawsource, marker,
                                classes=["alectryon-mref"], refid=refid)
 
