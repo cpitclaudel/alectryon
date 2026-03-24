@@ -10,36 +10,31 @@
 \newdimen\sphinxremdimen\sphinxremdimen = 10pt
 %% let collapsible pdf bookmarks panel have high depth per default
 \PassOptionsToPackage{bookmarksdepth=5}{hyperref}
+%% turn off hyperref patch of \index as sphinx.xdy xindy module takes care of
+%% suitable \hyperpage mark-up, working around hyperref-xindy incompatibility
+\PassOptionsToPackage{hyperindex=false}{hyperref}
+%% memoir class requires extra handling
+\makeatletter\@ifclassloaded{memoir}
+{\ifdefined\memhyperindexfalse\memhyperindexfalse\fi}{}\makeatother
 
 \PassOptionsToPackage{booktabs}{sphinx}
 \PassOptionsToPackage{colorrows}{sphinx}
 
 \PassOptionsToPackage{warn}{textcomp}
-\usepackage[utf8]{inputenc}
-\ifdefined\DeclareUnicodeCharacter
-% support both utf8 and utf8x syntaxes
-  \ifdefined\DeclareUnicodeCharacterAsOptional
-    \def\sphinxDUC#1{\DeclareUnicodeCharacter{"#1}}
-  \else
-    \let\sphinxDUC\DeclareUnicodeCharacter
-  \fi
-  \sphinxDUC{00A0}{\nobreakspace}
-  \sphinxDUC{2500}{\sphinxunichar{2500}}
-  \sphinxDUC{2502}{\sphinxunichar{2502}}
-  \sphinxDUC{2514}{\sphinxunichar{2514}}
-  \sphinxDUC{251C}{\sphinxunichar{251C}}
-  \sphinxDUC{2572}{\textbackslash}
-\fi
+
+\catcode`^^^^00a0\active\protected\def^^^^00a0{\leavevmode\nobreak\ }
 \usepackage{cmap}
-\usepackage[T1]{fontenc}
+\usepackage{fontspec}
+\defaultfontfeatures[\rmfamily,\sffamily,\ttfamily]{}
 \usepackage{amsmath,amssymb,amstext}
-\usepackage{babel}
+\usepackage{polyglossia}
+\setmainlanguage{english}
 
 
 
-\usepackage{tgtermes}
-\usepackage{tgheros}
-\renewcommand{\ttdefault}{txtt}
+\setmainfont{Linux Libertine O}
+\setsansfont{Linux Biolinum O}
+\setmonofont[Scale=MatchLowercase,AutoFakeSlant=0.2]{Fira Code}
 
 
 
@@ -73,11 +68,6 @@
 \renewcommand{\releasename}{}
 \makeindex
 \begin{document}
-
-\ifdefined\shorthandoff
-  \ifnum\catcode`\=\string=\active\shorthandoff{=}\fi
-  \ifnum\catcode`\"=\active\shorthandoff{"}\fi
-\fi
 
 \pagestyle{empty}
 \sphinxmaketitle
@@ -175,7 +165,7 @@ If you want to highlight pieces of code with MathJax, too, then you can either:
 \begin{itemize}
 \item {} 
 \sphinxAtStartPar
-Use a custom mathjax config script (see the discussion in \sphinxcode{\sphinxupquote{recipes/mathjax.rst}}, the configuration in \sphinxcode{\sphinxupquote{conf.py}}, and the implementation in \sphinxcode{\sphinxupquote{recipes/sphinx/\_static/mathjax\_config.js}}).  Math in the following snippet is highlighted using this technique; look for the link to \sphinxcode{\sphinxupquote{mathjax\_config.js}} in the \sphinxcode{\sphinxupquote{\textless{}head\textgreater{}}} of this webpage:
+Use a custom mathjax config script (see the discussion in \sphinxcode{\sphinxupquote{recipes/mathjax.rst}}, the configuration in \sphinxcode{\sphinxupquote{conf.py}}, and the implementation in \sphinxcode{\sphinxupquote{recipes/sphinx/\_static/mathjax\_config.js}}).  Math in the following snippet is highlighted using this technique; look for the link to \sphinxcode{\sphinxupquote{mathjax\_config.js}} in the \sphinxcode{\sphinxupquote{<head>}} of this webpage:
 
 \begin{alectryon}
   \begin{\al{sentence}}
@@ -267,10 +257,643 @@ That’s enough to run Coq fragments and link to identifiers:
 \end{alectryon}
 
 \sphinxAtStartPar
-For roles use \sphinxcode{\sphinxupquote{\{role\}\textasciigrave{}argument\textasciigrave{}}} syntax: \sphinxstyleemphasis{\sphinxhref{https://coq.inria.fr/library/Coq.Init.Nat.html\#even}{like this}}.  For math use either the \sphinxcode{\sphinxupquote{\{math\}}} role (\(e^{i\pi} = -1\)) or \sphinxcode{\sphinxupquote{\$}} signs (with the \sphinxcode{\sphinxupquote{dollarmath}} extension, see \sphinxcode{\sphinxupquote{conf.py}}): (\(\cos(\pi) = -1\)).
+For roles use \sphinxcode{\sphinxupquote{\{role\}`argument`}} syntax: \sphinxstyleemphasis{\sphinxhref{https://coq.inria.fr/library/Coq.Init.Nat.html\#even}{like this}}.  For math use either the \sphinxcode{\sphinxupquote{\{math\}}} role (\(e^{i\pi} = -1\)) or \sphinxcode{\sphinxupquote{\$}} signs (with the \sphinxcode{\sphinxupquote{dollarmath}} extension, see \sphinxcode{\sphinxupquote{conf.py}}): (\(\cos(\pi) = -1\)).
 
 \sphinxAtStartPar
 Note that MyST disables MathJax’s heuristics for finding text to process (by marking the root of the document with \sphinxcode{\sphinxupquote{mathjax\_ignore}}), so any math outside of \sphinxcode{\sphinxupquote{\{math\}}} or \sphinxcode{\sphinxupquote{\$}} delimiters is not processed: \textbackslash{}(this is not math\textbackslash{}); use the \sphinxcode{\sphinxupquote{mathjax\_process}} HTML class to revert that.
+
+\sphinxstepscope
+
+
+\chapter{Corner cases}
+\label{\detokenize{corner_cases:corner-cases}}\label{\detokenize{corner_cases::doc}}\begin{quote}\begin{description}
+\sphinxlineitem{date}
+\sphinxAtStartPar
+Test
+
+\end{description}\end{quote}
+
+\sphinxAtStartPar
+To compile:
+
+\begin{sphinxVerbatim}[commandchars=\\\{\}]
+\PYG{n}{alectryon} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{n}{stdin}\PYG{o}{\PYGZhy{}}\PYG{n}{filename} \PYG{n}{corner\PYGZus{}cases}\PYG{o}{.}\PYG{n}{rst} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{n}{frontend} \PYG{n}{rst} \PYGZbs{}
+  \PYG{o}{\PYGZhy{}}\PYG{n}{o} \PYG{n}{corner\PYGZus{}cases}\PYG{o}{.}\PYG{n}{html} \PYG{o}{\PYGZhy{}} \PYG{o}{\PYGZlt{}} \PYG{n}{corner\PYGZus{}cases}\PYG{o}{.}\PYG{n}{rst}
+    \PYG{c+c1}{\PYGZsh{} Coq → HTML; produces ‘corner\PYGZus{}cases.html’}
+\PYG{n}{alectryon} \PYG{n}{corner\PYGZus{}cases}\PYG{o}{.}\PYG{n}{rst} \PYG{o}{\PYGZhy{}}\PYG{n}{o} \PYG{n}{corner\PYGZus{}cases}\PYG{o}{.}\PYG{n}{xe}\PYG{o}{.}\PYG{n}{tex} \PYGZbs{}
+  \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZhy{}}\PYG{n}{latex}\PYG{o}{\PYGZhy{}}\PYG{n}{dialect} \PYG{n}{xelatex}
+    \PYG{c+c1}{\PYGZsh{} Coq → LaTeX; produces ‘corner\PYGZus{}cases.xe.tex’}
+\end{sphinxVerbatim}
+
+
+\section{Goal names}
+\label{\detokenize{corner_cases:goal-names}}
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Goal}~\PYG{k+kt}{True}~\PYG{o}{\PYGZhy{}\PYGZgt{}}~\PYG{k+kt}{True}~\PYG{o}{/\PYGZbs{}}~\PYG{k+kt}{True}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}~\PYG{o}{\PYGZhy{}\PYGZgt{}}~\PYG{k+kt}{True}~\PYG{o}{/\PYGZbs{}}~\PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PYG{+nb}{intros}\PYG{o}{;}~\PYG{+nb}{refine}~\PYG{o}{(}conj~\PYG{o}{?[}G1\PYG{o}{]}~\PYG{o}{?[}G2\PYG{o}{]).}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{H}{\PYG{k+kt}{True}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{\Al{gid}{G1}}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}
+              \Al{hyp}{H}{\PYG{k+kt}{True}}
+            \end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{\Al{gid}{G2}}
+            \Al{sep}
+            \begin{\al{conclusion}}
+              \PYG{k+kt}{True}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PYG{o}{[}G1\PYG{o}{]:}~\PYG{+nb+bp}{exact}~I\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{H}{\PYG{k+kt}{True}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{\Al{gid}{G2}}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PYG{o}{[}G2\PYG{o}{]:}~\PYG{+nb+bp}{exact}~I\PYG{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Qed}\PYG{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+
+\section{Hypothesis bodies}
+\label{\detokenize{corner_cases:hypothesis-bodies}}
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Goal}~\PYG{k}{let}~\PYG{+nv}{a}~\PYG{o}{:=}~\PYG{o}{(}\PYG{k}{let}~\PYG{+nv}{bb}~\PYG{o}{:=}~\PYG{k}{let}~\PYG{+nv}{b}~\PYG{o}{:=}~\PYG{l+m+mi}{1}~\PYG{k}{in}~\PYG{o}{(}b~\PYG{o}{,}~b\PYG{o}{)\PYGZpc{}}nat~\PYG{k}{in}\Al{nl}
+      ~~~~~~~~~~~~~~\PYG{k}{let}~\PYG{+nv}{tt}~\PYG{o}{:=}~\PYG{k}{let}~\PYG{+nv}{t}~\PYG{o}{:=}~nat~\PYG{k}{in}~\PYG{o}{(}t~\PYG{o}{*}~t\PYG{o}{)\PYGZpc{}}type~\PYG{k}{in}\Al{nl}
+      ~~~~~~~~~~~~~~bb~\PYG{o}{\PYGZlt{}:}~tt\PYG{o}{)}~\PYG{k}{in}\Al{nl}
+      ~~~~~fst~a~\PYG{o}{=}~snd~a\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k}{let}~\PYG{+nv}{a}~\PYG{o}{:=}\Al{nl}
+            ~~\PYG{k}{let}~\PYG{+nv}{bb}~\PYG{o}{:=}~\PYG{k}{let}~\PYG{+nv}{b}~\PYG{o}{:=}~\PYG{l+m+mi}{1}~\PYG{k}{in}~\PYG{o}{(}b\PYG{o}{,}~b\PYG{o}{)}~\PYG{k}{in}\Al{nl}
+            ~~\PYG{k}{let}~\PYG{+nv}{tt}~\PYG{o}{:=}~\PYG{k}{let}~\PYG{+nv}{t}~\PYG{o}{:=}~nat~\PYG{k}{in}~\PYG{o}{(}t~\PYG{o}{*}~t\PYG{o}{)\PYGZpc{}}type~\PYG{k}{in}~bb~\PYG{o}{\PYGZlt{}:}~tt\Al{nl}
+            ~~\PYG{k}{in}\Al{nl}
+            fst~a~\PYG{o}{=}~snd~a
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Proof}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k}{let}~\PYG{+nv}{a}~\PYG{o}{:=}\Al{nl}
+            ~~\PYG{k}{let}~\PYG{+nv}{bb}~\PYG{o}{:=}~\PYG{k}{let}~\PYG{+nv}{b}~\PYG{o}{:=}~\PYG{l+m+mi}{1}~\PYG{k}{in}~\PYG{o}{(}b\PYG{o}{,}~b\PYG{o}{)}~\PYG{k}{in}\Al{nl}
+            ~~\PYG{k}{let}~\PYG{+nv}{tt}~\PYG{o}{:=}~\PYG{k}{let}~\PYG{+nv}{t}~\PYG{o}{:=}~nat~\PYG{k}{in}~\PYG{o}{(}t~\PYG{o}{*}~t\PYG{o}{)\PYGZpc{}}type~\PYG{k}{in}~bb~\PYG{o}{\PYGZlt{}:}~tt\Al{nl}
+            ~~\PYG{k}{in}\Al{nl}
+            fst~a~\PYG{o}{=}~snd~a
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PYG{+nb}{intros}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}[\PYG{k}{let}~\PYG{+nv}{bb}~\PYG{o}{:=}~\PYG{k}{let}~\PYG{+nv}{b}~\PYG{o}{:=}~\PYG{l+m+mi}{1}~\PYG{k}{in}~\PYG{o}{(}b\PYG{o}{,}~b\PYG{o}{)}~\PYG{k}{in}\Al{nl}
+\PYG{k}{let}~\PYG{+nv}{tt}~\PYG{o}{:=}~\PYG{k}{let}~\PYG{+nv}{t}~\PYG{o}{:=}~nat~\PYG{k}{in}~\PYG{o}{(}t~\PYG{o}{*}~t\PYG{o}{)\PYGZpc{}}type~\PYG{k}{in}~bb~\PYG{o}{\PYGZlt{}:}~tt]{a}{\PYG{k}{let}~\PYG{+nv}{t}~\PYG{o}{:=}~nat~\PYG{k}{in}~t~\PYG{o}{*}~t}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            fst~a~\PYG{o}{=}~snd~a
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PYG{+nb+bp}{reflexivity}\PYG{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Qed}\PYG{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+\sphinxAtStartPar
+\sphinxcode{\sphinxupquote{\#a}}:
+\sphinxhyphen{} \alectryonInline{\PYG{k}{let}~\PYG{+nv}{bb}~\PYG{o}{:=}~\PYG{k}{let}~\PYG{+nv}{b}~\PYG{o}{:=}~\PYG{l+m+mi}{1}~\PYG{k}{in}~\PYG{o}{(}b\PYG{o}{,}~b\PYG{o}{)}~\PYG{k}{in}\Al{nl}
+\PYG{k}{let}~\PYG{+nv}{tt}~\PYG{o}{:=}~\PYG{k}{let}~\PYG{+nv}{t}~\PYG{o}{:=}~nat~\PYG{k}{in}~\PYG{o}{(}t~\PYG{o}{*}~t\PYG{o}{)\PYGZpc{}}type~\PYG{k}{in}~bb~\PYG{o}{\PYGZlt{}:}~tt}
+\sphinxhyphen{} \alectryonInline{\PYG{k}{let}~\PYG{+nv}{t}~\PYG{o}{:=}~nat~\PYG{k}{in}~t~\PYG{o}{*}~t}
+
+
+\section{Self\sphinxhyphen{}reference}
+\label{\detokenize{corner_cases:self-reference}}
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Definition}~\PYG{+nf}{a}~\PYG{o}{:=}~\PYG{l+m+mi}{1}\PYG{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Check}~corner\PYGZus{}cases\PYG{o}{.}a\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          a\Al{nl}
+          ~~~~~\PYG{o}{:}~nat
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+
+\section{Blanks at beginning of snippet}
+\label{\detokenize{corner_cases:blanks-at-beginning-of-snippet}}
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Goal}~\PYG{k+kt}{True}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{+nb+bp}{exact}~I\PYG{o}{.}~
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Qed}\PYG{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+
+\section{Blanks around sentences}
+\label{\detokenize{corner_cases:blanks-around-sentences}}
+\sphinxAtStartPar
+Bubble: \DUrole{alectryon-bubble}{}
+
+
+
+\begin{sphinxuseclass}{alectryon-container}
+\begin{alectryon}
+  \begin{\al{txt}}
+    \PYG{c}{(*~xyz~*)}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~\PYG{k+kn}{Goal}~\PYG{k+kt}{True}~\PYG{o}{/\PYGZbs{}}~\PYG{k+kt}{True}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}~\PYG{o}{/\PYGZbs{}}~\PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PYG{o}{\PYGZhy{}}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}~\PYG{o}{/\PYGZbs{}}~\PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kp}{idtac}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}~\PYG{o}{/\PYGZbs{}}~\PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PYG{+nb}{pose}~\PYG{o}{(}a~\PYG{o}{:=}~\PYG{l+m+mi}{1}\PYG{o}{).}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}[\Al{anchor}{corner-cases-rst-s-pose-h-a-body-0}\PYG{l+m+mi}{1}\Al{mrefmarker}{1}]{a}{\Al{anchor}{corner-cases-rst-s-pose-h-a-0}\Al{anchor}{corner-cases-rst-s-pose-h-a-type-0}nat\Al{mrefmarker}{2}\Al{mrefmarker}{3}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}~\PYG{o}{/\PYGZbs{}}~\PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    ~~~~\PYG{c}{(*~xyz~*)}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~\PYG{+nb}{split}\PYG{o}{.}~~\PYG{c}{(*~xyz~*)}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}[\PYG{l+m+mi}{1}]{a}{nat}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}
+              \Al{hyp}[\PYG{l+m+mi}{1}]{a}{nat}
+            \end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
+              \PYG{k+kt}{True}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PYG{o}{+}~\PYG{c}{(*~xyz~*)}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}[\PYG{l+m+mi}{1}]{a}{nat}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kp}{idtac}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}[\PYG{l+m+mi}{1}]{a}{nat}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~~~\PYG{k+kp}{idtac}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}[\PYG{l+m+mi}{1}]{a}{nat}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    ~\PYG{c}{(*~x}\Al{nl}
+    \PYG{c}{~~~~~~yz~*)}\Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~~~\PYG{+nb}{split}\PYG{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~\PYG{o}{+}~\PYG{c}{(*~xyz~*)}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}[\PYG{l+m+mi}{1}]{a}{nat}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{o}{\PYGZob{}}~\PYG{c}{(*~xyz~*)}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}[\PYG{l+m+mi}{1}]{a}{nat}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{+nb}{split}\PYG{o}{.}~
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{o}{\PYGZcb{}}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Qed}\PYG{o}{.}~\PYG{c}{(*~xyz~*)}
+    \end{\al{input}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+\end{sphinxuseclass}
+
+\section{References}
+\label{\detokenize{corner_cases:references}}
+\sphinxAtStartPar
+{\hyperref[\detokenize{corner_cases:corner-cases-rst-s-pose-h-a-body-0}]{\sphinxcrossref{1}}}, {\hyperref[\detokenize{corner_cases:corner-cases-rst-s-pose-h-a-type-0}]{\sphinxcrossref{2}}}, {\hyperref[\detokenize{corner_cases:corner-cases-rst-s-pose-h-a-0}]{\sphinxcrossref{3}}}.
+
+
+\section{Exercise directive}
+\label{\detokenize{corner_cases:exercise-directive}}
+\begin{sphinxtopic}
+\sphinxstyletopictitle{Exercise: Commutativity of addition}
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Goal}~\PYG{k}{forall}~\PYG{+nv}{x}~\PYG{+nv}{y}\PYG{o}{:}~nat\PYG{o}{,}~x~\PYG{o}{+}~y~\PYG{o}{=}~y~\PYG{o}{+}~x\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k}{forall}~\PYG{+nv}{x}~\PYG{+nv}{y}~\PYG{o}{:}~nat\PYG{o}{,}~x~\PYG{o}{+}~y~\PYG{o}{=}~y~\PYG{o}{+}~x
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+\end{sphinxtopic}
+
+
+\section{Unicode in code}
+\label{\detokenize{corner_cases:unicode-in-code}}
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Definition}~\PYG{+nf}{test}~\PYG{o}{:=}~\PYG{l+s+s2}{\PYGZdq{}◆~◉~▲~◧~◎~◴~▶~■\PYGZdq{}}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k}{forall}~\PYG{+nv}{x}~\PYG{+nv}{y}~\PYG{o}{:}~nat\PYG{o}{,}~x~\PYG{o}{+}~y~\PYG{o}{=}~y~\PYG{o}{+}~x
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
 
 \sphinxAtStartPar
 The default role produces Coq code: \sphinxcode{\sphinxupquote{\DUrole{k}{let} \DUrole{n}{a} \DUrole{o}{:=} \DUrole{mi}{1} \DUrole{k}{in} \DUrole{n}{a} \DUrole{o}{+} \DUrole{n}{a}}}.

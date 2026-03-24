@@ -112,4 +112,4 @@ Unicode in code
 
 .. coq::
 
-   Definition test := " =: ʇsǝʇ uoıʇıuıɟǝᗡ".
+   Definition test := "◆ ◉ ▲ ◧ ◎ ◴ ▶ ■".

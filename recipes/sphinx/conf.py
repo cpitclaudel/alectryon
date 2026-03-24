@@ -22,6 +22,14 @@ html_theme = 'alabaster'
 html_static_path = ['_static']
 
 pygments_style = "emacs"
+latex_engine = "xelatex"
+latex_elements = {
+    'fontpkg': r'''
+\setmainfont{Linux Libertine O}
+\setsansfont{Linux Biolinum O}
+\setmonofont[Scale=MatchLowercase,AutoFakeSlant=0.2]{Fira Code}
+''',
+}
 
 myst_enable_extensions = ["dollarmath"]
 

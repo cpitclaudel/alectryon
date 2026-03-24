@@ -1,0 +1,640 @@
+{
+  "metadata": {
+    "cache_version": "2"
+  },
+  "&coq": {
+    "driver": [
+      "vsrocq-language-server",
+      "9.1.0 5.4.0 / 2.3.4"
+    ],
+    "metadata": {
+      "args": []
+    },
+    "chunks": [
+      "Goal True -> True /\\ True.\n  intros; refine (conj ?[G1] ?[G2]). (* .unfold *)\n  [G1]: exact I.\n  [G2]: exact I.\nQed.",
+      "Goal let a := (let bb := let b := 1 in (b , b)%nat in\n              let tt := let t := nat in (t * t)%type in\n              bb <: tt) in\n     fst a = snd a.\nProof.\n  intros. (* .unfold *)\n  reflexivity.\nQed.",
+      "Definition a := 1.\nCheck corner_cases.a.",
+      "Goal True.",
+      "    - (* .out .unfold *) exact I. Qed.",
+      "(* xyz *) Goal True /\\ True.\n  - idtac.\n    pose (a := 1).\n    (* xyz *) split.  (* xyz *)\n    + (* xyz *) idtac.\n      idtac. (* x\n      yz *)\n      split.\n    + (* xyz *) { (* xyz *) split. }\nQed. (* xyz *)",
+      "Goal forall x y: nat, x + y = y + x.",
+      "From Coq Require Import String.\nOpen Scope string_scope.",
+      "Definition test := \"\u25c6 \u25c9 \u25b2 \u25e7 \u25ce \u25f4 \u25b6 \u25a0\"."
+    ],
+    "annotated": [
+      [
+        {
+          "_type": "sentence",
+          "contents": "Goal True -> True /\\ True.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True -> True /\\ True",
+              "hypotheses": []
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": "\n  "
+        },
+        {
+          "_type": "sentence",
+          "contents": "intros; refine (conj ?[G1] ?[G2]).",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": "G1",
+              "conclusion": "True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "H"
+                  ],
+                  "body": null,
+                  "type": "True"
+                }
+              ]
+            },
+            {
+              "_type": "goal",
+              "name": "G2",
+              "conclusion": "True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "H"
+                  ],
+                  "body": null,
+                  "type": "True"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": " (* .unfold *)\n  "
+        },
+        {
+          "_type": "sentence",
+          "contents": "[G1]: exact I.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": "G2",
+              "conclusion": "True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "H"
+                  ],
+                  "body": null,
+                  "type": "True"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": "\n  "
+        },
+        {
+          "_type": "sentence",
+          "contents": "[G2]: exact I.",
+          "messages": [],
+          "goals": []
+        },
+        {
+          "_type": "text",
+          "contents": "\n"
+        },
+        {
+          "_type": "sentence",
+          "contents": "Qed.",
+          "messages": [],
+          "goals": []
+        }
+      ],
+      [
+        {
+          "_type": "sentence",
+          "contents": "Goal let a := (let bb := let b := 1 in (b , b)%nat in\n              let tt := let t := nat in (t * t)%type in\n              bb <: tt) in\n     fst a = snd a.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "let a :=\n  let bb := let b := 1 in (b, b) in\n  let tt := let t := nat in (t * t)%type in bb <: tt\n  in\nfst a = snd a",
+              "hypotheses": []
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": "\n"
+        },
+        {
+          "_type": "sentence",
+          "contents": "Proof.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "let a :=\n  let bb := let b := 1 in (b, b) in\n  let tt := let t := nat in (t * t)%type in bb <: tt\n  in\nfst a = snd a",
+              "hypotheses": []
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": "\n  "
+        },
+        {
+          "_type": "sentence",
+          "contents": "intros.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "fst a = snd a",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "a"
+                  ],
+                  "body": "let bb := let b := 1 in (b, b) in\nlet tt := let t := nat in (t * t)%type in bb <: tt",
+                  "type": "let t := nat in t * t"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": " (* .unfold *)\n  "
+        },
+        {
+          "_type": "sentence",
+          "contents": "reflexivity.",
+          "messages": [],
+          "goals": []
+        },
+        {
+          "_type": "text",
+          "contents": "\n"
+        },
+        {
+          "_type": "sentence",
+          "contents": "Qed.",
+          "messages": [],
+          "goals": []
+        }
+      ],
+      [
+        {
+          "_type": "sentence",
+          "contents": "Definition a := 1.",
+          "messages": [],
+          "goals": []
+        },
+        {
+          "_type": "text",
+          "contents": "\n"
+        },
+        {
+          "_type": "sentence",
+          "contents": "Check corner_cases.a.",
+          "messages": [
+            {
+              "_type": "message",
+              "contents": "a\n     : nat"
+            }
+          ],
+          "goals": []
+        }
+      ],
+      [
+        {
+          "_type": "sentence",
+          "contents": "Goal True.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True",
+              "hypotheses": []
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "_type": "text",
+          "contents": "    "
+        },
+        {
+          "_type": "sentence",
+          "contents": "-",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True",
+              "hypotheses": []
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": " (* .out .unfold *) "
+        },
+        {
+          "_type": "sentence",
+          "contents": "exact I.",
+          "messages": [],
+          "goals": []
+        },
+        {
+          "_type": "text",
+          "contents": " "
+        },
+        {
+          "_type": "sentence",
+          "contents": "Qed.",
+          "messages": [],
+          "goals": []
+        }
+      ],
+      [
+        {
+          "_type": "text",
+          "contents": "(* xyz *) "
+        },
+        {
+          "_type": "sentence",
+          "contents": "Goal True /\\ True.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True /\\ True",
+              "hypotheses": []
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": "\n  "
+        },
+        {
+          "_type": "sentence",
+          "contents": "-",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True /\\ True",
+              "hypotheses": []
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": " "
+        },
+        {
+          "_type": "sentence",
+          "contents": "idtac.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True /\\ True",
+              "hypotheses": []
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": "\n    "
+        },
+        {
+          "_type": "sentence",
+          "contents": "pose (a := 1).",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True /\\ True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "a"
+                  ],
+                  "body": "1",
+                  "type": "nat"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": "\n    (* xyz *) "
+        },
+        {
+          "_type": "sentence",
+          "contents": "split.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "a"
+                  ],
+                  "body": "1",
+                  "type": "nat"
+                }
+              ]
+            },
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "a"
+                  ],
+                  "body": "1",
+                  "type": "nat"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": "  (* xyz *)\n    "
+        },
+        {
+          "_type": "sentence",
+          "contents": "+",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "a"
+                  ],
+                  "body": "1",
+                  "type": "nat"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": " (* xyz *) "
+        },
+        {
+          "_type": "sentence",
+          "contents": "idtac.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "a"
+                  ],
+                  "body": "1",
+                  "type": "nat"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": "\n      "
+        },
+        {
+          "_type": "sentence",
+          "contents": "idtac.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "a"
+                  ],
+                  "body": "1",
+                  "type": "nat"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": " (* x\n      yz *)\n      "
+        },
+        {
+          "_type": "sentence",
+          "contents": "split.",
+          "messages": [],
+          "goals": []
+        },
+        {
+          "_type": "text",
+          "contents": "\n    "
+        },
+        {
+          "_type": "sentence",
+          "contents": "+",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "a"
+                  ],
+                  "body": "1",
+                  "type": "nat"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": " (* xyz *) "
+        },
+        {
+          "_type": "sentence",
+          "contents": "{",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "True",
+              "hypotheses": [
+                {
+                  "_type": "hypothesis",
+                  "names": [
+                    "a"
+                  ],
+                  "body": "1",
+                  "type": "nat"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": " (* xyz *) "
+        },
+        {
+          "_type": "sentence",
+          "contents": "split.",
+          "messages": [],
+          "goals": []
+        },
+        {
+          "_type": "text",
+          "contents": " "
+        },
+        {
+          "_type": "sentence",
+          "contents": "}",
+          "messages": [],
+          "goals": []
+        },
+        {
+          "_type": "text",
+          "contents": "\n"
+        },
+        {
+          "_type": "sentence",
+          "contents": "Qed.",
+          "messages": [],
+          "goals": []
+        },
+        {
+          "_type": "text",
+          "contents": " (* xyz *)"
+        }
+      ],
+      [
+        {
+          "_type": "sentence",
+          "contents": "Goal forall x y: nat, x + y = y + x.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "forall x y : nat, x + y = y + x",
+              "hypotheses": []
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "_type": "sentence",
+          "contents": "From Coq Require Import String.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "forall x y : nat, x + y = y + x",
+              "hypotheses": []
+            }
+          ]
+        },
+        {
+          "_type": "text",
+          "contents": "\n"
+        },
+        {
+          "_type": "sentence",
+          "contents": "Open Scope string_scope.",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "forall x y : nat, x + y = y + x",
+              "hypotheses": []
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "_type": "sentence",
+          "contents": "Definition test := \"\u25c6 \u25c9 \u25b2 \u25e7 \u25ce \u25f4 \u25b6 \u25a0\".",
+          "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "forall x y : nat, x + y = y + x",
+              "hypotheses": []
+            }
+          ]
+        }
+      ]
+    ]
+  }
+}

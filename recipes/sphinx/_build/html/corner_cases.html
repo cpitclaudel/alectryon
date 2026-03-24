@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Corner cases &#8212; alectryon-demo  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=75810a84" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <link rel="stylesheet" type="text/css" href="_static/alectryon.css?v=90b20a3a" />
+    <script src="_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/alectryon.js?v=749f78b6"></script>
+    <script src="_static/mathjax_config.js?v=21aad542"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Integration with MyST" href="MyST.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="corner-cases">
+<h1>Corner cases<a class="headerlink" href="#corner-cases" title="Link to this heading">¶</a></h1>
+<dl class="field-list simple">
+<dt class="field-odd">date<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Test</p>
+</dd>
+</dl>
+<p>To compile:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">alectryon</span> <span class="o">--</span><span class="n">stdin</span><span class="o">-</span><span class="n">filename</span> <span class="n">corner_cases</span><span class="o">.</span><span class="n">rst</span> <span class="o">--</span><span class="n">frontend</span> <span class="n">rst</span> \
+  <span class="o">-</span><span class="n">o</span> <span class="n">corner_cases</span><span class="o">.</span><span class="n">html</span> <span class="o">-</span> <span class="o">&lt;</span> <span class="n">corner_cases</span><span class="o">.</span><span class="n">rst</span>
+    <span class="c1"># Coq → HTML; produces ‘corner_cases.html’</span>
+<span class="n">alectryon</span> <span class="n">corner_cases</span><span class="o">.</span><span class="n">rst</span> <span class="o">-</span><span class="n">o</span> <span class="n">corner_cases</span><span class="o">.</span><span class="n">xe</span><span class="o">.</span><span class="n">tex</span> \
+  <span class="o">--</span><span class="n">latex</span><span class="o">-</span><span class="n">dialect</span> <span class="n">xelatex</span>
+    <span class="c1"># Coq → LaTeX; produces ‘corner_cases.xe.tex’</span>
+</pre></div>
+</div>
+<section id="goal-names">
+<h2>Goal names<a class="headerlink" href="#goal-names" title="Link to this heading">¶</a></h2>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk0"><span class="kn">Goal</span> <span class="kt">True</span> -&gt; <span class="kt">True</span> /\ <span class="kt">True</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span> -&gt; <span class="kt">True</span> /\ <span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="corner-cases-rst-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk1"><span class="nb">intros</span>; <span class="nb">refine</span> (conj ?[G1] ?[G2]).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="kt">True</span></span></span></span><br></div><span class="goal-separator"><hr><span class="goal-name">G1</span></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="corner-cases-rst-chk2" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="kt">True</span></span></span></span><br></div><label class="goal-separator" for="corner-cases-rst-chk2"><hr><span class="goal-name">G2</span></label><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk3" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk3">[G1]: <span class="bp">exact</span> I.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>H</var><span class="hyp-type"><b>: </b><span><span class="kt">True</span></span></span></span><br></div><span class="goal-separator"><hr><span class="goal-name">G2</span></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input">[G2]: <span class="bp">exact</span> I.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre></section>
+<section id="hypothesis-bodies">
+<h2>Hypothesis bodies<a class="headerlink" href="#hypothesis-bodies" title="Link to this heading">¶</a></h2>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk4" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk4"><span class="kn">Goal</span> <span class="k">let</span> <span class="nv">a</span> := (<span class="k">let</span> <span class="nv">bb</span> := <span class="k">let</span> <span class="nv">b</span> := <span class="mi">1</span> <span class="k">in</span> (b , b)%nat <span class="k">in</span>
+              <span class="k">let</span> <span class="nv">tt</span> := <span class="k">let</span> <span class="nv">t</span> := nat <span class="k">in</span> (t * t)%type <span class="k">in</span>
+              bb &lt;: tt) <span class="k">in</span>
+     fst a = snd a.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="k">let</span> <span class="nv">a</span> :=
+  <span class="k">let</span> <span class="nv">bb</span> := <span class="k">let</span> <span class="nv">b</span> := <span class="mi">1</span> <span class="k">in</span> (b, b) <span class="k">in</span>
+  <span class="k">let</span> <span class="nv">tt</span> := <span class="k">let</span> <span class="nv">t</span> := nat <span class="k">in</span> (t * t)%type <span class="k">in</span> bb &lt;: tt
+  <span class="k">in</span>
+fst a = snd a</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk5" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk5"><span class="kn">Proof</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="k">let</span> <span class="nv">a</span> :=
+  <span class="k">let</span> <span class="nv">bb</span> := <span class="k">let</span> <span class="nv">b</span> := <span class="mi">1</span> <span class="k">in</span> (b, b) <span class="k">in</span>
+  <span class="k">let</span> <span class="nv">tt</span> := <span class="k">let</span> <span class="nv">t</span> := nat <span class="k">in</span> (t * t)%type <span class="k">in</span> bb &lt;: tt
+  <span class="k">in</span>
+fst a = snd a</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="corner-cases-rst-chk6" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk6"><span class="nb">intros</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>a</var><span><span class="hyp-body"><b>:= </b><span><span class="k">let</span> <span class="nv">bb</span> := <span class="k">let</span> <span class="nv">b</span> := <span class="mi">1</span> <span class="k">in</span> (b, b) <span class="k">in</span>
+<span class="k">let</span> <span class="nv">tt</span> := <span class="k">let</span> <span class="nv">t</span> := nat <span class="k">in</span> (t * t)%type <span class="k">in</span> bb &lt;: tt</span></span><span class="hyp-type"><b>: </b><span><span class="k">let</span> <span class="nv">t</span> := nat <span class="k">in</span> t * t</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion">fst a = snd a</div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">reflexivity</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre><p><code class="docutils literal notranslate"><span class="pre">#a</span></code>:
+- <samp class="alectryon-inline highlight lang-rocq"><!-- Generator: Alectryon --><span class="k">let</span> <span class="nv">bb</span> := <span class="k">let</span> <span class="nv">b</span> := <span class="mi">1</span> <span class="k">in</span> (b, b) <span class="k">in</span>
+<span class="k">let</span> <span class="nv">tt</span> := <span class="k">let</span> <span class="nv">t</span> := nat <span class="k">in</span> (t * t)%type <span class="k">in</span> bb &lt;: tt</samp>
+- <samp class="alectryon-inline highlight lang-rocq"><!-- Generator: Alectryon --><span class="k">let</span> <span class="nv">t</span> := nat <span class="k">in</span> t * t</samp></p>
+</section>
+<section id="self-reference">
+<h2>Self-reference<a class="headerlink" href="#self-reference" title="Link to this heading">¶</a></h2>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Definition</span> <span class="nf">a</span> := <span class="mi">1</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk7" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk7"><span class="kn">Check</span> corner_cases.a.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">a
+     : nat</blockquote></div></div></small></span></pre></section>
+<section id="blanks-at-beginning-of-snippet">
+<h2>Blanks at beginning of snippet<a class="headerlink" href="#blanks-at-beginning-of-snippet" title="Link to this heading">¶</a></h2>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk8" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk8"><span class="kn">Goal</span> <span class="kt">True</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small></span></pre><pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="corner-cases-rst-chk9" style="display: none" type="checkbox"><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="bp">exact</span> I.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>.</span></span></pre></section>
+<section id="blanks-around-sentences">
+<h2>Blanks around sentences<a class="headerlink" href="#blanks-around-sentences" title="Link to this heading">¶</a></h2>
+<p>Bubble: <span class="alectryon-bubble"></span></p>
+<input type="checkbox" class="alectryon-toggle" id="alectryon-toggle-0" /><label for="alectryon-toggle-0" class="alectryon-toggle-label">Display all goals and responses</label><div class="alectryon-container docutils container">
+<pre class="alectryon-io highlight lang-rocq" id="corner_cases:named-block"><!-- Generator: Alectryon --><span class="alectryon-txt"><span class="c">(* xyz *)</span></span><span class="alectryon-wsp"> </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chka" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chka"><span class="kn">Goal</span> <span class="kt">True</span> /\ <span class="kt">True</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span> /\ <span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">  </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chkb" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chkb">-</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span> /\ <span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chkc" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chkc"><span class="kp">idtac</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span> /\ <span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="corner-cases-rst-chkd" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chkd"><span class="nb">pose</span> (a := <span class="mi">1</span>).</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span id="corner_cases:corner-cases-rst-s-pose-h-a-0"><var>a</var><span><span class="hyp-body"><b>:= </b><span id="corner_cases:corner-cases-rst-s-pose-h-a-body-0"><span class="mi">1</span><span class="alectryon-mref-marker">1</span></span></span><span class="hyp-type"><b>: </b><span id="corner_cases:corner-cases-rst-s-pose-h-a-type-0">nat<span class="alectryon-mref-marker">2</span></span></span></span><span class="alectryon-mref-marker">3</span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span> /\ <span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-txt">    <span class="c">(* xyz *)</span></span><span class="alectryon-wsp"> </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chke" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chke"><span class="nb">split</span>.  <span class="c">(* xyz *)</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>a</var><span><span class="hyp-body"><b>:= </b><span><span class="mi">1</span></span></span><span class="hyp-type"><b>: </b><span>nat</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote><div class="alectryon-extra-goals"><input class="alectryon-extra-goal-toggle" id="corner-cases-rst-chkf" style="display: none" type="checkbox"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>a</var><span><span class="hyp-body"><b>:= </b><span><span class="mi">1</span></span></span><span class="hyp-type"><b>: </b><span>nat</span></span></span></span><br></div><label class="goal-separator" for="corner-cases-rst-chkf"><hr></label><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk10" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk10">+ <span class="c">(* xyz *)</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>a</var><span><span class="hyp-body"><b>:= </b><span><span class="mi">1</span></span></span><span class="hyp-type"><b>: </b><span>nat</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk11" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk11"><span class="kp">idtac</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>a</var><span><span class="hyp-body"><b>:= </b><span><span class="mi">1</span></span></span><span class="hyp-type"><b>: </b><span>nat</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk12" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk12"><span class="kp">idtac</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>a</var><span><span class="hyp-body"><b>:= </b><span><span class="mi">1</span></span></span><span class="hyp-type"><b>: </b><span>nat</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small></span><span class="alectryon-txt"> <span class="c">(* x</span>
+<span class="c">      yz *)</span>
+</span><span class="alectryon-wsp">      </span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-wsp">    </span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk13" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk13">+ <span class="c">(* xyz *)</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>a</var><span><span class="hyp-body"><b>:= </b><span><span class="mi">1</span></span></span><span class="hyp-type"><b>: </b><span>nat</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk14" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk14">{ <span class="c">(* xyz *)</span></label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><div class="goal-hyps"><span><var>a</var><span><span class="hyp-body"><b>:= </b><span><span class="mi">1</span></span></span><span class="hyp-type"><b>: </b><span>nat</span></span></span></span><br></div><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="kt">True</span></div></blockquote></div></div></small><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="nb">split</span>.</span><span class="alectryon-wsp"> </span></span><span class="alectryon-sentence"><span class="alectryon-input">}</span><span class="alectryon-wsp">
+</span></span><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Qed</span>. <span class="c">(* xyz *)</span></span></span></pre></div>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">¶</a></h2>
+<p><a class="alectryon-mref reference internal" href="#corner-cases-rst-s-pose-h-a-body-0">1</a>, <a class="alectryon-mref reference internal" href="#corner-cases-rst-s-pose-h-a-type-0">2</a>, <a class="alectryon-mref reference internal" href="#corner-cases-rst-s-pose-h-a-0">3</a>, <a class="reference internal" href="#named-block">named_block</a>.</p>
+</section>
+<section id="exercise-directive">
+<h2>Exercise directive<a class="headerlink" href="#exercise-directive" title="Link to this heading">¶</a></h2>
+<aside class="topic exercise">
+<p class="topic-title">Exercise: Commutativity of addition</p>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk15" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk15"><span class="kn">Goal</span> <span class="k">forall</span> <span class="nv">x</span> <span class="nv">y</span>: nat, x + y = y + x.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="k">forall</span> <span class="nv">x</span> <span class="nv">y</span> : nat, x + y = y + x</div></blockquote></div></div></small></span></pre></aside>
+</section>
+<section id="unicode-in-code">
+<h2>Unicode in code<a class="headerlink" href="#unicode-in-code" title="Link to this heading">¶</a></h2>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="corner-cases-rst-chk16" style="display: none" type="checkbox"><label class="alectryon-input" for="corner-cases-rst-chk16"><span class="kn">Definition</span> <span class="nf">test</span> := <span class="s2">&quot;◆ ◉ ▲ ◧ ◎ ◴ ▶ ■&quot;</span>.</label><small class="alectryon-output"><div><div class="alectryon-goals"><blockquote class="alectryon-goal"><span class="goal-separator"><hr></span><div class="goal-conclusion"><span class="k">forall</span> <span class="nv">x</span> <span class="nv">y</span> : nat, x + y = y + x</div></blockquote></div></div></small></span></pre></section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">alectryon-demo</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="coqchapter.html">A chapter stored as a Coq file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="literate1.html">Explicit rst</a></li>
+<li class="toctree-l1"><a class="reference internal" href="literate2.html">Explicit Markdown</a></li>
+<li class="toctree-l1"><a class="reference internal" href="math.html">MathJax in Sphinx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MyST.html">Integration with MyST</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Corner cases</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#goal-names">Goal names</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#hypothesis-bodies">Hypothesis bodies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#self-reference">Self-reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#blanks-at-beginning-of-snippet">Blanks at beginning of snippet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#blanks-around-sentences">Blanks around sentences</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#references">References</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#exercise-directive">Exercise directive</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unicode-in-code">Unicode in code</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="MyST.html" title="previous chapter">Integration with MyST</a></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2019-2026, Clément Pit-Claudel.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.1.0</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/corner_cases.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
