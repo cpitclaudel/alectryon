@@ -655,7 +655,7 @@ class AlectryonPostTransform(OneTimeTransform):
 
     @classmethod
     def replace_one(cls, node, fmt, rawtext, gen, *args, **kwargs):
-        ids = node.attributes.get("ids", ())
+        ids = node.attributes.pop("ids", ()) # docutils handles IDs only in LaTeX
         classes = node.attributes.pop("classes", ()) # visit_raw adds a <div> if it finds classes
         classes += (cls.lang_class(node),)
         dom = gen(*args, ids=ids, classes=classes, **kwargs)
