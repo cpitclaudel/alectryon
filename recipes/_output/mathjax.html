@@ -116,7 +116,7 @@ alectryon mathjax.rst # reST → HTML; produces ‘mathjax.html’
    &lt;/script&gt;
 </pre>
 </li>
-<li><p class="first">If you're using Sphinx, MathJax is loaded with the <code class="highlight coq"><span class="n">async</span></code> flag (see <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/9450">this issue</a>), so you must either use the <tt class="docutils literal">mathjax3_config</tt> option of Sphinx if does enough for your needs, or move your config to a separate JS file loaded before MathJax, or set the <tt class="docutils literal">mathjax_loading_method</tt> option of Sphinx to <tt class="docutils literal">&quot;defer&quot;</tt>.  See the example in <tt class="docutils literal">recipes/sphinx/conf.py</tt>.</p>
+<li><p class="first">If you're using Sphinx, MathJax is loaded with the <code class="highlight coq"><span class="n">async</span></code> flag (see <a class="reference external" href="https://github.com/sphinx-doc/sphinx/issues/9450">this issue</a>), so you must either use the <tt class="docutils literal">mathjax3_config</tt> option of Sphinx if it does enough for your needs, or move your config to a separate JS file loaded before MathJax, or set the <tt class="docutils literal">mathjax_loading_method</tt> option of Sphinx to <tt class="docutils literal">&quot;defer&quot;</tt>.  See the example in <tt class="docutils literal">recipes/sphinx/conf.py</tt>.</p>
 </li>
 <li><p class="first">For other processors like Pelican, you need to either move your configuration to a separate file and make sure that it is loaded first, as in Sphinx, or find a way to defer <tt class="docutils literal">MathJax</tt>.  The following usually works:</p>
 <pre class="literal-block">

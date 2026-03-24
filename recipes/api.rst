@@ -16,7 +16,7 @@ To compile::
 Annotating Coq snippets
 =======================
 
-Use ``alectryon.vsrocq.annotate`` to transform a process a list of fragments of statements using SerAPI:
+Use ``alectryon.vsrocq.annotate`` to process a list of fragments of statements:
 
    >>> from alectryon.vsrocq import annotate
    >>> annotate(["Check surjective_pairing."])

@@ -8,7 +8,7 @@ To compile::
        # ReST → HTML; produces ‘references.html’
    $ DOCUTILSCONFIG=references.docutils.conf alectryon \
        references.rst -o references.xe.tex --latex-dialect xelatex
-       # ReST → HTML; produces ‘references.xe.tex’
+       # ReST → LaTeX; produces ‘references.xe.tex’
 
 Inserting numbered references
 =============================
@@ -30,7 +30,7 @@ Optionally, the label can be picked manually, using :literal:`:mref:\`label <tar
 
     The proof starts with a case analysis, indicated by “:mref:`◉ <destruct n>`”.
 
-Instead of whole sentences, is possible to refer to individual goals and hypotheses:
+Instead of whole sentences, it is possible to refer to individual goals and hypotheses:
 
     In the first case (:mref:`.s(destruct n).g#1`), we see the variable `n` in the context (:mref:`.s(destruct n).g#1.h#n`), and we see that it is `0` (:mref:`.s(destruct n).g#1.h(n = 0)`); notice how the conclusion of the first goal :mref:`.s(destruct n).ccl` does not mention `n` (it says `0` instead). In the second case :mref:`.s(destruct n).g(S n0)`, we see that `n` equals `S n0` (:mref:`.s(destruct n).g{*S n0*}.h(n = S)`) and the conclusion (:mref:`.s(destruct n).g{*S n0*}.ccl`) mentions `S n0` instead of `0`.
 
@@ -160,7 +160,7 @@ There, too, you may want to define aliases:
     .. mq:pr:: .h{Permutation l l'}
     .. mq:pr:: .h{Permutation l' l''}
 
-Finally, you may chose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by ``Extraction``:
+Finally, you may choose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by ``Extraction``:
 
     .. coq:: none
        :name: scheme

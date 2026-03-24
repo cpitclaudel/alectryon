@@ -122,7 +122,7 @@ MathJax needs to be configured before it is loaded.  This is tricky when you don
           MathJax = { options: { … } };
         </script>
 
-- If you're using Sphinx, MathJax is loaded with the `async` flag (see `this issue <https://github.com/sphinx-doc/sphinx/issues/9450>`__), so you must either use the ``mathjax3_config`` option of Sphinx if does enough for your needs, or move your config to a separate JS file loaded before MathJax, or set the ``mathjax_loading_method`` option of Sphinx to ``"defer"``.  See the example in ``recipes/sphinx/conf.py``.
+- If you're using Sphinx, MathJax is loaded with the `async` flag (see `this issue <https://github.com/sphinx-doc/sphinx/issues/9450>`__), so you must either use the ``mathjax3_config`` option of Sphinx if it does enough for your needs, or move your config to a separate JS file loaded before MathJax, or set the ``mathjax_loading_method`` option of Sphinx to ``"defer"``.  See the example in ``recipes/sphinx/conf.py``.
 
 - For other processors like Pelican, you need to either move your configuration to a separate file and make sure that it is loaded first, as in Sphinx, or find a way to defer ``MathJax``.  The following usually works::
 

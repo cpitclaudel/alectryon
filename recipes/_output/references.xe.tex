@@ -86,7 +86,7 @@ $ alectryon references.rst
     # ReST → HTML; produces ‘references.html’
 $ DOCUTILSCONFIG=references.docutils.conf alectryon \textbackslash{}
     references.rst -o references.xe.tex --latex-dialect xelatex
-    # ReST → HTML; produces ‘references.xe.tex’
+    # ReST → LaTeX; produces ‘references.xe.tex’
 \end{alltt}
 \end{quote}
 
@@ -239,7 +239,7 @@ Optionally, the label can be picked manually, using \texttt{:mref:`label <target
 The proof starts with a case analysis, indicated by “\hyperref[references-rst-destruct-n-0]{◉}”.
 \end{quote}
 
-Instead of whole sentences, is possible to refer to individual goals and hypotheses:
+Instead of whole sentences, it is possible to refer to individual goals and hypotheses:
 
 \begin{quote}
 In the first case (\hyperref[references-rst-s-destruct-n-g-1-0]{2}), we see the variable \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{n}}}}} in the context (\hyperref[references-rst-s-destruct-n-g-1-h-n-0]{3}), and we see that it is \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{mi}{0}}}}} (\hyperref[references-rst-s-destruct-n-g-1-h-n-0-0]{4}); notice how the conclusion of the first goal \hyperref[references-rst-s-destruct-n-ccl-0]{5} does not mention \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{n}}}}} (it says \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{mi}{0}}}}} instead). In the second case \hyperref[references-rst-s-destruct-n-g-s-n0-0]{6}, we see that \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{n}}}}} equals \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{S} \DUrole{n}{n0}}}}} (\hyperref[references-rst-s-destruct-n-g-s-n0-h-n-s-0]{7}) and the conclusion (\hyperref[references-rst-s-destruct-n-g-s-n0-ccl-0]{8}) mentions \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{n}{S} \DUrole{n}{n0}}}}} instead of \texttt{\DUrole{code}{\DUrole{highlight}{\DUrole{coq}{\DUrole{mi}{0}}}}}.
@@ -778,7 +778,7 @@ There, too, you may want to define aliases:
 \end{alectryon}
 \end{quote}
 
-Finally, you may chose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by \texttt{Extraction}:
+Finally, you may choose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by \texttt{Extraction}:
 
 \begin{quote}
 \begin{alectryon}

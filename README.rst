@@ -16,7 +16,7 @@ Alectryon is typically used in one of three ways:
 
 - As a standalone compiler, allowing you to include prose delimited by special ``(*| … |*)`` comments directly into your Coq source files (in the style of coqdoc).  When invoked, Alectryon translates your Coq file into a reStructuredText document and compiles it using the standard reStructuredText toolchain.
 
-For background information, check out the  `quickstart guide <https://systemf.epfl.ch/blog/alectryon/>`__ on the EPFL SYSTEMF blog, the `SLE2020 paper <https://doi.org/10.1145/3426425.3426940>`__ (open access) and its `live examples <https://alectryon-paper.github.io/>`__, or the `conference talk <https://www.youtube.com/watch?v=f8CKGoP3_us>`__.
+For background information, check out the `quickstart guide <https://systemf.epfl.ch/blog/alectryon/>`__ on the EPFL SYSTEMF blog, the `SLE2020 paper <https://doi.org/10.1145/3426425.3426940>`__ (open access) and its `live examples <https://alectryon-paper.github.io/>`__, or the `conference talk <https://www.youtube.com/watch?v=f8CKGoP3_us>`__.
 
 Alectryon is free software under a very permissive license.  If you use it, please remember to `cite it <CITATION.bib>`__, and please let me know!
 
@@ -44,8 +44,8 @@ Recipes
 
 Try these recipes in the ``recipes`` directory of this repository (for each task I listed two commands: a short one and a longer one making everything explicit):
 
-Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style)
-  .. code::
+Generate an interactive webpage from a literate Coq file with reST comments (Coqdoc style):
+   .. code::
 
       alectryon literate_coq.v
       alectryon --frontend coq+rst --backend webpage literate_coq.v -o literate_coq.html
@@ -397,12 +397,12 @@ Plain search patterns (delimited by ``(…)``) are matched literally, anywhere i
 
 - To match hypothesis ``H1`` but not ``H10`` nor ``IH1``, use ``.h#H1``.
 - To match hypotheses of type ``nat``, but not of type ``list nat`` or ``nat -> nat``, use ``.h{nat}``
-- To match hypotheses whole type or body includes ``Permutation`` anywhere, use ``.h(Permutation)`` or ``.h{*Permutation*}``.
+- To match hypotheses whose type or body includes ``Permutation`` anywhere, use ``.h(Permutation)`` or ``.h{*Permutation*}``.
 - Etc.
 
 As long as the search term does not contain special characters (``*?[]``), a plain search (``(…)``) is the same as an fnmatch-style search with wildcards on both sides (``{*…*}``).
 
-Finally, you can attach  can attach arbitrary ``key``-``value`` to subparts of a goal matched using the marker-placement mini-language by appending ``[key]=value`` after the path.  This is useful with custom transforms and with the ``[lang]=…`` setting to customize highlighting for a given sentence or message.
+Finally, you can attach arbitrary ``key``-``value`` to subparts of a goal matched using the marker-placement mini-language by appending ``[key]=value`` after the path.  This is useful with custom transforms and with the ``[lang]=…`` setting to customize highlighting for a given sentence or message.
 
 **This feature is experimental**; the syntax might change.
 
@@ -741,7 +741,7 @@ Special case: MathJax
 
 MathJax is a JavaScript library for rendering LaTeX math within webpages.  Properly configuring it can be a bit tricky.
 
-- If you just want to include math in reStructuredText or Markdown documents, docutils will generally do the right thing: it will generate code to load MathJaX from a CDN if you use the ``:math:`` role, and it leave that code out if you don't.
+- If you just want to include math in reStructuredText or Markdown documents, docutils will generally do the right thing: it will generate code to load MathJaX from a CDN if you use the ``:math:`` role, and it leaves that code out if you don't.
 
 - If you want to render parts of your Coq code using MathJaX, things are trickier.  You need to identify which text to render as math by wrapping it into ``\( … \)`` markers; then add the ``mathjax_process`` class to the corresponding document nodes to force processing (otherwise MathJax ignores the contents of Alectryon's ``<pre>`` blocks); then trigger a recomputation.  See `<./recipes/mathjax.rst>`__ for an example and a more detailed discussion.
 

@@ -23,7 +23,7 @@ $ alectryon references.rst
     # ReST → HTML; produces ‘references.html’
 $ DOCUTILSCONFIG=references.docutils.conf alectryon \
     references.rst -o references.xe.tex --latex-dialect xelatex
-    # ReST → HTML; produces ‘references.xe.tex’
+    # ReST → LaTeX; produces ‘references.xe.tex’
 </pre>
 <div class="section" id="inserting-numbered-references">
 <h1>Inserting numbered references</h1>
@@ -38,7 +38,7 @@ $ DOCUTILSCONFIG=references.docutils.conf alectryon \
 <p>Optionally, the label can be picked manually, using <tt class="docutils literal"><span class="pre">:mref:`label</span> &lt;target&gt;`</tt>:</p>
 <blockquote>
 The proof starts with a case analysis, indicated by “<a class="reference internal alectryon-mref" href="#references-rst-destruct-n-0">◉</a>”.</blockquote>
-<p>Instead of whole sentences, is possible to refer to individual goals and hypotheses:</p>
+<p>Instead of whole sentences, it is possible to refer to individual goals and hypotheses:</p>
 <blockquote>
 In the first case (<a class="reference internal alectryon-mref" href="#references-rst-s-destruct-n-g-1-0">2</a>), we see the variable <code class="highlight coq"><span class="n">n</span></code> in the context (<a class="reference internal alectryon-mref" href="#references-rst-s-destruct-n-g-1-h-n-0">3</a>), and we see that it is <code class="highlight coq"><span class="mi">0</span></code> (<a class="reference internal alectryon-mref" href="#references-rst-s-destruct-n-g-1-h-n-0-0">4</a>); notice how the conclusion of the first goal <a class="reference internal alectryon-mref" href="#references-rst-s-destruct-n-ccl-0">5</a> does not mention <code class="highlight coq"><span class="n">n</span></code> (it says <code class="highlight coq"><span class="mi">0</span></code> instead). In the second case <a class="reference internal alectryon-mref" href="#references-rst-s-destruct-n-g-s-n0-0">6</a>, we see that <code class="highlight coq"><span class="n">n</span></code> equals <code class="highlight coq"><span class="n">S</span> <span class="n">n0</span></code> (<a class="reference internal alectryon-mref" href="#references-rst-s-destruct-n-g-s-n0-h-n-s-0">7</a>) and the conclusion (<a class="reference internal alectryon-mref" href="#references-rst-s-destruct-n-g-s-n0-ccl-0">8</a>) mentions <code class="highlight coq"><span class="n">S</span> <span class="n">n0</span></code> instead of <code class="highlight coq"><span class="mi">0</span></code>.</blockquote>
 <p>Note how the reference to a hypothesis of the second goal caused the whole hypothesis block to be unfolded (by default, hypotheses of secondary goals are folded).</p>
@@ -179,7 +179,7 @@ The two permutation hypotheses are <samp class="alectryon-inline highlight mq-pr
 <p>There, too, you may want to define aliases:</p>
 <blockquote>
 <pre class="alectryon-block highlight mq-pr lang-rocq"><!-- Generator: Alectryon --><span><var>H</var><span class="hyp-type"><b>: </b><span>Permutation l l&#39;</span></span></span></pre><pre class="alectryon-block highlight mq-pr lang-rocq"><!-- Generator: Alectryon --><span><var>H0</var><span class="hyp-type"><b>: </b><span>Permutation l&#39; l&#39;&#39;</span></span></span></pre></blockquote>
-<p>Finally, you may chose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by <tt class="docutils literal">Extraction</tt>:</p>
+<p>Finally, you may choose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by <tt class="docutils literal">Extraction</tt>:</p>
 <blockquote>
 <pre class="alectryon-block highlight lang-rocq"><!-- Generator: Alectryon --><span class="p">(</span><span class="k">define</span><span class="w"> </span><span class="nv">add</span><span class="w"> </span><span class="p">(</span><span class="nf">lambdas</span><span class="w"> </span><span class="p">(</span><span class="nf">n</span><span class="w"> </span><span class="nv">m</span><span class="p">)</span>
 <span class="w">  </span><span class="p">(</span><span class="k">match</span><span class="w"> </span><span class="nv">n</span>

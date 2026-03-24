@@ -232,7 +232,7 @@ recipes_targets += _output/polyglot.html
 _output/references.html: references.rst
 	$(alectryon) $<
 recipes_targets += _output/references.html
-# ReST → HTML
+# ReST → LaTeX
 _output/references.xe.tex: references.rst
 	DOCUTILSCONFIG=references.docutils.conf $(alectryon) $< -o $@ --latex-dialect xelatex
 recipes_targets += _output/references.xe.tex

@@ -1,8 +1,8 @@
 (* Converting unannotated Coq files *)
 
 (* Alectryon's default is to treat Coq files as mixed Coq + reStructuredText
-   files ‘--frontend coq+rst’, but you can use ‘--frontend coq’ all comment
-   processing:
+   files ‘--frontend coq+rst’, but you can use ‘--frontend coq’ to skip all
+   comment processing:
 
       alectryon --frontend coq plain.v # Coq → HTML; produces ‘plain.v.html’
 
