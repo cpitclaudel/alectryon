@@ -1,7 +1,7 @@
 r"""
 Run Alectryon's doctests.
 
-   $ python doctests.py | sed 's/\(tests\) in [0-9.]\+s$/\1/g' > doctests.out
+   $ python doctests.py 2>&1 | sed 's/\(tests\) in [0-9.]\+s$/\1/g' > doctests.out
          # Run doctests; produces ‘doctests.out’
 
 (but make sure that the ROOT of this repo is in PYTHONPATH)
@@ -63,5 +63,4 @@ def load_tests(loader, _standard_tests, _pattern): # pylint: disable=unused-argu
     return suite(loader)
 
 if __name__ == '__main__':
-    sys.stderr = sys.stdout
     unittest.main(verbosity=2)

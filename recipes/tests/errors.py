@@ -5,7 +5,7 @@ the command line.
 
 To run::
 
-  $ python errors.py | sed 's/\(tests\?\) in [0-9.]\+s$/\1/g' > errors.py.out
+  $ python errors.py 2>&1 | sed 's/\(tests\?\) in [0-9.]\+s$/\1/g' > errors.py.out
       # Errors and warnings; produces ‘errors.py.out’
 """
 
@@ -188,5 +188,4 @@ class myst(unittest.TestCase):
                     myst.Parser().parse("*xyz*", new_document("<string>"))
 
 if __name__ == '__main__':
-    sys.stderr = sys.stdout
     unittest.main(verbosity=2)

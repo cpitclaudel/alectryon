@@ -2,7 +2,7 @@ r"""Misc unit tests
 
 To run::
 
-   $ python unit.py | sed 's/\(tests\?\) in [0-9.]\+s$/\1/g' > unit.py.out
+   $ python unit.py 2>&1 | sed 's/\(tests\?\) in [0-9.]\+s$/\1/g' > unit.py.out
        # Unit tests; produces ‘unit.py.out’
 """
 
@@ -92,5 +92,4 @@ class lsp(unittest.TestCase):
         self.assertEqual(collisions, {})
 
 if __name__ == '__main__':
-    sys.stderr = sys.stdout
     unittest.main(verbosity=2)

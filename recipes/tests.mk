@@ -62,12 +62,12 @@ tests_targets += _output/tests/docinfo_flags.txt
 
 # Run doctests
 _output/tests/doctests.out: tests/doctests.py | _output/tests/
-	$(PYTHON) $< | sed 's/\(tests\) in [0-9.]\+s$$/\1/g' > $@
+	$(PYTHON) $< 2>&1 | sed 's/\(tests\) in [0-9.]\+s$$/\1/g' > $@
 tests_targets += _output/tests/doctests.out
 
 # Errors and warnings
 _output/tests/errors.py.out: tests/errors.py | _output/tests/
-	$(PYTHON) $< | sed 's/\(tests\?\) in [0-9.]\+s$$/\1/g' > $@
+	$(PYTHON) $< 2>&1 | sed 's/\(tests\?\) in [0-9.]\+s$$/\1/g' > $@
 tests_targets += _output/tests/errors.py.out
 
 # reST → JSON errors
@@ -211,7 +211,7 @@ tests_targets += _output/tests/syntax_highlighting.html
 
 # Unit tests
 _output/tests/unit.py.out: tests/unit.py | _output/tests/
-	$(PYTHON) $< | sed 's/\(tests\?\) in [0-9.]\+s$$/\1/g' > $@
+	$(PYTHON) $< 2>&1 | sed 's/\(tests\?\) in [0-9.]\+s$$/\1/g' > $@
 tests_targets += _output/tests/unit.py.out
 
 # Coq → reST
