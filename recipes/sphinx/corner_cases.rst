@@ -27,6 +27,24 @@ Goal names
      [G2]: exact I.
    Qed.
 
+Hypothesis bodies
+=================
+
+.. coq::
+
+   Goal let a := (let bb := let b := 1 in (b , b)%nat in
+                 let tt := let t := nat in (t * t)%type in
+                 bb <: tt) in
+        fst a = snd a.
+   Proof.
+     intros. (* .unfold *)
+     reflexivity.
+   Qed.
+
+``#a``:
+- :mquote:`.s(intros).g#1.h#a.body`
+- :mquote:`.s(intros).g#1.h#a.type`
+
 Self-reference
 ==============
 

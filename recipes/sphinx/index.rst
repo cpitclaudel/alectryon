@@ -15,6 +15,7 @@ Welcome to alectryon-demo's documentation!
    literate2
    math
    MyST
+   corner_cases
 
 The default role produces Coq code: `let a := 1 in a + a`.
 

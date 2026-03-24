@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path('../../').resolve())) # Add Alectryon to path
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'alectryon-demo'
-copyright = '2019-2025, Clément Pit-Claudel'
+copyright = '2019-2026, Clément Pit-Claudel'
 author = 'Clément Pit-Claudel'
 today = " "
 

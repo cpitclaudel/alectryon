@@ -46,15 +46,6 @@ _output/tests/corner_cases.lean3.html: tests/corner_cases.lean3
 	$(alectryon) $< -o $@
 tests_targets += _output/tests/corner_cases.lean3.html
 
-# Coq → HTML
-_output/tests/corner_cases.html: tests/corner_cases.rst
-	$(alectryon) --stdin-filename $< --frontend rst -o $@ - < $<
-tests_targets += _output/tests/corner_cases.html
-# Coq → LaTeX
-_output/tests/corner_cases.xe.tex: tests/corner_cases.rst
-	$(alectryon) $< -o $@ --latex-dialect xelatex
-tests_targets += _output/tests/corner_cases.xe.tex
-
 # reST + assertions
 _output/tests/docinfo_flags.txt: tests/docinfo_flags.rst
 	$(alectryon) $< -o /dev/null; echo "exit: $$?" > $@
