@@ -65,6 +65,11 @@ _output/tests/doctests.out: tests/doctests.py | _output/tests/
 	$(PYTHON) $< 2>&1 | sed 's/\(tests\) in [0-9.]\+s$$/\1/g' > $@
 tests_targets += _output/tests/doctests.out
 
+# CI tests
+_output/tests/end_to_end.py.out: tests/end_to_end.py | _output/tests/
+	$(PYTHON) $< 2>&1 | sed 's/\(tests\?\) in [0-9.]\+s$$/\1/g' > $@
+tests_targets += _output/tests/end_to_end.py.out
+
 # Errors and warnings
 _output/tests/errors.py.out: tests/errors.py | _output/tests/
 	$(PYTHON) $< 2>&1 | sed 's/\(tests\?\) in [0-9.]\+s$$/\1/g' > $@
