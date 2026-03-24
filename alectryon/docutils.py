@@ -440,7 +440,7 @@ class AlectryonTransform(OneTimeTransform):
             pre.append(node)
         pre.append(toggle)
         pre.append(nodes.container('', *post, classes=['alectryon-container']))
-        node.parent.children = pre
+        node.parent[:] = pre
 
     def apply_toggle(self):
         def toggle(id):
@@ -852,7 +852,7 @@ class ExperimentalExerciseDirective(Topic, AlectryonDirective):
         node['difficulty'] = self.options.get('difficulty')
         node['optional'] = self.options.get('optional', False)
         for title in list(node.findall(nodes.title)):
-            title.children.insert(0, nodes.Text("Exercise: "))
+            title.insert(0, nodes.Text("Exercise: "))
         return [node]
 
 def directive_without_arguments(directive):
