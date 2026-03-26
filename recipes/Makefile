@@ -80,14 +80,16 @@ _output/%.pdf: _output/latex.aux/%.pdf
 
 .SECONDEXPANSION:
 
+TEXFOT ?= texfot --tee=/dev/null --no-stderr
+
 _output/latex.aux/%.xe.pdf: _output/%.xe.tex | $$(dir $$@)
-	texfot --tee=/dev/null --no-stderr latexmk -cd -pdfxe -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
+	$(TEXFOT) latexmk -cd -pdfxe -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
 
 _output/latex.aux/%.lua.pdf: _output/%.lua.tex | $$(dir $$@)
-	texfot --tee=/dev/null --no-stderr latexmk -cd -pdflua -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
+	$(TEXFOT) latexmk -cd -pdflua -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
 
 _output/latex.aux/%.pdf: _output/%.tex | $$(dir $$@)
-	texfot --tee=/dev/null --no-stderr latexmk -cd -pdf -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
+	$(TEXFOT) latexmk -cd -pdf -output-directory=$(shell realpath --relative-to $(dir $<) $(dir $@)) $<
 
 other += $(patsubst %.tex,%.pdf,$(filter-out %.snippets.tex %.part.tex,$(filter %.tex,$(targets))))
 

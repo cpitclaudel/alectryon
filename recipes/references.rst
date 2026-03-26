@@ -66,7 +66,7 @@ Custom counter styles can be defined like using the ``.. role::`` directive and 
    :counter-style: lower-greek
 
 .. role:: jref(mref)
-   :counter-style: _ い ろ は に ほ へ と ち り ぬ る を わ か よ た れ そ つ ね な ら む う ゐ の お く や ま け ふ こ え て あ さ き ゆ め み し ゑ ひ も せ す
+   :counter-style: _ i ro ha ni ho he to chi ri nu ru wo wa ka yo ta re so tsu ne na ra mu u wi no o ku ya ma ke fu ko e te a sa ki yu me mi shi we hi mo se su
 
 Here is how it looks:
 
