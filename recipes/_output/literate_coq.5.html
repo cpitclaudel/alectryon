@@ -26,10 +26,6 @@ $ DOCUTILSCONFIG=literate.docutils.conf alectryon \
   literate_coq.v --backend latex
     # Coq+reST → LaTeX; produces ‘literate_coq.tex’
 $ DOCUTILSCONFIG=literate.docutils.conf alectryon \
-  literate_coq.v --backend latex --latex-dialect xelatex \
-  -o literate_coq.xe.tex
-    # Coq+reST → XeLaTeX; produces ‘literate_coq.xe.tex’
-$ DOCUTILSCONFIG=literate.docutils.conf alectryon \
   literate_coq.v --backend latex --latex-dialect lualatex \
   -o literate_coq.lua.tex
     # Coq+reST → LuaLaTeX; produces ‘literate_coq.lua.tex’

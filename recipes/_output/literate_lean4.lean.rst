@@ -7,9 +7,9 @@ Alectryon supports literate programs and documents (combinations of code and pro
    alectryon literate_lean4.lean
        # Lean4+reST → HTML;  produces ‘literate_lean4.html’
    alectryon literate_lean4.lean --backend latex \
-        --latex-dialect xelatex \
-        -o literate_lean4.xe.tex
-       # Lean4+reST → LaTeX; produces ‘literate_lean4.xe.tex’
+        --latex-dialect lualatex \
+        -o literate_lean4.lua.tex
+       # Lean4+reST → LaTeX; produces ‘literate_lean4.lua.tex’
    alectryon literate_lean4.lean --backend rst
        # Lean4+reST → reST;  produces ‘literate_lean4.lean.rst’
 

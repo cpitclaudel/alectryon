@@ -117,10 +117,6 @@ recipes_targets += _output/literate_coq.5.html
 _output/literate_coq.tex: literate_coq.v
 	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex
 recipes_targets += _output/literate_coq.tex
-# Coq+reST → XeLaTeX
-_output/literate_coq.xe.tex: literate_coq.v
-	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex --latex-dialect xelatex -o $@
-recipes_targets += _output/literate_coq.xe.tex
 # Coq+reST → LuaLaTeX
 _output/literate_coq.lua.tex: literate_coq.v
 	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex --latex-dialect lualatex -o $@
@@ -143,9 +139,9 @@ _output/literate_lean3.html: literate_lean3.lean
 	$(alectryon) --frontend lean3+rst $<
 recipes_targets += _output/literate_lean3.html
 # Lean3+reST → LaTeX
-_output/literate_lean3.xe.tex: literate_lean3.lean
-	$(alectryon) --frontend lean3+rst $< --backend latex --latex-dialect xelatex -o $@
-recipes_targets += _output/literate_lean3.xe.tex
+_output/literate_lean3.lua.tex: literate_lean3.lean
+	$(alectryon) --frontend lean3+rst $< --backend latex --latex-dialect lualatex -o $@
+recipes_targets += _output/literate_lean3.lua.tex
 # Lean3+reST → reST
 _output/literate_lean3.lean3.rst: literate_lean3.lean
 	$(alectryon) --frontend lean3+rst $< --backend rst
@@ -156,9 +152,9 @@ _output/literate_lean4.html: literate_lean4.lean
 	$(alectryon) $<
 recipes_targets += _output/literate_lean4.html
 # Lean4+reST → LaTeX
-_output/literate_lean4.xe.tex: literate_lean4.lean
-	$(alectryon) $< --backend latex --latex-dialect xelatex -o $@
-recipes_targets += _output/literate_lean4.xe.tex
+_output/literate_lean4.lua.tex: literate_lean4.lean
+	$(alectryon) $< --backend latex --latex-dialect lualatex -o $@
+recipes_targets += _output/literate_lean4.lua.tex
 # Lean4+reST → reST
 _output/literate_lean4.lean.rst: literate_lean4.lean
 	$(alectryon) $< --backend rst
@@ -173,9 +169,9 @@ _output/literate_reST.tex: literate_reST.rst
 	DOCUTILSCONFIG=literate.docutils.conf $(alectryon) $< --backend latex
 recipes_targets += _output/literate_reST.tex
 # reST+Coq → LaTeX
-_output/literate_reST.xe.tex: literate_reST.rst
-	$(alectryon) $< --latex-dialect xelatex -o $@
-recipes_targets += _output/literate_reST.xe.tex
+_output/literate_reST.lua.tex: literate_reST.rst
+	$(alectryon) $< --latex-dialect lualatex -o $@
+recipes_targets += _output/literate_reST.lua.tex
 # reST+Coq → Coq
 _output/literate_reST.v: literate_reST.rst
 	$(alectryon) $< --backend coq
@@ -233,9 +229,9 @@ _output/references.html: references.rst
 	$(alectryon) $<
 recipes_targets += _output/references.html
 # ReST → LaTeX
-_output/references.xe.tex: references.rst
-	DOCUTILSCONFIG=references.docutils.conf $(alectryon) $< -o $@ --latex-dialect xelatex
-recipes_targets += _output/references.xe.tex
+_output/references.lua.tex: references.rst
+	DOCUTILSCONFIG=references.docutils.conf $(alectryon) $< -o $@ --latex-dialect lualatex
+recipes_targets += _output/references.lua.tex
 
 $(recipes_targets): out_dir := _output
 targets += $(recipes_targets)

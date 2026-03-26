@@ -7,8 +7,8 @@ To compile::
    $ alectryon references.rst
        # ReST → HTML; produces ‘references.html’
    $ DOCUTILSCONFIG=references.docutils.conf alectryon \
-       references.rst -o references.xe.tex --latex-dialect xelatex
-       # ReST → LaTeX; produces ‘references.xe.tex’
+       references.rst -o references.lua.tex --latex-dialect lualatex
+       # ReST → LaTeX; produces ‘references.lua.tex’
 
 Inserting numbered references
 =============================

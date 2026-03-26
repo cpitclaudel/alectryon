@@ -22,9 +22,9 @@
 alectryon --frontend lean3+rst literate_lean3.lean
     # Lean3+reST → HTML;  produces ‘literate_lean3.html’
 alectryon --frontend lean3+rst literate_lean3.lean --backend latex \
-     --latex-dialect xelatex \
-     -o literate_lean3.xe.tex
-    # Lean3+reST → LaTeX; produces ‘literate_lean3.xe.tex’
+     --latex-dialect lualatex \
+     -o literate_lean3.lua.tex
+    # Lean3+reST → LaTeX; produces ‘literate_lean3.lua.tex’
 alectryon --frontend lean3+rst literate_lean3.lean --backend rst
     # Lean3+reST → reST;  produces ‘literate_lean3.lean3.rst’
 </pre>

@@ -16,7 +16,7 @@
 
 \setmainfont{Linux Libertine O}
 \setsansfont{Linux Biolinum O}
-\setmonofont[Scale=MatchLowercase]{Fira Code}
+\setmonofont[Scale=MatchLowercase,AutoFakeSlant=0.2]{Fira Code}
 
 %%% User specified packages and stylesheets
 \usepackage{alectryon}
@@ -72,9 +72,9 @@ Alectryon supports literate programs and documents (combinations of code and pro
 alectryon --frontend lean3+rst literate_lean3.lean
     # Lean3+reST → HTML;  produces ‘literate_lean3.html’
 alectryon --frontend lean3+rst literate_lean3.lean --backend latex \textbackslash{}
-     --latex-dialect xelatex \textbackslash{}
-     -o literate_lean3.xe.tex
-    # Lean3+reST → LaTeX; produces ‘literate_lean3.xe.tex’
+     --latex-dialect lualatex \textbackslash{}
+     -o literate_lean3.lua.tex
+    # Lean3+reST → LaTeX; produces ‘literate_lean3.lua.tex’
 alectryon --frontend lean3+rst literate_lean3.lean --backend rst
     # Lean3+reST → reST;  produces ‘literate_lean3.lean3.rst’
 \end{alltt}

@@ -16,7 +16,7 @@
 
 \setmainfont{Linux Libertine O}
 \setsansfont{Linux Biolinum O}
-\setmonofont[Scale=MatchLowercase]{Fira Code}
+\setmonofont[Scale=MatchLowercase,AutoFakeSlant=0.2]{Fira Code}
 
 %%% User specified packages and stylesheets
 \usepackage{alectryon}
@@ -80,8 +80,8 @@ To compile:
 $ alectryon references.rst
     # ReST → HTML; produces ‘references.html’
 $ DOCUTILSCONFIG=references.docutils.conf alectryon \textbackslash{}
-    references.rst -o references.xe.tex --latex-dialect xelatex
-    # ReST → LaTeX; produces ‘references.xe.tex’
+    references.rst -o references.lua.tex --latex-dialect lualatex
+    # ReST → LaTeX; produces ‘references.lua.tex’
 \end{alltt}
 \end{quote}
 

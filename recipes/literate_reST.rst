@@ -13,8 +13,8 @@ Alectryon supports literate programs and documents (combinations of code and pro
    $ DOCUTILSCONFIG=literate.docutils.conf alectryon \
      literate_reST.rst --backend latex
        # reST+Coq → LaTeX; produces ‘literate_reST.tex’
-   alectryon literate_reST.rst --latex-dialect xelatex -o literate_reST.xe.tex
-       # reST+Coq → LaTeX; produces ‘literate_reST.xe.tex’
+   alectryon literate_reST.rst --latex-dialect lualatex -o literate_reST.lua.tex
+       # reST+Coq → LaTeX; produces ‘literate_reST.lua.tex’
    alectryon literate_reST.rst --backend coq
        # reST+Coq → Coq;   produces ‘literate_reST.v’
 
