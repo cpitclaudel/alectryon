@@ -67,6 +67,7 @@ def add_assets(app: "Sphinx"):
 
 def setup(app: "Sphinx"):
     """Register Alectryon's directives, transforms, etc."""
+    docutils._disable_nested_sm_cache()
     register_code_parsers(app)
 
     for role in docutils.ROLES:

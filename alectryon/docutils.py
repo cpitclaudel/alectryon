@@ -778,9 +778,28 @@ class ProverDirective(AlectryonDirective):
     def header(self):
         return "`{}`".format(self.block_text.partition('\n')[0])
 
-    def _root_is_code(self, source: str):
+    def _root_is_document(self, source: str):
         doc = self.state_machine.document
-        return source == doc.get('source', "") and alectryon_state(doc).root_is_code
+        return source == doc.get('source', "") and not alectryon_state(doc).root_is_code
+
+    def _measure_absolute_indentation(self):
+        """Compute the indentation of this directive in the source.
+
+        Docutils dedents `input_lines` before passing them to directives, so a
+        ``.. coq::`` block looks the same at the top level or within a ``.. note::``.
+        Walk up the state machine stack to find the header line with its
+        original indentation.
+
+        Needs the ``_disable_nested_sm_cache`` fix.
+        """
+        if not isinstance(sm := self.state_machine, states.StateMachineWS):
+            # MyST uses a MockStateMachine without ``parent_state_machine``.
+            return 0
+        while getattr(sm, 'parent_state_machine', None) is not None:
+            sm = sm.parent_state_machine
+        lnum = self.lineno - sm.input_offset - 1
+        assert 0 <= lnum < len(sm.input_lines)
+        return core.measure_indentation(sm.input_lines[lnum]) or 0
 
     def run(self):
         self.assert_has_content()
@@ -794,20 +813,9 @@ class ProverDirective(AlectryonDirective):
         rel_indent, contents = recompute_contents(self, ProverDirective.EXPECTED_INDENTATION)
         source, contents_line = self.state_machine.get_source_and_line(self.content_offset + 1)
 
-        if source is None or self._root_is_code(source):
-            abs_indent = 0
-        else:
-            # Add indentation of current directive in original source.  This is
-            # needed because Docutils dedents ``self.contents`` before passing
-            # control to us, so a ``.. coq::`` block within a ``.. note::`` looks
-            # the same as a top-level one.
-            abs_indent = rel_indent
-            # MyST uses a MockStateMachine without input_lines.
-            if isinstance(sm := self.state_machine, states.StateMachineWS):
-                lines, lnum = sm.input_lines, self.lineno - sm.input_offset - 1
-                while lines.parent:
-                    lines, lnum = lines.parent, lnum + lines.parent_offset
-                abs_indent += core.measure_indentation(lines[lnum]) or 0
+        abs_indent = 0
+        if self._root_is_document(source):
+            abs_indent = self._measure_absolute_indentation() + rel_indent
 
         # We record two things:
         #   1. Where this directive appeared in the source document (`pos`)
@@ -1615,6 +1623,20 @@ def set_default_role(lang="coq"):
         raise ValueError("Unsupported language: {}".format(lang))
     roles.DEFAULT_INTERPRETED_ROLE = CODE_ROLES[lang].name # type: ignore
 
+def _disable_nested_sm_cache():
+    """Disable state-machine caching in Docutils' reST parser.
+
+    Cached ``NestedStateMachine`` objects retain their *original*
+    ``parent_state_machine`` references across documents; this breaks our
+    indentation-tracking code, which needs to walk the state machine tree.
+
+    LATER: Remove this once the Docutils bug is fixed.
+    """
+    class _NoCache(list):
+        def append(self, sm):
+            sm.unlink()
+    states.RSTState.nested_sm_cache = _NoCache()
+
 def setup(lang="coq"):
     """Prepare docutils for writing documents with Alectryon.
 
@@ -1624,3 +1646,4 @@ def setup(lang="coq"):
     register()
     set_default_role(lang)
     replace_builtin_lexers()
+    _disable_nested_sm_cache()
