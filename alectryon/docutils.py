@@ -801,13 +801,13 @@ class ProverDirective(AlectryonDirective):
             # needed because Docutils dedents ``self.contents`` before passing
             # control to us, so a ``.. coq::`` block within a ``.. note::`` looks
             # the same as a top-level one.
-            import linecache
-            _, header_line = self.state_machine.get_source_and_line(self.lineno)
-            if not (header := linecache.getline(source, header_line)):
-                errors.append(self.state.reporter.error( # FIXME confirm that this error works
-                    f"Directive header line not found in file ({source=}, {self.lineno=})",
-                    line=self.lineno))
-            abs_indent = rel_indent + core.measure_indentation(header or "")
+            abs_indent = rel_indent
+            # MyST uses a MockStateMachine without input_lines.
+            if isinstance(sm := self.state_machine, states.StateMachineWS):
+                lines, lnum = sm.input_lines, self.lineno - sm.input_offset - 1
+                while lines.parent:
+                    lines, lnum = lines.parent, lnum + lines.parent_offset
+                abs_indent += core.measure_indentation(lines[lnum]) or 0
 
         # We record two things:
         #   1. Where this directive appeared in the source document (`pos`)
