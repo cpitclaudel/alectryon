@@ -11,7 +11,9 @@
       "args": []
     },
     "chunks": [
-      "Print nat."
+      "Print nat.",
+      "Check nat.",
+      "Check Prop."
     ],
     "annotated": [
       [
@@ -22,6 +24,32 @@
             {
               "_type": "message",
               "contents": "Inductive nat : Set :=  O : nat | S : nat -> nat.\n\nArguments S _%_nat_scope"
+            }
+          ],
+          "goals": []
+        }
+      ],
+      [
+        {
+          "_type": "sentence",
+          "contents": "Check nat.",
+          "messages": [
+            {
+              "_type": "message",
+              "contents": "nat\n     : Set"
+            }
+          ],
+          "goals": []
+        }
+      ],
+      [
+        {
+          "_type": "sentence",
+          "contents": "Check Prop.",
+          "messages": [
+            {
+              "_type": "message",
+              "contents": "Prop\n     : Type"
             }
           ],
           "goals": []

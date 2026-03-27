@@ -140,12 +140,18 @@ Inconsistent flags
 
      Check nat. (* .fold *)
 
-Broken code
+Tricky code
 ===========
 
-.. coq::
+Unicode:
+  .. coq::
 
-   Notation "'🆄🄽🅘ⓒ⒪𝖉∈' α ⊕ ⤋ β" := α ++ β. (* Bytes vs. str *)
+     Notation "'🆄🄽🅘ⓒ⒪𝖉∈' α ⊕ ⤋ β" := α ++ β. (* Bytes vs. str *)
+
+Indentation:
+  .. coq::
+
+     Check 1 + true.
 
 .. coq::
 

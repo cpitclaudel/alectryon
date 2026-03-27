@@ -1,0 +1,5 @@
+- Rocq
+
+  .. coq::
+
+     Check Prop.

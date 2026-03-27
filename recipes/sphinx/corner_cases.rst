@@ -114,3 +114,20 @@ Unicode in code
 .. coq::
 
    Definition test := "◆ ◉ ▲ ◧ ◎ ◴ ▶ ■".
+
+Nesting and indentation
+=======================
+
+- Item
+
+  .. note::
+
+     Quote:
+
+       - Item:
+
+         .. coq::
+
+            Check nat.
+
+         .. include:: included.rst

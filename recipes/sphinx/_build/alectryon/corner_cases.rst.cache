@@ -19,7 +19,9 @@
       "(* xyz *) Goal True /\\ True.\n  - idtac.\n    pose (a := 1).\n    (* xyz *) split.  (* xyz *)\n    + (* xyz *) idtac.\n      idtac. (* x\n      yz *)\n      split.\n    + (* xyz *) { (* xyz *) split. }\nQed. (* xyz *)",
       "Goal forall x y: nat, x + y = y + x.",
       "From Coq Require Import String.\nOpen Scope string_scope.",
-      "Definition test := \"\u25c6 \u25c9 \u25b2 \u25e7 \u25ce \u25f4 \u25b6 \u25a0\"."
+      "Definition test := \"\u25c6 \u25c9 \u25b2 \u25e7 \u25ce \u25f4 \u25b6 \u25a0\".",
+      "Check nat.",
+      "Check Prop."
     ],
     "annotated": [
       [
@@ -625,6 +627,46 @@
           "_type": "sentence",
           "contents": "Definition test := \"\u25c6 \u25c9 \u25b2 \u25e7 \u25ce \u25f4 \u25b6 \u25a0\".",
           "messages": [],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "forall x y : nat, x + y = y + x",
+              "hypotheses": []
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "_type": "sentence",
+          "contents": "Check nat.",
+          "messages": [
+            {
+              "_type": "message",
+              "contents": "nat\n     : Set"
+            }
+          ],
+          "goals": [
+            {
+              "_type": "goal",
+              "name": null,
+              "conclusion": "forall x y : nat, x + y = y + x",
+              "hypotheses": []
+            }
+          ]
+        }
+      ],
+      [
+        {
+          "_type": "sentence",
+          "contents": "Check Prop.",
+          "messages": [
+            {
+              "_type": "message",
+              "contents": "Prop\n     : Type"
+            }
+          ],
           "goals": [
             {
               "_type": "goal",

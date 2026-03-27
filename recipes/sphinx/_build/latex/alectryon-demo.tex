@@ -262,6 +262,67 @@ For roles use \sphinxcode{\sphinxupquote{\{role\}`argument`}} syntax: \sphinxsty
 \sphinxAtStartPar
 Note that MyST disables MathJax’s heuristics for finding text to process (by marking the root of the document with \sphinxcode{\sphinxupquote{mathjax\_ignore}}), so any math outside of \sphinxcode{\sphinxupquote{\{math\}}} or \sphinxcode{\sphinxupquote{\$}} delimiters is not processed: \textbackslash{}(this is not math\textbackslash{}); use the \sphinxcode{\sphinxupquote{mathjax\_process}} HTML class to revert that.
 
+
+\section{Nesting}
+\label{\detokenize{MyST:nesting}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Item
+
+\begin{sphinxadmonition}{note}{Note:}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Item:
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Check}~nat\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          nat\Al{nl}
+          ~~~~~\PYG{o}{:}~\PYG{k+kt}{Set}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+\item {} 
+\sphinxAtStartPar
+Item:
+\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Rocq
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Check}~\PYG{k+kt}{Prop}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PYG{k+kt}{Prop}\Al{nl}
+          ~~~~~\PYG{o}{:}~\PYG{k+kt}{Type}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+\end{itemize}
+
+\end{itemize}
+\end{sphinxadmonition}
+
+\end{itemize}
+
 \sphinxstepscope
 
 
@@ -896,6 +957,90 @@ Bubble: \DUrole{alectryon-bubble}{}
     \end{\al{output}}
   \end{\al{sentence}}
 \end{alectryon}
+
+
+\section{Nesting and indentation}
+\label{\detokenize{corner_cases:nesting-and-indentation}}\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Item
+
+\begin{sphinxadmonition}{note}{Note:}
+\sphinxAtStartPar
+Quote:
+\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Item:
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Check}~nat\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          nat\Al{nl}
+          ~~~~~\PYG{o}{:}~\PYG{k+kt}{Set}
+        \end{\al{message}}
+      \end{\al{messages}}
+      \Al{sep}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k}{forall}~\PYG{+nv}{x}~\PYG{+nv}{y}~\PYG{o}{:}~nat\PYG{o}{,}~x~\PYG{o}{+}~y~\PYG{o}{=}~y~\PYG{o}{+}~x
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+\begin{itemize}
+\item {} 
+\sphinxAtStartPar
+Rocq
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PYG{k+kn}{Check}~\PYG{k+kt}{Prop}\PYG{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PYG{k+kt}{Prop}\Al{nl}
+          ~~~~~\PYG{o}{:}~\PYG{k+kt}{Type}
+        \end{\al{message}}
+      \end{\al{messages}}
+      \Al{sep}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PYG{k}{forall}~\PYG{+nv}{x}~\PYG{+nv}{y}~\PYG{o}{:}~nat\PYG{o}{,}~x~\PYG{o}{+}~y~\PYG{o}{=}~y~\PYG{o}{+}~x
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+\end{itemize}
+
+\end{itemize}
+\end{sphinxadmonition}
+
+\end{itemize}
 
 \sphinxAtStartPar
 The default role produces Coq code: \sphinxcode{\sphinxupquote{\DUrole{k}{let} \DUrole{n}{a} \DUrole{o}{:=} \DUrole{mi}{1} \DUrole{k}{in} \DUrole{n}{a} \DUrole{o}{+} \DUrole{n}{a}}}.

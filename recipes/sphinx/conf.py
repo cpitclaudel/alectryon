@@ -18,6 +18,7 @@ today = " "
 
 # -- Sphinx configuration ----------------------------------------------------
 
+exclude_patterns = ['included.*']
 html_theme = 'alabaster'
 html_static_path = ['_static']
 

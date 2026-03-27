@@ -49,6 +49,28 @@
 
 <span class="kn">Arguments</span> S _%_nat_scope</blockquote></div></div></small></span></pre><p>For roles use <code class="docutils literal notranslate"><span class="pre">{role}`argument`</span></code> syntax: <em><a class="reference external" href="https://coq.inria.fr/library/Coq.Init.Nat.html#even">like this</a></em>.  For math use either the <code class="docutils literal notranslate"><span class="pre">{math}</span></code> role (<span class="mathjax_process math notranslate nohighlight">\(e^{i\pi} = -1\)</span>) or <code class="docutils literal notranslate"><span class="pre">$</span></code> signs (with the <code class="docutils literal notranslate"><span class="pre">dollarmath</span></code> extension, see <code class="docutils literal notranslate"><span class="pre">conf.py</span></code>): (<span class="mathjax_process math notranslate nohighlight">\(\cos(\pi) = -1\)</span>).</p>
 <p>Note that MyST disables MathJax’s heuristics for finding text to process (by marking the root of the document with <code class="docutils literal notranslate"><span class="pre">mathjax_ignore</span></code>), so any math outside of <code class="docutils literal notranslate"><span class="pre">{math}</span></code> or <code class="docutils literal notranslate"><span class="pre">$</span></code> delimiters is not processed: \(this is not math\); use the <code class="docutils literal notranslate"><span class="pre">mathjax_process</span></code> HTML class to revert that.</p>
+<section id="nesting">
+<h2>Nesting<a class="headerlink" href="#nesting" title="Link to this heading">¶</a></h2>
+<ul>
+<li><p>Item</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul>
+<li><p>Item:</p>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="myst-md-chk1" style="display: none" type="checkbox"><label class="alectryon-input" for="myst-md-chk1"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
+     : <span class="kt">Set</span></blockquote></div></div></small></span></pre></li>
+<li><p>Item:</p>
+<ul>
+<li><p>Rocq</p>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="myst-md-chk2" style="display: none" type="checkbox"><label class="alectryon-input" for="myst-md-chk2"><span class="kn">Check</span> <span class="kt">Prop</span>.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kt">Prop</span>
+     : <span class="kt">Type</span></blockquote></div></div></small></span></pre></li>
+</ul>
+</li>
+</ul>
+</div>
+</li>
+</ul>
+</section>
 </section>
 
 
@@ -83,7 +105,10 @@
 <li class="toctree-l1"><a class="reference internal" href="literate1.html">Explicit rst</a></li>
 <li class="toctree-l1"><a class="reference internal" href="literate2.html">Explicit Markdown</a></li>
 <li class="toctree-l1"><a class="reference internal" href="math.html">MathJax in Sphinx</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Integration with MyST</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Integration with MyST</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#nesting">Nesting</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="corner_cases.html">Corner cases</a></li>
 </ul>
 
