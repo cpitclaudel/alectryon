@@ -108,4 +108,9 @@ A test:
         return self.BODY_RE.search(output).group("contents").strip()
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    from io import StringIO
+    r = unittest.main(testRunner=unittest.TextTestRunner(stream=StringIO()), exit=False).result
+    for t, tb in [*r.failures, *r.errors]:
+        print(f"FAIL: {t}\n{tb}")
+    print("OK" if r.wasSuccessful() else "FAILED")
+    sys.exit(not r.wasSuccessful())

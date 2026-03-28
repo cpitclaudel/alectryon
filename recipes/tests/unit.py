@@ -2,7 +2,7 @@ r"""Misc unit tests
 
 To run::
 
-   $ python unit.py 2>&1 | sed 's/\(tests\?\) in [0-9.]\+s$/\1/g' > unit.py.out
+   $ python unit.py > unit.py.out 2>&1
        # Unit tests; produces ‘unit.py.out’
 """
 
@@ -92,4 +92,8 @@ class lsp(unittest.TestCase):
         self.assertEqual(collisions, {})
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    r = unittest.main(testRunner=unittest.TextTestRunner(stream=io.StringIO()), exit=False).result
+    for t, tb in [*r.failures, *r.errors]:
+        print(f"FAIL: {t}\n{tb}")
+    print("OK" if r.wasSuccessful() else "FAILED")
+    sys.exit(not r.wasSuccessful())

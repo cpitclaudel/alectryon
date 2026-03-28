@@ -1,7 +1,1 @@
-test_pipeline (__main__.RST2LaTeX.test_pipeline) ... ok
-test_pipeline (__main__.Rocq2HTML.test_pipeline) ... ok
-
-----------------------------------------------------------------------
-Ran 2 tests
-
 OK

@@ -188,4 +188,9 @@ class myst(unittest.TestCase):
                     myst.Parser().parse("*xyz*", new_document("<string>"))
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    from io import StringIO
+    r = unittest.main(testRunner=unittest.TextTestRunner(stream=StringIO()), exit=False).result
+    for t, tb in [*r.failures, *r.errors]:
+        print(f"FAIL: {t}\n{tb}")
+    print("OK" if r.wasSuccessful() else "FAILED")
+    sys.exit(not r.wasSuccessful())

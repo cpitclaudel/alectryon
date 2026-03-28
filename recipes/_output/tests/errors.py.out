@@ -1,18 +1,1 @@
-test_errors (__main__.cli.test_errors) ... ok
-test_warnings_and_errors (__main__.coqc_time.test_warnings_and_errors) ... ok
-test_errors (__main__.core.test_errors) ... ok
-test_errors (__main__.docutils.test_errors) ... ok
-test_errors (__main__.json.test_errors) ... ok
-test_warnings (__main__.json.test_warnings) ... ok
-test_errors (__main__.literate.test_errors) ... ok
-test_features (__main__.literate.test_features) ... ok
-test_failed_import (__main__.myst.test_failed_import) ... ok
-test_errors (__main__.pygments.test_errors) ... ok
-test_warnings (__main__.pygments.test_warnings) ... ok
-test_warnings_and_errors (__main__.serapi.test_warnings_and_errors) ... ok
-test_errors (__main__.sexp.test_errors) ... ok
-
-----------------------------------------------------------------------
-Ran 13 tests
-
 OK
