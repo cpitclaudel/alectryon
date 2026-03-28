@@ -44,7 +44,7 @@ class LSPServerMessage:
                 return LSPServerRequest.from_json(data)
             return LSPServerNotification.from_json(data)
         if "error" in data:
-            raise LSPServerError.from_json(data).exn
+            return LSPServerError.from_json(data)
         return LSPServerResponse.from_json(data)
 
     JRPC_HEADER_RE = re.compile(r"Content-Length: (?P<len>[0-9]+)\r\n")
