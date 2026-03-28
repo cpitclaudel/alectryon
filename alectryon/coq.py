@@ -18,14 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import typing
 from typing import Iterable, Tuple, Union, cast
 
 import re
 import unicodedata
 from pathlib import Path
-
-Pattern = type(re.compile("")) # LATER (3.7+): re.Pattern
 
 class CoqIdents:
     COQ_IDENT_START = (
@@ -52,11 +49,11 @@ class CoqIdents:
     )
 
     @staticmethod
-    def valid_char(c: str, allowed: Iterable[Union[str, typing.Pattern[str]]]):
+    def valid_char(c: str, allowed: Iterable[Union[str, re.Pattern[str]]]):
         for pattern in allowed:
             if isinstance(pattern, str) and unicodedata.category(c).lower() == pattern:
                 return True
-            if isinstance(pattern, Pattern) and cast(typing.Pattern[str], pattern).match(c):
+            if isinstance(pattern, re.Pattern) and pattern.match(c):
                 return True
         return False
 
