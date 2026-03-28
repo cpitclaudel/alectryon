@@ -47,7 +47,7 @@ $(PYTHON_VENV):
 	$(PYTHON) -m venv $(PYTHON_VENV)
 
 init: $(PYTHON_VENV)
-	pip install -r deps/requirements.txt
+	pip install -r deps/requirements.dev
 
 else
 

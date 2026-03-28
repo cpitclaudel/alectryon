@@ -21,7 +21,7 @@ RUN curl -sSfL -o /usr/local/bin/opam https://github.com/ocaml/opam/releases/dow
 
 ## Python
 
-COPY deps/requirements.txt /tmp/requirements.txt
+COPY deps/requirements.dev /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # User setup
