@@ -197,10 +197,10 @@ class Backend:
             yield self.gen_fragments(fragments) if fragments is not None else None
 
 class Asset(str):
-    def __new__(cls, fname, _gen=None):
+    def __new__(cls, fname, gen=None):
         return super().__new__(cls, fname)
 
-    def __init__(self, _fname, gen=lambda _: ""):
+    def __init__(self, fname, gen=lambda _: ""):
         super().__init__()
         self.gen = gen
 
