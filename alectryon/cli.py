@@ -1183,7 +1183,7 @@ def main():
         sys.exit(1)
     except (ValueError, FileNotFoundError, ImportError, argparse.ArgumentTypeError) as e:
         if core.TRACEBACK:
-            raise e
+            raise
         MSG = "Exiting early due to an error; use --traceback to diagnose:"
         print(MSG, file=sys.stderr)
         print(core.indent(str(e), "  "), file=sys.stderr)

@@ -120,7 +120,7 @@ class VsRocqReadyMonitor(ExponentialBackoff):
         except LSPServerException as e:
             if e.code == self.PARSING_NOT_FINISHED:
                 return False
-            raise e
+            raise
         return True
 
 PP = str | list["PP"]
