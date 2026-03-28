@@ -32,9 +32,12 @@ class StringView:
         >>> sv = StringView("abcdefghijkl", 3, 10)
         >>> str(sv[:2]), str(sv[4:])
         ('de', 'hij')
+        >>> str(sv[-2:]), str(sv[-100:])
+        ('ij', 'defghij')
         """
         if isinstance(idx, slice):
-            beg = min(self.beg + (idx.start or 0), self.end)
+            start = idx.start or 0
+            beg = max(self.beg, self.end + start) if start < 0 else min(self.beg + start, self.end)
             if idx.stop is None:
                 end = self.end
             elif idx.stop < 0:
