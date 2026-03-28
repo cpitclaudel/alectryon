@@ -13,12 +13,13 @@ from collections import namedtuple, deque
 ## =========
 
 class StringView:
+    r"""A view of a string slice."""
     def __init__(self, s: str, beg=0, end=None):
+        """Create a view of s[beg:end]."""
         assert isinstance(s, str)
         end = end if end is not None else len(s)
         self.s, self.beg, self.end = s, beg, end
-        assert self.beg <= len(s)
-        assert self.beg <= self.end, (self.beg, self.end)
+        assert self.beg <= self.end <= len(s)
 
     def __len__(self):
         return self.end - self.beg
