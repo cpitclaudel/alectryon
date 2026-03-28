@@ -94,6 +94,14 @@ class Tokens:
             yield self.toks[idx].reposition(self.rng.start, self.rng.stop)
 
     def iter_contiguous(self) -> Iterator[Token]:
+        """Yield contiguous tokens covering the full ``self.rng``.
+
+        >>> s = "** kwd: xy"
+        >>> toks = [Token(slice(3, 6), ('kw',)), Token(slice(8, 10), ('v',))]
+        >>> filtered = Tokens(toks, slice(0, 2), slice(2, 10))
+        >>> [(t.rng.start, t.rng.stop) for t in filtered.iter_contiguous()]
+        [(0, 1), (1, 4), (4, 6), (6, 8)]
+        """
         pos = 0
         it: Iterable[Token] = self # type: ignore # LATER (≥ 3.10): Inherit
         for tok in it:
@@ -101,8 +109,9 @@ class Tokens:
                 yield Token(slice(pos, tok.rng.start), ())
             yield tok
             pos = tok.rng.stop
-        if pos < self.rng.stop:
-            yield Token(slice(pos, self.rng.stop), ())
+        repos_stop = self.rng.stop - self.rng.start
+        if pos < repos_stop:
+            yield Token(slice(pos, repos_stop), ())
 
     @staticmethod
     def remove_overlapping(tokens: Iterable[Token]) -> list[Token]:
@@ -122,10 +131,16 @@ class Tokens:
 class TokenizedStr(str):
     r"""A string annotated with LSP semantic tokens.
 
-    >>> toks = [Token(slice(0, 5), ("keyword",)), Token(slice(6, 11), ("variable",))]
+    >>> toks = [Token(slice(0, 4), ("keyword",)), Token(slice(5, 11), ("variable",))]
     >>> ts = TokenizedStr("abcd 012345", Tokens(toks, slice(0, 2), slice(0, 11)), {("keyword",): "kw"})
     >>> str(ts) == "abcd 012345"
     True
+
+    >>> sub = ts[3:9]
+    >>> str(sub)
+    'd 0123'
+    >>> [(t.rng.start, t.rng.stop, t.typ) for t in sub.tokens]
+    [(0, 1, ('keyword',)), (2, 6, ('variable',))]
     """
     def __new__(cls, s, *_args):
         return super().__new__(cls, s)
