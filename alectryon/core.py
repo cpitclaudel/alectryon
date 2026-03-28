@@ -888,6 +888,6 @@ class DriverConfig:
         name = self.drivers[self.lang]
         args = self.driver_args.get(name, ())
         driver_cls = resolve_driver(self.lang, name)
-        assert self.lang == driver_cls.LANGUAGE
+        assert driver_cls.LANGUAGE in (self.lang, None)
         assert name == driver_cls.ID
         return driver_cls(args, fpath=fpath)
