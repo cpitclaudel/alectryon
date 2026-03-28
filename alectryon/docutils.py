@@ -1047,6 +1047,8 @@ DEFAULT_COUNTER_STYLE = CounterStyle.of_str(COUNTER_STYLES['decimal'])
 MREF_KINDS = ['ref', 'quote']
 
 def _parse_mref_target(kind, target, prefix):
+    if not target:
+        raise ValueError("Empty target in marker reference.")
     if target[0] in "#." or kind == "quote":
         path = markers.parse_path(target)
     else:
