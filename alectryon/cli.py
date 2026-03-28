@@ -304,7 +304,7 @@ def _gen_coqdoc_html_assert(docs, coqdoc_comments):
     if len(docs) != len(coqdoc_comments):
         from pprint import pprint
         print("Coqdoc mismatch:", file=sys.stderr)
-        pprint(list(zip(coqdoc_comments, docs)))
+        pprint(list(zip(coqdoc_comments, docs)), stream=sys.stderr)
         raise AssertionError()
 
 def _parse_html(html):
