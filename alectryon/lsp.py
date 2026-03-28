@@ -405,7 +405,7 @@ class LSPFile(Generic[TClient]):
         LSPClientDidOpenNotification(self.client, self.uri, self.doc.str).send()
 
 class LSPDocument(EncodedDocument):
-    """Variant of ``Document`` in which positions are UTF-16 offsets, not char offsets."""
+    r"""Variant of ``Document`` in which positions are UTF-16 offsets, not char offsets."""
     ENCODING = "utf-16-le"
     BYTES_PER_UNIT = 2 # Number of bytes per code unit
 
@@ -441,13 +441,34 @@ class LSPDocument(EncodedDocument):
     def __len__(self) -> int:
         return super().__len__() // self.BYTES_PER_UNIT
 
+    @classmethod
+    def _NL(cls) -> re.Pattern[bytes]:
+        # The parent's byte-level _BOL/_EOL regexes match any 0x0A byte, but
+        # non-BMP characters' surrogate-pair encoding can contain 0x0A at
+        # unaligned offsets.  Search for the full encoded newline instead and
+        # check alignment to filter out false matches.
+        return re.compile(re.escape("\n".encode(cls.ENCODING)))
+
     def _find_bols(self) -> Iterable[int]:
-        for pos in super()._find_bols():
-             # + BYTES_PER_UNIT-1 because "\n" in UTF-16 is b"\n\x00"
-            yield (pos + self.BYTES_PER_UNIT - 1) // self.BYTES_PER_UNIT
+        r"""Find beginning-of-line positions.
+
+        >>> doc = LSPDocument(["a\U0001000Ab"], "")
+        >>> doc.bol_offsets # Misaligned ``0x0A`` isn't a newline
+        [0]
+        >>> doc = LSPDocument(["x\ny"], "")
+        >>> doc.bol_offsets
+        [0, 2]
+        """
+        yield 0
+        for m in self._NL().finditer(self.bytes):
+            if m.start() % self.BYTES_PER_UNIT == 0:
+                yield m.end() // self.BYTES_PER_UNIT
 
     def _find_eol(self, start: int) -> int:
-        return super()._find_eol(start * self.BYTES_PER_UNIT) // self.BYTES_PER_UNIT
+        for m in self._NL().finditer(self.bytes, start * self.BYTES_PER_UNIT):
+            if m.start() % self.BYTES_PER_UNIT == 0:
+                return m.start() // self.BYTES_PER_UNIT
+        return len(self)
 
 class LSPUtf32Document(LSPDocument):
     ENCODING = "utf-32-le"
