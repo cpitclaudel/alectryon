@@ -92,8 +92,16 @@ class IOAnnots:
         return self.filters == self.FILTER_NONE
 
     def inherit(self, other):
+        """Copy unset fields from `other`.
+
+        >>> parent = IOAnnots(unfold=True, fails=True)
+        >>> this = IOAnnots(unfold=False)
+        >>> this.inherit(parent)
+        >>> this.unfold, this.fails
+        (False, True)
+        """
         for field, value in self.__dict__.items():
-            if not value:
+            if value is None:
                 setattr(self, field, copy(getattr(other, field)))
 
     def __getitem__(self, key):
