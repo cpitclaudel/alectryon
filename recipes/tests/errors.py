@@ -42,10 +42,10 @@ class cli(unittest.TestCase):
     def test_errors(self):
         from alectryon.cli import _gen_coqdoc_html_assert, copy_assets
 
-        with self.assertRaises(AssertionError):
-            with redirected_std() as (out, _):
+        with redirected_std() as (_, err):
+            with self.assertRaises(AssertionError):
                 _gen_coqdoc_html_assert(["(** a **)", "(** b **)"], ["a"])
-                self.assertRegex(out.getvalue(), "Coqdoc mismatch")
+            self.assertRegex(err.getvalue(), "Coqdoc mismatch")
 
         from os.path import split
         from shutil import copyfile
