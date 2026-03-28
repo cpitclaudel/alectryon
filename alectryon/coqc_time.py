@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Iterable, List
+from typing import List
 
 import tempfile
 import re
@@ -51,7 +51,7 @@ class CoqcTime(CLIDriver):
     def partition(self, document: UTF8Document):
         return document.intersperse_text_fragments(self._find_sentences(document))
 
-    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
+    def annotate(self, chunks: list[str]) -> List[List[Fragment]]:
         r"""Use ``coqc -time`` to fragment multiple chunks of Coq code.
 
         >>> CoqcTime().annotate(["Check 1. (* … *) ", "Print nat."])

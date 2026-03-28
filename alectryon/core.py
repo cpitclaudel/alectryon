@@ -674,7 +674,7 @@ class Driver():
     def version_info(self) -> DriverInfo:
         raise NotImplementedError()
 
-    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
+    def annotate(self, chunks: list[str]) -> List[List[Fragment]]:
         """Annotate multiple `chunks` of code.
 
         All fragments are executed in the same (fresh) prover instance.  The

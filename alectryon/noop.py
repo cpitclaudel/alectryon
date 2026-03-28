@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Iterable, List
+from typing import List
 
 from .core import DriverInfo, Driver, Text, Fragment
 
@@ -30,6 +30,6 @@ class NoOp(Driver):
     def version_info(self) -> DriverInfo:
         return DriverInfo(name="NoOp", version="0")
 
-    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
+    def annotate(self, chunks: list[str]) -> List[List[Fragment]]:
         """Return chunks unmodified."""
         return [[Text(c)] for c in chunks]

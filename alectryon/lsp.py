@@ -516,7 +516,7 @@ class LSPDriver(PopenDriver, Generic[TClient]):
         """Partition `document` into fragments."""
         return document.intersperse_text_fragments(self._find_sentences(document))
 
-    def annotate(self, chunks: Iterable[str]) -> list[list[Fragment]]:
+    def annotate(self, chunks: list[str]) -> list[list[Fragment]]:
         r"""Annotate chunks of code.
 
         >>> from .vsrocq import VsRocq

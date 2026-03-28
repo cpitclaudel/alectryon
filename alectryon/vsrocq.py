@@ -264,7 +264,7 @@ class VsRocq(LSPDriver[VsRocqClient]):
         return VsRocqFile(self, document).process()
 
 
-def annotate(chunks: Iterable[str], vsrocq_args=(), fpath="-", binpath=None) \
+def annotate(chunks: list[str], vsrocq_args=(), fpath="-", binpath=None) \
     -> list[list[Fragment]]:
     r"""Annotate multiple `chunks` of Rocq code.
 

@@ -363,7 +363,7 @@ class SerAPI(REPLDriver):
                 fragment.messages.append(Message(message.pp))
         return fragments
 
-    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
+    def annotate(self, chunks: list[str]) -> List[List[Fragment]]:
         with self as api:
             return [api.run(chunk) for chunk in chunks]
 
@@ -380,7 +380,7 @@ class SerAPI_noexec(SerAPI):
     def _goals(self, sid, chunk):
         return []
 
-def annotate(chunks: Iterable[str], sertop_args=(), fpath="-", binpath=None) \
+def annotate(chunks: list[str], sertop_args=(), fpath="-", binpath=None) \
     -> List[List[Fragment]]:
     r"""Annotate multiple `chunks` of Coq code."""
     return SerAPI(args=sertop_args, fpath=fpath, binpath=binpath).annotate(chunks)

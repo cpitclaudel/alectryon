@@ -307,7 +307,7 @@ class Lean3(REPLDriver):
     def _proc_out(cls, p):
         return p.stdout + "\n" + p.stderr
 
-    def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
+    def annotate(self, chunks: list[str]) -> List[List[Fragment]]:
         """Annotate multiple ``chunks`` of Lean 3 code.
 
         >>> lean3 = Lean3()

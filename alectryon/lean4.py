@@ -83,7 +83,8 @@ class Lean4(CLIDriver):
             assert isinstance(tuple_result, list)
             return tuple_result
 
-    def annotate(self, chunks):
+    def annotate(self, chunks: list[str]):
+        """Annotate a Lean 4 file."""
         document = UTF8Document(chunks, "\n")
         result: List[Fragment] = self.run_leanInk_document(document)
 

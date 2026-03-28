@@ -788,7 +788,7 @@ Alectryon can be extended to support new languages.  Here is a rough blueprint o
           ID = "foo"
           def version_info(self) -> DriverInfo:
               return DriverInfo(name="Foo", version="1.0")
-          def annotate(self, chunks: Iterable[str]) -> List[List[Fragment]]:
+          def annotate(self, chunks: list[str]) -> List[List[Fragment]]:
               return [[Text(c)] for c in chunks]
 
    The implementation given here does nothing; you'll want to replace it with one that actually runs code and records its output.  Alectryon has many helper classes for this purpose; refer to existing drivers and the docstrings of the base classes for more information.
