@@ -82,6 +82,7 @@ class StringView:
         >>> [str(p) for p in sv.split("\n", keepsep=True)]
         ['bc\n', 'def\n', 'g\n', 'h']
         """
+        assert sep, "Empty separator"
         beg = self.beg
         chunks: List[StringView] = []
         while beg <= self.end:
