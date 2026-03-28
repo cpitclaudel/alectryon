@@ -74,8 +74,15 @@ def find_sentences(objs, needle):
             yield fr
 
 def find_goals(goals, needle):
+    """Find goals matching `needle`.
+
+    Goal #0 (out of range) yields nothing instead of wrapping to -1:
+
+    >>> list(find_goals(["g1", "g2"], NameMatcher("0")))
+    []
+    """
     if isinstance(needle, NameMatcher):
-        if needle.isdigit() and (n := int(needle) - 1) < len(goals):
+        if needle.isdigit() and 0 <= (n := int(needle) - 1) < len(goals):
             yield goals[n]
         else:
             yield from find_named(goals, needle)
