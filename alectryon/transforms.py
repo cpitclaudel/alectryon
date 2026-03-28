@@ -430,10 +430,12 @@ def _sub_objects(obj):
     if isinstance(obj, RichSentence):
         yield from obj.outputs
     elif isinstance(obj, RichGoal):
-        yield obj.conclusion
+        if obj.conclusion is not None:
+            yield obj.conclusion
         yield from obj.hypotheses
     elif isinstance(obj, RichHypothesis):
-        yield obj.body
+        if obj.body is not None:
+            yield obj.body
         yield obj.type
     elif isinstance(obj, Messages):
         yield from obj.messages
