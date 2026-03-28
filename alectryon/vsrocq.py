@@ -142,21 +142,18 @@ class VsRocqOutput:
 
     @staticmethod
     def parse_hyp(hv):
-        return Hypothesis(names=hv.get("ids"), body=hv.get("body"), type=hv.get("_type"))
+        return Hypothesis(names=hv["ids"], body=hv["body"], type=hv["_type"])
 
     @staticmethod
     def parse_goal(gv: JSON):
-        name = gv.get("name", None)
-        conclusion = gv["goal"]
-        hypotheses = [VsRocqOutput.parse_hyp(hv) for hv in gv["hypotheses"]]
-        return Goal(name, conclusion, hypotheses)
+        return Goal(gv["name"], gv["goal"],
+                    [VsRocqOutput.parse_hyp(hv) for hv in gv["hypotheses"]])
 
     @staticmethod
     def parse_proof_view(pv: JSON):
-        pp_messages = pv.get("pp_messages", [])
-        pp_goals = (pv.get("pp_proof") or {}).get("goals", [])
-        messages = [m for mv in pp_messages if (m := VsRocqOutput.parse_message(mv))]
-        goals = [VsRocqOutput.parse_goal(gv) for gv in pp_goals]
+        pp_proof = pv["pp_proof"]
+        messages = [m for mv in pv["pp_messages"] if (m := VsRocqOutput.parse_message(mv))]
+        goals = [VsRocqOutput.parse_goal(gv) for gv in pp_proof["goals"]] if pp_proof else []
         return messages, goals
 
 class VsRocqClient(LSPClient):
