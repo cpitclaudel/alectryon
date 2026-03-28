@@ -370,8 +370,9 @@ class FileCacheSet(BaseCacheSet):
     def __enter__(self):
         return self
 
-    def __exit__(self, *_exn):
-        self._write()
+    def __exit__(self, exc_type, *_rest):
+        if exc_type is None:
+            self._write()
         return False
 
     @classmethod
