@@ -1,6 +1,7 @@
 export OPAM_SWITCH ?= alectryon
 export OCAML_VERSION ?= 5.4.0
 export ROCQ_VERSION ?= 9.1.0
+export ROCQ_VERSIONS ?= $(ROCQ_VERSION)
 export EASYCRYPT_VERSION ?= r2026.03
 
 PYTHON ?= python3
@@ -93,5 +94,6 @@ docker-build%: deps/Dockerfile%
 	docker build -t alectryon$* -f $< \
 		--build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) \
 		--build-arg OPAM_SWITCH --build-arg OCAML_VERSION \
-		--build-arg ROCQ_VERSION --build-arg EASYCRYPT_VERSION \
+		--build-arg ROCQ_VERSION --build-arg ROCQ_VERSIONS \
+		--build-arg EASYCRYPT_VERSION \
 		.
