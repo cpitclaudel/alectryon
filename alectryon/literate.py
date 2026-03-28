@@ -38,9 +38,9 @@ class StringView:
             if idx.stop is None:
                 end = self.end
             elif idx.stop < 0:
-                end = self.end + idx.stop
+                end = max(self.beg, self.end + idx.stop)
             else:
-                end = self.beg + idx.stop
+                end = min(self.end, self.beg + idx.stop)
             return StringView(self.s, beg, end)
         assert 0 <= idx < len(self)
         idx = min(self.beg + idx, self.end)
