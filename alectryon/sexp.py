@@ -103,7 +103,13 @@ def unparse(sexp, buf):
             assert isinstance(top, int)
             buf.append(top)
 
-def dump(sexp):
+def dump(sexp) -> bytearray:
+    r"""Dump an S-expression to bytes.
+
+    >>> sexp = b'(("a\\"b"))'
+    >>> dump(load(sexp)) == sexp
+    True
+    """
     buf = bytearray()
     unparse(sexp, buf)
     return buf
