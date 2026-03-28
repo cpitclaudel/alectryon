@@ -456,7 +456,7 @@ class CoqLexer(RegexLexer):
             (r'0[xX][\da-fA-F][\da-fA-F_]*', Number.Hex),
             (r'0[oO][0-7][0-7_]*', Number.Oct),
             (r'0[bB][01][01_]*', Number.Bin),
-            (r'-?\d[\d_]*(.[\d_]*)?([eE][+\-]?\d[\d_]*)', Number.Float),
+            (r'-?\d[\d_]*([.][\d_]*)?([eE][+\-]?\d[\d_]*)', Number.Float),
         ],
         'docstring': comment(String.Doc),
         'comment': comment(Comment),
