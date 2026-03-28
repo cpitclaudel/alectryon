@@ -88,8 +88,9 @@ _opam:
 
 ### Use `etc/docker.sh make …` to run in docker
 
-docker-build:
-	docker build -t alectryon -f deps/Dockerfile \
+# Either .dev or .ci
+docker-build%: deps/Dockerfile%
+	docker build -t alectryon$* -f $< \
 		--build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) \
 		--build-arg OPAM_SWITCH --build-arg OCAML_VERSION \
 		--build-arg ROCQ_VERSION --build-arg EASYCRYPT_VERSION \
