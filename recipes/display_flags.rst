@@ -85,3 +85,34 @@ This file tests various combinations of display flags.  To compile::
      all: simpl in *. (* -.g#*.ccl *)
      all: tauto.
    Qed.
+
+Flag combinations
+=================
+
+``.no-…`` + ``.no-…``
+  .. coq:: no-hyps
+
+     Lemma foo (t: True): True. (* .no-ccls *)
+       idtac "foo".
+     Abort.
+
+``.no-`` + ``.all``
+  .. coq:: no-in
+
+     Lemma foo (t: True): True. (* .all *)
+       idtac "foo". (* .no-ccls .unfold *)
+     Abort.
+
+``.no-…`` + ``.in`` (``.ccls`` below is a no-op)
+  .. coq:: no-messages no-hyps
+
+     Lemma foo (t: True): True. (* .hyps .ccls *)
+       idtac "foo".
+     Abort.
+
+``.unfold`` + ``.no-…``
+  .. coq:: unfold
+
+     Lemma foo (t: True): True. (* .no-in *)
+       Check nat. (* .no-messages *)
+     Abort.

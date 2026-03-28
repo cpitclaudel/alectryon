@@ -91,6 +91,137 @@ class lsp(unittest.TestCase):
                       if len(types) > 1}
         self.assertEqual(collisions, {})
 
+class io_annots(unittest.TestCase):
+    @classmethod
+    def inherit(cls, directive_flags, sentence_flags):
+        from alectryon.transforms import IOAnnots
+        s = IOAnnots()
+        s.inherit(IOAnnots(*directive_flags))
+        for f in sentence_flags:
+            s.update(f)
+        return s
+
+    def test_defaults(self):
+        from alectryon.transforms import IOAnnots
+        a = IOAnnots()
+        self.assertEqual(a.filters, IOAnnots.FILTER_ALL)
+        self.assertIsNone(a.unfold)
+        self.assertIsNone(a.fails)
+        self.assertEqual(a.props, [])
+
+    def test_all_and_none(self):
+        from alectryon.transforms import IOAnnots
+        self.assertEqual(IOAnnots('all'), IOAnnots())
+        self.assertEqual(IOAnnots('none').filters, IOAnnots.FILTER_NONE)
+        self.assertEqual(IOAnnots('all', 'none').filters, IOAnnots.FILTER_NONE)
+        self.assertEqual(IOAnnots('none', 'all').filters, IOAnnots.FILTER_ALL)
+
+    def test_implicit_base(self):
+        from alectryon.transforms import IOAnnots
+        self.assertEqual(IOAnnots('no-in'), IOAnnots('all', 'no-in'))
+        self.assertEqual(IOAnnots('in'), IOAnnots('none', 'in'))
+
+    def test_meta_flag_equivalences(self):
+        from alectryon.transforms import IOAnnots
+        self.assertEqual(IOAnnots('out'), IOAnnots('hyps', 'ccls', 'messages'))
+        self.assertEqual(IOAnnots('goals'), IOAnnots('hyps', 'ccls'))
+        self.assertEqual(IOAnnots('no-out'), IOAnnots('no-hyps', 'no-ccls', 'no-messages'))
+        self.assertEqual(IOAnnots('no-goals'), IOAnnots('no-hyps', 'no-ccls'))
+
+    def test_toggles(self):
+        from alectryon.transforms import IOAnnots
+        self.assertEqual(IOAnnots('no-in', 'in'), IOAnnots())
+        self.assertEqual(IOAnnots('in', 'no-in').filters, IOAnnots.FILTER_NONE)
+
+    def test_unfold_fold(self):
+        from alectryon.transforms import IOAnnots
+        self.assertTrue(IOAnnots('unfold').unfold)
+        self.assertFalse(IOAnnots('fold').unfold)
+        self.assertFalse(IOAnnots('unfold', 'fold').unfold)
+        self.assertTrue(IOAnnots('fold', 'unfold').unfold)
+
+    def test_fails_succeeds(self):
+        from alectryon.transforms import IOAnnots
+        self.assertTrue(IOAnnots('fails').fails)
+        self.assertFalse(IOAnnots('succeeds').fails)
+
+    def test_fields_are_independent(self):
+        from alectryon.transforms import IOAnnots
+        self.assertEqual(IOAnnots('no-in', 'unfold', 'fails'),
+                         IOAnnots('unfold', 'fails', 'no-in'))
+
+    def test_unknown_flag(self):
+        from alectryon.transforms import IOAnnots
+        with self.assertRaises(ValueError):
+            IOAnnots('no-banana')
+
+    def test_child_overrides_scalar_fields(self):
+        self.assertFalse(self.inherit(['unfold'], ['fold']).unfold)
+        self.assertFalse(self.inherit(['fails'], ['succeeds']).fails)
+
+    def test_props_merge(self):
+        from alectryon.transforms import IOAnnots, PathAnnot
+        p1, p2 = PathAnnot("r1", "p1", "k1", "v1", False), PathAnnot("r2", "p2", "k2", "v2", False)
+        child = IOAnnots(props=[p2])
+        child.inherit(IOAnnots(props=[p1]))
+        self.assertEqual(child, IOAnnots(props=[p1, p2]))
+
+    def test_filter_composition(self):
+        from alectryon.transforms import IOAnnots
+        self.assertEqual(self.inherit(['no-in'], ['no-goals']), IOAnnots('no-in', 'no-goals'))
+        self.assertEqual(self.inherit(['no-out'], ['no-in']).filters, IOAnnots.FILTER_NONE)
+        self.assertEqual(self.inherit(['in', 'hyps'], ['ccls', 'messages']).filters, IOAnnots.FILTER_ALL)
+
+    def test_composition_is_symmetric(self):
+        """inherit-then-update gives the same result as update-then-inherit."""
+        from alectryon.transforms import IOAnnots
+        cases = [
+            (['no-in'], ['no-goals']),
+            (['no-out'], ['no-in']),
+            (['no-in'], ['in']),
+            (['no-hyps'], ['no-ccls', 'no-messages']),
+            (['none', 'in'], ['messages']),
+            (['no-in', 'unfold'], ['no-goals', 'fold']),
+        ]
+        for parent, child in cases:
+            with self.subTest(parent=parent, child=child):
+                a = self.inherit(parent, child)
+                b = IOAnnots(*child); b.inherit(IOAnnots(*parent))
+                self.assertEqual(a, b)
+
+    def test_three_levels(self):
+        from alectryon.transforms import IOAnnots
+        gp = IOAnnots('no-in')
+        p = IOAnnots('no-goals'); p.inherit(gp)
+        c = IOAnnots(); c.inherit(p)
+        self.assertEqual(c, IOAnnots('no-in', 'no-goals'))
+
+    def test_sentence_resets(self):
+        from alectryon.transforms import IOAnnots
+        self.assertEqual(self.inherit(['no-in'], ['all']).filters, IOAnnots.FILTER_ALL)
+        self.assertEqual(self.inherit(['all'], ['none']).filters, IOAnnots.FILTER_NONE)
+
+    def test_multiple_sentences_independent(self):
+        from alectryon.transforms import IOAnnots
+        d = IOAnnots('no-in')
+        s1 = IOAnnots(); s1.inherit(d); s1.update('no-goals')
+        s2 = IOAnnots(); s2.inherit(d)
+        self.assertEqual(s1, IOAnnots('no-in', 'no-goals'))
+        self.assertEqual(s2, IOAnnots('no-in'))
+
+    def test_full_combination(self):
+        from alectryon.transforms import IOAnnots, PathAnnot
+        prop = PathAnnot("r", "p", "k", "v", False)
+        s = self.inherit(['no-in', 'unfold', 'fails'], ['no-goals', 'fold'])
+        s.props = [prop]
+        self.assertEqual(s, IOAnnots('no-in', 'no-goals', 'fold', 'fails', props=[prop]))
+
+    def test_hidden(self):
+        from alectryon.transforms import IOAnnots
+        self.assertTrue(self.inherit(['all'], ['none']).hidden)
+        self.assertFalse(self.inherit(['none'], ['in']).hidden)
+        self.assertFalse(IOAnnots().hidden)
+
 if __name__ == '__main__':
     r = unittest.main(testRunner=unittest.TextTestRunner(stream=io.StringIO()), exit=False).result
     for t, tb in [*r.failures, *r.errors]:

@@ -17,7 +17,7 @@
       "Goal True.",
       "    - (* .out .unfold *) exact I. Qed.",
       "(* xyz *) Goal True /\\ True.\n  - idtac.\n    pose (a := 1).\n    (* xyz *) split.  (* xyz *)\n    + (* xyz *) idtac.\n      idtac. (* x\n      yz *)\n      split.\n    + (* xyz *) { (* xyz *) split. }\nQed. (* xyz *)",
-      "Goal forall x y: nat, x + y = y + x.",
+      "Goal forall x y: nat, x + y = y + x.\nAbort.",
       "From Coq Require Import String.\nOpen Scope string_scope.",
       "Definition test := \"\u25c6 \u25c9 \u25b2 \u25e7 \u25ce \u25f4 \u25b6 \u25a0\".",
       "Check nat.",
@@ -588,6 +588,16 @@
               "hypotheses": []
             }
           ]
+        },
+        {
+          "_type": "text",
+          "contents": "\n"
+        },
+        {
+          "_type": "sentence",
+          "contents": "Abort.",
+          "messages": [],
+          "goals": []
         }
       ],
       [
@@ -595,14 +605,7 @@
           "_type": "sentence",
           "contents": "From Coq Require Import String.",
           "messages": [],
-          "goals": [
-            {
-              "_type": "goal",
-              "name": null,
-              "conclusion": "forall x y : nat, x + y = y + x",
-              "hypotheses": []
-            }
-          ]
+          "goals": []
         },
         {
           "_type": "text",
@@ -612,14 +615,7 @@
           "_type": "sentence",
           "contents": "Open Scope string_scope.",
           "messages": [],
-          "goals": [
-            {
-              "_type": "goal",
-              "name": null,
-              "conclusion": "forall x y : nat, x + y = y + x",
-              "hypotheses": []
-            }
-          ]
+          "goals": []
         }
       ],
       [
@@ -627,14 +623,7 @@
           "_type": "sentence",
           "contents": "Definition test := \"\u25c6 \u25c9 \u25b2 \u25e7 \u25ce \u25f4 \u25b6 \u25a0\".",
           "messages": [],
-          "goals": [
-            {
-              "_type": "goal",
-              "name": null,
-              "conclusion": "forall x y : nat, x + y = y + x",
-              "hypotheses": []
-            }
-          ]
+          "goals": []
         }
       ],
       [
@@ -647,14 +636,7 @@
               "contents": "nat\n     : Set"
             }
           ],
-          "goals": [
-            {
-              "_type": "goal",
-              "name": null,
-              "conclusion": "forall x y : nat, x + y = y + x",
-              "hypotheses": []
-            }
-          ]
+          "goals": []
         }
       ],
       [
@@ -667,14 +649,7 @@
               "contents": "Prop\n     : Type"
             }
           ],
-          "goals": [
-            {
-              "_type": "goal",
-              "name": null,
-              "conclusion": "forall x y : nat, x + y = y + x",
-              "hypotheses": []
-            }
-          ]
+          "goals": []
         }
       ]
     ]

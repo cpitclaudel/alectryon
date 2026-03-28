@@ -25,6 +25,7 @@ from typing import Optional, Tuple, TypeVar
 import re
 import textwrap
 from copy import copy
+from functools import cached_property
 from collections import namedtuple
 from collections.abc import Iterable
 
@@ -36,11 +37,14 @@ from .core import RichFragment, Sentence, Text, Names, Enriched, \
 PathAnnot = namedtuple("PathAnnot", "raw path key val must_match")
 
 class IOAnnots:
-    def __init__(self, unfold=None, fails=None, filters=None, props=()):
-        self.filters = filters
-        self.unfold = unfold
-        self.fails = fails
-        self.props = list(props)
+    def __init__(self, *annots: str, props: Iterable[PathAnnot] = ()):
+        self._base_filters: dict[str, bool] = self.FILTER_ALL
+        self._filters: dict[str, bool] = {}
+        self.unfold: bool | None = None
+        self.fails: bool | None = None
+        self.props: list[PathAnnot] = list(props)
+        for a in annots:
+            self.update(a)
 
     NO = re.compile("no-")
     RE = re.compile("(?P<io>[-a-z]+)")
@@ -52,37 +56,62 @@ class IOAnnots:
         'goals': ('hyps', 'ccls')
     }
 
-    def update(self, annot):
-        """Apply a single `annot` flag.
+    @cached_property
+    def filters(self):
+        return {**self._base_filters, **self._filters}
 
-        >>> a = IOAnnots(); a.update('all'); a.update('no-in')
-        >>> a.filters['in'], IOAnnots.FILTER_ALL['in'] # Check that we don't override
-        (False, True)
+    def update(self, annot):
+        r"""Apply a single annotation flag.
+
+        Negative flags default to ALL; positive flags default to NONE:
+        >>> IOAnnots('no-in').filters
+        {'in': False, 'hyps': True, 'ccls': True, 'messages': True}
+        >>> IOAnnots('in').filters
+        {'in': True, 'hyps': False, 'ccls': False, 'messages': False}
+
+        ``all``/``none`` reset, then further flags modify:
+        >>> IOAnnots('all', 'no-in').filters['in']
+        False
+        >>> IOAnnots('none', 'in', 'messages').filters
+        {'in': True, 'hyps': False, 'ccls': False, 'messages': True}
+
+        Meta-flags expand (``goals`` = ``hyps`` + ``ccls``):
+        >>> IOAnnots('no-goals').filters == IOAnnots('no-hyps', 'no-ccls').filters
+        True
+
+        Non-filter flags are independent:
+        >>> a = IOAnnots('no-in', 'unfold', 'fails')
+        >>> a.unfold, a.fails, a.filters['in']
+        (True, True, False)
+
+        Class constants are never mutated:
+        >>> _ = [IOAnnots('all', 'no-in') for _ in range(100)]
+        >>> IOAnnots.FILTER_ALL['in']
+        True
         """
+        self.__dict__.pop('filters', None) # Invalidate filters cache
+
         if annot == 'fails':
             self.fails = True
         elif annot == 'succeeds':
             self.fails = False
-
         elif annot == 'fold':
             self.unfold = False
         elif annot == 'unfold':
             self.unfold = True
-
         elif annot == 'all':
-            self.filters = copy(self.FILTER_ALL)
+            self._filters = copy(self.FILTER_ALL)
         elif annot == 'none':
-            self.filters = copy(self.FILTER_NONE)
-
+            self._filters = copy(self.FILTER_NONE)
         else:
             negated, annot = self.NO.match(annot), self.NO.sub("", annot)
-            if self.filters is None:
-                self.filters = copy(self.FILTER_ALL if negated else self.FILTER_NONE)
+            if not self._filters:
+                self._base_filters = self.FILTER_ALL if negated else self.FILTER_NONE
             flags = self.META_FLAGS.get(annot, (annot,))
             for flag in flags:
-                if flag not in self.filters:
+                if flag not in self._base_filters:
                     raise ValueError("Unknown flag `{}`.".format(flag))
-                self.filters[flag] = not negated
+                self._filters[flag] = not negated
 
     def update_props(self, raw, path, key, val, must_match):
         self.props.append(PathAnnot(raw, path, key, val, must_match))
@@ -92,20 +121,47 @@ class IOAnnots:
         return self.filters == self.FILTER_NONE
 
     def inherit(self, other):
-        """Copy unset fields from `other`.
+        r"""Merge parent annotations into this one.
 
-        >>> parent = IOAnnots(unfold=True, fails=True)
-        >>> this = IOAnnots(unfold=False)
-        >>> this.inherit(parent)
-        >>> this.unfold, this.fails
+        Filters and props stack:
+        >>> child = IOAnnots('no-goals'); child.inherit(IOAnnots('no-in'))
+        >>> child.filters
+        {'in': False, 'hyps': False, 'ccls': False, 'messages': True}
+
+        >>> p = IOAnnots(); p.update_props("r", "p", "k", "v1", False)
+        >>> c = IOAnnots(); c.update_props("r", "p", "k", "v2", False)
+        >>> c.inherit(p); [x.val for x in c.props]
+        ['v1', 'v2']
+
+        ``unfold``/``fails``: only unset values get updated:
+        >>> child = IOAnnots('fold'); child.inherit(IOAnnots('unfold', 'fails'))
+        >>> child.unfold, child.fails
+        (False, True)
+
+        Multiple calls to inherit don't contaminate each other:
+        >>> parent = IOAnnots('no-in')
+        >>> s1 = IOAnnots(); s1.inherit(parent); s1.update('no-goals')
+        >>> s2 = IOAnnots(); s2.inherit(parent)
+        >>> s1.filters['hyps'], s2.filters['hyps']
         (False, True)
         """
-        for field, value in self.__dict__.items():
-            if value is None:
-                setattr(self, field, copy(getattr(other, field)))
+        if self.unfold is None:
+            self.unfold = other.unfold
+        if self.fails is None:
+            self.fails = other.fails
+        self.props = [*other.props, *self.props]
+        if other._filters:
+            self.__dict__.pop('filters', None) # Invalidate filters cache
+            self._base_filters = other._base_filters
+            self._filters = {**other._filters, **self._filters}
+
+    def __eq__(self, other):
+        return (isinstance(other, IOAnnots) and self.filters == other.filters
+                and self.unfold == other.unfold and self.fails == other.fails
+                and self.props == other.props)
 
     def __getitem__(self, key):
-        return self.filters[key] if self.filters else True
+        return self.filters[key]
 
     def __repr__(self):
         return "IOAnnots(unfold={}, fails={}, filters={}, props={})".format(

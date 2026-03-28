@@ -102,6 +102,7 @@ Exercise directive
    .. coq::
 
       Goal forall x y: nat, x + y = y + x.
+      Abort.
 
 Unicode in code
 ================
