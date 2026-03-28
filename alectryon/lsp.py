@@ -153,7 +153,7 @@ class LSPClientRequest(LSPClientQuery):
         if isinstance(message, LSPServerResponse) and message.idx == self.idx:
             self.result = message.result
             self._done = True
-        elif isinstance(message, LSPServerError) and message.idx == self.idx:
+        elif isinstance(message, LSPServerError) and message.idx in (self.idx, None):
             raise message.exn
 
     @property
