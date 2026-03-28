@@ -64,8 +64,9 @@ HEADER = (
 )
 
 def gen_banner(driver_info, include_version_info=True):
+    from html import escape
     drivers = ", ".join(di.fmt(include_version_info) for di in driver_info)
-    return HEADER.format(f", running {drivers}" if drivers else "")
+    return HEADER.format(escape(f", running {drivers}") if drivers else "")
 
 def wrap_classes(*cls):
     return " ".join("alectryon-" + c for c in ("root", *cls))
