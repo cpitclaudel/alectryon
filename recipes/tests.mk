@@ -212,7 +212,7 @@ tests_targets += _output/tests/unit.py.out
 
 # Coq → reST
 _output/tests/unterminated.rst.out: tests/unterminated.rst
-	$(alectryon) $< > $@ 2>&1; echo "exit: $$?" >> $@
+	$(alectryon) $< -o /dev/null > $@ 2>&1; echo "exit: $$?" >> $@
 tests_targets += _output/tests/unterminated.rst.out
 
 # Coq → reST
