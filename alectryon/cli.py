@@ -288,21 +288,17 @@ COQDOC_OPTIONS = ['doc', '--body-only', '--no-glob', '--no-index', '--no-externa
 
 def _run_coqdoc(coq_snippets, coqdoc_bin=None):
     """Get the output of coqdoc on coq_code."""
-    from shutil import rmtree
-    from tempfile import mkstemp, mkdtemp
+    from tempfile import TemporaryDirectory, NamedTemporaryFile
     from subprocess import check_output
     coqdoc_bin = coqdoc_bin or os.path.join(os.getenv("COQBIN", ""), "rocq")
-    dpath = mkdtemp(prefix="alectryon_coqdoc_")
-    fd, filename = mkstemp(prefix="alectryon_coqdoc_", suffix=".v", dir=dpath)
-    try:
-        for snippet in coq_snippets:
-            os.write(fd, snippet.encode("utf-8"))
-            os.write(fd, b"\n(* --- *)\n") # Separator to prevent fusing
-        os.close(fd)
-        coqdoc = [coqdoc_bin, *COQDOC_OPTIONS, "-d", dpath, filename]
+    with TemporaryDirectory(prefix="alectryon_coqdoc_") as dpath:
+        with NamedTemporaryFile(mode="w", encoding="utf-8", suffix=".v",
+                                dir=dpath, delete=False) as f:
+            for snippet in coq_snippets:
+                f.write(snippet)
+                f.write("\n(* --- *)\n") # Separator to prevent fusing
+        coqdoc = [coqdoc_bin, *COQDOC_OPTIONS, "-d", dpath, f.name]
         return check_output(coqdoc, cwd=dpath, timeout=10).decode("utf-8")
-    finally:
-        rmtree(dpath)
 
 def _gen_coqdoc_html_assert(docs, coqdoc_comments):
     if len(docs) != len(coqdoc_comments):
