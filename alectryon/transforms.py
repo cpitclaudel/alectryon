@@ -53,6 +53,12 @@ class IOAnnots:
     }
 
     def update(self, annot):
+        """Apply a single `annot` flag.
+
+        >>> a = IOAnnots(); a.update('all'); a.update('no-in')
+        >>> a.filters['in'], IOAnnots.FILTER_ALL['in'] # Check that we don't override
+        (False, True)
+        """
         if annot == 'fails':
             self.fails = True
         elif annot == 'succeeds':
@@ -64,9 +70,9 @@ class IOAnnots:
             self.unfold = True
 
         elif annot == 'all':
-            self.filters = self.FILTER_ALL
+            self.filters = copy(self.FILTER_ALL)
         elif annot == 'none':
-            self.filters = self.FILTER_NONE
+            self.filters = copy(self.FILTER_NONE)
 
         else:
             negated, annot = self.NO.match(annot), self.NO.sub("", annot)
