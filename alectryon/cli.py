@@ -982,7 +982,7 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
 
     NO_HEADER_HELP = "Do not insert a header with usage instructions in webpages."
     out.add_argument("--no-header", action='store_false',
-                     dest="include_banner", default="True",
+                     dest="include_banner", default=True,
                      help=NO_HEADER_HELP)
 
     NO_VERSION_NUMBERS = "Omit version numbers in meta tags and headers."
