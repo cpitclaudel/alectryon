@@ -58,19 +58,35 @@ class Tokens:
     rng: Bounds # Slice of the original string
 
     @staticmethod
-    def bisect_right(a, x, lo, hi, key):
-        # From bisect.py, modified for `key`
+    def _bisect(a, x, lo, hi, key, right):
+        r"""Bisect `a` with a `key` function.
+
+        Equivalent to ``bisect_{right,left}(list(map(key, a)), x, lo, hi)``:
+
+        >>> from bisect import bisect_left, bisect_right
+        >>> key = lambda v: (v * 31 + 7) % 43
+        >>> a = sorted(range(0, 100), key=key)
+        >>> mapped = [key(v) for v in a]
+        >>> for x in range(100):
+        ...   for right in (True, False):
+        ...     ref = bisect_right(mapped, x) if right else bisect_left(mapped, x)
+        ...     assert ref == Tokens._bisect(a, x, 0, len(a), key, right)
+        """
         while lo < hi:
-            mid = (lo+hi)//2
-            if x < key(a[mid]): hi = mid
-            else: lo = mid+1
+            mid = (lo + hi) // 2
+            k = key(a[mid])
+            if k <= x and (right or k != x):
+                lo = mid+1
+            else:
+                hi = mid
         return lo
 
     def filter(self, startpos: int, endpos: int) -> "Tokens":
         startpos, endpos = self.rng.start + startpos, self.rng.start + endpos
-        start = self.bisect_right(self.toks, startpos, self.view.start, self.view.stop,
-                                  key=lambda t: t.rng.stop)
-        end = bisect.bisect_left(self.toks, ((endpos,),), self.view.start, self.view.stop)
+        start = self._bisect(self.toks, startpos, self.view.start, self.view.stop,
+                             key=lambda t: t.rng.stop, right=True)
+        end = self._bisect(self.toks, endpos, self.view.start, self.view.stop,
+                           key=lambda t: t.rng.start, right=False)
         return Tokens(self.toks, slice(start, end, None), slice(startpos, endpos))
 
     def __iter__(self) -> Iterator[Token]:
