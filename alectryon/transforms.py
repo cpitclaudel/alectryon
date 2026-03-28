@@ -46,7 +46,7 @@ class IOAnnots:
         for a in annots:
             self.update(a)
 
-    NO = re.compile("no-")
+    NO = re.compile("^no-")
     RE = re.compile("(?P<io>[-a-z]+)")
     DOTTED_RE = re.compile("[.]" + RE.pattern)
     FILTER_ALL = {'in': True, 'hyps': True, 'ccls': True, 'messages': True}
