@@ -112,7 +112,7 @@ def cli():
     from docutils.core import publish_cmdline, default_description
     docutils_setup()
     DESCRIPTION = 'Convert reSt + Alectryon to HTML.' + default_description
-    publish_cmdline(writer='html', description=DESCRIPTION)
+    publish_cmdline(writer_name='html', description=DESCRIPTION)
 
 if __name__ == '__main__':
     cli()
