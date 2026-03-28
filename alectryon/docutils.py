@@ -754,7 +754,7 @@ class AlectryonDirective(Directive): # pylint: disable=abstract-method
         line = self.lineno if line is None else line
         msg = 'Error in "{}" directive:\n{}'.format(self.name, msg)
         literal = nodes.literal_block(self.block_text, self.block_text)
-        err = self.state_machine.reporter.error(msg, literal, line=self.lineno)
+        err = self.state_machine.reporter.error(msg, literal, line=line)
         return [err]
 
     def _try(self, fn, *args, default=None):
