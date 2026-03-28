@@ -156,9 +156,9 @@ class TokenizedStr(str):
         self.type_map: LSPTokenMap = type_map
 
     @staticmethod
-    def _wrapidx(idx: Optional[int], dflt: int, mod: int):
+    def _clampidx(idx: Optional[int], dflt: int, mod: int):
         idx = dflt if idx is None else idx
-        return idx if idx >= 0 else idx + mod
+        return idx if idx >= 0 else max(0, idx + mod)
 
     def __getitem__(self, index: Union[int, slice]): # type: ignore # 3.6
         s = super().__getitem__(index)
@@ -166,8 +166,8 @@ class TokenizedStr(str):
             return s
         assert isinstance(index, slice)
         assert index.step is None
-        start = self._wrapidx(index.start, 0, len(self))
-        stop = self._wrapidx(index.stop, len(self), len(self))
+        start = self._clampidx(index.start, 0, len(self))
+        stop = self._clampidx(index.stop, len(self), len(self))
         return TokenizedStr(s, self.tokens.filter(start, stop), self.type_map)
 
     CACHE_TYPE_MAP_KEY = "type_map"
