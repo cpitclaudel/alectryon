@@ -45,6 +45,9 @@ class Token(NamedTuple):
                       min(self.rng.stop, endpos) - startpos))
 
     def resolve(self, type_map: LSPTokenMap) -> Optional[str]:
+        """Resolve token type to a Pygments token string."""
+        if not self.typ:
+            return None
         tokstr = type_map.get(self.typ) or type_map.get((self.typ[0],))
         if tokstr is None:
             MSG = "!! Unexpected pre-tokenized token type {!r} with modifiers {!r}\n"
