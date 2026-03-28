@@ -71,6 +71,7 @@ class CoqIdents:
         >>> CoqIdents.make_ident("f:𝖴🄽𝓘ⓒ𝕆Ⓓ𝙴")
         'f_𝖴_𝓘_𝕆_𝙴'
         """
+        assert name
         return (cls.sub_chars(name[0], cls.COQ_IDENT_START) +
                 cls.sub_chars(name[1:], cls.COQ_IDENT_PART))
 
