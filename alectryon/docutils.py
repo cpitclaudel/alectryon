@@ -872,7 +872,7 @@ class ExperimentalExerciseDirective(Topic, AlectryonDirective):
         [node] = super().run()
         node['classes'].append(self.name)
         node['difficulty'] = self.options.get('difficulty')
-        node['optional'] = self.options.get('optional', False)
+        node['optional'] = 'optional' in self.options
         for title in list(node.findall(nodes.title)):
             title.insert(0, nodes.Text("Exercise: "))
         return [node]
