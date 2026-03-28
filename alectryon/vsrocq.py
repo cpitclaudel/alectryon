@@ -90,6 +90,7 @@ class DocumentStateRequest(URIRequest):
 class ExponentialBackoff:
     delay = 0.05
     delay_multiplier = 2
+    max_delay = 30
 
     def ready(self) -> bool:
         raise NotImplementedError
@@ -98,7 +99,7 @@ class ExponentialBackoff:
         import time
         while not self.ready():
             time.sleep(self.delay)
-            self.delay *= self.delay_multiplier
+            self.delay = min(self.delay * self.delay_multiplier, self.max_delay)
 
 @dataclasses.dataclass
 class VsRocqReadyMonitor(ExponentialBackoff):
