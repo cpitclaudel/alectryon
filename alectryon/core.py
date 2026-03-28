@@ -238,13 +238,27 @@ class Position(NamedTuple):
         return { "line": self.line - 1, "character": self.col or 0 }
 
     def __add__(self, other):
+        """Advance `self` by `other`.
+
+        >>> Position("f", 5, 10) + Position("f", 1, 3)
+        Position(fpath='f', line=5, col=13)
+        >>> Position("f", 5, 10) + Position("f", 2, 3)
+        Position(fpath='f', line=6, col=3)
+        """
         line = self.line + other.line - 1
         col = ((self.col or 0) if other.line == 1 else 0) + (other.col or 0)
         return Position(self.fpath, line, col)
 
     def __sub__(self, other):
+        """Rewind `self` by `other`.
+
+        >>> Position("f", 5, 13) - Position("f", 1, 3)
+        Position(fpath='f', line=5, col=10)
+        >>> Position("f", 5, 10) - Position("f", 1, 3)
+        Position(fpath='f', line=5, col=7)
+        """
         line = self.line - other.line + 1
-        col = (self.col or 0) - ((other.col or 0) if line == 1 else 0)
+        col = (self.col or 0) - ((other.col or 0) if other.line == 1 else 0)
         return Position(self.fpath, line, col)
 
 class Range(NamedTuple):
