@@ -18,6 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import annotations
+
 from typing import IO, Any, ClassVar, Generic, Iterable, Optional, Type, TypeVar, overload
 
 import json

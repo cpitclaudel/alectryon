@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-"""Post-process annotated fragments of source code."""
+from __future__ import annotations
 
 from typing import Optional, Tuple, TypeVar
 

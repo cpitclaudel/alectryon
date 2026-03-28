@@ -18,8 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Any, ClassVar, Iterable, Optional
+from typing import Any, ClassVar, Iterable, Optional, Union
 
 import dataclasses
 import re
@@ -123,7 +125,7 @@ class VsRocqReadyMonitor(ExponentialBackoff):
             raise
         return True
 
-PP = str | list["PP"]
+PP = Union[str, list["PP"]]
 
 # https://github.com/rocq-prover/vsrocq/issues/1201
 MESSAGE_FILTER = re.compile(
