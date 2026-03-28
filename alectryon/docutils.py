@@ -1365,7 +1365,7 @@ def make_HtmlTranslator(base):
             self.stylesheet.extend(hd + "\n" for hd in self.ADDITIONAL_HEADS)
             if HTML_MINIFICATION:
                 classes.append("minified")
-                self.stylesheet.extend(html.JS_UNMINIFY + "\n")
+                self.stylesheet.append(html.JS_UNMINIFY + "\n")
 
             cls = html.wrap_classes(*classes)
             self.body_prefix.append(f'<div class="{cls}">')
