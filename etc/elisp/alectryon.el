@@ -477,7 +477,8 @@ Current document must have a file name."
     (visual-line-mode)
     (setq alectryon--prog-font-lock-keywords (alectryon--prog-font-lock-keywords))
     (font-lock-add-keywords nil alectryon--prog-font-lock-keywords)
-    (add-to-list 'font-lock-extra-managed-props 'display)
+    (make-local-variable 'font-lock-extra-managed-props)
+    (cl-pushnew 'display font-lock-extra-managed-props)
     (add-function :before-until (local 'font-lock-syntactic-face-function)
                   #'alectryon--prog-syntactic-face-function '((depth . -100))))
    (t
