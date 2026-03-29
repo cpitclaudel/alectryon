@@ -357,6 +357,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   :standard-input t
   :error-parser #'alectryon--parse-errors
   :predicate (lambda () alectryon-mode)
+  :verify (lambda (_) (alectryon--flycheck-verify-enabled))
   :modes '(coq-mode rst-mode))
 
 (add-to-list 'flycheck-checkers 'alectryon)
