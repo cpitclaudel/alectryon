@@ -158,9 +158,11 @@
 
 (defconst alectryon-text-modes
   '(( rst-mode
-      :tag "rst")
+      :tag "rst"
+      :suffixes ("_rst[.][^./]+$"))
     ( markdown-mode
-      :tag "md")))
+      :tag "md"
+      :suffixes ("_md[.][^./]+$"))))
 
 (defvar-local alectryon-prog-mode 'coq-mode
   "Programming mode to use with Alectryon in this buffer.
@@ -169,12 +171,25 @@ This variable is initialized when Alectryon is switched on, based
 on the current mode.")
 (put 'alectryon-prog-mode 'permanent-local t)
 
-(defvar-local alectryon-text-mode 'rst-mode
+(defvar alectryon-fallback-text-mode 'rst-mode
+  "Default markup mode to use with Alectryon.
+
+Only used when asking the user is impractical, e.g. from
+Flycheck, and when `alectryon-text-mode' is unset.  To set a global
+default, set `alectryon-text-mode'.")
+
+(defvar-local alectryon-text-mode nil
   "Markup mode to use with Alectryon in this buffer.
 
-This variable is initialized when Alectryon is switched on, based
-on the current mode.")
+This variable is initialized when Alectryon is switched on in
+text mode (based on the current mode), or just before switching
+to text mode.  Its default value (nil) means ask the user before
+switching.")
 (put 'alectryon-text-mode 'permanent-local t)
+
+(defun alectryon--text-mode-with-fallback ()
+  "Return `alectryon-text-mode', falling back to `alectryon-fallback-text-mode'."
+  (or alectryon-text-mode alectryon-fallback-text-mode))
 
 (defun alectryon--prog-plist ()
   "Return the `prog-mode' Alectryon configuration for the current buffer."
@@ -183,8 +198,9 @@ on the current mode.")
 
 (defun alectryon--text-plist ()
   "Return the `text-mode' Alectryon configuration for the current buffer."
-  (or (alist-get alectryon-text-mode alectryon-text-modes)
-      (error "Unrecognized Alectryon markup mode: %s" alectryon-text-mode)))
+  (let ((mode (alectryon--text-mode-with-fallback)))
+    (or (alist-get mode alectryon-text-modes)
+        (error "Unrecognized Alectryon markup mode: %s" mode))))
 
 (defun alectryon--provided-mode-derived-p (mode &rest modes)
   "Check if MODE is derived from MODES.
@@ -237,55 +253,61 @@ variable.  If it is nil, choose based on the current mode."
   "Get a backend id for MODE."
   (alectryon--mode-case (alectryon--config-markup) (alectryon--config-code+markup) mode))
 
+(defun alectryon--read-mode (prog-p)
+  "Read a mode depending on PROG-P."
+  (let* ((modes (mapcar #'car (if prog-p alectryon-prog-modes alectryon-text-modes)))
+         (prompt (format "%s mode to use: " (if prog-p "Programming" "Markup")))
+         (mode (intern (completing-read prompt modes nil t))))
+    (unless (fboundp mode)
+      (user-error "Not installed: %s" mode))
+    mode))
+
+(defun alectryon--set-mode-variable (prog-p mode)
+  "Set alectryon-text-mode or alectryon-prog-mode to MODE depending on PROG-P."
+  (setf (if prog-p alectryon-prog-mode alectryon-text-mode) mode)
+  (when (and (not (derived-mode-p mode))
+             (eq prog-p (alectryon--prog-mode-p)))
+    (alectryon--set-mode mode)))
+
 (defun alectryon-set-text-mode (mode)
   "Set markup mode to MODE."
-  (interactive
-   (let* ((modes (mapcar #'car alectryon-text-modes))
-          (mode (intern (completing-read "Markup mode to use: " modes nil t))))
-     (unless (fboundp mode)
-       (user-error "Not installed: %s" mode))
-     (list mode)))
-  (setf alectryon-text-mode mode)
-  (when (and (not (derived-mode-p mode))
-             (alectryon--provided-mode-derived-p major-mode 'text-mode))
-    (alectryon--set-mode mode)))
+  (interactive (list (alectryon--read-mode nil)))
+  (alectryon--set-mode-variable nil mode))
 
 (defun alectryon-set-prog-mode (mode)
   "Set programming mode to MODE."
-  (interactive (list (completing-read "Programming mode to use in this buffer: "
-                                      (mapcar #'car alectryon-prog-modes) nil t)))
-  (when (stringp mode) (setq mode (intern mode)))
-  (setf alectryon-prog-mode mode)
-  (when (and (derived-mode-p 'prog-mode)
-             (not (derived-mode-p mode)))
-    (alectryon--set-mode mode)))
+  (interactive (list (alectryon--read-mode t)))
+  (alectryon--set-mode-variable t mode))
 
-(defun alectryon--detect-text-mode ()
-  "Detect the text mode from the buffer filename suffix.
-Return a mode symbol if the filename contains `_md' or `_rst'
-before the extension, or nil if ambiguous."
-  (let ((name (or buffer-file-name (buffer-name))))
-    (cond
-     ((string-match-p "_md\\." name) 'markdown-mode)
-     ((string-match-p "_rst\\." name) 'rst-mode)
-     (t nil))))
+(defun alectryon--guess-text-mode ()
+  "Guess the markup mode to use from the buffer's filename."
+  (let ((path (or buffer-file-name (buffer-name))))
+    (and path
+         (car-safe
+          (cl-find-if
+           (lambda (props) (cl-some (lambda (suffix) (string-match-p suffix path))
+                               (plist-get (cdr props) :suffixes)))
+           alectryon-text-modes)))))
 
-(defun alectryon--ensure-text-mode ()
-  "Ensure `alectryon-text-mode' is set, prompting if needed.
-Auto-detects from filename suffix (_md, _rst).  If ambiguous,
-prompts with available text modes."
-  (when (alectryon--mode-case t nil)
-    (let ((detected (alectryon--detect-text-mode)))
-      (if detected
-          (setq-local alectryon-text-mode detected)
-        (let* ((available (cl-remove-if-not
-                           (lambda (entry) (fboundp (car entry)))
-                           alectryon-text-modes))
-               (choices (mapcar (lambda (entry) (symbol-name (car entry))) available))
-               (choice (if (= (length choices) 1)
-                           (car choices)
-                         (completing-read "Markup mode: " choices nil t))))
-          (setq-local alectryon-text-mode (intern choice)))))))
+(defun alectryon--available-text-modes ()
+  "Filter supported text modes by availability."
+  (let* ((available (cl-remove-if-not (lambda (entry) (fboundp (car entry))) alectryon-text-modes)))
+    (mapcar (lambda (entry) (symbol-name (car entry))) available)))
+
+(defun alectryon--read-text-mode ()
+  "Ask the user which text mode to use."
+  (intern
+   (pcase-exhaustive (alectryon--available-text-modes)
+     (`nil (error "No supported text mode found"))
+     (`(,single) single)
+     (choices (completing-read "Markup mode: " choices nil t)))))
+
+(defun alectryon--ensure-text-mode-set ()
+  "Ensure `alectryon-text-mode' is set, prompting if needed."
+  (setq-local alectryon-text-mode
+              (or alectryon-text-mode
+                  (alectryon--guess-text-mode)
+                  (alectryon--read-text-mode))))
 
 ;;;; Conversion between code and markup
 
@@ -343,8 +365,8 @@ Please open an issue at https://github.com/cpitclaudel/alectryon.")
 
 (defun alectryon--toggle ()
   "Switch between code and markup views of the same file."
-  (alectryon--ensure-text-mode)
   (alectryon--record-mode)
+  (alectryon--ensure-text-mode-set)
   (mapc #'funcall (alectryon--config :exit-hooks))
   (let ((modified (buffer-modified-p)))
     (alectryon--atomic

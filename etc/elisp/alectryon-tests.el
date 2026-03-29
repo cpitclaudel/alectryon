@@ -165,15 +165,15 @@
     (should (equal "coq+md" (alectryon--config-frontend 'coq-mode)))
     (should (equal "md" (alectryon--config-backend 'coq-mode)))))
 
-(ert-deftest alectryon-test-detect-text-mode ()
+(ert-deftest alectryon-test-guess-text-mode ()
   "Filename suffix detection for _md and _rst."
   (with-temp-buffer
     (let ((buffer-file-name "/tmp/foo_md.v"))
-      (should (eq 'markdown-mode (alectryon--detect-text-mode))))
+      (should (eq 'markdown-mode (alectryon--guess-text-mode))))
     (let ((buffer-file-name "/tmp/foo_rst.v"))
-      (should (eq 'rst-mode (alectryon--detect-text-mode))))
+      (should (eq 'rst-mode (alectryon--guess-text-mode))))
     (let ((buffer-file-name "/tmp/foo.v"))
-      (should-not (alectryon--detect-text-mode)))))
+      (should-not (alectryon--guess-text-mode)))))
 
 (ert-deftest alectryon-test-convert-coq-to-md ()
   "Coq with literate comments converts to Markdown with fenced code."
