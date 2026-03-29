@@ -40,157 +40,182 @@
     (modify-syntax-entry ?*  ". 23" st)
     st))
 
+(defmacro alectryon-test--with-coq-buffer (contents &rest body)
+  "Set up a temp buffer with Coq config, CONTENTS, and run BODY."
+  (declare (indent 1))
+  `(with-temp-buffer
+     (set-syntax-table (alectryon-test--coq-syntax-table))
+     (setq-local alectryon-prog-mode 'coq-mode)
+     (setq-local alectryon-text-mode 'rst-mode)
+     (insert ,contents)
+     ,@body))
+
 ;;;; Configuration and mode dispatching
 
 (ert-deftest alectryon-test-config ()
-  "Config system returns correct tags, delimiters, and frontend/backend ids."
+  "Config returns correct tags, delimiters, and frontend/backend ids for RST and Markdown."
   (with-temp-buffer
     (setq-local alectryon-prog-mode 'coq-mode)
+    ;; RST
     (setq-local alectryon-text-mode 'rst-mode)
-    ;; Tags
     (should (equal "coq" (alectryon--config :tag 'prog)))
     (should (equal "rst" (alectryon--config :tag 'text)))
-    ;; Delimiters
+    (should (equal "coq+rst" (alectryon--config-frontend 'coq-mode)))
+    (should (equal "rst" (alectryon--config-backend 'coq-mode)))
+    ;; Markdown
+    (setq-local alectryon-text-mode 'markdown-mode)
+    (should (equal "md" (alectryon--config :tag 'text)))
+    (should (equal "coq+md" (alectryon--config-frontend 'coq-mode)))
+    (should (equal "md" (alectryon--config-backend 'coq-mode)))
+    ;; Delimiters (same for both markups -- they're a Coq property)
     (let ((delims (alectryon--config :comment-delimiters 'prog)))
       (should (equal "(*|" (car delims)))
-      (should (equal "|*)" (cdr delims))))
-    ;; Frontend/backend
-    (should (equal "coq+rst" (alectryon--config-frontend 'coq-mode)))
-    (should (equal "rst" (alectryon--config-backend 'coq-mode)))))
+      (should (equal "|*)" (cdr delims))))))
 
 (ert-deftest alectryon-test-mode-dispatch ()
-  "prog-mode-p and mode-case dispatch correctly."
-  ;; prog-mode-p
+  "prog-mode-p and mode-case dispatch correctly for all registered modes."
   (should (eq t (alectryon--prog-mode-p 'coq-mode)))
   (should (eq nil (alectryon--prog-mode-p 'rst-mode)))
   (should (eq nil (alectryon--prog-mode-p 'markdown-mode)))
-  (should-error (alectryon--prog-mode-p 'fundamental-mode))
-  ;; mode-case
+  (should-error (alectryon--prog-mode-p 'fundamental-mode) :type 'error)
   (should (eq 'code (alectryon--mode-case 'code 'text 'coq-mode)))
   (should (eq 'text (alectryon--mode-case 'code 'text 'rst-mode)))
   (should (eq 'text (alectryon--mode-case 'code 'text 'markdown-mode))))
 
-;;;; Literate comment detection
+;;;; Text mode selection
+
+(ert-deftest alectryon-test-guess-text-mode ()
+  "Filename suffix detection for _rst and _md."
+  (with-temp-buffer
+    (let ((buffer-file-name "/tmp/foo_rst.v"))
+      (should (eq 'rst-mode (alectryon--guess-text-mode))))
+    (let ((buffer-file-name "/tmp/foo_md.v"))
+      (should (eq 'markdown-mode (alectryon--guess-text-mode))))
+    (let ((buffer-file-name "/tmp/foo.v"))
+      (should-not (alectryon--guess-text-mode)))))
+
+(ert-deftest alectryon-test-fallback-text-mode ()
+  "Config uses fallback when alectryon-text-mode is nil."
+  (with-temp-buffer
+    (setq-local alectryon-prog-mode 'coq-mode)
+    (setq-local alectryon-text-mode nil)
+    (let ((alectryon-fallback-text-mode 'rst-mode))
+      (should (equal "rst" (alectryon--config :tag 'text))))
+    (let ((alectryon-fallback-text-mode 'markdown-mode))
+      (should (equal "md" (alectryon--config :tag 'text))))))
+
+(ert-deftest alectryon-test-ensure-text-mode ()
+  "ensure-text-mode auto-detects from filename suffix."
+  (with-temp-buffer
+    (setq-local alectryon-prog-mode 'coq-mode)
+    (setq-local alectryon-text-mode nil)
+    (let ((buffer-file-name "/tmp/test_md.v"))
+      (alectryon--ensure-text-mode-set)
+      (should (eq 'markdown-mode alectryon-text-mode)))))
+
+;;;; Annotations regex
+
+(ert-deftest alectryon-test-annotations-re ()
+  "Annotations regex matches markers like (* .show *) but not regular comments."
+  (let ((re (alectryon--config :annotations-re 'prog)))
+    (should (string-match-p re "(* .show *)"))
+    (should (string-match-p re "(* .show .unfold *)"))
+    (should-not (string-match-p re "(* regular comment *)"))))
+
+;;;; Literate comment detection and editing
 
 (ert-deftest alectryon-test-literate-comment ()
   "Literate comment detection distinguishes (*| |*) from (* *) and code."
-  (with-temp-buffer
-    (set-syntax-table (alectryon-test--coq-syntax-table))
-    (setq-local alectryon-prog-mode 'coq-mode)
-    (setq-local alectryon-text-mode 'rst-mode)
-    ;; Inside literate comment
-    (erase-buffer)
-    (insert "(*| hello |*)")
+  (alectryon-test--with-coq-buffer "(*| hello |*)"
     (goto-char 6)
-    (should (alectryon--in-literate-comment-p))
-    ;; Outside any comment
-    (erase-buffer)
-    (insert "Lemma foo. (*| hello |*)")
+    (should (alectryon--in-literate-comment-p)))
+  (alectryon-test--with-coq-buffer "Lemma foo. (*| hello |*)"
     (goto-char 3)
-    (should-not (alectryon--in-literate-comment-p))
-    ;; Inside regular comment
-    (erase-buffer)
-    (insert "(* regular *)")
+    (should-not (alectryon--in-literate-comment-p)))
+  (alectryon-test--with-coq-buffer "(* regular *)"
     (goto-char 6)
     (should-not (alectryon--in-literate-comment-p))))
 
+(ert-deftest alectryon-test-insert-literate-block ()
+  "Inserting a literate block produces exact output with point between delimiters."
+  (alectryon-test--with-coq-buffer ""
+    (alectryon-insert-literate-block)
+    (should (equal "(*|\n\n|*)" (buffer-string)))
+    (should (equal 5 (point)))))
+
 ;;;; Conversion (requires alectryon binary)
 
-(ert-deftest alectryon-test-convert-coq-to-rst ()
-  "Coq with literate comments converts to RST with directives."
-  (skip-unless (alectryon-test--converter-available-p))
-  (let ((rst (alectryon-test--convert
-              "(*|\nHello\n|*)\n\nLemma foo : True.\n"
-              "coq+rst" "rst")))
-    (should (string-match-p "Hello" rst))
-    (should (string-match-p "\\.\\. coq::" rst))))
+;; Matched conversion triplet: these three represent the same document.
+(defconst alectryon-test--coq "(*|\nHello\n|*)\n\nLemma foo : True.\n")
+(defconst alectryon-test--rst "Hello\n\n.. coq::\n\n   Lemma foo : True.\n")
+(defconst alectryon-test--md  "Hello\n\n```{coq}\nLemma foo : True.\n```\n")
 
-(ert-deftest alectryon-test-convert-rst-to-coq ()
-  "RST with coq directives converts to Coq with literate comments."
+(ert-deftest alectryon-test-convert-coq-to-markup ()
+  "Coq converts to exact expected RST and Markdown output."
   (skip-unless (alectryon-test--converter-available-p))
-  (let ((coq (alectryon-test--convert
-              "Hello\n\n.. coq::\n\n   Lemma foo : True.\n"
-              "rst" "coq+rst")))
-    (should (string-match-p "(\\*|" coq))
-    (should (string-match-p "|\\*)" coq))))
+  (should (equal alectryon-test--rst
+                 (alectryon-test--convert alectryon-test--coq "coq+rst" "rst")))
+  (should (equal alectryon-test--md
+                 (alectryon-test--convert alectryon-test--coq "coq+md" "md"))))
+
+(ert-deftest alectryon-test-convert-markup-to-coq ()
+  "RST and Markdown convert to exact expected Coq output."
+  (skip-unless (alectryon-test--converter-available-p))
+  (should (equal alectryon-test--coq
+                 (alectryon-test--convert alectryon-test--rst "rst" "coq+rst")))
+  (should (equal alectryon-test--coq
+                 (alectryon-test--convert alectryon-test--md "md" "coq+md"))))
 
 (ert-deftest alectryon-test-convert-round-trips ()
-  "Coq -> RST -> Coq and RST -> Coq -> RST are identity."
+  "Coq -> markup -> Coq round-trips are identity for both RST and Markdown."
   (skip-unless (alectryon-test--converter-available-p))
-  ;; Coq round-trip
-  (let* ((coq-orig "(*|\nHello\n|*)\n\nLemma foo : True. Proof. auto. Qed.\n")
-         (rst (alectryon-test--convert coq-orig "coq+rst" "rst"))
-         (coq-back (alectryon-test--convert rst "rst" "coq+rst")))
-    (should (equal coq-orig coq-back)))
-  ;; RST round-trip
-  (let* ((rst-orig "Hello\n\n.. coq::\n\n   Lemma foo : True.\n")
-         (coq (alectryon-test--convert rst-orig "rst" "coq+rst"))
-         (rst-back (alectryon-test--convert coq "coq+rst" "rst")))
-    (should (equal rst-orig rst-back))))
+  (let ((original "(*|\nHello\n|*)\n\nLemma foo : True. Proof. auto. Qed.\n"))
+    (should (equal original
+                   (alectryon-test--convert
+                    (alectryon-test--convert original "coq+rst" "rst")
+                    "rst" "coq+rst")))
+    (should (equal original
+                   (alectryon-test--convert
+                    (alectryon-test--convert original "coq+md" "md")
+                    "md" "coq+md")))))
 
 (ert-deftest alectryon-test-convert-edge-cases ()
   "Conversion handles empty, code-only, and prose-only inputs."
   (skip-unless (alectryon-test--converter-available-p))
-  ;; Empty
   (should (equal "" (string-trim (alectryon-test--convert "" "coq+rst" "rst"))))
-  ;; Code only
-  (let ((rst (alectryon-test--convert "Lemma foo : True.\n" "coq+rst" "rst")))
-    (should (string-match-p "Lemma foo" rst))
-    (should (string-match-p "\\.\\. coq::" rst)))
-  ;; Prose only
-  (should (string-match-p "Just prose"
-            (alectryon-test--convert "(*| Just prose. |*)\n" "coq+rst" "rst"))))
+  (should (equal ".. coq::\n\n   Lemma foo : True.\n"
+                 (alectryon-test--convert "Lemma foo : True.\n" "coq+rst" "rst")))
+  (should (equal "Just prose.\n"
+                 (alectryon-test--convert "(*| Just prose. |*)\n" "coq+rst" "rst"))))
 
-(ert-deftest alectryon-test-convert-multiple-blocks ()
-  "Multiple code/prose blocks survive conversion."
+;;;; In-buffer conversion (alectryon--convert-from)
+
+(ert-deftest alectryon-test-convert-from ()
+  "alectryon--convert-from replaces buffer contents in-place and round-trips."
   (skip-unless (alectryon-test--converter-available-p))
-  (let ((rst (alectryon-test--convert
-              (concat "(*| First |*)\n\nLemma a : True.\n\n"
-                      "(*| Second |*)\n\nLemma b : True.\n")
-              "coq+rst" "rst")))
-    (should (string-match-p "First" rst))
-    (should (string-match-p "Second" rst))
-    (should (string-match-p "Lemma a" rst))
-    (should (string-match-p "Lemma b" rst))))
-
-;;;; Markdown support
-
-(ert-deftest alectryon-test-config-markdown ()
-  "Config produces correct tags and ids for markdown-mode."
   (with-temp-buffer
     (setq-local alectryon-prog-mode 'coq-mode)
-    (setq-local alectryon-text-mode 'markdown-mode)
-    (should (equal "md" (alectryon--config :tag 'text)))
-    (should (equal "coq+md" (alectryon--config-frontend 'coq-mode)))
-    (should (equal "md" (alectryon--config-backend 'coq-mode)))))
+    (setq-local alectryon-text-mode 'rst-mode)
+    (insert alectryon-test--coq)
+    (goto-char (point-min))
+    ;; Coq -> RST
+    (alectryon--convert-from 'coq-mode)
+    (should (equal alectryon-test--rst (buffer-string)))
+    ;; RST -> Coq
+    (alectryon--convert-from 'rst-mode)
+    (should (equal alectryon-test--coq (buffer-string)))))
 
-(ert-deftest alectryon-test-guess-text-mode ()
-  "Filename suffix detection for _md and _rst."
+(ert-deftest alectryon-test-convert-from-preserves-point ()
+  "alectryon--convert-from preserves point position via --mark-point."
+  (skip-unless (alectryon-test--converter-available-p))
   (with-temp-buffer
-    (let ((buffer-file-name "/tmp/foo_md.v"))
-      (should (eq 'markdown-mode (alectryon--guess-text-mode))))
-    (let ((buffer-file-name "/tmp/foo_rst.v"))
-      (should (eq 'rst-mode (alectryon--guess-text-mode))))
-    (let ((buffer-file-name "/tmp/foo.v"))
-      (should-not (alectryon--guess-text-mode)))))
-
-(ert-deftest alectryon-test-convert-coq-to-md ()
-  "Coq with literate comments converts to Markdown with fenced code."
-  (skip-unless (alectryon-test--converter-available-p))
-  (let ((md (alectryon-test--convert
-             "(*|\nHello\n|*)\n\nLemma foo : True.\n"
-             "coq+md" "md")))
-    (should (string-match-p "Hello" md))
-    (should (string-match-p "```{coq}" md))
-    (should (string-match-p "Lemma foo" md))))
-
-(ert-deftest alectryon-test-convert-md-round-trip ()
-  "Coq -> Markdown -> Coq round-trip is identity."
-  (skip-unless (alectryon-test--converter-available-p))
-  (let* ((original "(*|\nHello\n|*)\n\nLemma foo : True. Proof. auto. Qed.\n")
-         (md (alectryon-test--convert original "coq+md" "md"))
-         (coq (alectryon-test--convert md "md" "coq+md")))
-    (should (equal original coq))))
+    (setq-local alectryon-prog-mode 'coq-mode)
+    (setq-local alectryon-text-mode 'rst-mode)
+    (insert alectryon-test--coq)
+    (goto-char 7) ;; "l" in "Hello"
+    (alectryon--convert-from 'coq-mode)
+    ;; "Hello" starts at position 1 in RST output; "l" is at 3
+    (should (equal 3 (point)))))
 
 (provide 'alectryon-tests)
 ;;; alectryon-tests.el ends here
