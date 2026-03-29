@@ -202,26 +202,21 @@ switching.")
     (or (alist-get mode alectryon-text-modes)
         (error "Unrecognized Alectryon markup mode: %s" mode))))
 
-(defun alectryon--provided-mode-derived-p (mode &rest modes)
-  "Check if MODE is derived from MODES.
+(defun alectryon--prog-mode-p (&optional mode)
+  "Return t if MODE is a code mode, nil if a text mode.
 
-Known programming and markup modes get hardcoded answers."
-  (or (apply #'provided-mode-derived-p mode modes)
-      ;; Special override for coq-mode, which doesn't inherit from `prog-mode'.
-      (and (memq 'prog-mode modes)
-           (apply #'provided-mode-derived-p mode (mapcar #'car alectryon-prog-modes)))
-      (and (memq 'text-mode modes)
-           (apply #'provided-mode-derived-p mode (mapcar #'car alectryon-text-modes)))))
+Error out if neither."
+  (setq mode (or mode major-mode))
+  (cond
+   ((assq mode alectryon-prog-modes) t)
+   ((assq mode alectryon-text-modes) nil)
+   (t (error "Unrecognized mode: %s (expecting one of %s)"
+             mode (mapcar #'car (append alectryon-text-modes alectryon-prog-modes))))))
 
-(defmacro alectryon--mode-case (if-code if-markup &optional mode)
-  "Choose between IF-CODE and IF-MARKUP based on MODE."
+(defmacro alectryon--mode-case (if-prog if-markup &optional mode)
+  "Choose between IF-PROG and IF-MARKUP based on MODE."
   (declare (indent 0) (debug t))
-  (let ((m (make-symbol "mode")))
-    `(let ((,m (or ,mode major-mode)))
-       (cond
-        ((alectryon--provided-mode-derived-p ,m 'prog-mode) ,if-code)
-        ((alectryon--provided-mode-derived-p ,m 'text-mode) ,if-markup)
-        (t (error "Unrecognized mode: %s" ,m))))))
+  `(if (alectryon--prog-mode-p ,mode) ,if-prog ,if-markup))
 
 (defun alectryon--config (prop &optional text-or-prog)
   "Get value of configuration variable PROP.

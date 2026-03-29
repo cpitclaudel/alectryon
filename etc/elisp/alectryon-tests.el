@@ -56,20 +56,19 @@
       (should (equal "|*)" (cdr delims))))
     ;; Frontend/backend
     (should (equal "coq+rst" (alectryon--config-frontend 'coq-mode)))
-    (should (equal "rst" (alectryon--config-backend 'coq-mode)))
-    ))
+    (should (equal "rst" (alectryon--config-backend 'coq-mode)))))
 
 (ert-deftest alectryon-test-mode-dispatch ()
-  "mode-case and provided-mode-derived-p dispatch correctly."
+  "prog-mode-p and mode-case dispatch correctly."
+  ;; prog-mode-p
+  (should (eq t (alectryon--prog-mode-p 'coq-mode)))
+  (should (eq nil (alectryon--prog-mode-p 'rst-mode)))
+  (should (eq nil (alectryon--prog-mode-p 'markdown-mode)))
+  (should-error (alectryon--prog-mode-p 'fundamental-mode))
   ;; mode-case
   (should (eq 'code (alectryon--mode-case 'code 'text 'coq-mode)))
   (should (eq 'text (alectryon--mode-case 'code 'text 'rst-mode)))
-  ;; provided-mode-derived-p: alist lookup
-  (should (alectryon--provided-mode-derived-p 'coq-mode 'prog-mode))
-  (should (alectryon--provided-mode-derived-p 'rst-mode 'text-mode))
-  (should (alectryon--provided-mode-derived-p 'markdown-mode 'text-mode))
-  ;; provided-mode-derived-p: real inheritance
-  (should (alectryon--provided-mode-derived-p 'emacs-lisp-mode 'prog-mode)))
+  (should (eq 'text (alectryon--mode-case 'code 'text 'markdown-mode))))
 
 ;;;; Literate comment detection
 
