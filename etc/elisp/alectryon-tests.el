@@ -67,6 +67,7 @@
   ;; provided-mode-derived-p: alist lookup
   (should (alectryon--provided-mode-derived-p 'coq-mode 'prog-mode))
   (should (alectryon--provided-mode-derived-p 'rst-mode 'text-mode))
+  (should (alectryon--provided-mode-derived-p 'markdown-mode 'text-mode))
   ;; provided-mode-derived-p: real inheritance
   (should (alectryon--provided-mode-derived-p 'emacs-lisp-mode 'prog-mode)))
 
@@ -152,6 +153,45 @@
     (should (string-match-p "Second" rst))
     (should (string-match-p "Lemma a" rst))
     (should (string-match-p "Lemma b" rst))))
+
+;;;; Markdown support
+
+(ert-deftest alectryon-test-config-markdown ()
+  "Config produces correct tags and ids for markdown-mode."
+  (with-temp-buffer
+    (setq-local alectryon-prog-mode 'coq-mode)
+    (setq-local alectryon-text-mode 'markdown-mode)
+    (should (equal "md" (alectryon--config :tag 'text)))
+    (should (equal "coq+md" (alectryon--config-frontend 'coq-mode)))
+    (should (equal "md" (alectryon--config-backend 'coq-mode)))))
+
+(ert-deftest alectryon-test-detect-text-mode ()
+  "Filename suffix detection for _md and _rst."
+  (with-temp-buffer
+    (let ((buffer-file-name "/tmp/foo_md.v"))
+      (should (eq 'markdown-mode (alectryon--detect-text-mode))))
+    (let ((buffer-file-name "/tmp/foo_rst.v"))
+      (should (eq 'rst-mode (alectryon--detect-text-mode))))
+    (let ((buffer-file-name "/tmp/foo.v"))
+      (should-not (alectryon--detect-text-mode)))))
+
+(ert-deftest alectryon-test-convert-coq-to-md ()
+  "Coq with literate comments converts to Markdown with fenced code."
+  (skip-unless (alectryon-test--converter-available-p))
+  (let ((md (alectryon-test--convert
+             "(*|\nHello\n|*)\n\nLemma foo : True.\n"
+             "coq+md" "md")))
+    (should (string-match-p "Hello" md))
+    (should (string-match-p "```{coq}" md))
+    (should (string-match-p "Lemma foo" md))))
+
+(ert-deftest alectryon-test-convert-md-round-trip ()
+  "Coq -> Markdown -> Coq round-trip is identity."
+  (skip-unless (alectryon-test--converter-available-p))
+  (let* ((original "(*|\nHello\n|*)\n\nLemma foo : True. Proof. auto. Qed.\n")
+         (md (alectryon-test--convert original "coq+md" "md"))
+         (coq (alectryon-test--convert md "md" "coq+md")))
+    (should (equal original coq))))
 
 (provide 'alectryon-tests)
 ;;; alectryon-tests.el ends here

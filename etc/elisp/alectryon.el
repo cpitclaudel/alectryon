@@ -158,7 +158,9 @@
 
 (defconst alectryon-text-modes
   '(( rst-mode
-      :tag "rst")))
+      :tag "rst")
+    ( markdown-mode
+      :tag "md")))
 
 (defvar-local alectryon-prog-mode 'coq-mode
   "Programming mode to use with Alectryon in this buffer.
@@ -253,6 +255,33 @@ variable.  If it is nil, choose based on the current mode."
              (not (derived-mode-p mode)))
     (alectryon--set-mode mode)))
 
+(defun alectryon--detect-text-mode ()
+  "Detect the text mode from the buffer filename suffix.
+Return a mode symbol if the filename contains `_md' or `_rst'
+before the extension, or nil if ambiguous."
+  (let ((name (or buffer-file-name (buffer-name))))
+    (cond
+     ((string-match-p "_md\\." name) 'markdown-mode)
+     ((string-match-p "_rst\\." name) 'rst-mode)
+     (t nil))))
+
+(defun alectryon--ensure-text-mode ()
+  "Ensure `alectryon-text-mode' is set, prompting if needed.
+Auto-detects from filename suffix (_md, _rst).  If ambiguous,
+prompts with available text modes."
+  (when (alectryon--mode-case t nil)
+    (let ((detected (alectryon--detect-text-mode)))
+      (if detected
+          (setq-local alectryon-text-mode detected)
+        (let* ((available (cl-remove-if-not
+                           (lambda (entry) (fboundp (car entry)))
+                           alectryon-text-modes))
+               (choices (mapcar (lambda (entry) (symbol-name (car entry))) available))
+               (choice (if (= (length choices) 1)
+                           (car choices)
+                         (completing-read "Markup mode: " choices nil t))))
+          (setq-local alectryon-text-mode (intern choice)))))))
+
 ;;;; Conversion between code and markup
 
 (defun alectryon--run-converter (input args)
@@ -309,6 +338,7 @@ Please open an issue at https://github.com/cpitclaudel/alectryon.")
 
 (defun alectryon--toggle ()
   "Switch between code and markup views of the same file."
+  (alectryon--ensure-text-mode)
   (alectryon--record-mode)
   (mapc #'funcall (alectryon--config :exit-hooks))
   (let ((modified (buffer-modified-p)))
@@ -372,7 +402,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   :error-parser #'alectryon--parse-errors
   :predicate (lambda () alectryon-mode)
   :verify (lambda (_) (alectryon--flycheck-verify-enabled))
-  :modes '(coq-mode rst-mode))
+  :modes '(coq-mode rst-mode markdown-mode))
 
 (add-to-list 'flycheck-checkers 'alectryon)
 
