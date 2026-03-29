@@ -540,7 +540,7 @@ In markup mode:
     (alectryon--record-mode)
     (alectryon--invoke 'flycheck-mode)
     (add-hook 'write-contents-functions #'alectryon--save t t)
-    (add-hook 'flyspell-mode-hook #'alectryon--flyspell-hook)
+    (add-hook 'flyspell-mode-hook #'alectryon--flyspell-hook nil t)
     (alectryon--flyspell-hook)
     (alectryon--mode-case (alectryon--prog-mode 1) (alectryon--text-mode 1)))
    (t
@@ -549,7 +549,7 @@ In markup mode:
       (message "Reverted to %s mode." mode-name))
     (kill-local-variable 'alectryon--original-mode)
     (remove-hook 'write-contents-functions #'alectryon--save t)
-    (remove-hook 'flyspell-mode-hook #'alectryon--flyspell-hook)
+    (remove-hook 'flyspell-mode-hook #'alectryon--flyspell-hook t)
     (alectryon--flyspell-unhook)
     (alectryon--mode-case (alectryon--prog-mode -1) (alectryon--text-mode -1))))
   (alectryon--refontify))
