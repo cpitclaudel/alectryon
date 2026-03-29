@@ -388,14 +388,21 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   "Face used to highlight Alectryon comment delimiters."
   :group 'alectryon)
 
+(defun alectryon--in-literate-comment-p (&optional ppss)
+  "Check if PPSS is inside a literate comment.
+
+Defaults to `syntax-ppss' if PPSS is nil."
+  (setq ppss (or ppss (syntax-ppss)))
+  (let* ((comment-opener-pos (nth 8 ppss)))
+    (and comment-opener-pos
+         (save-excursion
+           (goto-char comment-opener-pos)
+           (looking-at-p (car (alectryon--config :comment-delimiters-re 'prog)))))))
+
 (defun alectryon--prog-syntactic-face-function (state)
   "Determine which face to use based on parsing state STATE."
-  (let ((comment-opener-pos (nth 8 state)))
-    (when comment-opener-pos
-      (save-excursion
-        (goto-char comment-opener-pos)
-        (when (looking-at-p (car (alectryon--config :comment-delimiters-re 'prog)))
-          'alectryon-comment)))))
+  (when (alectryon--in-literate-comment-p state)
+    'alectryon-comment))
 
 ;; TODO: display as a solid line even when it's on the same line.
 (defun alectryon--prog-font-lock-keywords ()
@@ -413,11 +420,8 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   "Insert a pair of Alectryon comment delimiters."
   (interactive)
   (pcase-let*
-      ((face (get-text-property (point) 'face))
-       (`(,open . ,close) (alectryon--config :comment-delimiters 'prog))
-       (in-lit (and (nth 4 (syntax-ppss))
-                    (memq 'alectryon-comment (if (listp face) face (list face)))))
-       (delim (if in-lit
+      ((`(,open . ,close) (alectryon--config :comment-delimiters 'prog))
+       (delim (if (alectryon--in-literate-comment-p)
                   `(,(format "%s\n\n" close) . ,(format "\n\n%s" open))
                 `(,(format "%s\n" open) . ,(format "\n%s" close)))))
     (insert (car delim))
