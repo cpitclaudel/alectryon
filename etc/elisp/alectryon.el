@@ -569,7 +569,7 @@ In markup mode:
   :lighter ""
   (cond
    (alectryon-presentation-mode
-    (setq alectryon--prog-font-lock-keywords (alectryon--prog-presentation-font-lock-keywords))
+    (setq alectryon--prog-presentation-font-lock-keywords (alectryon--prog-presentation-font-lock-keywords))
     (font-lock-add-keywords nil alectryon--prog-presentation-font-lock-keywords))
    (t
     (font-lock-remove-keywords nil alectryon--prog-presentation-font-lock-keywords)))
