@@ -118,6 +118,14 @@
   (declare (indent 0) (debug t))
   `(save-excursion (alectryon--widened ,@body)))
 
+(defmacro alectryon--atomic (&rest body)
+  "Run BODY with all undo entries merged into a single step."
+  (declare (indent 0) (debug t))
+  `(atomic-change-group
+     ,(if (fboundp 'with-undo-amalgamate)
+          `(with-undo-amalgamate ,@body)
+        `(progn ,@body))))
+
 (defun alectryon--invoke (fn &rest args)
   "Call FN on ARGS, if FN is bound."
   (when (fboundp fn)
@@ -284,7 +292,7 @@ The output goes into the current buffer."
           (insert-buffer-substring output))))
     (goto-char (point-min))
     (if (search-forward marker nil t)
-        (delete-char -1)
+        (replace-match "") ;; Avoid `delete-char'/`undo-auto-amalgamate'
       (message "Point marker missing from Alectryon's output.
 Please open an issue at https://github.com/cpitclaudel/alectryon.")
       (goto-char (min pt (point-max))))))
@@ -299,10 +307,11 @@ Please open an issue at https://github.com/cpitclaudel/alectryon.")
   (alectryon--record-mode)
   (mapc #'funcall (alectryon--config :exit-hooks))
   (let ((modified (buffer-modified-p)))
-    (alectryon--convert-from major-mode)
-    (push `(apply ,(apply-partially #'alectryon--set-mode major-mode))
-          buffer-undo-list)
-    (alectryon--set-mode (alectryon--mode-case alectryon-text-mode alectryon-prog-mode))
+    (alectryon--atomic
+      (alectryon--convert-from major-mode)
+      (push `(apply ,(apply-partially #'alectryon--set-mode major-mode))
+            buffer-undo-list)
+      (alectryon--set-mode (alectryon--mode-case alectryon-text-mode alectryon-prog-mode)))
     (set-buffer-modified-p modified)))
 
 (defun alectryon-toggle ()
