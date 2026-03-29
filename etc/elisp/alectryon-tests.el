@@ -4,9 +4,13 @@
 
 ;;; Code:
 
-;; Needed to find MELPA-installed flycheck on the load-path.
 (require 'package)
 (package-initialize)
+
+(when (and (getenv "CI") (not (package-installed-p 'flycheck)))
+  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
+  (package-refresh-contents)
+  (package-install 'flycheck))
 
 (eval-and-compile
   (defconst alectryon-test--directory

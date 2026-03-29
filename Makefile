@@ -13,7 +13,7 @@ export PYTHONIOENCODING ?= utf-8
 
 dependencies := $(python_bin)/pip
 
-.PHONY: test coverage develop dist upload lint-changes lint
+.PHONY: test coverage develop dist upload lint-changes lint elisp
 
 ## Main targets
 
@@ -29,6 +29,9 @@ test: $(dependencies)
 
 rocq: $(dependencies)
 	+$(make) -C recipes --always-make rocq
+
+elisp:
+	emacs --batch -Q -l etc/elisp/alectryon-tests.el -f ert-run-tests-batch-and-exit
 
 dist: $(dependencies)
 	python -m build
