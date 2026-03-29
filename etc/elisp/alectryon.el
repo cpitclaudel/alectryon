@@ -185,10 +185,13 @@ on the current mode.")
       (error "Unrecognized Alectryon markup mode: %s" alectryon-text-mode)))
 
 (defun alectryon--provided-mode-derived-p (mode &rest modes)
-  "Check if MODE is derived from MODES."
+  "Check if MODE is derived from MODES.
+
+Known programming and markup modes get hardcoded answers."
   (or (apply #'provided-mode-derived-p mode modes)
       ;; Special override for coq-mode, which doesn't inherit from `prog-mode'.
-      (and (eq mode 'coq-mode) (member 'prog-mode modes))))
+      (and (memq 'prog-mode modes) (assq mode alectryon-prog-modes))
+      (and (memq 'text-mode modes) (assq mode alectryon-text-modes))))
 
 (defmacro alectryon--mode-case (if-code if-markup &optional mode)
   "Choose between IF-CODE and IF-MARKUP based on MODE."
