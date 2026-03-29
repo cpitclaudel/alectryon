@@ -192,8 +192,10 @@ on the current mode.")
 Known programming and markup modes get hardcoded answers."
   (or (apply #'provided-mode-derived-p mode modes)
       ;; Special override for coq-mode, which doesn't inherit from `prog-mode'.
-      (and (memq 'prog-mode modes) (assq mode alectryon-prog-modes))
-      (and (memq 'text-mode modes) (assq mode alectryon-text-modes))))
+      (and (memq 'prog-mode modes)
+           (apply #'provided-mode-derived-p mode (mapcar #'car alectryon-prog-modes)))
+      (and (memq 'text-mode modes)
+           (apply #'provided-mode-derived-p mode (mapcar #'car alectryon-text-modes)))))
 
 (defmacro alectryon--mode-case (if-code if-markup &optional mode)
   "Choose between IF-CODE and IF-MARKUP based on MODE."
