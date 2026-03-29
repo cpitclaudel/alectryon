@@ -154,7 +154,7 @@
       :exit-hooks (alectryon--coq-exit-hook)
       :comment-delimiters ("(*|" . "|*)")
       :comment-delimiters-re ("([*][|]" . "[|][*])")
-      :annotations-re "([*]\s*\\(\\(?:\s*[.][-a-z]+\\)+\\)\s*[*])")))
+      :annotations-re "[(][*]\\(\\(?:\\s-*[.][-a-z]+\\)+\\)\\s-*[*][)]")))
 
 (defconst alectryon-text-modes
   '(( rst-mode
