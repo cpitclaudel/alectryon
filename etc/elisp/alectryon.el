@@ -77,6 +77,7 @@
 
 ;;; Code:
 
+(require 'cl-lib)
 (require 'flycheck)
 (require 'proof-general nil t)
 
@@ -95,7 +96,7 @@
 
 (defconst alectryon--directory
   (expand-file-name "../../" (file-name-directory alectryon--script-full-path))
-  "Full path to directory of this script.")
+  "Full path to the root of the Alectryon repo.")
 
 (defvaralias 'flycheck-alectryon-executable 'alectryon-executable)
 
@@ -137,10 +138,9 @@
 
 (defun alectryon--refontify ()
   "Recompute fontification for visible part of current buffer."
-  (if (and (fboundp 'font-lock-flush) (fboundp 'font-lock-ensure))
-      (progn (setq font-lock-fontified t)
-             (font-lock-flush) (font-lock-ensure))
-    (with-no-warnings (font-lock-fontify-buffer))))
+  (setq font-lock-fontified t)
+  (font-lock-flush)
+  (font-lock-ensure))
 
 ;;;; Modes selection
 
@@ -195,13 +195,13 @@ Known programming and markup modes get hardcoded answers."
 
 (defmacro alectryon--mode-case (if-code if-markup &optional mode)
   "Choose between IF-CODE and IF-MARKUP based on MODE."
+  (declare (indent 0) (debug t))
   (let ((m (make-symbol "mode")))
-    `(progn
-       (let ((,m (or ,mode major-mode)))
-         (cond
-          ((alectryon--provided-mode-derived-p ,m 'prog-mode) ,if-code)
-          ((alectryon--provided-mode-derived-p ,m 'text-mode) ,if-markup)
-          (t (error "Unrecognized mode: %s" ,m)))))))
+    `(let ((,m (or ,mode major-mode)))
+       (cond
+        ((alectryon--provided-mode-derived-p ,m 'prog-mode) ,if-code)
+        ((alectryon--provided-mode-derived-p ,m 'text-mode) ,if-markup)
+        (t (error "Unrecognized mode: %s" ,m))))))
 
 (defun alectryon--config (prop &optional text-or-prog)
   "Get value of configuration variable PROP.
@@ -268,7 +268,7 @@ The output goes into the current buffer."
                  (alectryon--widened
                    (apply #'call-process-region nil nil alectryon
                           nil buffer nil args)))))
-      (unless (eq 0 ex)
+      (unless (eql 0 ex)
         (error "Conversion error (%s) when running `%s':\n%s"
                ex (mapconcat #'shell-quote-argument (cons alectryon args) " ")
                (alectryon--buffer-string))))))
@@ -278,10 +278,12 @@ The output goes into the current buffer."
   `("--frontend" ,(alectryon--config-frontend mode)
     "--backend" ,(alectryon--config-backend mode)))
 
+(defconst alectryon--point-marker "")
+
 (defun alectryon--convert-from (mode)
   "Convert current buffer from MODE."
   (let* ((pt (point))
-         (marker "")
+         (marker alectryon--point-marker)
          (pt-str (number-to-string (1- pt)))
          (args `("--mark-point" ,pt-str ,marker ,@(alectryon--converter-args mode)))
          (input (current-buffer)))
@@ -452,6 +454,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   "Translate back to `alectryon--original-mode' and save the result.
 Current document must have a file name."
   (unless (alectryon--in-original-mode)
+    (cl-assert buffer-file-name)
     (let ((mode major-mode)
           (input (current-buffer))
           (fname buffer-file-name))
@@ -486,7 +489,7 @@ Current document must have a file name."
   :keymap alectryon-prog-mode-map
   (cond
    (alectryon--prog-mode
-    (visual-line-mode)
+    (visual-line-mode 1)
     (setq alectryon--prog-font-lock-keywords (alectryon--prog-font-lock-keywords))
     (font-lock-add-keywords nil alectryon--prog-font-lock-keywords)
     (make-local-variable 'font-lock-extra-managed-props)
@@ -513,7 +516,7 @@ Current document must have a file name."
   (setq-local alectryon--original-mode (or alectryon--original-mode major-mode))
   (alectryon--mode-case
    (setq alectryon-prog-mode major-mode)
-   (setf alectryon-text-mode major-mode)))
+   (setq alectryon-text-mode major-mode)))
 
 ;; Adding the menu to a parent keymap causes it to be duplicated (?!), so add it
 ;; to both submaps instead.
@@ -582,6 +585,9 @@ In markup mode:
   :lighter ""
   (cond
    (alectryon-presentation-mode
+    (unless alectryon--prog-mode
+      (setq alectryon-presentation-mode nil)
+      (user-error "`alectryon-presentation-mode' needs Alectryon in programming mode"))
     (setq alectryon--prog-presentation-font-lock-keywords (alectryon--prog-presentation-font-lock-keywords))
     (font-lock-add-keywords nil alectryon--prog-presentation-font-lock-keywords))
    (t
