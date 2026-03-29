@@ -224,17 +224,19 @@ variable.  If it is nil, choose based on the current mode."
 
 (defun alectryon-set-text-mode (mode)
   "Set markup mode to MODE."
-  (interactive (completing-read "Markup mode to use in this buffer: "
-                                (mapcar #'car alectryon-text-modes) nil t))
+  (interactive (list (completing-read "Markup mode to use in this buffer: "
+                                      (mapcar #'car alectryon-text-modes) nil t)))
+  (when (stringp mode) (setq mode (intern mode)))
   (setf alectryon-text-mode mode)
   (when (and (derived-mode-p 'text-mode)
              (not (derived-mode-p mode)))
     (alectryon--set-mode mode)))
 
 (defun alectryon-set-prog-mode (mode)
-  "Set markup mode to MODE."
-  (interactive (completing-read "Programming mode to use in this buffer: "
-                                (mapcar #'car alectryon-prog-modes) nil t))
+  "Set programming mode to MODE."
+  (interactive (list (completing-read "Programming mode to use in this buffer: "
+                                      (mapcar #'car alectryon-prog-modes) nil t)))
+  (when (stringp mode) (setq mode (intern mode)))
   (setf alectryon-prog-mode mode)
   (when (and (derived-mode-p 'prog-mode)
              (not (derived-mode-p mode)))
