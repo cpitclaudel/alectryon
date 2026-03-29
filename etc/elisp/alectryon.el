@@ -120,12 +120,17 @@
   `(save-excursion (alectryon--widened ,@body)))
 
 (defmacro alectryon--atomic (&rest body)
-  "Run BODY with all undo entries merged into a single step."
+  "Run BODY as a single undoable step.
+Errors roll back all changes.  Undo boundaries before and after
+ensure BODY is one undo group."
   (declare (indent 0) (debug t))
-  `(atomic-change-group
-     ,(if (fboundp 'with-undo-amalgamate)
-          `(with-undo-amalgamate ,@body)
-        `(progn ,@body))))
+  `(progn
+     (undo-boundary)
+     (atomic-change-group
+       ,(if (fboundp 'with-undo-amalgamate)
+            `(with-undo-amalgamate ,@body)
+          `(progn ,@body)))
+     (undo-boundary)))
 
 (defun alectryon--invoke (fn &rest args)
   "Call FN on ARGS, if FN is bound."
@@ -353,13 +358,23 @@ The output goes into the current buffer."
 Please open an issue at https://github.com/cpitclaudel/alectryon.")
       (goto-char (min pt (point-max))))))
 
+(defvar alectryon--winding-down nil
+  "Indicates whether we're in the process of disabling `alectryon-mode'.")
+
+(defvar alectryon-mode)
+
 (defun alectryon--set-mode (mode)
-  "Switch to MODE and enable `alectryon-mode'."
+  "Switch to MODE.
+
+Also enable `alectryon-mode' if `alectryon--winding-down' is nil."
   (alectryon--invoke mode)
-  (funcall #'alectryon-mode))
+  (unless (or alectryon--winding-down alectryon-mode)
+    (alectryon-mode 1)))
 
 (defun alectryon--toggle ()
-  "Switch between code and markup views of the same file."
+  "Switch between code and markup views of the same file.
+
+With REENABLE, turn `alectryon-mode' back on after switching major modes."
   (alectryon--record-mode)
   (alectryon--ensure-text-mode-set)
   (mapc #'funcall (alectryon--config :exit-hooks))
@@ -371,6 +386,7 @@ Please open an issue at https://github.com/cpitclaudel/alectryon.")
       (alectryon--set-mode (alectryon--mode-case alectryon-text-mode alectryon-prog-mode)))
     (set-buffer-modified-p modified)))
 
+;;;###autoload
 (defun alectryon-toggle ()
   "Switch between code and markup views of the same file."
   (interactive)
@@ -617,7 +633,8 @@ In markup mode:
     (alectryon--mode-case (alectryon--prog-mode 1) (alectryon--text-mode 1)))
    (t
     (unless (alectryon--in-original-mode)
-      (alectryon--toggle)
+      (let ((alectryon--winding-down t))
+        (alectryon--toggle))
       (message "Reverted to %s mode." mode-name))
     (kill-local-variable 'alectryon--original-mode)
     (remove-hook 'write-contents-functions #'alectryon--save t)
@@ -651,7 +668,13 @@ In markup mode:
   (font-lock-flush))
 
 ;;;###autoload
-(add-hook 'coq-mode-hook #'alectryon-mode t)
+(defun alectryon-mode-maybe-enable ()
+  "Enable `alectryon-mode', except when winding down."
+  (unless alectryon--winding-down
+    (alectryon-mode 1)))
+
+;;;###autoload
+(add-hook 'coq-mode-hook #'alectryon-mode-maybe-enable t)
 
 (provide 'alectryon)
 ;;; alectryon.el ends here

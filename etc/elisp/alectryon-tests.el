@@ -221,5 +221,40 @@
     ;; "Hello" starts at position 1 in RST output; "l" is at 3
     (should (equal 3 (point)))))
 
+;;;; Toggle lifecycle
+
+;; Stub coq-mode for testing (real coq-mode may not be installed)
+(unless (fboundp 'coq-mode)
+  (define-derived-mode coq-mode prog-mode "Coq"
+    (set-syntax-table (alectryon-test--coq-syntax-table))))
+
+(ert-deftest alectryon-test-toggle-lifecycle ()
+  "Toggle converts content and switches modes; disable reverts; undo restores."
+  (skip-unless (alectryon-test--converter-available-p))
+  (with-temp-buffer
+    (coq-mode)
+    (setq-local alectryon-text-mode 'rst-mode)
+    (buffer-enable-undo)
+    (insert alectryon-test--coq)
+    (alectryon-mode 1)
+    ;; Preconditions
+    (should (eq 'coq-mode major-mode))
+    (should alectryon-mode)
+    ;; Toggle: Coq -> RST
+    (alectryon--toggle)
+    (should (eq 'rst-mode major-mode))
+    (should alectryon-mode)
+    (should (equal alectryon-test--rst (buffer-string)))
+    ;; Disable alectryon-mode (should revert to Coq)
+    (alectryon-mode -1)
+    (should (eq 'coq-mode major-mode))
+    (should-not alectryon-mode)
+    (should (equal alectryon-test--coq (buffer-string)))
+    ;; Undo the disable: should restore RST + alectryon-mode
+    (primitive-undo 2 buffer-undo-list)
+    (should (eq 'rst-mode major-mode))
+    (should alectryon-mode)
+    (should (equal alectryon-test--rst (buffer-string)))))
+
 (provide 'alectryon-tests)
 ;;; alectryon-tests.el ends here
