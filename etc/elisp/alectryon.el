@@ -201,7 +201,7 @@ variable.  If it is nil, choose based on the current mode."
   (unless text-or-prog
     (setq text-or-prog (alectryon--mode-case 'prog 'text)))
   (plist-get
-   (pcase text-or-prog
+   (pcase-exhaustive text-or-prog
      (`prog (alectryon--prog-plist))
      (`text (alectryon--text-plist)))
    prop))
