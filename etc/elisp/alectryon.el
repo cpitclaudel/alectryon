@@ -593,10 +593,11 @@ Current document must have a file name."
 
 (defun alectryon--record-mode ()
   "Initialize `alectryon--original-mode'."
-  (setq-local alectryon--original-mode (or alectryon--original-mode major-mode))
   (alectryon--mode-case
    (setq alectryon-prog-mode major-mode)
-   (setq alectryon-text-mode major-mode)))
+   (setq alectryon-text-mode major-mode))
+  ;; Record original mode only if we're in a supported mode
+  (setq-local alectryon--original-mode (or alectryon--original-mode major-mode)))
 
 ;; Adding the menu to a parent keymap causes it to be duplicated (?!), so add it
 ;; to both submaps instead.

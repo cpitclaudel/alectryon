@@ -314,5 +314,21 @@
     (should (equal alectryon-test--coq (buffer-string)))
     (should (eq 'coq-mode alectryon--original-mode))))
 
+(ert-deftest alectryon-test-original-mode-not-poisoned ()
+  "Enabling alectryon-mode from an unsupported mode must not poison
+alectryon--original-mode for future activations.
+Issue: alectryon--record-mode runs before alectryon--mode-case validation."
+  (with-temp-buffer
+    (fundamental-mode)
+    ;; Attempt to enable from fundamental-mode (unsupported) -- should error
+    (condition-case nil
+        (alectryon-mode 1)
+      (error nil))
+    ;; Now switch to a supported mode and enable
+    (coq-mode)
+    ;; alectryon--original-mode should be coq-mode, not fundamental-mode
+    (should (or (null alectryon--original-mode)
+                (eq 'coq-mode alectryon--original-mode)))))
+
 (provide 'alectryon-tests)
 ;;; alectryon-tests.el ends here
