@@ -577,7 +577,6 @@ Current document must have a file name."
     (add-function :before-until (local 'font-lock-syntactic-face-function)
                   #'alectryon--prog-syntactic-face-function '((depth . -100))))
    (t
-    (visual-line-mode -1)
     (font-lock-remove-keywords nil alectryon--prog-font-lock-keywords)
     (remove-function (local 'font-lock-syntactic-face-function)
                      #'alectryon--prog-syntactic-face-function))))
