@@ -14,6 +14,7 @@ concurrency:
 env:
   OCAML_VERSION: "5.4.0"
   ROCQ_VERSIONS: "9.0.1 9.1.0"
+  ALECTRYON_DOCKER_IMAGE: alectryon.ci
 
 jobs:
   test:
@@ -26,7 +27,7 @@ jobs:
       with:
         context: .
         file: deps/Dockerfile.ci
-        tags: alectryon:latest
+        tags: alectryon.ci
         load: true
         build-args: |
           OCAML_VERSION=${{ env.OCAML_VERSION }}
