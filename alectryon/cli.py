@@ -905,6 +905,10 @@ def post_process_arguments(parser, args):
             MSG = "argument --mark-point: Expecting a number, not {!r}"
             parser.error(MSG.format(args.point))
 
+        # LATER: if args.marker.isspace():
+        #     MSG = "argument --mark-point: Marker must not be whitespace ({!r})"
+        #     parser.error(MSG.format(args.marker))
+
     args.pipelines = [(fpath, *resolve_pipeline(fpath, args))
                       for fpath in args.input]
 

@@ -334,14 +334,13 @@ The output goes into the current buffer."
   `("--frontend" ,(alectryon--config-frontend mode)
     "--backend" ,(alectryon--config-backend mode)))
 
-(defconst alectryon--point-marker "")
+(defconst alectryon--point-marker "￼")
 
 (defun alectryon--convert-from (mode)
   "Convert current buffer from MODE."
   (let* ((pt (point))
-         (marker alectryon--point-marker)
          (pt-str (number-to-string (1- pt)))
-         (args `("--mark-point" ,pt-str ,marker ,@(alectryon--converter-args mode)))
+         (args `("--mark-point" ,pt-str ,alectryon--point-marker ,@(alectryon--converter-args mode)))
          (input (current-buffer)))
     (with-temp-buffer
       (alectryon--run-converter input args)
@@ -352,7 +351,7 @@ The output goes into the current buffer."
           (delete-region (point-min) (point-max))
           (insert-buffer-substring output))))
     (goto-char (point-min))
-    (if (search-forward marker nil t)
+    (if (search-forward alectryon--point-marker nil t)
         (replace-match "") ;; Avoid `delete-char'/`undo-auto-amalgamate'
       (message "Point marker missing from Alectryon's output.
 Please open an issue at https://github.com/cpitclaudel/alectryon.")
