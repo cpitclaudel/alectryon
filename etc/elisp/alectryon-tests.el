@@ -330,5 +330,26 @@ Issue: alectryon--record-mode runs before alectryon--mode-case validation."
     (should (or (null alectryon--original-mode)
                 (eq 'coq-mode alectryon--original-mode)))))
 
+(ert-deftest alectryon-test-failed-disable-cleanup ()
+  "If the converter fails during disable, hooks must still be cleaned up.
+Issue: error in alectryon--toggle during disable aborts cleanup,
+leaving orphaned sub-modes and save hooks."
+  (skip-unless (alectryon-test--converter-available-p))
+  (with-temp-buffer
+    (coq-mode)
+    (setq-local alectryon-text-mode 'rst-mode)
+    (insert alectryon-test--coq)
+    (alectryon-mode 1)
+    (goto-char (point-min))
+    (alectryon--toggle)
+    ;; Now in rst-mode. Break the converter.
+    (let ((alectryon-executable "nonexistent-binary-xyz"))
+      (condition-case nil
+          (alectryon-mode -1)
+        (error nil)))
+    ;; Even after error, the save hook should not be installed
+    (should-not (memq 'alectryon--save
+                       (buffer-local-value 'write-contents-functions (current-buffer))))))
+
 (provide 'alectryon-tests)
 ;;; alectryon-tests.el ends here

@@ -641,14 +641,15 @@ In markup mode:
     (alectryon--flyspell-hook)
     (alectryon--mode-case (alectryon--prog-mode 1) (alectryon--text-mode 1)))
    (t
-    (unless (alectryon--in-original-mode)
-      (let ((alectryon--winding-down t))
-        (alectryon--toggle))
-      (message "Reverted to %s mode." mode-name))
-    (remove-hook 'write-contents-functions #'alectryon--save t)
-    (remove-hook 'flyspell-mode-hook #'alectryon--flyspell-hook t)
-    (alectryon--flyspell-unhook)
-    (alectryon--mode-case (alectryon--prog-mode -1) (alectryon--text-mode -1))))
+    (unwind-protect
+        (unless (alectryon--in-original-mode)
+          (let ((alectryon--winding-down t))
+            (alectryon--toggle))
+          (message "Reverted to %s mode." mode-name))
+      (remove-hook 'write-contents-functions #'alectryon--save t)
+      (remove-hook 'flyspell-mode-hook #'alectryon--flyspell-hook t)
+      (alectryon--flyspell-unhook)
+      (alectryon--mode-case (alectryon--prog-mode -1) (alectryon--text-mode -1)))))
   (alectryon--refontify))
 
 ;;;; Presentation mode
