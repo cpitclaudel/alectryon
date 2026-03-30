@@ -241,11 +241,13 @@
     (should (eq 'coq-mode major-mode))
     (should alectryon-mode)
     ;; Toggle: Coq -> RST
+    (goto-char (point-min))
     (alectryon--toggle)
     (should (eq 'rst-mode major-mode))
     (should alectryon-mode)
     (should (equal alectryon-test--rst (buffer-string)))
     ;; Disable alectryon-mode (should revert to Coq)
+    (goto-char (point-min))
     (alectryon-mode -1)
     (should (eq 'coq-mode major-mode))
     (should-not alectryon-mode)
@@ -255,6 +257,62 @@
     (should (eq 'rst-mode major-mode))
     (should alectryon-mode)
     (should (equal alectryon-test--rst (buffer-string)))))
+
+(ert-deftest alectryon-test-toggle-undo-preserves-original-mode ()
+  "After undo-of-disable, alectryon--original-mode must still be set."
+  (skip-unless (alectryon-test--converter-available-p))
+  (with-temp-buffer
+    (coq-mode)
+    (setq-local alectryon-text-mode 'rst-mode)
+    (buffer-enable-undo)
+    (insert alectryon-test--coq)
+    (alectryon-mode 1)
+    (goto-char (point-min))
+    (alectryon--toggle)
+    (goto-char (point-min))
+    (alectryon-mode -1)
+    ;; Undo the disable
+    (primitive-undo 2 buffer-undo-list)
+    ;; The critical check: original-mode must be coq-mode, not rst-mode
+    (should (eq 'coq-mode alectryon--original-mode))))
+
+(ert-deftest alectryon-test-disable-without-toggle ()
+  "Disabling alectryon-mode while in original mode skips conversion."
+  (skip-unless (alectryon-test--converter-available-p))
+  (with-temp-buffer
+    (coq-mode)
+    (setq-local alectryon-text-mode 'rst-mode)
+    (insert alectryon-test--coq)
+    (alectryon-mode 1)
+    (should (eq 'coq-mode major-mode))
+    (should alectryon-mode)
+    ;; Disable without ever toggling
+    (alectryon-mode -1)
+    (should (eq 'coq-mode major-mode))
+    (should-not alectryon-mode)
+    ;; Content unchanged
+    (should (equal alectryon-test--coq (buffer-string)))))
+
+(ert-deftest alectryon-test-toggle-undo ()
+  "Undoing a normal toggle restores original mode and content."
+  (skip-unless (alectryon-test--converter-available-p))
+  (with-temp-buffer
+    (coq-mode)
+    (setq-local alectryon-text-mode 'rst-mode)
+    (buffer-enable-undo)
+    (insert alectryon-test--coq)
+    (alectryon-mode 1)
+    ;; Toggle: Coq -> RST
+    (goto-char (point-min))
+    (alectryon--toggle)
+    (should (eq 'rst-mode major-mode))
+    (should (equal alectryon-test--rst (buffer-string)))
+    ;; Undo the toggle
+    (primitive-undo 2 buffer-undo-list)
+    (should (eq 'coq-mode major-mode))
+    (should alectryon-mode)
+    (should (equal alectryon-test--coq (buffer-string)))
+    (should (eq 'coq-mode alectryon--original-mode))))
 
 (provide 'alectryon-tests)
 ;;; alectryon-tests.el ends here

@@ -636,7 +636,6 @@ In markup mode:
       (let ((alectryon--winding-down t))
         (alectryon--toggle))
       (message "Reverted to %s mode." mode-name))
-    (kill-local-variable 'alectryon--original-mode)
     (remove-hook 'write-contents-functions #'alectryon--save t)
     (remove-hook 'flyspell-mode-hook #'alectryon--flyspell-hook t)
     (alectryon--flyspell-unhook)
