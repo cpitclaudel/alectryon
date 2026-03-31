@@ -264,14 +264,12 @@ class literate(unittest.TestCase):
         #   (*|\nHello\n|*)\n\nLemma foo : True.\n
         #   0123456789...
         self.assertEqual(dict(drifts), {
-            -1: [33],                # EOF
-             0: [*range(4, 10),      # comment content (``Hello\n``)
-                 *range(15, 33)],    # code block
-            +1: [3, 14],             # newline after ``(*|``; blank line before code
-            +2: [2, 13],             # ``|`` of ``(*|``; newline after ``|*)``
-            +3: [1, 12],             # ``*`` of ``(*|``; ``)`` of ``|*)``
-            +4: [0, 11],             # ``(`` of ``(*|``; ``*`` of ``|*)``
-            +5: [10],               # ``|`` of ``|*)``
+            0: [*range(4, 11),      # comment content + ``|`` of ``|*)``
+                *range(15, 34)],    # code block + EOF
+            1: [3, 14],             # newline after ``(*|``; blank line before code
+            2: [2, 13],             # ``|`` of ``(*|``; newline after ``|*)``
+            3: [1, 12],             # ``*`` of ``(*|``; ``)`` of ``|*)``
+            4: [0, 11],             # ``(`` of ``(*|``; ``*`` of ``|*)``
         })
 
     def test_mark_point_rst_all_positions(self):
@@ -286,23 +284,22 @@ class literate(unittest.TestCase):
         #   Hello\n\n.. coq::\n\n   Lemma foo : True.\n
         #   0123456789...
         self.assertEqual(dict(drifts), {
-            -1: [38],                  # EOF
-             0: [*range(0, 6),         # prose content (``Hello\n``)
-                 *range(20, 38)],      # code content
-            +1: [19],                  # last indent space
-            +2: [18],                  # indent space
-            +3: [17],                  # indent space
-            +4: [16],                  # newline before indented code
-            +5: [15],                  # newline after ``.. coq::``
-            +6: [14],                  # ``:`` of ``.. coq::``
-            +7: [13],                  # ``:`` of ``.. coq::``
-            +8: [12],                  # ``q`` of ``.. coq::``
-            +9: [11],                  # ``o`` of ``.. coq::``
-           +10: [10],                  # ``c`` of ``.. coq::``
-           +11: [9],                   # `` `` of ``.. coq::``
-           +12: [8],                   # ``.`` of ``.. coq::``
-           +13: [7],                   # ``.`` of ``.. coq::``
-           +14: [6],                   # blank line before directive
+            0: [*range(0, 6),         # prose content (``Hello\n``)
+                *range(6, 7),         # blank line before directive
+                *range(20, 39)],      # code content + EOF
+            1: [19],                  # last indent space
+            2: [18],                  # indent space
+            3: [17],                  # indent space
+            4: [16],                  # newline before indented code
+            5: [15],                  # newline after ``.. coq::``
+            6: [14],                  # ``:`` of ``.. coq::``
+            7: [13],                  # ``:`` of ``.. coq::``
+            8: [12],                  # ``q`` of ``.. coq::``
+            9: [11],                  # ``o`` of ``.. coq::``
+            10: [10],                 # ``c`` of ``.. coq::``
+            11: [9],                  # `` `` of ``.. coq::``
+            12: [8],                  # ``.`` of ``.. coq::``
+            13: [7],                  # ``.`` of ``.. coq::``
         })
 
     def _check_coq_roundtrip(self, coq, expected_drifts):
@@ -324,8 +321,20 @@ class literate(unittest.TestCase):
 
     def test_mark_point_code_only(self):
         self._check_coq_roundtrip("Check True.\n", {
-            0: [*range(0, 12)], -1: [12],
+            0: [*range(0, 13)],
         })
+
+    def split_lines_identity(self):
+        from alectryon.literate import split_lines, StringView
+        source = "hello\nworld\n"
+        sv = StringView(source, 0, len(source))
+        for p in split_lines(sv):
+            self.assertIs(p.s, source)
+
+    def wrap_literate_blank_line(self):
+        from alectryon.literate import get_language, EmptyLine
+        for l in get_language("dafny").wrap_literate([EmptyLine()]):
+            self.assertNotIn(" \n", str(l), "must not have trailing spaces")
 
 if __name__ == '__main__':
     r = unittest.main(testRunner=unittest.TextTestRunner(stream=io.StringIO()), exit=False).result

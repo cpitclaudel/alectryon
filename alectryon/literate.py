@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import Callable, Deque, Dict, Iterable, Iterator, List, Match, \
-    MutableSequence, Optional, Pattern, Tuple, Type, TypeVar, Union, \
+    MutableSequence, Optional, Pattern, Tuple, Type, Union, \
     NamedTuple, Sequence, cast
 
 import re
@@ -118,6 +118,8 @@ class StringView:
 
 class Line:
     def __init__(self, num: int, parts: List[StringView]):
+        assert not parts or any(parts), \
+            f"Line must not have all-empty parts: {parts!r}"
         self.num = num
         self.parts = parts
 
@@ -134,7 +136,7 @@ class Line:
 
     @classmethod
     def of_str(cls, s: str):
-        return cls.of_view(StringView(s))
+        return cls.of_view(StringView(s + "\n"))
 
     def __len__(self):
         """Compute the number of characters in `self`.
@@ -144,11 +146,10 @@ class Line:
         return sum(len(p) for p in self.parts)
 
     def __bool__(self):
-        return len(self) > 0
+        return not self.isspace()
 
     def __str__(self):
-        s = "".join(str(p) for p in self.parts)
-        return s if not s.isspace() else ""
+        return "".join(str(p) for p in self.parts)
 
     def __iter__(self):
         """Iterate over this line's characters.
@@ -208,8 +209,8 @@ class Line:
 
 class EmptyLine(Line):
     """A subclass used to track empty lines added by Alectryon."""
-    def __init__(self, num=-1, parts=[]):
-        super().__init__(num, parts)
+    def __init__(self, num=-1):
+        super().__init__(num, [StringView("\n")])
 
 def strip_deque(lines: Deque[Line]) -> Deque[Line]:
     while lines and lines[0].isspace():
@@ -261,8 +262,12 @@ def remove_consecutive_empty_lines(lines: Iterable[Line]):
         yield line
         prev = line
 
+def _str_nl(l: Line) -> str:
+    s = "" if l.isspace() else str(l)
+    return s if "\n" in s else s + "\n"
+
 def join_lines(lines: Iterable[Line]) -> str:
-    return "".join(str(l) + "\n" for l in remove_consecutive_empty_lines(lines))
+    return "".join(_str_nl(l) for l in remove_consecutive_empty_lines(lines))
 
 # Code → Markup
 # =============
@@ -450,7 +455,7 @@ class LineLangDef(LangDef):
     def wrap_literate(self, lines: Sequence[Line]) -> Iterable[Line]:
         if lines:
             for line in lines:
-                yield self.lit_header + (" " if line else "") + line
+                yield self.lit_header + (" " if not line.isspace() else "") + line
         else:
             yield Line.of_str(self.lit_header)
 
@@ -801,9 +806,9 @@ class IndentedMarkup(RegexMarkup):
         >>> scan = RST(COQ).parse_lit
         >>> scan(ls, 2) # doctest: +ELLIPSIS
         ParsedLitBlock(footer=[],
-                       lines=...[Line(6, ['Text.'])]...,
-                       directive=...[Line(7, ['.. coq:: unfold']),
-                                     Line(8, ['   :name: nm'])]..., ...)
+                       lines=...[Line(6, ['Text.\n'])]...,
+                       directive=...[Line(7, ['.. coq:: unfold\n']),
+                                     Line(8, ['   :name: nm\n'])]..., ...)
         >>> _, ls = split_lines_numbered(StringView('''\
         ... Text.
         ...    .. coq:: unfold
@@ -811,14 +816,14 @@ class IndentedMarkup(RegexMarkup):
         ... '''), 6)
         >>> scan(ls, 2) # doctest: +ELLIPSIS
         ParsedLitBlock(footer=[],
-                       lines=...[Line(6, ['Text.']),
-                                 Line(7, ['   .. coq:: unfold']),
-                                 Line(8, ['   Text.'])]...,
+                       lines=...[Line(6, ['Text.\n']),
+                                 Line(7, ['   .. coq:: unfold\n']),
+                                 Line(8, ['   Text.\n'])]...,
                        directive=...[]..., ...)
         >>> _, ls = split_lines_numbered(StringView('Text.\n   Text.'), 6)
         >>> scan(ls, 2) # doctest: +ELLIPSIS
         ParsedLitBlock(footer=[],
-                       lines=...[Line(6, ['Text.']),
+                       lines=...[Line(6, ['Text.\n']),
                                  Line(7, ['   Text.'])]...,
                        directive=...[]..., body_indent=3, ...)
         """
@@ -934,7 +939,8 @@ class RST(IndentedMarkup):
            (?P<code>
               (?:\n
                 (?:[ \t]*\n)*
-                (?P=indent)[ ][ ][ ] .*$)*)
+                (?P=indent)[ ][ ][ ] .*$)*
+              \n?)
            (?P<footer>)
         """.format(lang.name), re.VERBOSE | re.MULTILINE)
 
@@ -961,7 +967,7 @@ class MYST(BracketedMarkup):
               (?:\n
                 (?:[ \t]*\n)*
                 (?P=indent).*$)*?) # Minimal match
-         \n(?P<footer>(?P=indent)(?P=ticks))
+         \n(?P<footer>(?P=indent)(?P=ticks)\n?)
         """.format(lang.name), re.VERBOSE | re.MULTILINE)
 
 def number_lines(lines: Iterable[StringView], start: int) \
@@ -969,8 +975,11 @@ def number_lines(lines: Iterable[StringView], start: int) \
     d = deque(Line(num, [s]) for (num, s) in enumerate(lines, start=start))
     return start + len(d) - 1, d
 
-def split_lines(text: StringView) -> Iterable[StringView]:
-    return text.split("\n")
+def split_lines(text: StringView) -> List[StringView]:
+    parts = text.split("\n", keepsep=True)
+    if parts and not parts[-1]:  # Drop empty chunk after trailing \n
+        parts.pop()
+    return parts
 
 def split_lines_numbered(text: StringView, start: int) \
     -> Tuple[int, Deque[Line]]:
@@ -1072,22 +1081,22 @@ def code2markup_marked(md: MarkupDef, code, point, marker):
 # note that it detects *all* ‘.. coq::’ blocks, including quoted ones.
 
 def markup_parse(md: MarkupDef, s: str) -> Iterator[ParsedBlock]:
-    """Identify code blocks in text sources.
+    r"""Identify code blocks in text sources.
 
-    >>> print(list(markup_parse(RST(COQ), '''\\
+    >>> print(list(markup_parse(RST(COQ), '''\
     ... .. coq::
     ...
     ...      Goal True.
-    ...        exact I. Qed.\\
+    ...        exact I. Qed.\
     ... ''')))
     [ParsedLitBlock(footer=[],
                     lines=deque([]),
                     directive=deque([Line(0, ['.. coq::'])]),
                     body_indent=0, directive_indent=0),
-     ParsedCodeBlock(lines=deque([Line(0, ['']),
-                                  Line(1, ['']),
-                                  Line(2, ['  Goal True.']),
-                                  Line(3, ['    exact I. Qed.'])]))]
+     ParsedCodeBlock(lines=deque([Line(0, ['\n']),
+                                  Line(1, ['\n']),
+                                  Line(2, ['     Goal True.\n']),
+                                  Line(3, ['       exact I. Qed.'])]))]
     """
     beg, linum, last_indent = 0, 0, 0
     last_footer: MutableSequence[Line] = []

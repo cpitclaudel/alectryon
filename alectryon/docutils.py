@@ -1259,7 +1259,9 @@ class RSTLiterateParser(docutils.parsers.rst.Parser, LiterateParser): # type: ig
         for line in literate.code2markup_lines(literate.get_markup(markup, lang), code):
             if not isinstance(line, literate.EmptyLine):
                 linum = line.num
-            yield (str(line), linum)
+            s = str(line).rstrip("\n") # Inline literate comments don't have a ‘\n’
+            assert "\n" not in s
+            yield (s, linum)
 
     @classmethod
     def input_lines(cls, code, source):
