@@ -224,46 +224,43 @@ class io_annots(unittest.TestCase):
 
 class literate(unittest.TestCase):
     MARKER = "\uFFFC"
-    COQ = "(*|\nHello\n|*)\n\nLemma foo : True.\n"
-    RST = "Hello\n\n.. coq::\n\n   Lemma foo : True.\n"
 
-    from alectryon.literate import get_markup
-    MD = get_markup("rst", "coq")
+    def _roundtrip_point(self, md, source, point, fwd, bwd):
+        out = fwd(md, source, point, self.MARKER)
+        self.assertIn(self.MARKER, out, f"forward marker missing at point={point}")
+        q = out.index(self.MARKER)
+        rt = bwd(md, out.replace(self.MARKER, ""), q, self.MARKER)
+        self.assertIn(self.MARKER, rt, f"reverse marker missing at point={point}")
+        return rt
 
-    def roundtrip_coq(self, point):
+    def _check_roundtrip(self, markup, lang, source, fwd, bwd, expected_drifts):
+        """Roundtrip `source` via `fwd`/`bwd` at every offset; check drifts."""
+        from alectryon.literate import get_markup
+        md = get_markup(markup, lang)
+        drifts: dict = {}
+        for p in range(len(source) + 1):
+            rt = self._roundtrip_point(md, source, p, fwd, bwd)
+            self.assertEqual(source, rt.replace(self.MARKER, ""))
+            drifts.setdefault(rt.index(self.MARKER) - p, []).append(p)
+        self.assertEqual(drifts, expected_drifts)
+
+    def _check_code_roundtrip(self, markup, lang, code, expected_drifts):
+        """Code → markup → code drift check."""
         from alectryon.literate import code2markup_marked, markup2code_marked
-        rst = code2markup_marked(self.MD, self.COQ, point, self.MARKER)
-        self.assertIn(self.MARKER, rst, f"forward marker missing at point={point}")
-        q = rst.index(self.MARKER)
-        coq_rt = markup2code_marked(self.MD, rst.replace(self.MARKER, ""), q, self.MARKER)
-        self.assertIn(self.MARKER, coq_rt, f"reverse marker missing at point={point}")
-        return coq_rt
+        self._check_roundtrip(markup, lang, code,
+                              code2markup_marked, markup2code_marked, expected_drifts)
 
-    def roundtrip_rst(self, point):
+    def _check_markup_roundtrip(self, markup, lang, text, expected_drifts):
+        """Markup → code → markup drift check."""
         from alectryon.literate import code2markup_marked, markup2code_marked
-        coq = markup2code_marked(self.MD, self.RST, point, self.MARKER)
-        self.assertIn(self.MARKER, coq, f"forward marker missing at point={point}")
-        q = coq.index(self.MARKER)
-        rst_rt = code2markup_marked(self.MD, coq.replace(self.MARKER, ""), q, self.MARKER)
-        self.assertIn(self.MARKER, rst_rt, f"reverse marker missing at point={point}")
-        return rst_rt
+        self._check_roundtrip(markup, lang, text,
+                              markup2code_marked, code2markup_marked, expected_drifts)
 
-    def test_mark_point_end_of_file(self):
-        coq_rt = self.roundtrip_coq(len(self.COQ))
-        self.assertEqual(self.COQ, coq_rt.replace(self.MARKER, ""))
+    def _check_coq_roundtrip(self, coq, expected_drifts):
+        self._check_code_roundtrip("rst", "coq", coq, expected_drifts)
 
     def test_mark_point_coq_all_positions(self):
-        """Coq → reST → Coq: marker survives, content preserved, drift
-        bounded by comment delimiter width."""
-        from collections import defaultdict
-        drifts = defaultdict(list)
-        for p in range(len(self.COQ) + 1):
-            coq_rt = self.roundtrip_coq(p)
-            self.assertEqual(self.COQ, coq_rt.replace(self.MARKER, ""))
-            drifts[coq_rt.index(self.MARKER) - p].append(p)
-        #   (*|\nHello\n|*)\n\nLemma foo : True.\n
-        #   0123456789...
-        self.assertEqual(dict(drifts), {
+        self._check_code_roundtrip("rst", "coq", "(*|\nHello\n|*)\n\nLemma foo : True.\n", {
             0: [*range(4, 11),      # comment content + ``|`` of ``|*)``
                 *range(15, 34)],    # code block + EOF
             1: [3, 14],             # newline after ``(*|``; blank line before code
@@ -273,17 +270,7 @@ class literate(unittest.TestCase):
         })
 
     def test_mark_point_rst_all_positions(self):
-        """reST → Coq → reST: marker survives, content preserved, drift
-        bounded by directive width."""
-        from collections import defaultdict
-        drifts = defaultdict(list)
-        for p in range(len(self.RST) + 1):
-            rst_rt = self.roundtrip_rst(p)
-            self.assertEqual(self.RST, rst_rt.replace(self.MARKER, ""))
-            drifts[rst_rt.index(self.MARKER) - p].append(p)
-        #   Hello\n\n.. coq::\n\n   Lemma foo : True.\n
-        #   0123456789...
-        self.assertEqual(dict(drifts), {
+        self._check_markup_roundtrip("rst", "coq", "Hello\n\n.. coq::\n\n   Lemma foo : True.\n", {
             0: [*range(0, 6),         # prose content (``Hello\n``)
                 *range(6, 7),         # blank line before directive
                 *range(20, 39)],      # code content + EOF
@@ -302,26 +289,33 @@ class literate(unittest.TestCase):
             13: [7],                  # ``.`` of ``.. coq::``
         })
 
-    def _check_coq_roundtrip(self, coq, expected_drifts):
-        from collections import defaultdict
-        from alectryon.literate import code2markup_marked, markup2code_marked
-        drifts = defaultdict(list)
-        for p in range(len(coq) + 1):
-            rst = code2markup_marked(self.MD, coq, p, self.MARKER)
-            self.assertIn(self.MARKER, rst)
-            q = rst.index(self.MARKER)
-            coq_rt = markup2code_marked(self.MD, rst.replace(self.MARKER, ""), q, self.MARKER)
-            self.assertIn(self.MARKER, coq_rt)
-            self.assertEqual(coq, coq_rt.replace(self.MARKER, ""))
-            drifts[coq_rt.index(self.MARKER) - p].append(p)
-        self.assertEqual(dict(drifts), expected_drifts)
-
     def test_mark_point_blank_line(self):
         self._check_coq_roundtrip("\n", {0: [0], -1: [1]})
 
     def test_mark_point_code_only(self):
         self._check_coq_roundtrip("Check True.\n", {
             0: [*range(0, 13)],
+        })
+
+    def test_mark_point_lean3(self):
+        self._check_code_roundtrip("rst", "lean3",
+                                   "/-|\nHello\n|-/\n\ndef x := 1\n", {
+            0: [*range(4, 11),      # comment content + ``|`` of ``|-/``
+                *range(15, 27)],    # code block + EOF
+            1: [3, 14],
+            2: [2, 13],
+            3: [1, 12],
+            4: [0, 11],
+        })
+
+    def test_mark_point_dafny(self):
+        self._check_code_roundtrip("rst", "dafny",
+                                   "/// Hello\n\nmethod Foo() {}\n", {
+            0: [*range(4, 28)],     # comment content + code + EOF
+            1: [3],
+            2: [2],
+            3: [1],
+            4: [0],
         })
 
     def split_lines_identity(self):
@@ -335,6 +329,31 @@ class literate(unittest.TestCase):
         from alectryon.literate import get_language, EmptyLine
         for l in get_language("dafny").wrap_literate([EmptyLine()]):
             self.assertNotIn(" \n", str(l), "must not have trailing spaces")
+
+    def _assert_roundtrips(self, lang, codes):
+        """Assert that each code string roundtrips through both RST and MD."""
+        from alectryon.literate import code2markup, markup2code, get_markup
+        for markup in ("rst", "md"):
+            md = get_markup(markup, lang)
+            for code in codes:
+                self.assertEqual(markup2code(md, code2markup(md, code)), code,
+                    f"{lang}+{markup} roundtrip failed for {code!r}")
+
+    def test_dafny_roundtrips(self):
+        """Dafny roundtrips through both RST and Markdown."""
+        self._assert_roundtrips("dafny", [
+            "/// Hello\n\nmethod Foo() {}\n",
+            "method Foo() {}\n",
+            "/// A\n\nX()\n\n/// B\n\nY()\n",
+        ])
+
+    def test_lean3_roundtrips(self):
+        """Lean3 roundtrips through both RST and Markdown."""
+        self._assert_roundtrips("lean3", [
+            "/-|\nHello\n|-/\n\ndef x := 1\n",
+            "def x := 1\n",
+            "/-|\nJust prose.\n|-/\n",
+        ])
 
 if __name__ == '__main__':
     r = unittest.main(testRunner=unittest.TextTestRunner(stream=io.StringIO()), exit=False).result
