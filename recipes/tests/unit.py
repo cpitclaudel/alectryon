@@ -229,43 +229,38 @@ class literate(unittest.TestCase):
     from alectryon.literate import get_markup
     MD = get_markup("rst", "coq")
 
-    def roundtrip(self, coq, point):
+    def roundtrip_coq(self, point):
         from alectryon.literate import code2markup_marked, markup2code_marked
-        rst = code2markup_marked(self.MD, coq, point, self.MARKER)
+        rst = code2markup_marked(self.MD, self.COQ, point, self.MARKER)
         self.assertIn(self.MARKER, rst, f"forward marker missing at point={point}")
         q = rst.index(self.MARKER)
-        rst_clean = rst.replace(self.MARKER, "")
-        coq_rt = markup2code_marked(self.MD, rst_clean, q, self.MARKER)
+        coq_rt = markup2code_marked(self.MD, rst.replace(self.MARKER, ""), q, self.MARKER)
         self.assertIn(self.MARKER, coq_rt, f"reverse marker missing at point={point}")
         return coq_rt
 
     def test_mark_point_end_of_file(self):
-        coq_rt = self.roundtrip(self.COQ, len(self.COQ))
+        coq_rt = self.roundtrip_coq(len(self.COQ))
         self.assertEqual(self.COQ, coq_rt.replace(self.MARKER, ""))
 
-    def test_mark_point_all_positions(self):
-        """For every point 0..len, the marker survives the roundtrip and
-        content is preserved.  Drift is bounded by comment delimiter width."""
+    def test_mark_point_coq_all_positions(self):
+        """Coq → reST → Coq: marker survives, content preserved, drift
+        bounded by comment delimiter width."""
         from collections import defaultdict
         drifts = defaultdict(list)
         for p in range(len(self.COQ) + 1):
-            coq_rt = self.roundtrip(self.COQ, p)
+            coq_rt = self.roundtrip_coq(p)
             self.assertEqual(self.COQ, coq_rt.replace(self.MARKER, ""))
             drifts[coq_rt.index(self.MARKER) - p].append(p)
         #   (*|\nHello\n|*)\n\nLemma foo : True.\n
         #   0123456789...
         self.assertEqual(dict(drifts), {
-            -4: [4, 5, 6, 7],       # inside ``(*|`` opener + first content char
-            -3: [3],                 # newline after ``(*|``
-            -2: [2],                 # ``|`` of ``(*|``
-            -1: [1, 33],             # ``*`` of ``(*|``; EOF
-             0: [*range(0, 1),       # ``(`` of ``(*|``
-                 *range(8, 10),      # last content char + newline before ``|*)``
+            -1: [33],                # EOF
+             0: [*range(4, 10),      # comment content (``Hello\n``)
                  *range(15, 33)],    # code block
-            +1: [14],                # blank line before code
-            +2: [13],               # newline after ``|*)``
-            +3: [12],                # ``)`` of ``|*)``
-            +4: [11],                # ``*`` of ``|*)``
+            +1: [3, 14],             # newline after ``(*|``; blank line before code
+            +2: [2, 13],             # ``|`` of ``(*|``; newline after ``|*)``
+            +3: [1, 12],             # ``*`` of ``(*|``; ``)`` of ``|*)``
+            +4: [0, 11],             # ``(`` of ``(*|``; ``*`` of ``|*)``
             +5: [10],               # ``|`` of ``|*)``
         })
 

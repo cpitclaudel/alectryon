@@ -218,18 +218,23 @@ def strip_deque(lines: Deque[Line]) -> Deque[Line]:
         lines.pop()
     return lines
 
-def _source_parts(lines: Iterable[Line]):
-    """Yield ``(line, part_index, part)`` from lines."""
+def _source_parts(lines: Iterable[Line], source: str):
+    """Yield ``(line, part_index, part)`` from lines.
+
+    Only yield parts that are views into ``source``, skipping synthetic parts
+    (e.g. comment delimiters).
+    """
     for l in lines:
         for idx, p in enumerate(l.parts):
-            yield l, idx, p
+            if p.s is source:
+                yield l, idx, p
 
-def mark_point(lines: Iterable[Line], point: Optional[int], marker: str) -> List[Line]:
-    lines = list(lines) # Make sure that we can re-traverse
+def mark_point(lines: Iterable[Line], point: Optional[int], marker: str, source: str) -> List[Line]:
+    lines = list(lines)
     if point is None:
         return lines
     last_line_with_parts = None
-    for l, idx, p in _source_parts(lines):
+    for l, idx, p in _source_parts(lines, source):
         if p.end >= point:
             cutoff = max(0, min(point - p.beg, len(p)))
             l.parts[idx:idx+1] = [p[:cutoff], StringView(marker), p[cutoff:]]
@@ -1052,7 +1057,7 @@ def code2markup(md: MarkupDef, code: str) -> str:
     return join_lines(code2markup_lines(md, code))
 
 def code2markup_marked(md: MarkupDef, code, point, marker):
-    return join_lines(mark_point(code2markup_lines(md, code), point, marker))
+    return join_lines(mark_point(code2markup_lines(md, code), point, marker, code))
 
 # Markup → Code
 # =============
@@ -1148,7 +1153,7 @@ def markup2code(md: MarkupDef, txt: str):
     return join_lines(markup2code_lines(md, txt))
 
 def markup2code_marked(md: MarkupDef, txt: str, point: int, marker: str):
-    return join_lines(mark_point(markup2code_lines(md, txt), point, marker))
+    return join_lines(mark_point(markup2code_lines(md, txt), point, marker, txt))
 
 # Language definitions
 # ====================
