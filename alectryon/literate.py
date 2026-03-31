@@ -263,6 +263,7 @@ def remove_consecutive_empty_lines(lines: Iterable[Line]):
         prev = line
 
 def _str_nl(l: Line) -> str:
+    r"""Normalize a line `l` to a string ending with ``\n``."""
     s = "" if l.isspace() else str(l)
     return s if "\n" in s else s + "\n"
 
@@ -976,6 +977,11 @@ def number_lines(lines: Iterable[StringView], start: int) \
     return start + len(d) - 1, d
 
 def split_lines(text: StringView) -> List[StringView]:
+    r"""Split `text` into lines, keeping trailing ``\n``s.
+
+    >>> [str(p) for p in split_lines(StringView("a\nb\n\n"))]
+    ['a\n', 'b\n', '\n']
+    """
     parts = text.split("\n", keepsep=True)
     if parts and not parts[-1]:  # Drop empty chunk after trailing \n
         parts.pop()
