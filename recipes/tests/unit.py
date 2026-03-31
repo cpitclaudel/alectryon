@@ -225,6 +225,7 @@ class io_annots(unittest.TestCase):
 class literate(unittest.TestCase):
     MARKER = "\uFFFC"
     COQ = "(*|\nHello\n|*)\n\nLemma foo : True.\n"
+    RST = "Hello\n\n.. coq::\n\n   Lemma foo : True.\n"
 
     from alectryon.literate import get_markup
     MD = get_markup("rst", "coq")
@@ -237,6 +238,15 @@ class literate(unittest.TestCase):
         coq_rt = markup2code_marked(self.MD, rst.replace(self.MARKER, ""), q, self.MARKER)
         self.assertIn(self.MARKER, coq_rt, f"reverse marker missing at point={point}")
         return coq_rt
+
+    def roundtrip_rst(self, point):
+        from alectryon.literate import code2markup_marked, markup2code_marked
+        coq = markup2code_marked(self.MD, self.RST, point, self.MARKER)
+        self.assertIn(self.MARKER, coq, f"forward marker missing at point={point}")
+        q = coq.index(self.MARKER)
+        rst_rt = code2markup_marked(self.MD, coq.replace(self.MARKER, ""), q, self.MARKER)
+        self.assertIn(self.MARKER, rst_rt, f"reverse marker missing at point={point}")
+        return rst_rt
 
     def test_mark_point_end_of_file(self):
         coq_rt = self.roundtrip_coq(len(self.COQ))
@@ -262,6 +272,59 @@ class literate(unittest.TestCase):
             +3: [1, 12],             # ``*`` of ``(*|``; ``)`` of ``|*)``
             +4: [0, 11],             # ``(`` of ``(*|``; ``*`` of ``|*)``
             +5: [10],               # ``|`` of ``|*)``
+        })
+
+    def test_mark_point_rst_all_positions(self):
+        """reST → Coq → reST: marker survives, content preserved, drift
+        bounded by directive width."""
+        from collections import defaultdict
+        drifts = defaultdict(list)
+        for p in range(len(self.RST) + 1):
+            rst_rt = self.roundtrip_rst(p)
+            self.assertEqual(self.RST, rst_rt.replace(self.MARKER, ""))
+            drifts[rst_rt.index(self.MARKER) - p].append(p)
+        #   Hello\n\n.. coq::\n\n   Lemma foo : True.\n
+        #   0123456789...
+        self.assertEqual(dict(drifts), {
+            -1: [38],                  # EOF
+             0: [*range(0, 6),         # prose content (``Hello\n``)
+                 *range(20, 38)],      # code content
+            +1: [19],                  # last indent space
+            +2: [18],                  # indent space
+            +3: [17],                  # indent space
+            +4: [16],                  # newline before indented code
+            +5: [15],                  # newline after ``.. coq::``
+            +6: [14],                  # ``:`` of ``.. coq::``
+            +7: [13],                  # ``:`` of ``.. coq::``
+            +8: [12],                  # ``q`` of ``.. coq::``
+            +9: [11],                  # ``o`` of ``.. coq::``
+           +10: [10],                  # ``c`` of ``.. coq::``
+           +11: [9],                   # `` `` of ``.. coq::``
+           +12: [8],                   # ``.`` of ``.. coq::``
+           +13: [7],                   # ``.`` of ``.. coq::``
+           +14: [6],                   # blank line before directive
+        })
+
+    def _check_coq_roundtrip(self, coq, expected_drifts):
+        from collections import defaultdict
+        from alectryon.literate import code2markup_marked, markup2code_marked
+        drifts = defaultdict(list)
+        for p in range(len(coq) + 1):
+            rst = code2markup_marked(self.MD, coq, p, self.MARKER)
+            self.assertIn(self.MARKER, rst)
+            q = rst.index(self.MARKER)
+            coq_rt = markup2code_marked(self.MD, rst.replace(self.MARKER, ""), q, self.MARKER)
+            self.assertIn(self.MARKER, coq_rt)
+            self.assertEqual(coq, coq_rt.replace(self.MARKER, ""))
+            drifts[coq_rt.index(self.MARKER) - p].append(p)
+        self.assertEqual(dict(drifts), expected_drifts)
+
+    def test_mark_point_blank_line(self):
+        self._check_coq_roundtrip("\n", {0: [0], -1: [1]})
+
+    def test_mark_point_code_only(self):
+        self._check_coq_roundtrip("Check True.\n", {
+            0: [*range(0, 12)], -1: [12],
         })
 
 if __name__ == '__main__':
