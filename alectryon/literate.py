@@ -150,9 +150,6 @@ class Line:
         s = "".join(str(p) for p in self.parts)
         return s if not s.isspace() else ""
 
-    def with_end(self):
-        return str(self) + "\n"
-
     def __iter__(self):
         """Iterate over this line's characters.
 
@@ -214,10 +211,6 @@ class EmptyLine(Line):
     def __init__(self, num=-1, parts=[]):
         super().__init__(num, parts)
 
-class MarkerAtEOF(Line):
-    def with_end(self):
-        return str(self) # No line separator
-
 def strip_deque(lines: Deque[Line]) -> Deque[Line]:
     while lines and lines[0].isspace():
         lines.popleft()
@@ -225,38 +218,28 @@ def strip_deque(lines: Deque[Line]) -> Deque[Line]:
         lines.pop()
     return lines
 
-T = TypeVar("T")
-def sliding_window(seq: Iterable[T], n) -> Iterable[Tuple[T, ...]]:
-    seq = iter(seq)
-    window: Deque[T] = deque(maxlen=n)
-    for item in seq:
-        if len(window) == n:
-            yield tuple(window)
-        window.append(item)
-    while window:
-        yield tuple(window) + (None,) * (n - len(window))
-        window.popleft()
+def _source_parts(lines: Iterable[Line]):
+    """Yield ``(line, part_index, part)`` from lines."""
+    for l in lines:
+        for idx, p in enumerate(l.parts):
+            yield l, idx, p
 
-def mark_point(lines: Iterable[Line], point: Optional[int], marker: str) -> Iterable[Line]:
-    for l, nextl in sliding_window(lines, 2):
-        last_line = nextl is None
-        if point is not None:
-            if isinstance(l, Line):
-                parts: List[StringView] = []
-                for p in l.parts:
-                    if point is not None and isinstance(p, StringView) and p.end >= point:
-                        cutoff = max(0, min(point - p.beg, len(p)))
-                        parts.extend((p[:cutoff], StringView(marker), p[cutoff:]))
-                        point = None
-                    else:
-                        parts.append(p)
-                l.parts[:] = parts
-            if point is not None and last_line:
-                l = MarkerAtEOF.of_str(marker)
-                point = None
-        yield l
-    if point is not None:
-        yield MarkerAtEOF.of_str(marker) # Reached if no lines
+def mark_point(lines: Iterable[Line], point: Optional[int], marker: str) -> List[Line]:
+    lines = list(lines) # Make sure that we can re-traverse
+    if point is None:
+        return lines
+    last_line_with_parts = None
+    for l, idx, p in _source_parts(lines):
+        if p.end >= point:
+            cutoff = max(0, min(point - p.beg, len(p)))
+            l.parts[idx:idx+1] = [p[:cutoff], StringView(marker), p[cutoff:]]
+            return lines
+        last_line_with_parts = l
+    if last_line_with_parts:
+        last_line_with_parts += marker
+    else: # All lines are empty and will be trimmed; append a new one
+        lines.append(Line.of_str(marker))
+    return lines
 
 def remove_consecutive_empty_lines(lines: Iterable[Line]):
     """Remove consecutive ``EmptyLine`` objects from `lines`.
@@ -274,7 +257,7 @@ def remove_consecutive_empty_lines(lines: Iterable[Line]):
         prev = line
 
 def join_lines(lines: Iterable[Line]) -> str:
-    return "".join(l.with_end() for l in remove_consecutive_empty_lines(lines))
+    return "".join(str(l) + "\n" for l in remove_consecutive_empty_lines(lines))
 
 # Code → Markup
 # =============
