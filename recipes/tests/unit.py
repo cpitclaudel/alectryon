@@ -224,12 +224,20 @@ class io_annots(unittest.TestCase):
 
 class literate(unittest.TestCase):
     def test_mark_point_end_of_file(self):
-        from alectryon.literate import get_markup, code2markup_marked
+        from alectryon.literate import get_markup, code2markup_marked, markup2code_marked
         marker = "\uFFFC"
-        markup = get_markup("rst", "coq")
+        md = get_markup("rst", "coq")
         coq = "(*|\nHello\n|*)\n\nLemma foo : True.\n"
-        rst = code2markup_marked(markup, coq, len(coq), marker)
+        # Forward: marker survives
+        rst = code2markup_marked(md, coq, len(coq), marker)
         self.assertIn(marker, rst)
+        # Reverse: marker survives
+        pos = rst.index(marker)
+        rst_clean = rst.replace(marker, "")
+        coq_rt = markup2code_marked(md, rst_clean, pos, marker)
+        self.assertIn(marker, coq_rt)
+        # Roundtrip identity: no extra blank line
+        self.assertEqual(coq, coq_rt.replace(marker, ""))
 
 if __name__ == '__main__':
     r = unittest.main(testRunner=unittest.TextTestRunner(stream=io.StringIO()), exit=False).result

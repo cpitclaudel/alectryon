@@ -122,19 +122,19 @@ class Line:
         self.parts = parts
 
     def __repr__(self):
-        return "Line({}, {!r})".format(self.num, self.parts)
+        return f"{type(self).__name__}({self.num}, {self.parts!r})"
 
-    @staticmethod
-    def of_parts(l: List[StringView]):
-        return Line(-1, l)
+    @classmethod
+    def of_parts(cls, l: List[StringView]):
+        return cls(-1, l)
 
-    @staticmethod
-    def of_view(v: StringView):
-        return Line.of_parts([v])
+    @classmethod
+    def of_view(cls, v: StringView):
+        return cls.of_parts([v])
 
-    @staticmethod
-    def of_str(s: str):
-        return Line.of_view(StringView(s))
+    @classmethod
+    def of_str(cls, s: str):
+        return cls.of_view(StringView(s))
 
     def __len__(self):
         """Compute the number of characters in `self`.
@@ -149,6 +149,9 @@ class Line:
     def __str__(self):
         s = "".join(str(p) for p in self.parts)
         return s if not s.isspace() else ""
+
+    def with_end(self):
+        return str(self) + "\n"
 
     def __iter__(self):
         """Iterate over this line's characters.
@@ -208,8 +211,12 @@ class Line:
 
 class EmptyLine(Line):
     """A subclass used to track empty lines added by Alectryon."""
-    def __init__(self, num=-1):
-        super().__init__(num, [])
+    def __init__(self, num=-1, parts=[]):
+        super().__init__(num, parts)
+
+class MarkerAtEOF(Line):
+    def with_end(self):
+        return str(self) # No line separator
 
 def strip_deque(lines: Deque[Line]) -> Deque[Line]:
     while lines and lines[0].isspace():
@@ -245,11 +252,11 @@ def mark_point(lines: Iterable[Line], point: Optional[int], marker: str) -> Iter
                         parts.append(p)
                 l.parts[:] = parts
             if point is not None and last_line:
-                l += marker
+                l = MarkerAtEOF.of_str(marker)
                 point = None
         yield l
     if point is not None:
-        yield Line.of_str(marker) # Reached if no lines
+        yield MarkerAtEOF.of_str(marker) # Reached if no lines
 
 def remove_consecutive_empty_lines(lines: Iterable[Line]):
     """Remove consecutive ``EmptyLine`` objects from `lines`.
@@ -267,7 +274,7 @@ def remove_consecutive_empty_lines(lines: Iterable[Line]):
         prev = line
 
 def join_lines(lines: Iterable[Line]) -> str:
-    return "".join(str(l) + "\n" for l in remove_consecutive_empty_lines(lines))
+    return "".join(l.with_end() for l in remove_consecutive_empty_lines(lines))
 
 # Code → Markup
 # =============

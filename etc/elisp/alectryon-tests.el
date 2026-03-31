@@ -201,7 +201,6 @@
     (setq-local alectryon-prog-mode 'coq-mode)
     (setq-local alectryon-text-mode 'rst-mode)
     (insert alectryon-test--coq)
-    (goto-char (point-min))
     ;; Coq -> RST
     (alectryon--convert-from 'coq-mode)
     (should (equal alectryon-test--rst (buffer-string)))
@@ -241,13 +240,11 @@
     (should (eq 'coq-mode major-mode))
     (should alectryon-mode)
     ;; Toggle: Coq -> RST
-    (goto-char (point-min))
     (alectryon--toggle)
     (should (eq 'rst-mode major-mode))
     (should alectryon-mode)
     (should (equal alectryon-test--rst (buffer-string)))
     ;; Disable alectryon-mode (should revert to Coq)
-    (goto-char (point-min))
     (alectryon-mode -1)
     (should (eq 'coq-mode major-mode))
     (should-not alectryon-mode)
@@ -267,9 +264,7 @@
     (buffer-enable-undo)
     (insert alectryon-test--coq)
     (alectryon-mode 1)
-    (goto-char (point-min))
     (alectryon--toggle)
-    (goto-char (point-min))
     (alectryon-mode -1)
     ;; Undo the disable
     (primitive-undo 2 buffer-undo-list)
@@ -303,7 +298,6 @@
     (insert alectryon-test--coq)
     (alectryon-mode 1)
     ;; Toggle: Coq -> RST
-    (goto-char (point-min))
     (alectryon--toggle)
     (should (eq 'rst-mode major-mode))
     (should (equal alectryon-test--rst (buffer-string)))
@@ -340,7 +334,6 @@ leaving orphaned sub-modes and save hooks."
     (setq-local alectryon-text-mode 'rst-mode)
     (insert alectryon-test--coq)
     (alectryon-mode 1)
-    (goto-char (point-min))
     (alectryon--toggle)
     ;; Now in rst-mode. Break the converter.
     (let ((alectryon-executable "nonexistent-binary-xyz"))
