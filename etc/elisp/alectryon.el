@@ -153,13 +153,23 @@ ensure BODY is one undo group."
   "Exit Proof General."
   (ignore-errors (alectryon--invoke 'proof-shell-exit t)))
 
+(defconst alectryon--annotations-re
+  "\\(\\(?:\\s-*[.][-a-z]+\\)+\\)\\s-*"
+  "Annotation regexp.")
+
 (defconst alectryon-prog-modes
-  '(( coq-mode
+  `(( coq-mode
       :tag "coq"
       :exit-hooks (alectryon--coq-exit-hook)
       :comment-delimiters ("(*|" . "|*)")
-      :comment-delimiters-re ("([*][|]" . "[|][*])")
-      :annotations-re "[(][*]\\(\\(?:\\s-*[.][-a-z]+\\)+\\)\\s-*[*][)]")))
+      :comment-delimiters-re ("([*]|" . "|[*])")
+      :annotations-re ,(format "([*]%s[*])" alectryon--annotations-re))
+    ( lean4-mode
+      :tag "lean4"
+      :exit-hooks nil
+      :comment-delimiters ("/-|" . "|-/")
+      :comment-delimiters-re ("/-|" . "|-/")
+      :annotations-re ,(format "/-%s-/" alectryon--annotations-re))))
 
 (defconst alectryon-text-modes
   '(( rst-mode
@@ -448,7 +458,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   :error-parser #'alectryon--parse-errors
   :predicate (lambda () alectryon-mode)
   :verify (lambda (_) (alectryon--flycheck-verify-enabled))
-  :modes '(coq-mode rst-mode markdown-mode))
+  :modes '(coq-mode lean4-mode rst-mode markdown-mode))
 
 (add-to-list 'flycheck-checkers 'alectryon)
 
@@ -683,6 +693,8 @@ In markup mode:
 
 ;;;###autoload
 (add-hook 'coq-mode-hook #'alectryon-mode-maybe-enable t)
+;;;###autoload
+(add-hook 'lean4-mode-hook #'alectryon-mode-maybe-enable t)
 
 (provide 'alectryon)
 ;;; alectryon.el ends here

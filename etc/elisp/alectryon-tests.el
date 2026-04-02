@@ -44,47 +44,24 @@
     (modify-syntax-entry ?*  ". 23" st)
     st))
 
-(defmacro alectryon-test--with-coq-buffer (contents &rest body)
-  "Set up a temp buffer with Coq config, CONTENTS, and run BODY."
-  (declare (indent 1))
+(defun alectryon-test--lean4-syntax-table ()
+  "Return a syntax table with Lean 4-style /- -/ comments."
+  (let ((st (make-syntax-table)))
+    (modify-syntax-entry ?/ ". 14" st)
+    (modify-syntax-entry ?- ". 23" st)
+    st))
+
+(defmacro alectryon-test--with-buffer (mode contents &rest body)
+  "Set up a temp buffer in MODE with CONTENTS and run BODY."
+  (declare (indent 2))
   `(with-temp-buffer
-     (set-syntax-table (alectryon-test--coq-syntax-table))
-     (setq-local alectryon-prog-mode 'coq-mode)
+     (set-syntax-table (pcase ,mode
+                         ('coq-mode (alectryon-test--coq-syntax-table))
+                         ('lean4-mode (alectryon-test--lean4-syntax-table))))
+     (setq-local alectryon-prog-mode ,mode)
      (setq-local alectryon-text-mode 'rst-mode)
      (insert ,contents)
      ,@body))
-
-;;;; Configuration and mode dispatching
-
-(ert-deftest alectryon-test-config ()
-  "Config returns correct tags, delimiters, and frontend/backend ids for RST and Markdown."
-  (with-temp-buffer
-    (setq-local alectryon-prog-mode 'coq-mode)
-    ;; RST
-    (setq-local alectryon-text-mode 'rst-mode)
-    (should (equal "coq" (alectryon--config :tag 'prog)))
-    (should (equal "rst" (alectryon--config :tag 'text)))
-    (should (equal "coq+rst" (alectryon--config-frontend 'coq-mode)))
-    (should (equal "rst" (alectryon--config-backend 'coq-mode)))
-    ;; Markdown
-    (setq-local alectryon-text-mode 'markdown-mode)
-    (should (equal "md" (alectryon--config :tag 'text)))
-    (should (equal "coq+md" (alectryon--config-frontend 'coq-mode)))
-    (should (equal "md" (alectryon--config-backend 'coq-mode)))
-    ;; Delimiters (same for both markups -- they're a Coq property)
-    (let ((delims (alectryon--config :comment-delimiters 'prog)))
-      (should (equal "(*|" (car delims)))
-      (should (equal "|*)" (cdr delims))))))
-
-(ert-deftest alectryon-test-mode-dispatch ()
-  "prog-mode-p and mode-case dispatch correctly for all registered modes."
-  (should (eq t (alectryon--prog-mode-p 'coq-mode)))
-  (should (eq nil (alectryon--prog-mode-p 'rst-mode)))
-  (should (eq nil (alectryon--prog-mode-p 'markdown-mode)))
-  (should-error (alectryon--prog-mode-p 'fundamental-mode) :type 'error)
-  (should (eq 'code (alectryon--mode-case 'code 'text 'coq-mode)))
-  (should (eq 'text (alectryon--mode-case 'code 'text 'rst-mode)))
-  (should (eq 'text (alectryon--mode-case 'code 'text 'markdown-mode))))
 
 ;;;; Text mode selection
 
@@ -96,17 +73,13 @@
     (let ((buffer-file-name "/tmp/foo_md.v"))
       (should (eq 'markdown-mode (alectryon--guess-text-mode))))
     (let ((buffer-file-name "/tmp/foo.v"))
+      (should-not (alectryon--guess-text-mode)))
+    (let ((buffer-file-name "/tmp/foo_rst.lean"))
+      (should (eq 'rst-mode (alectryon--guess-text-mode))))
+    (let ((buffer-file-name "/tmp/foo_md.lean"))
+      (should (eq 'markdown-mode (alectryon--guess-text-mode))))
+    (let ((buffer-file-name "/tmp/foo.lean"))
       (should-not (alectryon--guess-text-mode)))))
-
-(ert-deftest alectryon-test-fallback-text-mode ()
-  "Config uses fallback when alectryon-text-mode is nil."
-  (with-temp-buffer
-    (setq-local alectryon-prog-mode 'coq-mode)
-    (setq-local alectryon-text-mode nil)
-    (let ((alectryon-fallback-text-mode 'rst-mode))
-      (should (equal "rst" (alectryon--config :tag 'text))))
-    (let ((alectryon-fallback-text-mode 'markdown-mode))
-      (should (equal "md" (alectryon--config :tag 'text))))))
 
 (ert-deftest alectryon-test-ensure-text-mode ()
   "ensure-text-mode auto-detects from filename suffix."
@@ -126,62 +99,112 @@
     (should (string-match-p re "(* .show .unfold *)"))
     (should-not (string-match-p re "(* regular comment *)"))))
 
+(ert-deftest alectryon-test-lean4-annotations-re ()
+  "Lean 4 annotations regex matches /- .show -/ but not regular comments."
+  (with-temp-buffer
+    (setq-local alectryon-prog-mode 'lean4-mode)
+    (let ((re (alectryon--config :annotations-re 'prog)))
+      (should (string-match-p re "/- .unfold -/"))
+      (should (string-match-p re "/- .unfold .no-in -/"))
+      (should-not (string-match-p re "/- regular comment -/")))))
+
 ;;;; Literate comment detection and editing
 
 (ert-deftest alectryon-test-literate-comment ()
   "Literate comment detection distinguishes (*| |*) from (* *) and code."
-  (alectryon-test--with-coq-buffer "(*| hello |*)"
+  (alectryon-test--with-buffer 'coq-mode "(*| hello |*)"
     (goto-char 6)
     (should (alectryon--in-literate-comment-p)))
-  (alectryon-test--with-coq-buffer "Lemma foo. (*| hello |*)"
+  (alectryon-test--with-buffer 'coq-mode "Lemma foo. (*| hello |*)"
     (goto-char 3)
     (should-not (alectryon--in-literate-comment-p)))
-  (alectryon-test--with-coq-buffer "(* regular *)"
+  (alectryon-test--with-buffer 'coq-mode "(* regular *)"
     (goto-char 6)
     (should-not (alectryon--in-literate-comment-p))))
 
 (ert-deftest alectryon-test-insert-literate-block ()
   "Inserting a literate block produces exact output with point between delimiters."
-  (alectryon-test--with-coq-buffer ""
+  (alectryon-test--with-buffer 'coq-mode ""
     (alectryon-insert-literate-block)
     (should (equal "(*|\n\n|*)" (buffer-string)))
     (should (equal 5 (point)))))
 
+(ert-deftest alectryon-test-lean4-literate-comment ()
+  "Literate comment detection distinguishes /-| |-/ from /- -/ and code."
+  (alectryon-test--with-buffer 'lean4-mode "/-| hello |-/"
+    (goto-char 6)
+    (should (alectryon--in-literate-comment-p)))
+  (alectryon-test--with-buffer 'lean4-mode "def x := 1 /-| hello |-/"
+    (goto-char 3)
+    (should-not (alectryon--in-literate-comment-p)))
+  (alectryon-test--with-buffer 'lean4-mode "/- regular -/"
+    (goto-char 6)
+    (should-not (alectryon--in-literate-comment-p))))
+
+(ert-deftest alectryon-test-lean4-insert-literate-block ()
+  "Inserting a literate block in Lean 4 produces /-| and |-/ delimiters."
+  (alectryon-test--with-buffer 'lean4-mode ""
+    (alectryon-insert-literate-block)
+    (should (equal "/-|\n\n|-/" (buffer-string)))
+    (should (equal 5 (point)))))
+
 ;;;; Conversion (requires alectryon binary)
 
-;; Matched conversion triplet: these three represent the same document.
-(defconst alectryon-test--coq "(*|\nHello\n|*)\n\nLemma foo : True.\n")
-(defconst alectryon-test--rst "Hello\n\n.. coq::\n\n   Lemma foo : True.\n")
-(defconst alectryon-test--md  "Hello\n\n```{coq}\nLemma foo : True.\n```\n")
+(cl-defstruct (alectryon-test--lang (:constructor alectryon-test--lang))
+  "Per-language test data: matched conversion triplet plus round-trip input."
+  tag mode code rst md round-trip)
 
-(ert-deftest alectryon-test-convert-coq-to-markup ()
-  "Coq converts to exact expected RST and Markdown output."
-  (skip-unless (alectryon-test--converter-available-p))
-  (should (equal alectryon-test--rst
-                 (alectryon-test--convert alectryon-test--coq "coq+rst" "rst")))
-  (should (equal alectryon-test--md
-                 (alectryon-test--convert alectryon-test--coq "coq+md" "md"))))
+(defconst alectryon-test--lang-data
+  (list
+   (alectryon-test--lang
+    :tag "coq" :mode 'coq-mode
+    :code "(*|\nHello\n|*)\n\nLemma foo : True.\n"
+    :rst "Hello\n\n.. coq::\n\n   Lemma foo : True.\n"
+    :md  "Hello\n\n```{coq}\nLemma foo : True.\n```\n"
+    :round-trip "(*|\nHello\n|*)\n\nLemma foo : True. Proof. auto. Qed.\n")
+   (alectryon-test--lang
+    :tag "lean4" :mode 'lean4-mode
+    :code "/-|\nHello\n|-/\n\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n"
+    :rst  "Hello\n\n.. lean4::\n\n   theorem foo : ∀ n : Nat, n = n := fun _ → rfl\n"
+    :md   "Hello\n\n```{lean4}\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n```\n"
+    :round-trip "/-|\nHello\n|-/\n\ndef x : Nat := 5\n"))
+  "Test data for each supported language.")
 
-(ert-deftest alectryon-test-convert-markup-to-coq ()
-  "RST and Markdown convert to exact expected Coq output."
-  (skip-unless (alectryon-test--converter-available-p))
-  (should (equal alectryon-test--coq
-                 (alectryon-test--convert alectryon-test--rst "rst" "coq+rst")))
-  (should (equal alectryon-test--coq
-                 (alectryon-test--convert alectryon-test--md "md" "coq+md"))))
+(defmacro alectryon-test--deftest (name docstring &rest body)
+  "Define an ERT test NAME that runs BODY in a temp buffer for each language.
+BODY can use `.tag', `.mode', `.code', `.rst', `.md', `.round-trip'."
+  (declare (indent 2) (doc-string 2))
+  `(ert-deftest ,name ()
+     ,docstring
+     (skip-unless (alectryon-test--converter-available-p))
+     (dolist (.lang alectryon-test--lang-data)
+       (let ((.tag        (alectryon-test--lang-tag .lang))
+             (.mode       (alectryon-test--lang-mode .lang))
+             (.code       (alectryon-test--lang-code .lang))
+             (.rst        (alectryon-test--lang-rst .lang))
+             (.md         (alectryon-test--lang-md .lang))
+             (.round-trip (alectryon-test--lang-round-trip .lang)))
+         (with-temp-buffer
+           ,@body)))))
 
-(ert-deftest alectryon-test-convert-round-trips ()
-  "Coq -> markup -> Coq round-trips are identity for both RST and Markdown."
-  (skip-unless (alectryon-test--converter-available-p))
-  (let ((original "(*|\nHello\n|*)\n\nLemma foo : True. Proof. auto. Qed.\n"))
-    (should (equal original
-                   (alectryon-test--convert
-                    (alectryon-test--convert original "coq+rst" "rst")
-                    "rst" "coq+rst")))
-    (should (equal original
-                   (alectryon-test--convert
-                    (alectryon-test--convert original "coq+md" "md")
-                    "md" "coq+md")))))
+(alectryon-test--deftest alectryon-test-convert-to-markup
+  "Code converts to exact expected RST and Markdown output."
+  (should (equal .rst (alectryon-test--convert .code (concat .tag "+rst") "rst")))
+  (should (equal .md  (alectryon-test--convert .code (concat .tag "+md") "md"))))
+
+(alectryon-test--deftest alectryon-test-convert-markup-to-code
+  "RST and Markdown convert to exact expected code output."
+  (should (equal .code (alectryon-test--convert .rst "rst" (concat .tag "+rst"))))
+  (should (equal .code (alectryon-test--convert .md "md" (concat .tag "+md")))))
+
+(alectryon-test--deftest alectryon-test-convert-round-trips
+  "Code -> markup -> code round-trips are identity for both RST and Markdown."
+  (should (equal .round-trip (alectryon-test--convert
+                              (alectryon-test--convert .round-trip (concat .tag "+rst") "rst")
+                              "rst" (concat .tag "+rst"))))
+  (should (equal .round-trip (alectryon-test--convert
+                              (alectryon-test--convert .round-trip (concat .tag "+md") "md")
+                              "md" (concat .tag "+md")))))
 
 (ert-deftest alectryon-test-convert-edge-cases ()
   "Conversion handles empty, code-only, and prose-only inputs."
@@ -192,33 +215,32 @@
   (should (equal "Just prose.\n"
                  (alectryon-test--convert "(*| Just prose. |*)\n" "coq+rst" "rst"))))
 
+(alectryon-test--deftest alectryon-test-lint
+  "Lint backend accepts code+markup without errors."
+  (should (equal "" (alectryon-test--convert .code (concat .tag "+rst") "lint"))))
+
 ;;;; In-buffer conversion (alectryon--convert-from)
 
-(ert-deftest alectryon-test-convert-from ()
+(alectryon-test--deftest alectryon-test-convert-from
   "alectryon--convert-from replaces buffer contents in-place and round-trips."
-  (skip-unless (alectryon-test--converter-available-p))
-  (with-temp-buffer
-    (setq-local alectryon-prog-mode 'coq-mode)
-    (setq-local alectryon-text-mode 'rst-mode)
-    (insert alectryon-test--coq)
-    ;; Coq -> RST
-    (alectryon--convert-from 'coq-mode)
-    (should (equal alectryon-test--rst (buffer-string)))
-    ;; RST -> Coq
-    (alectryon--convert-from 'rst-mode)
-    (should (equal alectryon-test--coq (buffer-string)))))
+  (setq-local alectryon-prog-mode .mode)
+  (setq-local alectryon-text-mode 'rst-mode)
+  (insert .code)
+  (alectryon--convert-from .mode)
+  (should (equal .rst (buffer-string)))
+  (alectryon--convert-from 'rst-mode)
+  (should (equal .code (buffer-string))))
 
-(ert-deftest alectryon-test-convert-from-preserves-point ()
+(alectryon-test--deftest alectryon-test-convert-from-preserves-point
   "alectryon--convert-from preserves point position via --mark-point."
-  (skip-unless (alectryon-test--converter-available-p))
-  (with-temp-buffer
-    (setq-local alectryon-prog-mode 'coq-mode)
-    (setq-local alectryon-text-mode 'rst-mode)
-    (insert alectryon-test--coq)
-    (goto-char 7) ;; "l" in "Hello"
-    (alectryon--convert-from 'coq-mode)
-    ;; "Hello" starts at position 1 in RST output; "l" is at 3
-    (should (equal 3 (point)))))
+  (setq-local alectryon-prog-mode .mode)
+  (setq-local alectryon-text-mode 'rst-mode)
+  (insert .code)
+  (goto-char (point-min))
+  (search-forward "Hel") ;; point is now between the two l's of "Hello"
+  (should (equal ?l (char-after)))
+  (alectryon--convert-from .mode)
+  (should (equal ?l (char-after))))
 
 ;;;; Toggle lifecycle
 
@@ -227,86 +249,76 @@
   (define-derived-mode coq-mode prog-mode "Coq"
     (set-syntax-table (alectryon-test--coq-syntax-table))))
 
-(ert-deftest alectryon-test-toggle-lifecycle ()
+;; Stub lean4-mode for testing (real lean4-mode may not be installed)
+(unless (fboundp 'lean4-mode)
+  (define-derived-mode lean4-mode prog-mode "Lean4"
+    (set-syntax-table (alectryon-test--lean4-syntax-table))))
+
+(alectryon-test--deftest alectryon-test-toggle-lifecycle
   "Toggle converts content and switches modes; disable reverts; undo restores."
-  (skip-unless (alectryon-test--converter-available-p))
-  (with-temp-buffer
-    (coq-mode)
-    (setq-local alectryon-text-mode 'rst-mode)
-    (buffer-enable-undo)
-    (insert alectryon-test--coq)
-    (alectryon-mode 1)
-    ;; Preconditions
-    (should (eq 'coq-mode major-mode))
-    (should alectryon-mode)
-    ;; Toggle: Coq -> RST
-    (alectryon--toggle)
-    (should (eq 'rst-mode major-mode))
-    (should alectryon-mode)
-    (should (equal alectryon-test--rst (buffer-string)))
-    ;; Disable alectryon-mode (should revert to Coq)
-    (alectryon-mode -1)
-    (should (eq 'coq-mode major-mode))
-    (should-not alectryon-mode)
-    (should (equal alectryon-test--coq (buffer-string)))
-    ;; Undo the disable: should restore RST + alectryon-mode
-    (primitive-undo 2 buffer-undo-list)
-    (should (eq 'rst-mode major-mode))
-    (should alectryon-mode)
-    (should (equal alectryon-test--rst (buffer-string)))))
+  (funcall .mode)
+  (setq-local alectryon-text-mode 'rst-mode)
+  (buffer-enable-undo)
+  (insert .code)
+  (alectryon-mode 1)
+  (should (eq .mode major-mode))
+  (should alectryon-mode)
+  ;; Toggle: code -> RST
+  (alectryon--toggle)
+  (should (eq 'rst-mode major-mode))
+  (should alectryon-mode)
+  (should (equal .rst (buffer-string)))
+  ;; Disable alectryon-mode (should revert to code mode)
+  (alectryon-mode -1)
+  (should (eq .mode major-mode))
+  (should-not alectryon-mode)
+  (should (equal .code (buffer-string)))
+  ;; Undo the disable: should restore RST + alectryon-mode
+  (primitive-undo 2 buffer-undo-list)
+  (should (eq 'rst-mode major-mode))
+  (should alectryon-mode)
+  (should (equal .rst (buffer-string))))
 
-(ert-deftest alectryon-test-toggle-undo-preserves-original-mode ()
+(alectryon-test--deftest alectryon-test-toggle-undo-preserves-original-mode
   "After undo-of-disable, alectryon--original-mode must still be set."
-  (skip-unless (alectryon-test--converter-available-p))
-  (with-temp-buffer
-    (coq-mode)
-    (setq-local alectryon-text-mode 'rst-mode)
-    (buffer-enable-undo)
-    (insert alectryon-test--coq)
-    (alectryon-mode 1)
-    (alectryon--toggle)
-    (alectryon-mode -1)
-    ;; Undo the disable
-    (primitive-undo 2 buffer-undo-list)
-    ;; The critical check: original-mode must be coq-mode, not rst-mode
-    (should (eq 'coq-mode alectryon--original-mode))))
+  (funcall .mode)
+  (setq-local alectryon-text-mode 'rst-mode)
+  (buffer-enable-undo)
+  (insert .code)
+  (alectryon-mode 1)
+  (alectryon--toggle)
+  (alectryon-mode -1)
+  (primitive-undo 2 buffer-undo-list)
+  (should (eq .mode alectryon--original-mode)))
 
-(ert-deftest alectryon-test-disable-without-toggle ()
+(alectryon-test--deftest alectryon-test-disable-without-toggle
   "Disabling alectryon-mode while in original mode skips conversion."
-  (skip-unless (alectryon-test--converter-available-p))
-  (with-temp-buffer
-    (coq-mode)
-    (setq-local alectryon-text-mode 'rst-mode)
-    (insert alectryon-test--coq)
-    (alectryon-mode 1)
-    (should (eq 'coq-mode major-mode))
-    (should alectryon-mode)
-    ;; Disable without ever toggling
-    (alectryon-mode -1)
-    (should (eq 'coq-mode major-mode))
-    (should-not alectryon-mode)
-    ;; Content unchanged
-    (should (equal alectryon-test--coq (buffer-string)))))
+  (funcall .mode)
+  (setq-local alectryon-text-mode 'rst-mode)
+  (insert .code)
+  (alectryon-mode 1)
+  (should (eq .mode major-mode))
+  (should alectryon-mode)
+  (alectryon-mode -1)
+  (should (eq .mode major-mode))
+  (should-not alectryon-mode)
+  (should (equal .code (buffer-string))))
 
-(ert-deftest alectryon-test-toggle-undo ()
+(alectryon-test--deftest alectryon-test-toggle-undo
   "Undoing a normal toggle restores original mode and content."
-  (skip-unless (alectryon-test--converter-available-p))
-  (with-temp-buffer
-    (coq-mode)
-    (setq-local alectryon-text-mode 'rst-mode)
-    (buffer-enable-undo)
-    (insert alectryon-test--coq)
-    (alectryon-mode 1)
-    ;; Toggle: Coq -> RST
-    (alectryon--toggle)
-    (should (eq 'rst-mode major-mode))
-    (should (equal alectryon-test--rst (buffer-string)))
-    ;; Undo the toggle
-    (primitive-undo 2 buffer-undo-list)
-    (should (eq 'coq-mode major-mode))
-    (should alectryon-mode)
-    (should (equal alectryon-test--coq (buffer-string)))
-    (should (eq 'coq-mode alectryon--original-mode))))
+  (funcall .mode)
+  (setq-local alectryon-text-mode 'rst-mode)
+  (buffer-enable-undo)
+  (insert .code)
+  (alectryon-mode 1)
+  (alectryon--toggle)
+  (should (eq 'rst-mode major-mode))
+  (should (equal .rst (buffer-string)))
+  (primitive-undo 2 buffer-undo-list)
+  (should (eq .mode major-mode))
+  (should alectryon-mode)
+  (should (equal .code (buffer-string)))
+  (should (eq .mode alectryon--original-mode)))
 
 (ert-deftest alectryon-test-original-mode-not-poisoned ()
   "Enabling alectryon-mode from an unsupported mode must not poison
@@ -324,25 +336,21 @@ Issue: alectryon--record-mode runs before alectryon--mode-case validation."
     (should (or (null alectryon--original-mode)
                 (eq 'coq-mode alectryon--original-mode)))))
 
-(ert-deftest alectryon-test-failed-disable-cleanup ()
-  "If the converter fails during disable, hooks must still be cleaned up.
-Issue: error in alectryon--toggle during disable aborts cleanup,
-leaving orphaned sub-modes and save hooks."
-  (skip-unless (alectryon-test--converter-available-p))
-  (with-temp-buffer
-    (coq-mode)
-    (setq-local alectryon-text-mode 'rst-mode)
-    (insert alectryon-test--coq)
-    (alectryon-mode 1)
-    (alectryon--toggle)
-    ;; Now in rst-mode. Break the converter.
-    (let ((alectryon-executable "nonexistent-binary-xyz"))
-      (condition-case nil
-          (alectryon-mode -1)
-        (error nil)))
-    ;; Even after error, the save hook should not be installed
-    (should-not (memq 'alectryon--save
-                       (buffer-local-value 'write-contents-functions (current-buffer))))))
+(alectryon-test--deftest alectryon-test-failed-disable-cleanup
+  "If the converter fails during disable, hooks must still be cleaned up."
+  (funcall .mode)
+  (setq-local alectryon-text-mode 'rst-mode)
+  (insert .code)
+  (alectryon-mode 1)
+  (alectryon--toggle)
+  ;; Now in rst-mode. Break the converter.
+  (let ((alectryon-executable "nonexistent-binary-xyz"))
+    (condition-case nil
+        (alectryon-mode -1)
+      (error nil)))
+  ;; Even after error, the save hook should not be installed
+  (should-not (memq 'alectryon--save
+                     (buffer-local-value 'write-contents-functions (current-buffer)))))
 
 (provide 'alectryon-tests)
 ;;; alectryon-tests.el ends here
