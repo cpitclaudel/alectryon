@@ -135,11 +135,57 @@
     (goto-char 6)
     (should-not (alectryon--in-literate-comment-p))))
 
-(ert-deftest alectryon-test-dafny-insert-literate-block ()
-  "Inserting a literate block in Dafny produces /// prefixes."
+(ert-deftest alectryon-test-dafny-insert-literate-markers ()
+  "Inserting literate markers in gutter mode."
+  ;; Empty line: insert /// prefix
   (alectryon-test--with-buffer 'dafny-mode ""
     (alectryon-insert-literate-markers)
-    (should (equal "/// \n\n/// " (buffer-string)))))
+    (should (equal "/// " (buffer-string))))
+  ;; In code: open a new /// line
+  (alectryon-test--with-buffer 'dafny-mode "method Foo() {}"
+    (alectryon-insert-literate-markers)
+    (should (equal "method Foo() {}\n\n/// \n" (buffer-string))))
+  ;; In /// comment: break out into code
+  (alectryon-test--with-buffer 'dafny-mode "/// hello"
+    (alectryon-insert-literate-markers)
+    (should (equal "/// hello\n\n\n" (buffer-string)))))
+
+(ert-deftest alectryon-test-gutter-newline ()
+  "RET in a /// comment auto-inserts /// prefix on the new line."
+  (alectryon-test--with-buffer 'dafny-mode "/// hello"
+    (goto-char (point-max))
+    (alectryon-newline nil)
+    (should (equal "/// hello\n/// " (buffer-string)))
+    (should (equal (point) (point-max)))))
+
+(ert-deftest alectryon-test-gutter-backspace-safeguard ()
+  "Backspacing into /// with content after it deletes the whole prefix."
+  (alectryon-test--with-buffer 'dafny-mode "/// hello"
+    (font-lock-mode 1)
+    (font-lock-ensure)
+    ;; Point after "/// ", backspace should delete whole "/// " (not just space)
+    (goto-char 5)
+    (delete-char -1)
+    (should (equal "hello" (buffer-string)))))
+
+(ert-deftest alectryon-test-gutter-newline-outside-comment ()
+  "RET outside a /// comment inserts a plain newline; backspace undoes it."
+  (alectryon-test--with-buffer 'dafny-mode "method Foo() {}"
+    (let ((original (buffer-string)))
+      (goto-char (point-max))
+      (alectryon-newline nil)
+      (should (equal "method Foo() {}\n" (buffer-string)))
+      (delete-char -1)
+      (should (equal original (buffer-string))))))
+
+(ert-deftest alectryon-test-gutter-newline-not-in-block-modes ()
+  "RET in a block-style literate comment does not insert gutter prefixes."
+  (alectryon-test--with-buffer 'coq-mode "(*| hello |*)"
+    (let ((original (buffer-string)))
+      (goto-char 8)
+      (alectryon-newline nil)
+      (delete-char -1)
+      (should (equal original (buffer-string))))))
 
 ;;;; Conversion (requires alectryon binary)
 
