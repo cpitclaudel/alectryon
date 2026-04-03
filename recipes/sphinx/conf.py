@@ -21,6 +21,7 @@ today = " "
 exclude_patterns = ['included.*']
 html_theme = 'alabaster'
 html_static_path = ['_static']
+html_show_sphinx = False
 
 pygments_style = "emacs"
 latex_engine = "xelatex"

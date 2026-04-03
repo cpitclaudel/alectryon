@@ -1372,10 +1372,13 @@ def make_HtmlTranslator(base):
             cls = html.wrap_classes(*classes)
             self.body_prefix.append(f'<div class="{cls}">')
 
+            include_vernums = document.settings.alectryon_vernums
             if self.settings.alectryon_banner:
                 drivers_info = alectryon_state(document).drivers_info
-                include_vernums = document.settings.alectryon_vernums
                 self.body_prefix.append(html.gen_banner(drivers_info, include_vernums))
+            if not include_vernums:
+                self.meta.remove(self.generator)
+                self.meta.append(self.generator.replace(f" {docutils.__version__}", ""))
 
             self.body_suffix.insert(0, '</div>')
     return Translator
