@@ -149,7 +149,7 @@ class VsRocqOutput:
 
     @staticmethod
     def parse_goal(gv: JSON):
-        return Goal(gv["name"], gv["goal"],
+        return Goal(gv.get("name"), gv["goal"],
                     [VsRocqOutput.parse_hyp(hv) for hv in gv["hypotheses"]])
 
     @staticmethod
