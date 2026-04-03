@@ -480,6 +480,11 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   "Face used to highlight Alectryon comment delimiters."
   :group 'alectryon)
 
+(defface alectryon-gutter
+  '((t :inverse-video t :inherit font-lock-comment-face))
+  "Face used for gutter-style literate comment markers (e.g. ///)."
+  :group 'alectryon)
+
 (defun alectryon--in-literate-comment-p (&optional ppss)
   "Check if PPSS is inside a literate comment.
 
@@ -496,16 +501,55 @@ Defaults to `syntax-ppss' if PPSS is nil."
   (when (alectryon--in-literate-comment-p state)
     'alectryon-comment))
 
-;; TODO: display as a solid line even when it's on the same line.
-(defun alectryon--prog-font-lock-keywords ()
-  "Compute `font-lock' keywords for Alectryon delimiters in `prog-mode'."
-  (pcase-let ((`(,open . ,close) (alectryon--config :comment-delimiters-re 'prog)))
-    (when close
-      `((,(format "^\\(%s\\|%s\\)$" open close)
-         ;; No space allowed at EOL (the :align-to would push it to the next line)
-         1 '(face alectryon-comment-marker display (space :align-to right)) append)))))
+;;;;; Block-style font-locking
 
-;; TODO highlight .. coq:: blocks in reST mode
+;; TODO: display as a solid line even when it's on the same line.
+(defun alectryon--block-font-lock-keywords ()
+  "Compute `font-lock' keywords for block-style literate delimiters."
+  (pcase-let ((`(,open . ,close) (alectryon--config :comment-delimiters-re 'prog)))
+    `((,(format "^\\(%s\\|%s\\)$" open close)
+       ;; No space allowed at EOL (the :align-to would push it to the next line)
+       1 '(face alectryon-comment-marker display (space :align-to right)) append))))
+
+;;;;; Gutter-style font-locking
+
+(defun alectryon--gutter-marker-modification-hook (from to)
+  "Handle backspace on a gutter-style literate comment marker.
+FROM, TO: see `modification-hooks' text property."
+  ;; backspace on “/// <|>” (but not at eol) or “///<|>”
+  (let ((bol (line-beginning-position))
+        (eol (line-end-position)))
+    (when (and (eq (point) to)
+               (eq (1- (point)) from)
+               (or (eq (point) (+ 3 bol))
+                   (and (eq (point) (+ 4 bol))
+                        (not (eq (point) eol)))))
+      (let ((inhibit-modification-hooks t))
+        (delete-region bol from)))))
+
+(defconst alectryon--gutter-font-lock-props
+  '(face alectryon-gutter display (space :width (+ (0) 0.5))))
+
+(defconst alectryon--gutter-space-font-lock-props
+  '(face nil display (space :width (+ 0.5 (0))))) ;; (+ … (0)) is for TTYs
+
+(defconst alectryon--gutter-wrap-prefix
+  (concat (apply #'propertize "///" alectryon--gutter-font-lock-props)
+          (apply #'propertize " " alectryon--gutter-space-font-lock-props)))
+
+(defun alectryon--gutter-font-lock-keywords ()
+  "Compute `font-lock' keywords for gutter-style literate comments."
+  `(("^\\(\\(///\\)\\( \\|$\\)\\)\\(.*\\)"
+     (1 '(face nil modification-hooks (alectryon--gutter-marker-modification-hook)))
+     (2 alectryon--gutter-font-lock-props prepend)
+     (3 alectryon--gutter-space-font-lock-props)
+     (4 '(face nil wrap-prefix ,alectryon--gutter-wrap-prefix)))))
+
+(defun alectryon--prog-font-lock-keywords ()
+  "Compute `font-lock' keywords for Alectryon literate comments in `prog-mode'."
+  (if (cdr (alectryon--config :comment-delimiters-re 'prog))
+      (alectryon--block-font-lock-keywords)
+    (alectryon--gutter-font-lock-keywords)))
 
 ;;;; Editing
 
@@ -610,6 +654,8 @@ Current document must have a file name."
     (font-lock-add-keywords nil alectryon--prog-font-lock-keywords)
     (make-local-variable 'font-lock-extra-managed-props)
     (cl-pushnew 'display font-lock-extra-managed-props)
+    (cl-pushnew 'wrap-prefix font-lock-extra-managed-props)
+    (cl-pushnew 'modification-hooks font-lock-extra-managed-props)
     (add-function :before-until (local 'font-lock-syntactic-face-function)
                   #'alectryon--prog-syntactic-face-function '((depth . -100))))
    (t
