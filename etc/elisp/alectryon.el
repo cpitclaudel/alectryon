@@ -169,7 +169,13 @@ ensure BODY is one undo group."
       :exit-hooks nil
       :comment-delimiters ("/-|" . "|-/")
       :comment-delimiters-re ("/-|" . "|-/")
-      :annotations-re ,(format "/-%s-/" alectryon--annotations-re))))
+      :annotations-re ,(format "/-%s-/" alectryon--annotations-re))
+    ( dafny-mode
+      :tag "dafny"
+      :exit-hooks nil
+      :comment-delimiters ("/// " . nil)
+      :comment-delimiters-re ("^///" . nil)
+      :annotations-re nil)))
 
 (defconst alectryon-text-modes
   '(( rst-mode
@@ -458,7 +464,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
   :error-parser #'alectryon--parse-errors
   :predicate (lambda () alectryon-mode)
   :verify (lambda (_) (alectryon--flycheck-verify-enabled))
-  :modes '(coq-mode lean4-mode rst-mode markdown-mode))
+  :modes '(coq-mode lean4-mode dafny-mode rst-mode markdown-mode))
 
 (add-to-list 'flycheck-checkers 'alectryon)
 
@@ -493,10 +499,11 @@ Defaults to `syntax-ppss' if PPSS is nil."
 ;; TODO: display as a solid line even when it's on the same line.
 (defun alectryon--prog-font-lock-keywords ()
   "Compute `font-lock' keywords for Alectryon delimiters in `prog-mode'."
-  `((,(pcase-let ((`(,open . ,close) (alectryon--config :comment-delimiters-re 'prog)))
-        (format "^\\(%s\\|%s\\)$" open close))
-     ;; No space allowed at EOL (the :align-to would push it to the next line)
-     1 '(face alectryon-comment-marker display (space :align-to right)) append)))
+  (pcase-let ((`(,open . ,close) (alectryon--config :comment-delimiters-re 'prog)))
+    (when close
+      `((,(format "^\\(%s\\|%s\\)$" open close)
+         ;; No space allowed at EOL (the :align-to would push it to the next line)
+         1 '(face alectryon-comment-marker display (space :align-to right)) append)))))
 
 ;; TODO highlight .. coq:: blocks in reST mode
 
@@ -505,13 +512,19 @@ Defaults to `syntax-ppss' if PPSS is nil."
 (defun alectryon-insert-literate-block ()
   "Insert a pair of Alectryon comment delimiters."
   (interactive)
-  (pcase-let*
-      ((`(,open . ,close) (alectryon--config :comment-delimiters 'prog))
-       (delim (if (alectryon--in-literate-comment-p)
-                  `(,(format "%s\n\n" close) . ,(format "\n\n%s" open))
-                `(,(format "%s\n" open) . ,(format "\n%s" close)))))
-    (insert (car delim))
-    (save-excursion (insert (cdr delim)))))
+  (pcase-let* ((`(,open . ,close) (alectryon--config :comment-delimiters 'prog)))
+    (if close
+        ;; Block-based languages (Coq, Lean 4): insert open/close pair
+        (let ((delim (if (alectryon--in-literate-comment-p)
+                         `(,(format "%s\n\n" close) . ,(format "\n\n%s" open))
+                       `(,(format "%s\n" open) . ,(format "\n%s" close)))))
+          (insert (car delim))
+          (save-excursion (insert (cdr delim))))
+      ;; Line-based languages (Dafny): insert open prefix or blank break
+      (if (alectryon--in-literate-comment-p)
+          (progn (insert "\n\n") (save-excursion (insert "\n\n")))
+        (insert (format "%s\n" open))
+        (save-excursion (insert (format "\n%s" open)))))))
 
 ;;;; Preview
 
@@ -665,8 +678,9 @@ In markup mode:
 
 (defun alectryon--prog-presentation-font-lock-keywords ()
   "Compute `font-lock' keywords for Alectryon annotations in `prog-mode'."
-  `((,(alectryon--config :annotations-re)
-     0 '(face '(:height 0.5) display "👻") append)))
+  (let ((re (alectryon--config :annotations-re)))
+    (when re
+      `((,re 0 '(face '(:height 0.5) display "👻") append)))))
 
 (defvar-local alectryon--prog-presentation-font-lock-keywords nil
   "Cache variable for `alectryon--prog-presentation-font-lock-keywords'.")
@@ -695,6 +709,8 @@ In markup mode:
 (add-hook 'coq-mode-hook #'alectryon-mode-maybe-enable t)
 ;;;###autoload
 (add-hook 'lean4-mode-hook #'alectryon-mode-maybe-enable t)
+;;;###autoload
+(add-hook 'dafny-mode-hook #'alectryon-mode-maybe-enable t)
 
 (provide 'alectryon)
 ;;; alectryon.el ends here

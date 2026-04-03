@@ -126,6 +126,21 @@
     (should (equal "/-|\n\n|-/" (buffer-string)))
     (should (equal 5 (point)))))
 
+(ert-deftest alectryon-test-dafny-literate-comment ()
+  "Literate comment detection distinguishes /// from // and code."
+  (alectryon-test--with-buffer 'dafny-mode "/// hello"
+    (goto-char 6)
+    (should (alectryon--in-literate-comment-p)))
+  (alectryon-test--with-buffer 'dafny-mode "// regular"
+    (goto-char 6)
+    (should-not (alectryon--in-literate-comment-p))))
+
+(ert-deftest alectryon-test-dafny-insert-literate-block ()
+  "Inserting a literate block in Dafny produces /// prefixes."
+  (alectryon-test--with-buffer 'dafny-mode ""
+    (alectryon-insert-literate-block)
+    (should (equal "/// \n\n/// " (buffer-string)))))
+
 ;;;; Conversion (requires alectryon binary)
 
 (cl-defstruct (alectryon-test--lang (:constructor alectryon-test--lang))
@@ -145,7 +160,13 @@
     :code "/-|\nHello\n|-/\n\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n"
     :rst  "Hello\n\n.. lean4::\n\n   theorem foo : ∀ n : Nat, n = n := fun _ → rfl\n"
     :md   "Hello\n\n```{lean4}\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n```\n"
-    :round-trip "/-|\nHello\n|-/\n\ndef x : Nat := 5\n"))
+    :round-trip "/-|\nHello\n|-/\n\ndef x : Nat := 5\n")
+   (alectryon-test--lang
+    :tag "dafny" :mode 'dafny-mode
+    :code "/// Hello\n\nmethod Foo() {}\n"
+    :rst  "Hello\n\n.. dafny::\n\n   method Foo() {}\n"
+    :md   "Hello\n\n```{dafny}\nmethod Foo() {}\n```\n"
+    :round-trip "/// Hello\n\nmethod Foo() {}\n"))
   "Test data for each supported language.")
 
 (defmacro alectryon-test--deftest (name docstring &rest body)
