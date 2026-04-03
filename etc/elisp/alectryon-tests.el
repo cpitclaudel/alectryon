@@ -103,7 +103,7 @@
 (ert-deftest alectryon-test-insert-literate-block ()
   "Inserting a literate block produces exact output with point between delimiters."
   (alectryon-test--with-buffer 'coq-mode ""
-    (alectryon-insert-literate-block)
+    (alectryon-insert-literate-markers)
     (should (equal "(*|\n\n|*)" (buffer-string)))
     (should (equal 5 (point)))))
 
@@ -122,7 +122,7 @@
 (ert-deftest alectryon-test-lean4-insert-literate-block ()
   "Inserting a literate block in Lean 4 produces /-| and |-/ delimiters."
   (alectryon-test--with-buffer 'lean4-mode ""
-    (alectryon-insert-literate-block)
+    (alectryon-insert-literate-markers)
     (should (equal "/-|\n\n|-/" (buffer-string)))
     (should (equal 5 (point)))))
 
@@ -138,7 +138,7 @@
 (ert-deftest alectryon-test-dafny-insert-literate-block ()
   "Inserting a literate block in Dafny produces /// prefixes."
   (alectryon-test--with-buffer 'dafny-mode ""
-    (alectryon-insert-literate-block)
+    (alectryon-insert-literate-markers)
     (should (equal "/// \n\n/// " (buffer-string)))))
 
 ;;;; Conversion (requires alectryon binary)

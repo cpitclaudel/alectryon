@@ -553,22 +553,32 @@ FROM, TO: see `modification-hooks' text property."
 
 ;;;; Editing
 
-(defun alectryon-insert-literate-block ()
-  "Insert a pair of Alectryon comment delimiters."
+(defun alectryon--insert-literate-block ()
+  "Insert block-style literate delimiters."
+  (pcase-let* ((`(,open . ,close)
+                (alectryon--config :comment-delimiters 'prog))
+               (`(,before . ,after)
+                (if (alectryon--in-literate-comment-p)
+                    `(,(format "%s\n\n" close) . ,(format "\n\n%s" open))
+                  `(,(format "%s\n" open) . ,(format "\n%s" close)))))
+    (insert before)
+    (save-excursion (insert after))))
+
+(defun alectryon--insert-literate-gutter ()
+  "Insert or toggle gutter-style literate comment prefix."
+  (let ((open (car (alectryon--config :comment-delimiters 'prog))))
+    (end-of-line)
+    (if (= (point) (line-beginning-position))
+        (insert open)
+      (insert "\n\n" (if (alectryon--in-literate-comment-p) "" open))
+      (save-excursion (insert "\n")))))
+
+(defun alectryon-insert-literate-markers ()
+  "Insert Alectryon comment delimiters."
   (interactive)
-  (pcase-let* ((`(,open . ,close) (alectryon--config :comment-delimiters 'prog)))
-    (if close
-        ;; Block-based languages (Coq, Lean 4): insert open/close pair
-        (let ((delim (if (alectryon--in-literate-comment-p)
-                         `(,(format "%s\n\n" close) . ,(format "\n\n%s" open))
-                       `(,(format "%s\n" open) . ,(format "\n%s" close)))))
-          (insert (car delim))
-          (save-excursion (insert (cdr delim))))
-      ;; Line-based languages (Dafny): insert open prefix or blank break
-      (if (alectryon--in-literate-comment-p)
-          (progn (insert "\n\n") (save-excursion (insert "\n\n")))
-        (insert (format "%s\n" open))
-        (save-excursion (insert (format "\n%s" open)))))))
+  (if (cdr (alectryon--config :comment-delimiters 'prog))
+      (alectryon--insert-literate-block)
+    (alectryon--insert-literate-gutter)))
 
 (defun alectryon-newline (arg)
   "Insert a newline, with a literate gutter if needed.
@@ -637,7 +647,7 @@ Current document must have a file name."
 (defvar alectryon-prog-mode-map
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map alectryon-mode-map)
-    (define-key map (kbd "C-c C-=") #'alectryon-insert-literate-block)
+    (define-key map (kbd "C-c C-=") #'alectryon-insert-literate-markers)
     (define-key map [remap newline] #'alectryon-newline)
     map))
 
