@@ -1,16 +1,19 @@
 ;;; alectryon-tests.el --- Tests for alectryon.el  -*- lexical-binding: t; -*-
 
-;; Run with: emacs --batch -Q -l alectryon-tests.el -f ert-run-tests-batch-and-exit
+;; Run with: etc/test-elisp.sh
 
 ;;; Code:
 
 (require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
+(require 'use-package)
 
-(when (and (getenv "CI") (not (package-installed-p 'flycheck)))
-  (add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-  (package-refresh-contents)
-  (package-install 'flycheck))
+(use-package flycheck :ensure t)
+(use-package proof-general :ensure t)
+(use-package boogie-friends :ensure t)
+(use-package lean4-mode :ensure t
+  :vc (:url "https://github.com/leanprover-community/lean4-mode"))
 
 (eval-and-compile
   (defconst alectryon-test--directory
@@ -36,30 +39,11 @@
         (alectryon--run-converter in (list "--frontend" frontend "--backend" backend))
         (buffer-substring-no-properties (point-min) (point-max))))))
 
-(defun alectryon-test--coq-syntax-table ()
-  "Return a syntax table with Coq-style (* *) comments."
-  (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?\( "()1" st)
-    (modify-syntax-entry ?\) ")(4" st)
-    (modify-syntax-entry ?*  ". 23" st)
-    st))
-
-(defun alectryon-test--lean4-syntax-table ()
-  "Return a syntax table with Lean 4-style /- -/ comments."
-  (let ((st (make-syntax-table)))
-    (modify-syntax-entry ?/ ". 14" st)
-    (modify-syntax-entry ?- ". 23" st)
-    st))
-
 (defmacro alectryon-test--with-buffer (mode contents &rest body)
   "Set up a temp buffer in MODE with CONTENTS and run BODY."
   (declare (indent 2))
   `(with-temp-buffer
-     (set-syntax-table (pcase ,mode
-                         ('coq-mode (alectryon-test--coq-syntax-table))
-                         ('lean4-mode (alectryon-test--lean4-syntax-table))))
-     (setq-local alectryon-prog-mode ,mode)
-     (setq-local alectryon-text-mode 'rst-mode)
+     (funcall ,mode)
      (insert ,contents)
      ,@body))
 
@@ -68,17 +52,11 @@
 (ert-deftest alectryon-test-guess-text-mode ()
   "Filename suffix detection for _rst and _md."
   (with-temp-buffer
-    (let ((buffer-file-name "/tmp/foo_rst.v"))
+    (let ((buffer-file-name "/tmp/foo_rst.abc"))
       (should (eq 'rst-mode (alectryon--guess-text-mode))))
-    (let ((buffer-file-name "/tmp/foo_md.v"))
+    (let ((buffer-file-name "/tmp/foo_md.xyz"))
       (should (eq 'markdown-mode (alectryon--guess-text-mode))))
-    (let ((buffer-file-name "/tmp/foo.v"))
-      (should-not (alectryon--guess-text-mode)))
-    (let ((buffer-file-name "/tmp/foo_rst.lean"))
-      (should (eq 'rst-mode (alectryon--guess-text-mode))))
-    (let ((buffer-file-name "/tmp/foo_md.lean"))
-      (should (eq 'markdown-mode (alectryon--guess-text-mode))))
-    (let ((buffer-file-name "/tmp/foo.lean"))
+    (let ((buffer-file-name "/tmp/foo.uvw"))
       (should-not (alectryon--guess-text-mode)))))
 
 (ert-deftest alectryon-test-ensure-text-mode ()
@@ -244,15 +222,6 @@ BODY can use `.tag', `.mode', `.code', `.rst', `.md', `.round-trip'."
 
 ;;;; Toggle lifecycle
 
-;; Stub coq-mode for testing (real coq-mode may not be installed)
-(unless (fboundp 'coq-mode)
-  (define-derived-mode coq-mode prog-mode "Coq"
-    (set-syntax-table (alectryon-test--coq-syntax-table))))
-
-;; Stub lean4-mode for testing (real lean4-mode may not be installed)
-(unless (fboundp 'lean4-mode)
-  (define-derived-mode lean4-mode prog-mode "Lean4"
-    (set-syntax-table (alectryon-test--lean4-syntax-table))))
 
 (alectryon-test--deftest alectryon-test-toggle-lifecycle
   "Toggle converts content and switches modes; disable reverts; undo restores."
