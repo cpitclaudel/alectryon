@@ -526,6 +526,18 @@ Defaults to `syntax-ppss' if PPSS is nil."
         (insert (format "%s\n" open))
         (save-excursion (insert (format "\n%s" open)))))))
 
+(defun alectryon-newline (arg)
+  "Insert a newline, with a literate gutter if needed.
+
+ARG: See `newline'."
+  (interactive "*P")
+  (pcase-exhaustive (alectryon--config :comment-delimiters 'prog)
+    ((and `(,header . nil) (guard (alectryon--in-literate-comment-p)))
+     (let ((comment-insert-comment-function (lambda () (insert header))))
+       (comment-indent-new-line arg)))
+    (_ (newline arg))))
+(put 'alectryon-newline 'delete-selection t)
+
 ;;;; Preview
 
 (defun alectryon-preview ()
@@ -582,6 +594,7 @@ Current document must have a file name."
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map alectryon-mode-map)
     (define-key map (kbd "C-c C-=") #'alectryon-insert-literate-block)
+    (define-key map [remap newline] #'alectryon-newline)
     map))
 
 (defvar-local alectryon--prog-font-lock-keywords nil
