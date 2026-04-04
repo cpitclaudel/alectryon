@@ -228,7 +228,6 @@ class VsRocqFile(LSPFile[VsRocqClient]):
 
             # Print severe diagnostics eagerly
             for diag in pv.diagnostics:
-                # LATER: Adjust line numbers for code blocks embedded in literate documents.
                 if diag not in diagnostics:
                     diagnostics.add(diag)
                     if diag.severity < 3:
