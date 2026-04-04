@@ -1,36 +1,55 @@
-FROM python:3.10
+# syntax=docker/dockerfile:1
+FROM ubuntu:24.04
+
+ARG PYTHON_VERSIONS
+ARG OCAML_VERSION
+ARG ROCQ_VERSIONS
 
 ## APT
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN <<EOF
+  apt-get update
+  apt-get install -y --no-install-recommends software-properties-common gpg-agent
+  add-apt-repository -y ppa:deadsnakes/ppa
+  apt-get install -y --no-install-recommends \
     build-essential curl \
     m4 libgmp-dev zlib1g-dev pkg-config \
     emacs-nox \
-    && rm -rf /var/lib/apt/lists/*
+    $(for v in $PYTHON_VERSIONS; do echo "python$v python$v-venv"; done)
+  rm -rf /var/lib/apt/lists/*
+EOF
 
 ## OPAM
 
-RUN curl -sSfL -o /usr/local/bin/opam https://github.com/ocaml/opam/releases/download/2.5.0/opam-2.5.0-x86_64-linux \
-    && chmod +x /usr/local/bin/opam
+RUN <<EOF
+  curl -sSfL -o /usr/local/bin/opam \
+    https://github.com/ocaml/opam/releases/download/2.5.0/opam-2.5.0-x86_64-linux
+  chmod +x /usr/local/bin/opam
+EOF
 
-## Python
+## Python venvs
 
-# `=` lines are non-dev dependencies
-COPY deps/requirements.dev /tmp/requirements.txt
-RUN grep '=' /tmp/requirements.txt | pip install --no-cache-dir -r /dev/stdin
+COPY deps/requirements.dev /tmp/requirements.dev
+
+RUN <<EOF
+  for v in $PYTHON_VERSIONS; do
+    python$v -m venv ~/.local/venv-$v
+    # `=` lines are non-dev dependencies
+    ~/.local/venv-$v/bin/pip install --no-cache-dir -q \
+      $(grep '=' /tmp/requirements.dev | sed 's/==/<=/')
+  done
+EOF
 
 ## OPAM
-
-ARG OCAML_VERSION
-ARG ROCQ_VERSIONS
 
 COPY deps/opam.sh /tmp/opam.sh
-RUN opam init --bare --auto-setup --disable-sandboxing \
-    && for v in $ROCQ_VERSIONS; do \
-         bash /tmp/opam.sh "$OCAML_VERSION" --switch "rocq-$v" --rocq-version "$v"; \
-       done
+RUN <<EOF
+  opam init --bare --auto-setup --disable-sandboxing
+  for v in $ROCQ_VERSIONS; do
+    bash /tmp/opam.sh "$OCAML_VERSION" --switch "rocq-$v" --rocq-version "$v"
+  done
+EOF
 
 ENV CI=true
-ENV PYTHON_VENV=/usr/local

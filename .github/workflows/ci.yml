@@ -14,12 +14,16 @@ concurrency:
 env:
   OCAML_VERSION: "5.4.0"
   ROCQ_VERSIONS: "9.0.1 9.1.0"
+  PYTHON_VERSIONS: "3.10 3.14"
   ALECTRYON_DOCKER_IMAGE: alectryon.ci
 
 jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    strategy:
+      matrix:
+        python: ["3.10", "3.14"]
     steps:
     - uses: actions/checkout@v6
     - uses: docker/setup-docker-action@v5
@@ -37,6 +41,7 @@ jobs:
         build-args: |
           OCAML_VERSION=${{ env.OCAML_VERSION }}
           ROCQ_VERSIONS=${{ env.ROCQ_VERSIONS }}
+          PYTHON_VERSIONS=${{ env.PYTHON_VERSIONS }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -44,22 +49,26 @@ jobs:
       run: |
         for switch in $(etc/docker.sh opam switch list -s); do
           echo "::group::$switch"
-          etc/docker.sh opam exec --switch="$switch" -- sh etc/tests/main.sh
+          etc/docker.sh opam exec --switch="$switch" -- \
+            sh -c '. ~/.local/venv-${{ matrix.python }}/bin/activate && sh etc/tests/main.sh'
           echo "::endgroup::"
         done
 
     - name: Run elisp tests
       run: >
-        etc/docker.sh opam exec --switch=rocq-${ROCQ_VERSIONS##* } -- sh etc/tests/elisp.sh
+        etc/docker.sh opam exec --switch=rocq-${ROCQ_VERSIONS##* } --
+        sh -c '. ~/.local/venv-${{ matrix.python }}/bin/activate && sh etc/tests/elisp.sh'
 
     - name: Test packaging
       run: >
-        etc/docker.sh opam exec --switch=rocq-${ROCQ_VERSIONS##* } -- sh etc/tests/package.sh
+        etc/docker.sh opam exec --switch=rocq-${ROCQ_VERSIONS##* } --
+        sh -c '. ~/.local/venv-${{ matrix.python }}/bin/activate && sh etc/tests/package.sh'
 
     - name: Test with Rocq dev
-      if: github.event_name == 'schedule'
+      if: github.event_name == 'schedule' && matrix.python == '3.14'
       continue-on-error: true
       run: >
         etc/docker.sh sh -c
         'bash deps/opam.sh ${{ env.OCAML_VERSION }} --switch rocq-dev --rocq-version dev
+          && . ~/.local/venv-3.14/bin/activate
           && opam exec --switch=rocq-dev -- sh etc/tests/main.sh'
