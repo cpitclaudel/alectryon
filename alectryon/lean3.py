@@ -263,11 +263,9 @@ class Lean3(REPLDriver):
                 end = min(end, fr_end) # Truncate to current fragment
                 if isinstance(fr, Text): # Split current fragment if it's text
                     if fr_beg < beg:
-                        # print(f"prefix: {(fr_beg, beg, Text(fr.contents[:beg - fr_beg]))=}")
                         yield Text(fr.contents[:beg - fr_beg])
                         fr_beg, fr = beg, fr._replace(contents=fr.contents[beg - fr_beg:])
                     if end < fr_end:
-                        # print(f"suffix: {(end, fr_end, Text(fr.contents[end - fr_beg:]))=}")
                         segments.appendleft(Positioned(end, fr_end, Text(fr.contents[end-fr_beg:])))
                         fr_end, fr = end, fr._replace(contents=fr.contents[:end - fr_beg])
                     fr = Sentence(contents=fr.contents, messages=[], goals=[])

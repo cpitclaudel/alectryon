@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Iterable, Tuple, Union, cast
+from typing import Iterable, Tuple, Union
 
 import re
 import unicodedata
@@ -78,18 +78,20 @@ class CoqIdents:
     @classmethod
     def split_fpath(cls, fpath: Path, exts=COQ_EXTS, strip=STRIP) -> Tuple[str, str]:
         """Normalize `fpath` into a valid Coq identifier.
-        If `fpath` is ``"-"``, return an empty filename.
+        If `fpath` is ``"-"``, "", ".…", return an empty filename.
 
         >>> CoqIdents.split_fpath(Path("dir/abc.def.v.xyz"), strip=(".xyz",))
         ('abc_def', '.v')
         >>> CoqIdents.split_fpath(Path("dir/abc.rst.def"))
         ('abc_def', '')
+        >>> CoqIdents.split_fpath(Path("foo/.v"))
+        ('', '')
         >>> CoqIdents.split_fpath(Path("-"))
         ('', '')
         """
-        if fpath.name in ("-", ""):
-            return "", ""
         stem, *suffixes = fpath.name.split(".")
+        if stem in ("-", ""):
+            return "", ""
         suffixes = ["." + s for s in suffixes]
         name = stem + "".join(s for s in suffixes if s not in exts + strip)
         return cls.make_ident(name), "".join(s for s in suffixes if s in exts)

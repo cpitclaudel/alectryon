@@ -784,7 +784,7 @@ class PopenDriver(CLIDriver): # pylint: disable=abstract-method
         try:
             self.repl.stdin.close()
             self.repl.stdout.close()
-        except Exception:
+        except OSError:
             pass
         finally:
             self.repl.wait()
