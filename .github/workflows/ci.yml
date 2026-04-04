@@ -27,7 +27,7 @@ jobs:
         python_version: ${{ matrix.python }}
         rocq_version: ${{ matrix.rocq }}
         ocaml_version: "5.4.0"
-        pip_constraint: "<="
+        pip_cmp: "<="
         cache_from: "type=gha,scope=py${{ matrix.python }}-rocq${{ matrix.rocq }}"
         cache_to: "type=gha,mode=max,scope=py${{ matrix.python }}-rocq${{ matrix.rocq }}"
 
@@ -43,6 +43,6 @@ jobs:
         python_version: "3.14"
         rocq_version: dev
         ocaml_version: "5.4.0"
-        pip_constraint: ">="
+        pip_cmp: ">="
         cache_from: ""
         cache_to: ""

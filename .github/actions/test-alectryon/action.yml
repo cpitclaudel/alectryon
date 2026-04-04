@@ -8,7 +8,7 @@ inputs:
     required: true
   ocaml_version:
     required: true
-  pip_constraint:
+  pip_cmp:
     required: true
   cache_from:
     required: true
@@ -38,7 +38,7 @@ runs:
         PYTHON_VERSION=${{ inputs.python_version }}
         OCAML_VERSION=${{ inputs.ocaml_version }}
         ROCQ_VERSION=${{ inputs.rocq_version }}
-        PIP_CONSTRAINT=${{ inputs.pip_constraint }}
+        PIP_CMP=${{ inputs.pip_cmp }}
       cache-from: ${{ inputs.cache_from }}
       cache-to: ${{ inputs.cache_to }}
 

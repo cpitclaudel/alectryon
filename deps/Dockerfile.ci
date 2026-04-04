@@ -4,7 +4,7 @@ FROM python:${PYTHON_VERSION}
 
 ARG OCAML_VERSION
 ARG ROCQ_VERSION
-ARG PIP_CONSTRAINT
+ARG PIP_CMP
 
 ## APT
 
@@ -31,8 +31,8 @@ EOF
 
 COPY deps/requirements.dev /tmp/requirements.dev
 RUN <<EOF
-  grep '=' /tmp/requirements.dev | sed "s/==/$PIP_CONSTRAINT/" > /tmp/constraints.txt
-  pip install --no-cache-dir -q -r /tmp/constraints.txt
+  grep '=' /tmp/requirements.dev | sed "s/==/$PIP_CMP/" \
+    | env -u PIP_CMP pip install --no-cache-dir -q -r /dev/stdin
 EOF
 
 ## Rocq
