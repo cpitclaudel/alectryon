@@ -1,2 +1,3 @@
 #!/usr/bin/env sh
-docker run --rm  -v "$(pwd):/io" -w /io "${ALECTRYON_DOCKER_IMAGE:-alectryon.dev}" "$@"
+set -eu
+exec docker run --rm -v "$(pwd):/io" -w /io "${ALECTRYON_DOCKER_IMAGE:-alectryon.dev}" "$@"

@@ -76,8 +76,9 @@ EOF
 ## Lean 4 (via elan)
 
 RUN <<EOF
-  curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y --no-modify-path --default-toolchain leanprover/lean4:v4.28.0
-  /home/docker/.elan/bin/lean || true
+  curl -sSfL https://raw.githubusercontent.com/leanprover/elan/v4.2.1/elan-init.sh \
+    | sh -s -- -y --no-modify-path --default-toolchain leanprover/lean4:v4.28.0
+  /home/docker/.elan/bin/lean --version
 EOF
 
 ## Symlinks

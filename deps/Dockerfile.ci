@@ -30,7 +30,10 @@ EOF
 ## Python
 
 COPY deps/requirements.dev /tmp/requirements.dev
-RUN grep '=' /tmp/requirements.dev | sed "s/==/$PIP_CONSTRAINT/" | pip install --no-cache-dir -q -r /dev/stdin
+RUN <<EOF
+  grep '=' /tmp/requirements.dev | sed "s/==/$PIP_CONSTRAINT/" > /tmp/constraints.txt
+  pip install --no-cache-dir -q -r /tmp/constraints.txt
+EOF
 
 ## Rocq
 
