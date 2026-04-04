@@ -13,7 +13,7 @@ export PYTHONIOENCODING ?= utf-8
 
 dependencies := $(python_bin)/pip
 
-.PHONY: test rocq coverage develop dist upload lint-changes lint elisp init
+.PHONY: test rocq coverage develop lint-changes lint elisp init
 
 ## Main targets
 
@@ -32,12 +32,6 @@ rocq: $(dependencies)
 
 elisp:
 	etc/tests/elisp.sh
-
-dist: $(dependencies)
-	python -m build
-
-upload: dist
-	python -m twine upload dist/*
 
 FORCE:
 recipes/%: FORCE
