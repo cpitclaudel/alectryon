@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:24.04
+ARG PYTHON_VERSION
+FROM python:${PYTHON_VERSION}
 
-ARG PYTHON_VERSIONS
 ARG OCAML_VERSION
-ARG ROCQ_VERSIONS
+ARG ROCQ_VERSION
+ARG PIP_CONSTRAINT
 
 ## APT
 
@@ -11,13 +12,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN <<EOF
   apt-get update
-  apt-get install -y --no-install-recommends software-properties-common gpg-agent
-  add-apt-repository -y ppa:deadsnakes/ppa
   apt-get install -y --no-install-recommends \
     build-essential curl \
     m4 libgmp-dev zlib1g-dev pkg-config \
-    emacs-nox \
-    $(for v in $PYTHON_VERSIONS; do echo "python$v python$v-venv"; done)
+    emacs-nox
   rm -rf /var/lib/apt/lists/*
 EOF
 
@@ -29,27 +27,17 @@ RUN <<EOF
   chmod +x /usr/local/bin/opam
 EOF
 
-## Python venvs
+## Python
 
 COPY deps/requirements.dev /tmp/requirements.dev
+RUN grep '=' /tmp/requirements.dev | sed "s/==/$PIP_CONSTRAINT/" | pip install --no-cache-dir -q -r /dev/stdin
 
-RUN <<EOF
-  for v in $PYTHON_VERSIONS; do
-    python$v -m venv ~/.local/venv-$v
-    # `=` lines are non-dev dependencies
-    ~/.local/venv-$v/bin/pip install --no-cache-dir -q \
-      $(grep '=' /tmp/requirements.dev | sed 's/==/<=/')
-  done
-EOF
-
-## OPAM
+## Rocq
 
 COPY deps/opam.sh /tmp/opam.sh
 RUN <<EOF
   opam init --bare --auto-setup --disable-sandboxing
-  for v in $ROCQ_VERSIONS; do
-    bash /tmp/opam.sh "$OCAML_VERSION" --switch "rocq-$v" --rocq-version "$v"
-  done
+  bash /tmp/opam.sh "$OCAML_VERSION" --switch rocq --rocq-version "$ROCQ_VERSION"
 EOF
 
 ENV CI=true
