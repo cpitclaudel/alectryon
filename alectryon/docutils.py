@@ -61,6 +61,7 @@ side, and a doctree-resolved event on the Sphinx side.
 """
 
 from collections.abc import MutableMapping
+from types import FunctionType, MethodType
 from typing import Any, ClassVar, DefaultDict, Dict, Iterable, \
     List, NamedTuple, Tuple, Type, Union
 
@@ -912,6 +913,9 @@ class DirectiveDirective(Directive): # pragma: no cover
                 nodes.literal_block(self.block_text, self.block_text),
                 line=self.lineno)
             return messages + [error]
+        if isinstance(base, (FunctionType, MethodType)):
+            from docutils.parsers.rst import convert_directive_function
+            base = convert_directive_function(base)
 
         try:
             converted = directive_without_arguments(base)
@@ -935,7 +939,6 @@ class DirectiveDirective(Directive): # pragma: no cover
                     self.block_text, self.block_text), line=self.lineno)
                 return messages + [error]
 
-        # FIXME convert `base` if it's a function instead of a class
         class CustomDirective(base):
             def run(self):
                 self.options = {**options, **self.options} # pylint: disable=attribute-defined-outside-init
