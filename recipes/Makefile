@@ -111,7 +111,7 @@ coverage:
 	+$(MAKE) clean
 	+$(MAKE) COVERAGE=1 alectryon
 	cd coverage && coverage combine && coverage html
-.PHONY: coverage
+.PHONY: alectryon all rocq coverage
 
 ###########
 # Cleanup #

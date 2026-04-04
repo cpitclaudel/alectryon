@@ -2,6 +2,104 @@
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "alectryon"
+description = "A library to process Coq snippets embedded in documents, showing goals and messages for each Coq sentence."
+readme = "README.rst"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    {name = "Clément Pit-Claudel", email = "clement.pitclaudel@live.com"},
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Compilers",
+    "Topic :: Text Editors :: Documentation",
+    "Topic :: Text Processing :: Markup :: reStructuredText",
+]
+dependencies = [
+    "pygments>=2.14.0",
+    "dominate>=2.7.0",
+    "beautifulsoup4>=4.11.2",
+    "docutils>=0.19",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+md = ["myst_parser>=1.0.0"]
+sphinx = ["sphinx>=6.1.3"]
+full = [
+    "myst_parser>=1.0.0",
+    "sphinx>=6.1.3",
+]
+
+[project.scripts]
+alectryon = "alectryon.cli:main"
+
+[project.entry-points."pygments.styles"]
+alectryon = "alectryon.pygments_style:AlectryonStyle"
+
+[project.urls]
+Homepage = "https://github.com/cpitclaudel/alectryon"
+
+[tool.setuptools]
+packages = ["alectryon"]
+
+[tool.setuptools.dynamic]
+version = {attr = "alectryon.__init__.__version__"}
+
+[tool.setuptools.package-data]
+"*" = ["assets/*"]
+
+# Formatting
+
+[tool.yapfstyle]
+based_on_style = "pep8"
+blank_lines_around_top_level_definition = 1
+blank_line_before_module_docstring = true
+
+# Linting
+
+[tool.pylint.format]
+max-line-length = 115
+
+[tool.pylint."messages control"]
+disable = [
+    "consider-using-f-string",
+    "cyclic-import",
+    "duplicate-code",
+    "fixme",
+    "import-outside-toplevel",
+    "invalid-name",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+    "multiple-statements",
+    "protected-access",
+    "redefined-builtin",
+    "too-few-public-methods",
+    "too-many-ancestors",
+    "too-many-arguments",
+    "too-many-branches",
+    "too-many-instance-attributes",
+    "too-many-lines",
+    "too-many-locals",
+    "too-many-nested-blocks",
+    "too-many-positional-arguments",
+    "too-many-public-methods",
+    "too-many-return-statements",
+    "too-many-statements",
+    "typevar-name-incorrect-variance",
+    "unnecessary-lambda-assignment",
+    "use-yield-from",
+    "wrong-import-position",
+]
+
+# Type checking
+
 [tool.pyright]
 include = ["alectryon"]
 reportOptionalMemberAccess = false
@@ -10,15 +108,17 @@ reportWildcardImportFromLibrary = false
 [tool.mypy]
 ignore_missing_imports = true
 
+# Coverage
+
 [tool.coverage.run]
-# branch = True
+# branch = true
 
 [tool.coverage.report]
-  exclude_lines = [
+exclude_lines = [
     "pragma: no cover",
     "def __repr__",
     "assert False",
     "raise AssertionError",
     "raise NotImplementedError",
     "raise UnexpectedError",
-  ]
+]

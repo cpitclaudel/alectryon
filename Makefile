@@ -13,7 +13,7 @@ export PYTHONIOENCODING ?= utf-8
 
 dependencies := $(python_bin)/pip
 
-.PHONY: test coverage develop dist upload lint-changes lint elisp
+.PHONY: test rocq coverage develop dist upload lint-changes lint elisp init
 
 ## Main targets
 
@@ -69,7 +69,7 @@ lint-changes: $(dependencies)
 
 lint: $(dependencies)
 	vermin --target=3.9- --eval-annotations --violations alectryon
-	pylint --rcfile=setup.cfg alectryon
+	pylint alectryon
 	mypy alectryon/
 	pyright --project .
 
