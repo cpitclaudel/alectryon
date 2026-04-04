@@ -3,7 +3,7 @@
 # Packages get cached in deps/elisp/.
 set -eu
 
-root="$(cd "$(dirname "$0")/.."; pwd)"
+root="$(cd "$(dirname "$0")/../.."; pwd)"
 elisp_dir="$root/deps/elisp"
 mkdir -p "$elisp_dir"
 

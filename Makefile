@@ -31,7 +31,7 @@ rocq: $(dependencies)
 	+$(make) -C recipes --always-make rocq
 
 elisp:
-	etc/test-elisp.sh
+	etc/tests/elisp.sh
 
 dist: $(dependencies)
 	python -m build

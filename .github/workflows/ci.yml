@@ -44,13 +44,17 @@ jobs:
       run: |
         for switch in $(etc/docker.sh opam switch list -s); do
           echo "::group::$switch"
-          etc/docker.sh opam exec --switch="$switch" -- sh etc/test.sh
+          etc/docker.sh opam exec --switch="$switch" -- sh etc/tests/main.sh
           echo "::endgroup::"
         done
 
+    - name: Run elisp tests
+      run: >
+        etc/docker.sh opam exec --switch=rocq-${ROCQ_VERSIONS##* } -- sh etc/tests/elisp.sh
+
     - name: Test packaging
       run: >
-        etc/docker.sh opam exec --switch=rocq-${ROCQ_VERSIONS##* } -- sh etc/test_package.sh
+        etc/docker.sh opam exec --switch=rocq-${ROCQ_VERSIONS##* } -- sh etc/tests/package.sh
 
     - name: Test with Rocq dev
       if: github.event_name == 'schedule'
@@ -58,4 +62,4 @@ jobs:
       run: >
         etc/docker.sh sh -c
         'bash deps/opam.sh ${{ env.OCAML_VERSION }} --switch rocq-dev --rocq-version dev
-          && opam exec --switch=rocq-dev -- sh etc/test.sh'
+          && opam exec --switch=rocq-dev -- sh etc/tests/main.sh'
