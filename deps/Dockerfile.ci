@@ -18,7 +18,7 @@ RUN curl -sSfL -o /usr/local/bin/opam https://github.com/ocaml/opam/releases/dow
 ## Python
 
 # `=` lines are non-dev dependencies
-COPY deps/requirements.ci /tmp/requirements.txt
+COPY deps/requirements.dev /tmp/requirements.txt
 RUN grep '=' /tmp/requirements.txt | pip install --no-cache-dir -r /dev/stdin
 
 ## OPAM
