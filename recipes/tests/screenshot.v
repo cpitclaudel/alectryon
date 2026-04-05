@@ -16,7 +16,7 @@ Import ListNotations.
    <style type="text/css">
      pre.alectryon-io { font-family: Iosevka; margin: 0pt; }
      .alectryon-standalone .alectryon-windowed { padding: 0.5em; }
-     .goal-hyps div:last-child { border: thin solid black; }
+     .goal-hyps > span:last-of-type { border: thin solid black; }
      .alectryon-extra-goals label { margin-top: 3px; margin-bottom: 2px; }
 
      p {
