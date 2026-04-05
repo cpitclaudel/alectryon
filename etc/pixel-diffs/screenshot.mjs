@@ -16,14 +16,6 @@ const browser = await chromium.launch();
 const page = await browser.newPage();
 await page.emulateMedia({ media: 'screen' });
 await page.goto(pathToFileURL(path.resolve(src)).href, { waitUntil: 'networkidle' });
-
-await page.evaluate(() => {
-    document.querySelector('.alectryon-root').classList.add('alectryon-windowed');
-    document.querySelectorAll('.alectryon-extra-goal-toggle').forEach(c => { c.checked = true; });
-    document.querySelectorAll('.alectryon-sentence').forEach(s => {
-        if (s.innerText.match(/destruct y/)) s.classList.add('alectryon-target');
-    });
-});
 await page.evaluate(() => document.fonts.ready);
 await page.pdf({
     path: path.resolve(dst),

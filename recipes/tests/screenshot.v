@@ -11,6 +11,38 @@ Import ListNotations.
    To compile: alectryon screenshot.v
        # Coq → HTML; produces ‘screenshot.html’
 
+.. coq::
+|*)
+
+Goal forall x y, [x + y] = [x - y] -> y = 0. (* .unfold *)
+
+(*|
+‘`[=…]`’ is an `injection pattern <https://coq.inria.fr/refman/proof-engine/tactics.html#intro-patterns>`__
+|*)
+
+  intros x y [=Heq]. (* .unfold *)
+  Search (?u+_ = ?u+_ -> _). (* .unfold .no-goals *)
+  apply Z.add_reg_l in Heq. (* .unfold *)
+
+(*|
+.. container:: big
+
+   3 cases: `y=0`, `y<0`, `y>0`
+|*)
+
+  destruct y; simpl in *.
+
+(*|
+`y=0`: trivial
+|*)
+  1: reflexivity.
+(*|
+`y!=0`: contradiction in `Heq`
+|*)
+  all: discriminate.
+Qed.
+
+(*|
 .. raw:: html
 
    <style type="text/css">
@@ -65,33 +97,13 @@ Import ListNotations.
      }
    </style>
 
+   <script>
+     document.querySelector('.alectryon-root').classList.add('alectryon-windowed');
+     document.querySelectorAll('.alectryon-extra-goal-toggle').forEach(c => { c.checked = true; });
+     document.querySelectorAll('.alectryon-sentence').forEach(s => {
+       if (s.innerText.match(/destruct y/)) s.classList.add('alectryon-target');
+     });
+   </script>
+
 ..
 |*)
-
-Goal forall x y, [x + y] = [x - y] -> y = 0. (* .unfold *)
-
-(*|
-‘`[=…]`’ is an `injection pattern <https://coq.inria.fr/refman/proof-engine/tactics.html#intro-patterns>`__
-|*)
-
-  intros x y [=Heq]. (* .unfold *)
-  Search (?u+_ = ?u+_ -> _). (* .unfold .no-goals *)
-  apply Z.add_reg_l in Heq. (* .unfold *)
-
-(*|
-.. container:: big
-
-   3 cases: `y=0`, `y<0`, `y>0`
-|*)
-
-  destruct y; simpl in *.
-
-(*|
-`y=0`: trivial
-|*)
-  1: reflexivity.
-(*|
-`y!=0`: contradiction in `Heq`
-|*)
-  all: discriminate.
-Qed.
