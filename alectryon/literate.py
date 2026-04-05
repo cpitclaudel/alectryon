@@ -1296,6 +1296,14 @@ def lean32rst(code):
     """Convert from Lean3 to reStructuredText."""
     return code2markup(RST(LEAN3), code)
 
+def lean32md(code):
+    """Convert from Lean3 to MyST Markdown."""
+    return code2markup(MYST(LEAN3), code)
+
+def md2lean3(md):
+    """Convert from MyST Markdown to Lean3."""
+    return markup2code(MYST(LEAN3), md)
+
 def rst2lean3(rst):
     """Convert from reStructuredText to Lean3.
 
@@ -1349,6 +1357,14 @@ def lean42rst(code: str):
 def rst2lean4(rst: str):
     """Convert from reStructuredText to Lean4."""
     return markup2code(RST(LEAN4), rst)
+
+def lean42md(code: str):
+    """Convert from Lean4 to MyST Markdown."""
+    return code2markup(MYST(LEAN4), code)
+
+def md2lean4(md: str):
+    """Convert from MyST Markdown to Lean4."""
+    return markup2code(MYST(LEAN4), md)
 
 DAFNY = LineLangDef(
     "dafny",
