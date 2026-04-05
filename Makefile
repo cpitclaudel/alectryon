@@ -13,7 +13,7 @@ export PYTHONIOENCODING ?= utf-8
 
 dependencies := $(python_bin)/pip
 
-.PHONY: test rocq coverage develop lint-changes lint elisp init
+.PHONY: test rocq coverage develop lint-changes lint elisp init pixel-diff
 
 ## Main targets
 
@@ -44,6 +44,11 @@ recipes/_output/tests/screenshot.pdf: recipes/_output/tests/screenshot.html
 etc/screenshot.svg: recipes/_output/tests/screenshot.pdf
 	pdf2svg $< $@
 	svgcleaner --multipass --indent 2 $@ $@
+
+## Pixel diff
+
+pixel-diff:
+	etc/pixel-diffs/diff.sh $$(git describe --tags --abbrev=0)
 
 ## Dependencies
 
