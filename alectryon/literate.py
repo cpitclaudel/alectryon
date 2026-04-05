@@ -424,7 +424,7 @@ class BlockLangDef(LangDef):
         super().__init__(name, parser)
         self.lit_open, self.lit_close = lit_open, lit_close
         self.lit_open_re, self.lit_close_re = re.compile(lit_open_re), re.compile(lit_close_re)
-        self.escape_pairs = list(escape_pairs)
+        self.escape_pairs = escape_pairs
         self.unescape_pairs = [(dst, src) for (src, dst) in self.escape_pairs]
 
     def is_literate_comment(self, block: StringView) -> bool:
