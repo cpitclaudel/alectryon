@@ -1343,11 +1343,10 @@ def rst2lean3(rst):
 
 LEAN4 = BlockLangDef(
     "lean4",
-    LeanParser, # We can use the same parser as Lean 3, because the syntax for
-                # comments has not changed between the versions.
-    lit_open=r"/-|", lit_close=r"|-/",
-    lit_open_re=r"[/][-][|][ \t]*", lit_close_re=r"[ \t]*[|]?[-][/]\Z",
-    escape_pairs=[("/-", r"/\ -"), ("-/", r"-\ /")]
+    parser=LEAN3.parser,
+    lit_open=LEAN3.lit_open, lit_close=LEAN3.lit_close,
+    lit_open_re=LEAN3.lit_open_re.pattern, lit_close_re=LEAN3.lit_close_re.pattern,
+    escape_pairs=LEAN3.escape_pairs
 )
 
 def lean42rst(code: str):
