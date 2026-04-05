@@ -61,16 +61,6 @@ $(sphinx_pdf): sphinx/index.rst
 
 targets += $(sphinx_html) $(sphinx_pdf)
 
-##############
-# Screenshot #
-##############
-
-_output/tests/screenshot.pdf: _output/tests/screenshot.html
-	../etc/pixel-diffs/screenshot.sh $< $@
-../etc/screenshot.svg: _output/tests/screenshot.pdf
-	pdf2svg $< $@
-	svgcleaner --multipass --indent 2 $@ $@
-
 ################
 # LaTeX → PDF #
 ################

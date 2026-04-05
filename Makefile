@@ -37,6 +37,14 @@ FORCE:
 recipes/%: FORCE
 	+$(make) -C recipes --always-make "$*"
 
+## Screenshot
+
+recipes/_output/tests/screenshot.pdf: recipes/_output/tests/screenshot.html
+	etc/pixel-diffs/screenshot.sh $< $@
+etc/screenshot.svg: recipes/_output/tests/screenshot.pdf
+	pdf2svg $< $@
+	svgcleaner --multipass --indent 2 $@ $@
+
 ## Dependencies
 
 ifeq ($(MAKECMDGOALS), init)
