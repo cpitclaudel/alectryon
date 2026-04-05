@@ -17,14 +17,6 @@ const page = await browser.newPage();
 await page.emulateMedia({ media: 'screen' });
 await page.goto(pathToFileURL(path.resolve(src)).href, { waitUntil: 'networkidle' });
 
-await page.addStyleTag({ content: `
-    body { font-size: 26px; }
-    pre.alectryon-io { font-family: Iosevka; margin-top: 0.5em; }
-    .alectryon-banner { display: none; }
-    .big p { font-size: 87.5% }
-    .big .alectryon-input { font-size: 125%; }
-    p { print-color-adjust: exact; }
-`});
 await page.evaluate(() => {
     document.querySelector('.alectryon-root').classList.add('alectryon-windowed');
     document.querySelectorAll('.alectryon-extra-goal-toggle').forEach(c => { c.checked = true; });
@@ -33,8 +25,6 @@ await page.evaluate(() => {
     });
 });
 await page.evaluate(() => document.fonts.ready);
-await page.evaluate(async () => { window.MathJax && await MathJax.startup.promise; });
-
 await page.pdf({
     path: path.resolve(dst),
     printBackground: true,

@@ -14,10 +14,14 @@ Import ListNotations.
 .. raw:: html
 
    <style type="text/css">
+     body { font-size: 26px; }
+     .alectryon-banner { display: none; }
      pre.alectryon-io { font-family: Iosevka; margin: 0pt; }
      .alectryon-standalone .alectryon-windowed { padding: 0.5em; }
      .goal-hyps > span:last-of-type { border: thin solid black; }
      .alectryon-extra-goals label { margin-top: 3px; margin-bottom: 2px; }
+     .big p { font-size: 87.5% }
+     .big .alectryon-input { font-size: 125%; }
 
      p {
        background: gold;
@@ -30,6 +34,7 @@ Import ListNotations.
        margin: 0.1em 0 0 0;
        padding: 0 0.4em 0.1em 0.4em;
        position: relative;
+       print-color-adjust: exact;
        z-index: 1;
      }
 
