@@ -1,24 +1,31 @@
 export BACKSTOP_DIR ?= ../_output/
 
-test: recipes pdf.js/build/pdf.js
+.PHONY: test approve reference recipes update clean
+
+test: recipes pdf.js/build/pdf.mjs node_modules
 	./backstop.sh test
 
-approve:
+approve: node_modules
 	./backstop.sh approve
 
-reference: recipes pdf.js/build/pdf.js
+reference: recipes pdf.js/build/pdf.mjs node_modules
 	./backstop.sh reference
 
 recipes:
-	+$(MAKE) -C .. clean
-	+$(MAKE) -C ..
+	../../etc/docker.sh make -O -j test
 
-pdfjs_url := https://github.com/mozilla/pdf.js/releases/download/v2.9.359/pdfjs-2.9.359-dist.zip
+node_modules: package.json
+	npm install
+
+update:
+	npm install backstopjs@latest
+
+pdfjs_url := https://github.com/mozilla/pdf.js/releases/download/v5.6.205/pdfjs-5.6.205-dist.zip
 pdf.js/pdfjs.zip:
 	mkdir pdf.js
 	wget -O $@ $(pdfjs_url)
 
-pdf.js/build/pdf.js: pdf.js/pdfjs.zip
+pdf.js/build/pdf.mjs: pdf.js/pdfjs.zip
 	cd pdf.js; unzip "pdfjs.zip"
 
 clean:

@@ -10,9 +10,9 @@
           margin: 1em;
       }
     </style>
-    <script src="pdf.js/build/pdf.js"></script>
-    <script>
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdf.js/build/pdf.worker.js';
+    <script type="module">
+      import * as pdfjsLib from './pdf.js/build/pdf.mjs';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = './pdf.js/build/pdf.worker.mjs';
 
       async function render(url) {
           const doc = await pdfjsLib.getDocument(url).promise;

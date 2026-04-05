@@ -10,7 +10,7 @@ async function screenshot(src, dst, options={}, pdfOptions={}, launchOptions={})
     });
 
     const page = await browser.newPage();
-    page.emulateMediaType('screen');
+    await page.emulateMediaType('screen');
 
     await page.evaluateOnNewDocument(function() {
         window.runDelayed = f =>

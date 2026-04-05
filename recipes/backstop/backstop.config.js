@@ -1,18 +1,6 @@
 const fs = require("fs");
 const path = require('path');
 
-function* recSync(dir, root = null) {
-    root = root || dir;
-    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const pth = path.resolve(dir, entry.name);
-        if (entry.isDirectory())
-            yield* recSync(pth);
-        else
-            yield { name: entry.name,
-                    path: pth };
-    }
-}
-
 function scenarios(dir) {
     const shared_props = {
         // "referenceUrl": "",
@@ -31,13 +19,16 @@ function scenarios(dir) {
         "requireSameDimensions": true
     };
 
-    const files = [...recSync(dir)];
+    const files = fs.readdirSync(dir, { withFileTypes: true, recursive: true })
+          .filter(e => e.isFile())
+          .map(e => ({ name: e.name, path: path.resolve(e.parentPath, e.name) }));
 
     const html = files
           .filter(f => f.name.match(/.*[.]html$/g))
           .flatMap(f => ['plain', 'toggled'].map(style => ({
               "label": `${f.name}_${style}`,
               "url": "file://" + f.path,
+              "alectryon_style": style,
               ...shared_props })));
 
     const pdf = files
