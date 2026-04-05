@@ -1,1 +1,0 @@
-../../../node_modules/backstopjs/capture/engine_scripts/puppet/clickAndHoverHelper.js

@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "dependencies": {
+    "pdfjs-dist": "^5.6.205",
+    "playwright": "^1.50.0",
+    "reg-cli": "^0.18.10"
+  }
+}
