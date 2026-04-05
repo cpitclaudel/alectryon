@@ -160,6 +160,10 @@ class Line:
         for part in self.parts:
             yield from part
 
+    def __contains__(self, s):
+        assert len(self.parts) <= 1 # Would need to concatenate ``.parts`` otherwise
+        return any(s in p for p in self.parts)
+
     def isspace(self):
         return all(p.isspace() for p in self.parts)
 
@@ -971,10 +975,11 @@ class MYST(BracketedMarkup):
          \n(?P<footer>(?P=indent)(?P=ticks)\n?)
         """.format(lang.name), re.VERBOSE | re.MULTILINE)
 
-def number_lines(lines: Iterable[StringView], start: int) \
-    -> Tuple[int, Deque[Line]]:
+def number_lines(lines: Iterable[StringView], start: int) -> Tuple[int, Deque[Line]]:
+    """Number `lines`, starting from `start`."""
     d = deque(Line(num, [s]) for (num, s) in enumerate(lines, start=start))
-    return start + len(d) - 1, d
+    # ``split_lines`` drops the final blank line, so count `\n` instead
+    return start + sum("\n" in l for l in d), d
 
 def split_lines(text: StringView) -> List[StringView]:
     r"""Split `text` into lines, keeping trailing ``\n``s.
@@ -1259,6 +1264,22 @@ def rst2coq(rst):
     |*)
     {BLANKLINE}
     exact I. Qed.
+    {BLANKLINE}
+
+    >>> docprint(rst2coq('''
+    ... .. coq::
+    ...
+    ...    X.
+    ...
+    ... .. coq::
+    ...
+    ...    Y.
+    ... '''))
+    X.
+    {BLANKLINE}
+    (*||*)
+    {BLANKLINE}
+    Y.
     {BLANKLINE}
     """
     return markup2code(RST(COQ), rst)

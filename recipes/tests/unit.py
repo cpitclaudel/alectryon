@@ -355,6 +355,42 @@ class literate(unittest.TestCase):
             "/-|\nJust prose.\n|-/\n",
         ])
 
+    @staticmethod
+    def _code_line_nums(markup, lang, code):
+        from alectryon.literate import code2markup_lines, get_markup
+        md = get_markup(markup, lang)
+        return {s: l.num
+                for l in code2markup_lines(md, code)
+                if (s := str(l).strip())}
+
+    def test_line_numbers_with_empty_markers(self):
+        nums = self._code_line_nums("rst", "coq",
+            "(*|\nTitle\n|*)\n\nA.\n(*||*)\n\nB.\n(*||*)\n\nC.\n")
+        self.assertEqual(nums["A."], 4)
+        self.assertEqual(nums["B."], 7)
+        self.assertEqual(nums["C."], 10)
+
+    def test_line_numbers_lean3(self):
+        nums = self._code_line_nums("rst", "lean3",
+            "/-|\nTitle\n=====\n|-/\n\ndef x := 1\n"
+            "/-||-/\n\ndef y := 2\n/-||-/\n\ndef z := 3\n")
+        self.assertEqual(nums["def x := 1"], 5)
+        self.assertEqual(nums["def y := 2"], 8)
+        self.assertEqual(nums["def z := 3"], 11)
+
+    def test_line_numbers_dafny(self):
+        nums = self._code_line_nums("rst", "dafny",
+            "/// Title\n/// =====\n\nmethod A() {}\n\n"
+            "/// Section 2\n/// ---------\n\nmethod B() {}\n")
+        self.assertEqual(nums["method A() {}"], 3)
+        self.assertEqual(nums["method B() {}"], 8)
+
+    def test_line_numbers_coq_markdown(self):
+        nums = self._code_line_nums("md", "coq",
+            "(*|\nTitle\n=====\n|*)\n\nA.\n(*||*)\n\nB.\n")
+        self.assertEqual(nums["A."], 5)
+        self.assertEqual(nums["B."], 8)
+
 if __name__ == '__main__':
     r = unittest.main(testRunner=unittest.TextTestRunner(stream=io.StringIO()), exit=False).result
     for t, tb in [*r.failures, *r.errors]:
