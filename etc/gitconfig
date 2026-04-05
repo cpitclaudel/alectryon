@@ -1,0 +1,3 @@
+# Shared per-repo git config enabled by `make git-init`
+[diff "alectryon"]
+    textconv = etc/cache_textconv.py

@@ -13,7 +13,7 @@ export PYTHONIOENCODING ?= utf-8
 
 dependencies := $(python_bin)/pip
 
-.PHONY: test rocq coverage develop lint-changes lint elisp init pixel-diff
+.PHONY: test rocq coverage develop lint-changes lint elisp init git-init pixel-diff
 
 ## Main targets
 
@@ -59,6 +59,9 @@ $(PYTHON_VENV):
 
 init: $(PYTHON_VENV)
 	pip install -r deps/requirements.dev
+
+git-init:
+	git config --local include.path ../etc/gitconfig
 
 else
 
