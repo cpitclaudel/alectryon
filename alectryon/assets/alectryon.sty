@@ -297,9 +297,6 @@
        % don't subtract the width of the hypothesis name).  If they're too long,
        % then they just move to the next line (this happens only when the
        % hypothesis name is longer than \alectryonHypIndent).
-       \alectryon@maxwidth
-         {\alectryon@hyp@body@maxwidth}
-         {\raggedright%
           % Adjust spacing between consecutive boxes
           \setlength{\lineskip}{\alectryon@hyp@lineskip}%
           % Body + `:=`
@@ -313,7 +310,7 @@
                   {\dimexpr\alectryon@hyp@body@maxwidth-\alectryon@hyp@op@w\relax}
                   {#1}}%
                 % Possible break between body and type
-                \hspace{0pt}}%
+                \discretionary{}{\hbox{\hspace{\alectryonHypIndent}}}{}}%
           % Type + `:`
           %\mbox{\the\baselineskip \the\lineskip \the\lineskiplimit \the\ht\strutbox \the\dp\strutbox}
           \alectryon@maxwidth
@@ -322,7 +319,7 @@
              % Type, narrowed to make sure it fits next to `:`
              \alectryon@maxwidth
                {\dimexpr\alectryon@hyp@body@maxwidth-\alectryon@hyp@op@w\relax}
-               {#3}}}}}}
+               {#3}}}}}
 \newcommand*{\alectryon@hyp@inline}[3][]
   {\alectryon@hypn{#2}%
    \alectryon@@ifnonempty{#1}{\,:=\:#1}%

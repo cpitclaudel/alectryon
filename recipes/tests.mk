@@ -107,7 +107,8 @@ tests_targets += _output/tests/goal_names.v.html
 
 # Coq+reST → LaTeX
 _output/tests/latex_formatting.tex: tests/latex_formatting.v
-	$(alectryon) $< --backend latex
+	DOCUTILSCONFIG=tests/geometry.docutils.conf \
+       $(alectryon) $< --backend latex
 tests_targets += _output/tests/latex_formatting.tex
 
 # ReST → HTML

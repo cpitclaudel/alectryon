@@ -3,9 +3,10 @@
  LaTeX formatting tests
 ========================
 
-This files tests various aspects of the conversion to LaTeX, including spacing and formatting::
+This file tests various aspects of the conversion to LaTeX, including spacing and formatting::
 
-   alectryon latex_formatting.v --backend latex
+   $ DOCUTILSCONFIG=tests/geometry.docutils.conf \
+       alectryon latex_formatting.v --backend latex
      # Coq+reST → LaTeX; produces ‘latex_formatting.tex’
 
 .. raw:: latex
@@ -39,7 +40,95 @@ Module Space.
 End Space.
 
 (*|
-Long hypotheses
+.. role:: ltx(raw)
+   :format: latex
+
+:ltx:`\newgeometry{top=1cm,left=1cm,right=1cm}`
+
+Hypothesis wrapping
+===================
+
+.. coq:: none
+|*)
+
+Definition type {A} (a: A) := a.
+Definition body {A} (a: A) := a.
+Definition br {A B} (f: A -> B) (a: A) := f a.
+Opaque type body br.
+
+Notation "'TYPE' a" := (type a)
+ (at level 0, a at level 1).
+Notation "'BODY' a" := (body a)
+ (at level 0, a at level 1).
+Notation "'BRK_' f a" := (br f a)
+ (at level 0, f at level 1, a at level 1,
+   format "'BRK_'  f '//' a").
+
+Definition ONE_ := 1.
+Definition NAT0 := nat.
+Definition NAT1 := nat.
+Definition NAT2 := nat.
+
+Ltac p name body type :=
+  pose body as name;
+  change _ with type in (type of name).
+
+Ltac p_223_33 n v :=
+  p n (BRK_ body (BRK_ body (BODY BODY ONE_)))
+   (BRK_ (TYPE type) (TYPE TYPE v)).
+Ltac p_223_35 n v :=
+  p n (BRK_ body (BRK_ body (BODY BODY ONE_)))
+   (BRK_ (TYPE TYPE TYPE type) (TYPE TYPE v)).
+Ltac p_223_53 n v :=
+  p n (BRK_ body (BRK_ body (BODY BODY ONE_)))
+   (BRK_ (TYPE type) (TYPE TYPE TYPE TYPE v)).
+Ltac p_2_97 n v :=
+  p n (BODY ONE_)
+   (BRK_ (TYPE TYPE TYPE TYPE TYPE TYPE TYPE type)
+    (TYPE TYPE TYPE TYPE TYPE TYPE v)).
+Ltac p_489_97 n v :=
+  p n (BRK_ (BODY BODY body)
+       (BRK_ (BODY BODY BODY BODY BODY BODY body)
+        (BODY BODY BODY BODY BODY BODY BODY BODY ONE_)))
+   (BRK_ (TYPE TYPE TYPE TYPE TYPE TYPE TYPE type)
+    (TYPE TYPE TYPE TYPE TYPE TYPE v)).
+Ltac p_4F_2F n v :=
+  p n (BRK_ (BODY BODY body)
+       (BODY BODY BODY BODY BODY BODY BODY BODY
+        BODY BODY BODY BODY BODY BODY BODY ONE_))
+   (BRK_ type
+    (TYPE TYPE TYPE TYPE TYPE TYPE TYPE TYPE
+     TYPE TYPE TYPE TYPE TYPE TYPE TYPE v)).
+
+(*|
+.. coq:: no-in unfold
+|*)
+
+Goal True. (* .none *)
+  p_223_33 ffffffff0 NAT0; p_223_33 ffffffff1 NAT1;
+    p_223_33 ffffffff2 NAT0; p_223_53 ffffffff3 NAT1;
+    p_223_33 ffffffff4 NAT0; p_223_35 ffffffff5 NAT1;
+
+    p_2_97 ffffffff6 NAT0;
+    p_489_97 ffffffff7 NAT1;
+
+    p_489_97 ffffffffffffffffffffffffffffffffffffff8 NAT0;
+    p_489_97 fffffffffffffffffffffffffffffffffffffffffffffffffff9 NAT1;
+
+    p_489_97 fffffffffffffffffffffffffffffffffffff10 NAT0;
+    p_489_97 ffffffffffffffffffffffffffffffffffffffffffffffffff10b NAT0;
+
+    p_4F_2F fffffffffffffffffffffffffffffffffffff11 NAT1.
+  repeat match goal with
+         | [ H := _ : _ |- _ ] => clearbody H
+         end. (* .no-in *)
+  exact I. (* .none *)
+Qed. (* .none *)
+
+(*|
+:ltx:`\restoregeometry`
+
+More hypotheses
 ===============
 |*)
 From Coq Require List.
@@ -73,9 +162,6 @@ Definition t := True.
 Definition ign {A} (_: A) := Prop.
 
 (*|
-.. role:: ltx(raw)
-   :format: latex
-
 :ltx:`\begin{small}`
 |*)
 

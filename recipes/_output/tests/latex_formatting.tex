@@ -7,10 +7,13 @@
 \usepackage{textcomp} % text symbol macros
 
 %%% Custom LaTeX preamble
-% PDF Standard Fonts
+
+% Keep Docutils defaults
 \usepackage{mathptmx} % Times
 \usepackage[scaled=.90]{helvet}
 \usepackage{courier}
+% Add geometry
+\usepackage{geometry}
 
 %%% User specified packages and stylesheets
 \usepackage{alectryon}
@@ -65,11 +68,12 @@
 \date{}
 \maketitle
 
-This files tests various aspects of the conversion to LaTeX, including spacing and formatting:
+This file tests various aspects of the conversion to LaTeX, including spacing and formatting:
 
 \begin{quote}
 \begin{alltt}
-alectryon latex_formatting.v -{}-backend latex
+$ DOCUTILSCONFIG=tests/geometry.docutils.conf \textbackslash{}
+    alectryon latex_formatting.v -{}-backend latex
   # Coq+reST → LaTeX; produces ‘latex_formatting.tex’
 \end{alltt}
 \end{quote}
@@ -211,9 +215,145 @@ alectryon latex_formatting.v -{}-backend latex
   \end{\al{sentence}}
 \end{alectryon}
 
+\DUrole{ltx}{\newgeometry{top=1cm,left=1cm,right=1cm}}
 
-\section{Long hypotheses%
-  \label{long-hypotheses}%
+
+\section{Hypothesis wrapping%
+  \label{hypothesis-wrapping}%
+}
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{ffffffff0}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{ffffffff1}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{ffffffff2}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{ffffffff3}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{ffffffff4}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BRK\PYZus{}}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{ffffffff5}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{ffffffff6}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{body}\Al{nl}
+\PY{n}{BRK\PYZus{}}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{ffffffff7}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{body}\Al{nl}
+\PY{n}{BRK\PYZus{}}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{ffffffffffffffffffffffffffffffffffffff8}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{body}\Al{nl}
+\PY{n}{BRK\PYZus{}}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{fffffffffffffffffffffffffffffffffffffffffffffffffff9}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{body}\Al{nl}
+\PY{n}{BRK\PYZus{}}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{fffffffffffffffffffffffffffffffffffff10, ffffffffffffffffffffffffffffffffffffffffffffffffff10b}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}[\PY{n}{BRK\PYZus{}}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{body}\Al{nl}
+\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{BODY}~\PY{n}{ONE\PYZus{}}]{fffffffffffffffffffffffffffffffffffff11}{\PY{n}{BRK\PYZus{}}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}
+            \Al{hyp}{ffffffff0}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}{ffffffff1}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+            \Al{sep}
+            \Al{hyp}{ffffffff2}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}{ffffffff3}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+            \Al{sep}
+            \Al{hyp}{ffffffff4}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}{ffffffff5}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+            \Al{sep}
+            \Al{hyp}{ffffffff6}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}{ffffffff7}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+            \Al{sep}
+            \Al{hyp}{ffffffffffffffffffffffffffffffffffffff8}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}{fffffffffffffffffffffffffffffffffffffffffffffffffff9}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+            \Al{sep}
+            \Al{hyp}{fffffffffffffffffffffffffffffffffffff10, ffffffffffffffffffffffffffffffffffffffffffffffffff10b}{\PY{n}{BRK\PYZus{}}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT0}}
+            \Al{sep}
+            \Al{hyp}{fffffffffffffffffffffffffffffffffffff11}{\PY{n}{BRK\PYZus{}}~\PY{n}{type}\Al{nl}
+            \PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{TYPE}~\PY{n}{NAT1}}
+          \end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+\DUrole{ltx}{\restoregeometry}
+
+
+\section{More hypotheses%
+  \label{more-hypotheses}%
 }
 
 \begin{alectryon}
