@@ -87,14 +87,12 @@ Translate a literate Coq file into a reStructuredText document:
       alectryon --frontend coq+rst --backend rst literate_coq.v -o literate_coq.v.rst
 
 Annotate snippets (``pre.alectryon``) within an HTML document (see `<recipes/literate_HTML.html>`__):
-
    .. code::
 
       alectryon coq.html
       alectryon --frontend html --backend webpage coq.html -o coq.annotated.html
 
 Annotate snippets (``\begin{alectryon}{coq}{unfold}``) within a TeX/LaTeX document (see `<recipes/literate_LaTeX.tex>`__; make sure to add ``\usepackage{alectryon}`` and ``\usepackage{pygments}`` to your preamble):
-
    .. code::
 
       alectryon coq.tex
