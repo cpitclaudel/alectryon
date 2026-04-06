@@ -7,7 +7,7 @@
 \newlength{\alectryonHypH}
 \setlength{\alectryonHypH}{2em}
 \newlength{\alectryonHypV}
-\setlength{\alectryonHypV}{0.3em}
+\setlength{\alectryonHypV}{0.6em}
 \newlength{\alectryonHypIndent}
 \setlength{\alectryonHypIndent}{0.3em}
 
@@ -261,7 +261,7 @@
   {\alectryon@hyphens%
    \alectryon@raggedright%
    \setlength{\alectryon@hyp@lineskip}{\dimexpr\baselineskip - \fontcharht\font`A\relax}%
-   \alectryon@setlineskip{\dimexpr\alectryon@hyp@lineskip + \alectryonHypV\relax}}
+   \alectryon@setlineskip{\alectryonHypV}}
   {\par}
   {\discretionary{}{}{\hbox{\hspace{\alectryonHypH}}}}
 %% \alectryon@hyp@maxwidth and \alectryon@hyp@body@maxwidth are temporary
