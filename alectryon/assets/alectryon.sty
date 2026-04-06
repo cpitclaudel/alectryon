@@ -268,10 +268,19 @@
 %% lengths used in \alectryon@hyp
 \newlength{\alectryon@hyp@maxwidth}
 \newlength{\alectryon@hyp@body@maxwidth}
-%% \alectryon@hyp@op{OP} typesets OP and saves its width in \alectryon@hyp@op@w.
-\newlength{\alectryon@hyp@op@w}
+%% \alectryon@hyp@op{OP} typesets OP and saves it as \alectryon@hyp@op@box.
+\newcommand{\alectryon@hyp@@op}[1]{\,#1\:}
+\newsavebox{\alectryon@hyp@op@box}
 \newcommand{\alectryon@hyp@op}[1]
-  {\settowidth{\alectryon@hyp@op@w}{#1}\mbox{#1}}
+  {\sbox{\alectryon@hyp@op@box}{\alectryon@hyp@@op{#1}}%
+   \usebox{\alectryon@hyp@op@box}}
+%% \alectryon@hyp@bt{OP}{TERM} typesets OP (`:`/`:=`) and TERM (type or body)
+%% within a box of width at most \alectryon@hyp@body@maxwidth
+\newcommand{\alectryon@hyp@bt}[2]
+  {\alectryon@maxwidth{\alectryon@hyp@body@maxwidth}
+     {\alectryon@hyp@op{#1}%
+      \alectryon@maxwidth{\dimexpr\alectryon@hyp@body@maxwidth-\wd\alectryon@hyp@op@box\relax}
+        {#2}}}
 %% \alectryon@@ifnonempty{TEST}{BODY} typesets BODY if TEST is non-empty.
 \newcommand*{\alectryon@@ifnonempty}[2]{\ifx\relax#1\relax\else#2\fi}
 %% \alectryon@hyp[BODY]{NAMES}{TYPE} formats a single hypothesis.  The code is
@@ -285,8 +294,7 @@
     % Compute the width of the body and type boxes (including `:=`/`:`)
     \setlength{\alectryon@hyp@body@maxwidth}{\dimexpr\alectryon@hyp@maxwidth-\alectryonHypIndent\relax}%
     % Wrap the whole hypothesis in a box
-    \alectryon@maxwidth
-      {\alectryon@hyp@maxwidth}
+    \alectryon@maxwidth{\alectryon@hyp@maxwidth}
       {\alectryon@raggedright%
        % Name
        \alectryon@hypn{#2}%
@@ -297,33 +305,20 @@
        % don't subtract the width of the hypothesis name).  If they're too long,
        % then they just move to the next line (this happens only when the
        % hypothesis name is longer than \alectryonHypIndent).
-          % Adjust spacing between consecutive boxes
-          \setlength{\lineskip}{\alectryon@hyp@lineskip}%
-          % Body + `:=`
-          \alectryon@@ifnonempty
-            {#1}
-            {\alectryon@maxwidth
-               {\alectryon@hyp@body@maxwidth}
-               {\alectryon@hyp@op{\,:=\:}%
-                % Body, narrowed to make sure it fits next to `:=`
-                \alectryon@maxwidth
-                  {\dimexpr\alectryon@hyp@body@maxwidth-\alectryon@hyp@op@w\relax}
-                  {#1}}%
-                % Possible break between body and type
-                \discretionary{}{\hbox{\hspace{\alectryonHypIndent}}}{}}%
-          % Type + `:`
-          %\mbox{\the\baselineskip \the\lineskip \the\lineskiplimit \the\ht\strutbox \the\dp\strutbox}
-          \alectryon@maxwidth
-            {\alectryon@hyp@body@maxwidth}
-            {\alectryon@hyp@op{\,:\:}%
-             % Type, narrowed to make sure it fits next to `:`
-             \alectryon@maxwidth
-               {\dimexpr\alectryon@hyp@body@maxwidth-\alectryon@hyp@op@w\relax}
-               {#3}}}}}
+       \setlength{\lineskip}{\alectryon@hyp@lineskip}% Adjust spacing between body and type
+       % Body + `:=`
+       \alectryon@@ifnonempty{#1}
+         {\alectryon@hyp@bt{:=}{#1}%
+          % Possible break between body and type
+          \discretionary{}{\hbox{\hspace{\alectryonHypIndent}}}{}}%
+       % Type + `:`
+       \alectryon@hyp@bt{:}{#3}}}}
+\newcommand*{\alectryon@hyp@bt@inline}[2]
+  {\alectryon@hyp@@op{#1}#2}
 \newcommand*{\alectryon@hyp@inline}[3][]
   {\alectryon@hypn{#2}%
-   \alectryon@@ifnonempty{#1}{\,:=\:#1}%
-   \,:\:#3}
+   \alectryon@@ifnonempty{#1}{\alectryon@hyp@bt@inline{:=}{#1}}%
+   \alectryon@hyp@bt@inline{:}{#3}}
 \newcommand*{\alectryon@hypn}[1]
   {\mbox{\textbf{#1}}}
 \alectryon@newenvironment{extragoals}{}{}
