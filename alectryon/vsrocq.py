@@ -168,7 +168,7 @@ class VsRocqClient(LSPClient):
         # "args": [],
         "memory": {"limit": 4},
         "goals": {
-            "auto": "true",
+            "auto": True,
             # "display": "List",
             "ppmode": "Pp",
             "messages": {"full": True},
