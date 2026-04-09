@@ -296,11 +296,12 @@
     % Wrap the whole hypothesis in a box
     \alectryon@maxwidth{\alectryon@hyp@maxwidth}
       {\alectryon@raggedright%
+       % If the type or body doesn't fit on this line, it should be indented slightly
+       \hangafter=1\hangindent=\alectryonHypIndent%
        % Name
        \alectryon@hypn{#2}%
        % Possible break between name and body + type.
-       % \discretionary adds \alectryonHypIndent if we break the line here.
-       \discretionary{}{\hbox{\hspace{\alectryonHypIndent}}}{}%
+       \hspace{0pt}%
        % Body and type, typeset at full line width minus the indentation (we
        % don't subtract the width of the hypothesis name).  If they're too long,
        % then they just move to the next line (this happens only when the
@@ -310,7 +311,7 @@
        \alectryon@@ifnonempty{#1}
          {\alectryon@hyp@bt{:=}{#1}%
           % Possible break between body and type
-          \discretionary{}{\hbox{\hspace{\alectryonHypIndent}}}{}}%
+          \hspace{0pt}}%
        % Type + `:`
        \alectryon@hyp@bt{:}{#3}}}}
 \newcommand*{\alectryon@hyp@bt@inline}[2]
