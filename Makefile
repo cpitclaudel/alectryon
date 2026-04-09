@@ -3,6 +3,10 @@ export OCAML_VERSION ?= 5.4.0
 export ROCQ_VERSION ?= 9.1.0
 export ROCQ_VERSIONS ?= $(ROCQ_VERSION)
 export EASYCRYPT_VERSION ?= r2026.03
+export DAFNY_VERSION ?= 4.11.0
+export LEAN3_VERSION ?= 3.51.1
+export ELAN_VERSION ?= 4.2.1
+export LEAN4_VERSION ?= 4.28.0
 
 PYTHON ?= python3
 PYTHON_VENV ?= deps/.venv.$(shell hostname)
@@ -110,4 +114,7 @@ docker-build%: deps/Dockerfile%
 		--build-arg OPAM_SWITCH --build-arg OCAML_VERSION \
 		--build-arg ROCQ_VERSION --build-arg ROCQ_VERSIONS \
 		--build-arg EASYCRYPT_VERSION \
+		--build-arg DAFNY_VERSION \
+		--build-arg LEAN3_VERSION \
+		--build-arg ELAN_VERSION  --build-arg LEAN4_VERSION \
 		.
