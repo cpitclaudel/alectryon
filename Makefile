@@ -7,7 +7,7 @@ export DAFNY_VERSION ?= 4.11.0
 export LEAN3_VERSION ?= 3.51.1
 export ELAN_VERSION ?= 4.2.1
 export LEAN4_VERSION ?= 4.28.0
-export TYPST_VERSION ?= 0.13.1
+export TYPST_VERSION ?= 0.14.2
 
 PYTHON ?= python3
 PYTHON_VENV ?= deps/.venv.$(shell hostname)

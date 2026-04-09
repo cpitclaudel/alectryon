@@ -206,6 +206,24 @@ _output/tests/syntax_highlighting.html: tests/syntax_highlighting.v
 	$(alectryon) $<
 tests_targets += _output/tests/syntax_highlighting.html
 
+# Typst → JSON
+_output/tests/typst.alectryon.json: tests/typst.typ
+	$(alectryon) $<
+tests_targets += _output/tests/typst.alectryon.json
+# Typst → PDF
+_output/tests/typst.pdf: tests/typst.typ | _output/tests/
+	typst compile --root . $< $@
+tests_targets += _output/tests/typst.pdf
+
+# Typst formatting test
+_output/tests/typst_formatting.alectryon.json: tests/typst_formatting.typ
+	$(alectryon) $<
+tests_targets += _output/tests/typst_formatting.alectryon.json
+# Typst → PDF
+_output/tests/typst_formatting.pdf: tests/typst_formatting.typ | _output/tests/
+	typst compile --root . $< $@
+tests_targets += _output/tests/typst_formatting.pdf
+
 # Unit tests
 _output/tests/unit.py.out: tests/unit.py | _output/tests/
 	$(PYTHON) $< > $@ 2>&1

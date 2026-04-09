@@ -20,18 +20,20 @@
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, Dict, Iterable, Optional, Tuple, List, Union, NamedTuple, TYPE_CHECKING
+from typing import ClassVar, Dict, Generic, Iterable, Optional, Tuple, List, TypeVar, Union, TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
-    from bs4 import BeautifulSoup, ResultSet
+    from bs4 import BeautifulSoup, ResultSet, Tag
 
 import argparse
+import dataclasses
 import inspect
 import os
 import os.path
 import re
 import shutil
 import sys
+from pathlib import Path
 
 from . import __version__, core
 
@@ -51,10 +53,18 @@ def read_json(_, fpath, input_is_stdin):
 def parse_plain(contents, fpath):
     return [core.PosStr(contents, core.Position.default(fpath), 0)]
 
-class CodeSnippet(NamedTuple):
-    contents: Any
+T = TypeVar("T")
+TContents = TypeVar("TContents")
+
+@dataclasses.dataclass
+class CodeSnippet(Generic[TContents]):
     lang: str
     annots: str
+    # Starts as source text; replaced with annotated output as the pipeline advances.
+    contents: TContents
+
+    def with_contents(self, c: T) -> "CodeSnippet[T]":
+        return cast(CodeSnippet[T], dataclasses.replace(self, contents=c))
 
     @property
     def io_annots(self):
@@ -69,9 +79,9 @@ class CodeSnippet(NamedTuple):
         return bylang
 
     @staticmethod
-    def _update(snippets: list["CodeSnippet"], items):
-        for snippet, contents in zip(snippets, items):
-            yield snippet._replace(contents=contents)
+    def _update(snippets: list["CodeSnippet[TContents]"], items: Iterable[T]) -> Iterable["CodeSnippet[T]"]:
+        for snippet, it in zip(snippets, items):
+            yield snippet.with_contents(it)
 
     @staticmethod
     def _update_by_lang(snippets, by_lang):
@@ -116,17 +126,17 @@ def annotate_chunks(chunks, fpath, cache_directory, cache_compression,
         return _annotate_chunks(chunks, fpath, driver_configs[input_language],
                                 caches[input_language], exit_code)
 
-def _annotate_snippets(snippets, fpath, driver_config, cache, exit_code):
+def _update_snippets(snippets, fpath, driver_config, cache, exit_code):
     contents = [s.contents for s in snippets]
     annotated = _annotate_chunks(contents, fpath, driver_config, cache, exit_code)
-    return list(CodeSnippet._update(snippets, annotated))
+    return CodeSnippet._update(snippets, annotated)
 
 def annotate_polyglot(snippets: list[CodeSnippet], fpath, cache_directory, cache_compression,
                       driver_configs, exit_code):
     from .json import CacheSet
     with CacheSet(cache_directory, fpath, cache_compression) as caches:
         return {
-            lang: _annotate_snippets(snippets, fpath,
+            lang: _update_snippets(snippets, fpath,
                                      driver_configs[lang], caches[lang],
                                      exit_code)
             for lang, snippets in CodeSnippet._by_lang(snippets).items()
@@ -248,19 +258,19 @@ def _docutils_cmdline(description, frontend, backend, dialect):
                             **DOCUTILS_FUTURE_WARNINGS_SETTINGS_OVERRIDES},
         description="{} {}".format(description, default_description))
 
-def inherit_io_annots(snippets: Iterable[CodeSnippet]):
-    from .transforms import inherit_io_annots as inherit_annots
+def inherit_io_annots(snippets: list[CodeSnippet[list[core.Fragment]]]) -> Iterable[CodeSnippet[list[core.RichFragment]]]:
+    from .transforms import enrich_sentences, inherit_io_annots as inherit_annots
     for snippet in snippets:
+        fragments: Iterable[core.RichFragment] = enrich_sentences(snippet.contents)
         if annots := snippet.io_annots:
-            fragments = list(inherit_annots(snippet.contents, annots))
-            snippet = snippet._replace(contents=fragments)
-        yield snippet
+            fragments = inherit_annots(snippet.contents, annots)
+        yield snippet.with_contents(list(fragments))
 
-def remove_hidden_snippets(snippets: Iterable[CodeSnippet]):
+def remove_hidden_snippets(snippets: list[CodeSnippet[core.RichFragment | None]]):
     from .transforms import all_hidden
     for snippet in snippets:
         if snippet.annots and all_hidden(snippet.contents, snippet.io_annots):
-            snippet = snippet._replace(contents=None)
+            snippet = snippet.with_contents(None)
         yield snippet
 
 def apply_transforms(annotated, input_language):
@@ -440,26 +450,32 @@ def dump_html_standalone(snippets, fname, webpage_style,
 
     return doc.render(pretty=False)
 
+@dataclasses.dataclass
+class HTMLCodeSnippet(CodeSnippet):
+    tag: "Tag"
+
+    @classmethod
+    def of_tag(cls, tag: "Tag", input_language: str) -> "HTMLCodeSnippet":
+        return cls(tag.get("data-lang", input_language), tag.get("data-io"), tag.text, tag=tag)
+
 class ParsedHTMLDocument:
     """A parsed HTML document."""
     HTML_CODE_BLOCK_SELECTOR: ClassVar[str] = "pre.alectryon"
 
     def __init__(self, html: str, input_language: str):
         self.soup: BeautifulSoup = _parse_html(html)
-        self.tags: ResultSet = self.soup.select(self.HTML_CODE_BLOCK_SELECTOR)
+        tags: ResultSet = self.soup.select(self.HTML_CODE_BLOCK_SELECTOR)
         self.snippets: list[CodeSnippet] = [
-            CodeSnippet(tag.text, tag.get("data-lang", input_language), tag.get("data-io"))
-            for tag in self.tags
+            HTMLCodeSnippet.of_tag(tag, input_language) for tag in tags
         ]
 
     def update(self, by_lang):
         from bs4.element import PreformattedString
-        snippets = CodeSnippet._update_by_lang(self.snippets, by_lang)
-        for tag, snippet in zip(self.tags, snippets):
+        for snippet in CodeSnippet._update_by_lang(self.snippets, by_lang):
             if snippet.contents is None:
-                tag.decompose()
+                snippet.tag.decompose()
             else:
-                tag.replace_with(PreformattedString(str(snippet.contents)))
+                snippet.tag.replace_with(PreformattedString(str(snippet.contents)))
 
 def parse_html(state, input_language, ctx) -> list[CodeSnippet]:
     """Separate code snippets from HTML document `state`."""
@@ -501,7 +517,7 @@ class ParsedLaTeXDocument:
                 self.blocks.append(latex[end:m.start()])
             indent, lang, body, annots = m.group("indent", "lang", "body", "annots")
             _, body = core.dedent(body.splitlines(), len(indent))
-            self.blocks.append(CodeSnippet(body, lang, annots))
+            self.blocks.append(CodeSnippet(lang, annots, body))
             end = m.end()
         if end < len(latex):
             self.blocks.append(latex[end:])
@@ -524,6 +540,44 @@ def unparse_latex(snippets, document, assets) -> str:
     from .docutils import LatexTranslator
     _record_assets(assets, LatexTranslator.ASSETS_PATH, LatexTranslator.ASSETS)
     return "".join(str(s) for s in document.unparse(snippets) if s)
+
+@dataclasses.dataclass
+class TypstCodeSnippet(CodeSnippet):
+    src: str
+
+    @classmethod
+    def of_block(cls, block: dict) -> "TypstCodeSnippet":
+        return cls(block["lang"], "", block["text"], src=block["text"])
+
+    def to_json(self):
+        return {"src": self.src, "lang": self.lang, "rendered": self.contents}
+
+@dataclasses.dataclass
+class TypstDocument:
+    snippets: list[TypstCodeSnippet]
+
+def register_typst_assets(state, assets):
+    from .typst import ASSETS
+    _record_assets(assets, ASSETS.PATH, ASSETS.ALECTRYON_TYP)
+    return state
+
+def parse_typst(_, fpath, output_directory, ctx) -> list[TypstCodeSnippet]:
+    """Extract code snippets from a Typst document."""
+    from .typst import extract_raw_blocks
+    blocks = extract_raw_blocks(Path.cwd(), Path(fpath))
+    snippets = [TypstCodeSnippet.of_block(b) for b in blocks]
+    ctx["document"] = TypstDocument(snippets)
+    return snippets
+
+def gen_typst_snippets(annotated, input_language):
+    """Render each annotated fragment as Typst code."""
+    from .typst import TypstBackend
+    return TypstBackend(input_language).gen(annotated)
+
+def serialize_typst_snippets(snippets_by_lang, document: "TypstDocument") -> dict:
+    """Build the JSON data consumed by ``alectryon.typ``."""
+    snippets = CodeSnippet._update_by_lang(document.snippets, snippets_by_lang)
+    return {"version": 1, "snippets": [s.to_json() for s in snippets]}
 
 def encode_json(obj):
     from .json import PlainSerializer
@@ -676,6 +730,17 @@ def _add_special_pipelines(pipelines):
                      on_snippets(gen_html_snippets)),
          unparse_html, copy_assets, write_file(".annotated.html", strip=(".html",)))
     }
+    pipelines['typst'] = {
+        # ``copy_assets`` must run before ``parse_typst`` so the user's document
+        # can ````#import "alectryon.typ"```` from the output directory.
+        'snippets-typst':
+        (register_typst_assets, copy_assets, parse_typst, annotate_polyglot,
+         by_language(inherit_io_annots,
+                     on_snippets(apply_transforms),
+                     remove_hidden_snippets,
+                     on_snippets(gen_typst_snippets)),
+         serialize_typst_snippets, dump_json, write_file(".alectryon.json", strip=(".typ",))),
+    }
 
 def _add_docutils_pipelines(pipelines, lang, *exts):
     exts = (*CODE_EXTENSIONS, *exts)
@@ -747,6 +812,7 @@ FRONTENDS_BY_EXTENSION = {
        for markup, exts in core.EXTENSIONS_BY_MARKUP.items() for ext in exts},
     '.html': 'html',
     '.tex': 'latex',
+    '.typ': 'typst',
     '.json': 'json', # LATER: Remove
 }
 
@@ -778,6 +844,7 @@ DEFAULT_BACKENDS = {
     'coqdoc': 'webpage',
     'latex': 'latex',
     'html': 'webpage',
+    'typst': 'snippets-typst',
 
     'json': 'json', # LATER: Remove
 }
@@ -792,6 +859,7 @@ INPUT_LANGUAGE_BY_FRONTEND = {
        for fr in _input_frontends(lang)},
 
     "coqdoc": "coq",
+    "typst": "coq",
 
     "json": "coq", # LATER: Remove
     "html": "coq",

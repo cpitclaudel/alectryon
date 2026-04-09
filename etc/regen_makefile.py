@@ -69,6 +69,7 @@ targets += $({prefix}_targets)\
 EXCLUDED_SOURCES = {
     "*docutils.conf",
     "*.v.cache",
+    "included.*",
     "flycheck_*.py",
     "custom_stylesheet.css"
 }

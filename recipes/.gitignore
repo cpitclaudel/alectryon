@@ -1,7 +1,9 @@
 /_output/**/*.css
 /_output/**/*.js
 /_output/**/*.pdf
-/_output/**/*.sty
+/_output/**/pygments.sty
+/_output/**/alectryon.sty
+/_output/**/alectryon.typ
 /_output/latex.aux/
 **/sphinx/_build/doctrees
 **/sphinx/_build/html/[._]*

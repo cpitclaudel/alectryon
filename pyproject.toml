@@ -101,6 +101,7 @@ disable = [
 
 [tool.pyright]
 include = ["alectryon"]
+typeCheckingMode = "standard"
 reportOptionalMemberAccess = false
 reportWildcardImportFromLibrary = false
 
