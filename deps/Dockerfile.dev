@@ -87,6 +87,14 @@ RUN <<EOF
   /home/docker/.elan/bin/lean --version
 EOF
 
+## Typst
+
+RUN <<EOF
+  curl -sSfL https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz -o /tmp/typst.tar.xz
+  tar xJf /tmp/typst.tar.xz -C /home/docker/
+  rm /tmp/typst.tar.xz
+EOF
+
 ## Symlinks
 
 RUN <<EOF
