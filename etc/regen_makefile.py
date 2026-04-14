@@ -14,8 +14,12 @@ CMD_RE = re.compile(r"""
 """, re.VERBOSE | re.MULTILINE)
 
 def parse_rules(path: Path):
-    for m in CMD_RE.finditer(path.read_text()):
-        yield m.groupdict()
+    try:
+        for m in CMD_RE.finditer(path.read_text()):
+            yield m.groupdict()
+    except Exception:
+        print(f"!! Error parsing {path}", file=sys.stderr)
+        raise
 
 RULE_TEMPLATE = """\
 # {comment}
