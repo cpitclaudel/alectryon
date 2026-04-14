@@ -1,90 +1,90 @@
 {
-  "version": 1,
-  "snippets": [
-    {
-      "src": "Definition a : nat :=\n  let '(x, y) := (1, 2) in\n  let ' (z, t) := (x, y) in\n  let 'tt := tt in\n  let fix f (x: nat) {struct x} : nat := x in\n  (fun ' (f, x, y) => f (x + y)) (f, t, y).\nPrint a.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Definition a : nat :=\n  let '(x, y) := (1, 2) in\n  let ' (z, t) := (x, y) in\n  let 'tt := tt in\n  let fix f (x: nat) {struct x} : nat := x in\n  (fun ' (f, x, y) => f (x + y)) (f, t, y).\n"], null], ["sentence", ["code", "Print a."], ["+", ["messages", ["+", ["message", ["txt", "a =\nlet\n'(x, y) := (1, 2) in\n let\n '(_, t) := (x, y) in\n  let\n  'tt := tt in\n   let fix f (x0 : nat) : nat := x0 in\n   (fun '(f0, x0, y1) => f0 (x0 + y1)) (f, t, y)\n     : nat"]]]]]]]]
-    },
-    {
-      "src": "Goal True /\\ True.\n  split.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Goal True /\\ True."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True /\\ True"]]]]]], ["sentence", ["code", "  split."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]], ["goal", null, null, ["code", "True"]]]]]]]]
-    },
-    {
-      "src": "  - Check nat.\n    exact I.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "Check nat."], ["+", ["messages", ["+", ["message", ["txt", "nat\n     : Set"]]]], ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "    exact I."], null]]]
-    },
-    {
-      "src": "  - Check nat.\n    exact I.\nQed.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "Check nat."], ["+", ["messages", ["+", ["message", ["txt", "nat\n     : Set"]]]], ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "    exact I.\n"], null], ["sentence", ["code", "Qed."], null]]]
-    },
-    {
-      "src": "Goal True \\/ False.\n  left. exact I.\nQed.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Goal True \\/ False."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True \\/ False"]]]]]], ["sentence", ["code", "  left."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "exact I.\n"], null], ["sentence", ["code", "Qed."], null]]]
-    },
-    {
-      "src": "Fail Check \"hello\".",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Fail Check \"hello\"."], ["+", ["messages", ["+", ["message", ["txt", "The command has indeed failed with message:\nNo interpretation for string \"hello\"."]]]]]]]]
-    },
-    {
-      "src": "Goal forall b: bool, b = b.\n  destruct b; [ refine ?[true] | refine ?[false] ].\n  all: reflexivity.\nQed.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Goal forall b: bool, b = b."], ["+", ["goals", ["+", ["goal", null, null, ["code", "forall b : bool, b = b"]]]]]], ["sentence", ["code", "  destruct b; [ refine ?[true] | refine ?[false] ]."], ["+", ["goals", ["+", ["goal", ["txt", "true"], null, ["code", "true = true"]], ["goal", ["txt", "false"], null, ["code", "false = false"]]]]]], ["sentence", ["code", "  all: reflexivity.\n"], null], ["sentence", ["code", "Qed."], null]]]
-    },
-    {
-      "src": "Definition double (n : nat) := n + n.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Definition double (n : nat) := n + n."], null]]]
-    },
-    {
-      "src": "Check double.\nCompute double 21.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Check double."], ["+", ["messages", ["+", ["message", ["txt", "double\n     : nat -> nat"]]]]]], ["sentence", ["code", "Compute double 21."], ["+", ["messages", ["+", ["message", ["txt", "= 42\n: nat"]]]]]]]]
-    },
-    {
-      "src": "Lemma add_0_r : forall n, n + 0 = n.\nProof.\n  induction n.\n  - reflexivity.\n  - simpl. rewrite IHn. reflexivity.\nQed.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Lemma add_0_r : forall n, n + 0 = n."], ["+", ["goals", ["+", ["goal", null, null, ["code", "forall n : nat, n + 0 = n"]]]]]], ["sentence", ["code", "Proof."], ["+", ["goals", ["+", ["goal", null, null, ["code", "forall n : nat, n + 0 = n"]]]]]], ["sentence", ["code", "  induction n."], ["+", ["goals", ["+", ["goal", null, null, ["code", "0 + 0 = 0"]], ["goal", null, ["+", ["hyp", ["txt", "n"], null, ["code", "nat"]], ["hyp", ["txt", "IHn"], null, ["code", "n + 0 = n"]]], ["code", "S n + 0 = S n"]]]]]], ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, null, ["code", "0 + 0 = 0"]]]]]], ["sentence", ["code", "reflexivity.\n"], null], ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "n"], null, ["code", "nat"]], ["hyp", ["txt", "IHn"], null, ["code", "n + 0 = n"]]], ["code", "S n + 0 = S n"]]]]]], ["sentence", ["code", "simpl."], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "n"], null, ["code", "nat"]], ["hyp", ["txt", "IHn"], null, ["code", "n + 0 = n"]]], ["code", "S (n + 0) = S n"]]]]]], ["sentence", ["code", "rewrite IHn."], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "n"], null, ["code", "nat"]], ["hyp", ["txt", "IHn"], null, ["code", "n + 0 = n"]]], ["code", "S n = S n"]]]]]], ["sentence", ["code", "reflexivity.\n"], null], ["sentence", ["code", "Qed."], null]]]
-    },
-    {
-      "src": "Require Import Arith.\nCheck Nat.add_0_r.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Require Import Arith.\n"], null], ["sentence", ["code", "Check Nat.add_0_r."], ["+", ["messages", ["+", ["message", ["txt", "Nat.add_0_r\n     : forall n : nat, n + 0 = n"]]]]]]]]
-    },
-    {
-      "src": "Require Import Arith.\nCheck Nat.add_comm.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Require Import Arith.\n"], null], ["sentence", ["code", "Check Nat.add_comm."], ["+", ["messages", ["+", ["message", ["txt", "Nat.add_comm\n     : forall n m : nat, n + m = m + n"]]]]]]]]
-    },
-    {
-      "src": "Definition main_defn := 42.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Definition main_defn := 42."], null]]]
-    },
-    {
-      "src": "Check nat.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Check nat."], ["+", ["messages", ["+", ["message", ["txt", "nat\n     : Set"]]]]]]]]
-    },
-    {
-      "src": "Check main_defn.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Check main_defn."], ["+", ["messages", ["+", ["message", ["txt", "main_defn\n     : nat"]]]]]]]]
-    },
-    {
-      "src": "Fail Check (1 + true).",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Fail Check (1 + true)."], ["+", ["messages", ["+", ["message", ["txt", "The command has indeed failed with message:\nThe term \"true\" has type \"bool\"\nwhile it is expected to have type \"nat\"."]]]]]]]]
-    },
-    {
-      "src": "(* .no-in\n   .unfold *)\nGoal True /\\ True.\n  split; exact I.\nQed.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", null, ["+", ["goals", ["+", ["goal", null, null, ["code", "True /\\ True"]]]]]]]]
-    }
-  ]
+    "version": 1,
+    "snippets": [
+        {
+            "src": "Definition a : nat :=\n  let '(x, y) := (1, 2) in\n  let ' (z, t) := (x, y) in\n  let 'tt := tt in\n  let fix f (x: nat) {struct x} : nat := x in\n  (fun ' (f, x, y) => f (x + y)) (f, t, y).\nPrint a.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Definition a : nat :=\n  let '(x, y) := (1, 2) in\n  let ' (z, t) := (x, y) in\n  let 'tt := tt in\n  let fix f (x: nat) {struct x} : nat := x in\n  (fun ' (f, x, y) => f (x + y)) (f, t, y).\n"], null], ["sentence", ["code", "Print a."], ["+", ["messages", ["+", ["message", ["txt", "a =\nlet\n'(x, y) := (1, 2) in\n let\n '(_, t) := (x, y) in\n  let\n  'tt := tt in\n   let fix f (x0 : nat) : nat := x0 in\n   (fun '(f0, x0, y1) => f0 (x0 + y1)) (f, t, y)\n     : nat"]]]]]]]]
+        },
+        {
+            "src": "Goal True /\\ True.\n  split.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Goal True /\\ True."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True /\\ True"]]]]]], ["sentence", ["code", "  split."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]], ["goal", null, null, ["code", "True"]]]]]]]]
+        },
+        {
+            "src": "  - Check nat.\n    exact I.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "Check nat."], ["+", ["messages", ["+", ["message", ["txt", "nat\n     : Set"]]]], ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "    exact I."], null]]]
+        },
+        {
+            "src": "  - Check nat.\n    exact I.\nQed.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "Check nat."], ["+", ["messages", ["+", ["message", ["txt", "nat\n     : Set"]]]], ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "    exact I.\n"], null], ["sentence", ["code", "Qed."], null]]]
+        },
+        {
+            "src": "Goal True \\/ False.\n  left. exact I.\nQed.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Goal True \\/ False."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True \\/ False"]]]]]], ["sentence", ["code", "  left."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "exact I.\n"], null], ["sentence", ["code", "Qed."], null]]]
+        },
+        {
+            "src": "Fail Check \"hello\".",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Fail Check \"hello\"."], ["+", ["messages", ["+", ["message", ["txt", "The command has indeed failed with message:\nNo interpretation for string \"hello\"."]]]]]]]]
+        },
+        {
+            "src": "Goal forall b: bool, b = b.\n  destruct b; [ refine ?[true] | refine ?[false] ].\n  all: reflexivity.\nQed.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Goal forall b: bool, b = b."], ["+", ["goals", ["+", ["goal", null, null, ["code", "forall b : bool, b = b"]]]]]], ["sentence", ["code", "  destruct b; [ refine ?[true] | refine ?[false] ]."], ["+", ["goals", ["+", ["goal", ["txt", "true"], null, ["code", "true = true"]], ["goal", ["txt", "false"], null, ["code", "false = false"]]]]]], ["sentence", ["code", "  all: reflexivity.\n"], null], ["sentence", ["code", "Qed."], null]]]
+        },
+        {
+            "src": "Definition double (n : nat) := n + n.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Definition double (n : nat) := n + n."], null]]]
+        },
+        {
+            "src": "Check double.\nCompute double 21.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Check double."], ["+", ["messages", ["+", ["message", ["txt", "double\n     : nat -> nat"]]]]]], ["sentence", ["code", "Compute double 21."], ["+", ["messages", ["+", ["message", ["txt", "= 42\n: nat"]]]]]]]]
+        },
+        {
+            "src": "Lemma add_0_r : forall n, n + 0 = n.\nProof.\n  induction n.\n  - reflexivity.\n  - simpl. rewrite IHn. reflexivity.\nQed.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Lemma add_0_r : forall n, n + 0 = n."], ["+", ["goals", ["+", ["goal", null, null, ["code", "forall n : nat, n + 0 = n"]]]]]], ["sentence", ["code", "Proof."], ["+", ["goals", ["+", ["goal", null, null, ["code", "forall n : nat, n + 0 = n"]]]]]], ["sentence", ["code", "  induction n."], ["+", ["goals", ["+", ["goal", null, null, ["code", "0 + 0 = 0"]], ["goal", null, ["+", ["hyp", ["txt", "n"], null, ["code", "nat"]], ["hyp", ["txt", "IHn"], null, ["code", "n + 0 = n"]]], ["code", "S n + 0 = S n"]]]]]], ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, null, ["code", "0 + 0 = 0"]]]]]], ["sentence", ["code", "reflexivity.\n"], null], ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "n"], null, ["code", "nat"]], ["hyp", ["txt", "IHn"], null, ["code", "n + 0 = n"]]], ["code", "S n + 0 = S n"]]]]]], ["sentence", ["code", "simpl."], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "n"], null, ["code", "nat"]], ["hyp", ["txt", "IHn"], null, ["code", "n + 0 = n"]]], ["code", "S (n + 0) = S n"]]]]]], ["sentence", ["code", "rewrite IHn."], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "n"], null, ["code", "nat"]], ["hyp", ["txt", "IHn"], null, ["code", "n + 0 = n"]]], ["code", "S n = S n"]]]]]], ["sentence", ["code", "reflexivity.\n"], null], ["sentence", ["code", "Qed."], null]]]
+        },
+        {
+            "src": "Require Import Arith.\nCheck Nat.add_0_r.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Require Import Arith.\n"], null], ["sentence", ["code", "Check Nat.add_0_r."], ["+", ["messages", ["+", ["message", ["txt", "Nat.add_0_r\n     : forall n : nat, n + 0 = n"]]]]]]]]
+        },
+        {
+            "src": "Require Import Arith.\nCheck Nat.add_comm.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Require Import Arith.\n"], null], ["sentence", ["code", "Check Nat.add_comm."], ["+", ["messages", ["+", ["message", ["txt", "Nat.add_comm\n     : forall n m : nat, n + m = m + n"]]]]]]]]
+        },
+        {
+            "src": "Definition main_defn := 42.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Definition main_defn := 42."], null]]]
+        },
+        {
+            "src": "Check nat.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Check nat."], ["+", ["messages", ["+", ["message", ["txt", "nat\n     : Set"]]]]]]]]
+        },
+        {
+            "src": "Check main_defn.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Check main_defn."], ["+", ["messages", ["+", ["message", ["txt", "main_defn\n     : nat"]]]]]]]]
+        },
+        {
+            "src": "Fail Check (1 + true).",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Fail Check (1 + true)."], ["+", ["messages", ["+", ["message", ["txt", "The command has indeed failed with message:\nThe term \"true\" has type \"bool\"\nwhile it is expected to have type \"nat\"."]]]]]]]]
+        },
+        {
+            "src": "(* .no-in\n   .unfold *)\nGoal True /\\ True.\n  split; exact I.\nQed.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", null, ["+", ["goals", ["+", ["goal", null, null, ["code", "True /\\ True"]]]]]]]]
+        }
+    ]
 }

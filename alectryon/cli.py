@@ -598,9 +598,24 @@ def decode_json(obj):
     from .json import PlainSerializer
     return PlainSerializer.decode(obj)
 
-def dump_json(js):
+def _dump_json(js, max_depth: int, indent: str):
+    """Pretty-print `js` up to `max_depth`, then fall back to ``json.dumps``."""
     from json import dumps
-    return dumps(js, indent=4)
+    def loop(o: Any, d: str, depth: int):
+        if depth >= max_depth:
+            return dumps(o)
+        nd = d + indent
+        if isinstance(o, list) and o:
+            return "[\n" + ",\n".join(nd + loop(x, nd, depth+1) for x in o) + "\n" + d + "]"
+        if isinstance(o, dict) and o:
+            return "{\n" + ",\n".join(nd + dumps(k) + ": " + loop(v, nd, depth+1) for k, v in o.items()) + "\n" + d + "}"
+        return dumps(o)
+    return loop(js, "", 0)
+
+def dump_json(max_depth, indent="    "):
+    def _dispatch(js):
+        return _dump_json(js, max_depth, indent)
+    return _dispatch
 
 def dump_snippets(snippets, separator):
     return "".join(s.render(pretty=True) + separator for s in snippets)
@@ -660,7 +675,7 @@ def _add_code_pipelines(pipelines, lang, *exts):
         'null':
         (read_json, annotate_chunks),
         'json':
-        (read_json, annotate_chunks, encode_json, dump_json,
+        (read_json, annotate_chunks, encode_json, dump_json(7),
          write_file(".io.json", strip=(".json",))),
         'snippets-html':
         (read_json, annotate_chunks, apply_transforms, gen_html_snippets,
@@ -704,7 +719,8 @@ def _add_code_pipelines(pipelines, lang, *exts):
         (read_plain, register_docutils, gen_docutils,
          write_file(".lint.json", strip=exts)),
         'json':
-        (read_plain, parse_plain, annotate_chunks, encode_json, dump_json,
+        (read_plain, parse_plain, annotate_chunks,
+         encode_json, dump_json(7),
          write_file(".io.json", strip=()))
     }
     for markup, mexts in core.EXTENSIONS_BY_MARKUP.items():
@@ -756,7 +772,8 @@ def _add_special_pipelines(pipelines):
                      on_snippet_contents(apply_transforms),
                      remove_hidden_snippets,
                      on_snippet_contents(gen_typst_snippets)),
-         serialize_typst_snippets, dump_json, write_file(".alectryon.json", strip=(".typ",))),
+         serialize_typst_snippets, dump_json(3),
+         write_file(".alectryon.json", strip=(".typ",))),
     }
 
 def _add_docutils_pipelines(pipelines, lang, *exts):

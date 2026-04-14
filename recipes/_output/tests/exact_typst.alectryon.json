@@ -1,10 +1,10 @@
 {
-  "version": 1,
-  "snippets": [
-    {
-      "src": "Goal True /\\ True.\nProof.\n  split.\n  idtac \"test\".\n  -\n      exact I.\n\n  - exact I.\n\n\nQed.",
-      "lang": "coq",
-      "rendered": ["io", "coq", ["+", ["sentence", ["code", "Goal True /\\ True."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True /\\ True"]]]]]], ["sentence", ["code", "Proof."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True /\\ True"]]]]]], ["sentence", ["code", "  split."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]], ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "  idtac \"test\"."], ["+", ["messages", ["+", ["message", ["txt", "test"]]]], ["goals", ["+", ["goal", null, null, ["code", "True"]], ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "      exact I.\n"], null], ["code", "\n"], ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "exact I.\n"], null], ["code", "\n\n"], ["sentence", ["code", "Qed."], null]]]
-    }
-  ]
+    "version": 1,
+    "snippets": [
+        {
+            "src": "Goal True /\\ True.\nProof.\n  split.\n  idtac \"test\".\n  -\n      exact I.\n\n  - exact I.\n\n\nQed.",
+            "lang": "coq",
+            "rendered": ["io", "coq", ["+", ["sentence", ["code", "Goal True /\\ True."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True /\\ True"]]]]]], ["sentence", ["code", "Proof."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True /\\ True"]]]]]], ["sentence", ["code", "  split."], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]], ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "  idtac \"test\"."], ["+", ["messages", ["+", ["message", ["txt", "test"]]]], ["goals", ["+", ["goal", null, null, ["code", "True"]], ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "      exact I.\n"], null], ["code", "\n"], ["sentence", ["code", "  -"], ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", ["code", "exact I.\n"], null], ["code", "\n\n"], ["sentence", ["code", "Qed."], null]]]
+        }
+    ]
 }

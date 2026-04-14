@@ -48,9 +48,7 @@
                     "hypotheses": [
                         {
                             "_type": "hypothesis",
-                            "names": [
-                                "H"
-                            ],
+                            "names": ["H"],
                             "body": null,
                             "type": "False"
                         }
