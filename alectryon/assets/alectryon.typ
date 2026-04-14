@@ -1,5 +1,7 @@
 /// Alectryon Typst support library
 
+#let alectryon-json-version = 1
+
 /// Theme
 
 #let tango-light-aluminium = rgb("#EEEEEC")
@@ -187,7 +189,13 @@
     return body
   }
 
-  let snippets = json(json-path).at("snippets", default: ())
+  let data = json(json-path)
+  if data.at("version") != alectryon-json-version {
+    panic([`alectryon.typ` version #str(alectryon-json-version) does not match
+      #json-path version #repr(data.at("version")); re-run `alectryon`.])
+  }
+
+  let snippets = data.at("snippets", default: ())
   let langs = snippets.map(s => s.lang).dedup()
   let alectryon-counter = counter("alectryon-block-index")
 
