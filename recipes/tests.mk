@@ -80,6 +80,20 @@ _output/tests/errors.sh.out: tests/errors.sh
 	PYTHON="$(PYTHON) " ALECTRYON="$(alectryon) " bash $< 2>&1 | sed '/^usage\|^ \{10,\}/d' > $@
 tests_targets += _output/tests/errors.sh.out
 
+# LaTeX → annotated LaTeX
+_output/tests/exact_latex.annotated.tex: tests/exact_latex.tex
+	$(alectryon) $< --backend latex
+tests_targets += _output/tests/exact_latex.annotated.tex
+
+# Typst → JSON
+_output/tests/exact_typst.alectryon.json: tests/exact_typst.typ
+	$(alectryon) $<
+tests_targets += _output/tests/exact_typst.alectryon.json
+# Typst → PDF
+_output/tests/exact_typst.pdf: tests/exact_typst.typ | _output/tests/
+	typst compile --root . $< $@
+tests_targets += _output/tests/exact_typst.pdf
+
 # Plain Coq → HTML + errors
 _output/tests/excepthook.v.out: tests/excepthook.v
 	$(alectryon) not_found.v --frontend coq --traceback -o - 2>&1 | sed 's/File ".\+\?", line [0-9]\+/File …, line …/g' | sed '/^    /d' | sed '/^ *$$/d' | uniq | cat > $@; ! test $$? -eq 0

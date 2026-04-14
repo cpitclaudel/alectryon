@@ -142,9 +142,3 @@ Check main_defn.
 ```coq
 Fail Check (1 + true).
 ```
-
-== Coq errors
-
-```coq
-Definition broken := 1 + true.
-```

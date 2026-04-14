@@ -80,15 +80,16 @@ class TypstBackend(Backend[str]):
         hyps = " + ".join(self.gen_hyp(h) for h in goal.hypotheses) or self.NONE
         return f"goal({self.gen_txt(goal.name)}, {hyps}, {self.gen_code(goal.conclusion)})"
 
-    def _gen_outputs(self, outputs: Iterable[Union[Goals, Messages]]) -> Iterable[str]:
-        for fr in outputs:
-            if isinstance(fr, Goals):
-                yield from (self.gen_goal(g) for g in fr.goals)
-            elif isinstance(fr, Messages):
-                yield from (self.gen_message(m) for m in fr.messages)
+    def gen_output_group(self, fr: Union[Goals, Messages]) -> str:
+        if isinstance(fr, Goals):
+            items = " + ".join(self.gen_goal(g) for g in fr.goals)
+            return f"goals({items})"
+        if isinstance(fr, Messages):
+            items = " + ".join(self.gen_message(m) for m in fr.messages)
+            return f"messages({items})"
 
     def gen_sentence(self, s: RichSentence) -> str:
-        output = " + ".join(self._gen_outputs(s.outputs)) or self.NONE
+        output = " + ".join(self.gen_output_group(fr) for fr in s.outputs) or self.NONE
         return f"sentence({self.gen_code(s.input)}, {output})"
 
     def gen_fragment(self, fr) -> str:
