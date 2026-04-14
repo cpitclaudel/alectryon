@@ -144,7 +144,7 @@
     set text(size: alectryon-output-scale * 1em)
     // LaTeX adds space relative to the bottom of the previous box; Typst uses
     // the baseline.  Compromise by adding half of a strut depth to vsep.
-    block(above: 0.3em / 2 + alectryon-vsep, {
+    block(spacing: 0.3em / 2 + alectryon-vsep, {
       outputs
     })
   }
