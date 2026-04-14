@@ -194,7 +194,7 @@
       let entry = snippets.at(idx, default: (src: "", rendered: none))
       if entry.src != it.text {
         stale-warning(it)
-      } else {
+      } else if entry.rendered != none { // Skip hidden blocks
         eval(entry.rendered, mode: "code", scope: render-scope)
       }
     }

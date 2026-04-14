@@ -536,8 +536,10 @@ def commit_affixes(fragments):
         if isinstance(fr, RichSentence):
             prefix = "".join(fr.prefixes)
             suffix = "".join(fr.suffixes) if not fr.outputs else ""
-            contents = prefix + fr.input.contents + suffix
-            fr = _replace_contents(fr, contents)._replace(prefixes=[], suffixes=[])
+            if fr.input is not None:
+                contents = prefix + fr.input.contents + suffix
+                fr = _replace_contents(fr, contents)
+            fr = fr._replace(prefixes=[], suffixes=[])
         yield fr
 
 COQ_BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")

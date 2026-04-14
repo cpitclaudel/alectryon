@@ -15,25 +15,26 @@ Typst version of tests/latex_formatting.v.  To compile:
 = Space after punctuation
 
 ```coq
-Module Space. (* .none *)
-  Infix "?" := plus (at level 10). (* .none *)
-  Infix ":" := plus (at level 10). (* .none *)
-  Infix ";" := plus (at level 10). (* .none *)
-  Infix "," := plus (at level 10). (* .none *)
+(* .in *)
+Module Space.
+  Infix "?" := plus (at level 10).
+  Infix ":" := plus (at level 10).
+  Infix ";" := plus (at level 10).
+  Infix "," := plus (at level 10).
 
-  Check (1 ? 1). (* .in *)
-  Check (1 : 1). (* .in *)
-  Check (1 ; 1). (* .in *)
-  Check (1 , 1). (* .in *)
+  Check (1 ? 1).
+  Check (1 : 1).
+  Check (1 ; 1).
+  Check (1 , 1).
 
-  Goal True -> True. (* .in *)
-    intros. intros. (* .in *)
-    intros; intros. generalize 0 1. (* .in *)
-    intros? intros. refine ?[gggg]. (* .in *)
-    [gggg]: intros. (* .in *)
-    exact I. (* .in *)
-  Qed. (* .in *)
-End Space. (* .in *)
+  Goal True -> True.
+    intros. intros.
+    intros; intros. generalize 0 1.
+    intros? intros. refine ?[gggg].
+    [gggg]: intros.
+    exact I.
+  Qed.
+End Space.
 ```
 
 #pagebreak()
@@ -41,57 +42,59 @@ End Space. (* .in *)
 = Hypothesis wrapping
 
 ```coq
-Definition type {A} (a: A) := a. (* .none *)
-Definition body {A} (a: A) := a. (* .none *)
-Definition br {A B} (f: A -> B) (a: A) := f a. (* .none *)
-Opaque type body br. (* .none *)
+(* .none *)
+Definition type {A} (a: A) := a.
+Definition body {A} (a: A) := a.
+Definition br {A B} (f: A -> B) (a: A) := f a.
+Opaque type body br.
 
 Notation "'TYPE' a" := (type a)
- (at level 0, a at level 1). (* .none *)
+ (at level 0, a at level 1).
 Notation "'BODY' a" := (body a)
- (at level 0, a at level 1). (* .none *)
+ (at level 0, a at level 1).
 Notation "'BRK_' f a" := (br f a)
  (at level 0, f at level 1, a at level 1,
-   format "'BRK_'  f '//' a"). (* .none *)
+   format "'BRK_'  f '//' a").
 
-Definition ONE_ := 1. (* .none *)
-Definition NAT0 := nat. (* .none *)
-Definition NAT1 := nat. (* .none *)
-Definition NAT2 := nat. (* .none *)
+Definition ONE_ := 1.
+Definition NAT0 := nat.
+Definition NAT1 := nat.
+Definition NAT2 := nat.
 
 Ltac p name body type :=
   pose body as name;
-  change _ with type in (type of name). (* .none *)
+  change _ with type in (type of name).
 
 Ltac p_223_33 n v :=
   p n (BRK_ body (BRK_ body (BODY BODY ONE_)))
-   (BRK_ (TYPE type) (TYPE TYPE v)). (* .none *)
+   (BRK_ (TYPE type) (TYPE TYPE v)).
 Ltac p_223_35 n v :=
   p n (BRK_ body (BRK_ body (BODY BODY ONE_)))
-   (BRK_ (TYPE TYPE TYPE type) (TYPE TYPE v)). (* .none *)
+   (BRK_ (TYPE TYPE TYPE type) (TYPE TYPE v)).
 Ltac p_223_53 n v :=
   p n (BRK_ body (BRK_ body (BODY BODY ONE_)))
-   (BRK_ (TYPE type) (TYPE TYPE TYPE TYPE v)). (* .none *)
+   (BRK_ (TYPE type) (TYPE TYPE TYPE TYPE v)).
 Ltac p_2_97 n v :=
   p n (BODY ONE_)
    (BRK_ (TYPE TYPE TYPE TYPE TYPE TYPE TYPE type)
-    (TYPE TYPE TYPE TYPE TYPE TYPE v)). (* .none *)
+    (TYPE TYPE TYPE TYPE TYPE TYPE v)).
 Ltac p_489_97 n v :=
   p n (BRK_ (BODY BODY body)
        (BRK_ (BODY BODY BODY BODY BODY BODY body)
         (BODY BODY BODY BODY BODY BODY BODY BODY ONE_)))
    (BRK_ (TYPE TYPE TYPE TYPE TYPE TYPE TYPE type)
-    (TYPE TYPE TYPE TYPE TYPE TYPE v)). (* .none *)
+    (TYPE TYPE TYPE TYPE TYPE TYPE v)).
 Ltac p_4F_2F n v :=
   p n (BRK_ (BODY BODY body)
        (BODY BODY BODY BODY BODY BODY BODY BODY
         BODY BODY BODY BODY BODY BODY BODY ONE_))
    (BRK_ type
     (TYPE TYPE TYPE TYPE TYPE TYPE TYPE TYPE
-     TYPE TYPE TYPE TYPE TYPE TYPE TYPE v)). (* .none *)
+     TYPE TYPE TYPE TYPE TYPE TYPE TYPE v)).
 ```
 
 ```coq
+(* .no-in .unfold *)
 Goal True. (* .none *)
   p_223_33 ffffffff0 NAT0; p_223_33 ffffffff1 NAT1;
     p_223_33 ffffffff2 NAT0; p_223_53 ffffffff3 NAT1;
@@ -109,7 +112,7 @@ Goal True. (* .none *)
     p_4F_2F fffffffffffffffffffffffffffffffffffff11 NAT1.
   repeat match goal with
          | [ H := _ : _ |- _ ] => clearbody H
-         end. (* .no-in .unfold *)
+         end. (* .no-in *)
   exact I. (* .none *)
 Qed. (* .none *)
 ```
@@ -117,12 +120,12 @@ Qed. (* .none *)
 = More hypotheses
 
 ```coq
-From Coq Require List. (* .none *)
-Import List.ListNotations. (* .none *)
-Open Scope list_scope. (* .none *)
+From Coq Require List.
+Import List.ListNotations.
+Open Scope list_scope.
 
-Section Long. (* .none *)
-  Context {A B: Type}. (* .none *)
+Section Long.
+  Context {A B: Type}.
 
   Fixpoint map (l: list A)
            (f: forall (n: nat) (a: A)
@@ -139,17 +142,18 @@ Section Long. (* .none *)
       simpl in f.
       apply (map l f).
   Defined.
-End Long. (* .none *)
+End Long.
 
 Compute (map [11; 22; 33] (fun n a _ => (n, a * a))).
 ```
 
-= Many hypothesis names
-
 ```coq
-Definition t := True. (* .none *)
-Definition ign {A} (_: A) := Prop. (* .none *)
+Definition t := True.
+Definition ign {A} (_: A) := Prop.
+```
 
+#text(size: 0.9em)[
+```coq
 Goal forall
     (a: ign (t -> t -> t -> t -> t -> t -> t))
     (aaa: ign (t -> t -> t -> t -> t -> t))
@@ -171,11 +175,77 @@ Goal forall
     aaaaaaaaaaaaaaaaaaaaaaaaa -> True.
 Proof. auto. Qed.
 ```
+]
+
+= Paragraph-code spacing
+
+Some text.
+
+```coq
+(* Some code *)
+```
+
+Some text.
+
+```coq
+(* Some code *)
+```
+
+Some text.
+
+Some text.
+
+```coq
+(* Some code *)
+```
+
+```coq
+(* Some code *)
+```
+
+= Line breaks in input-only fragments
+
+There should be no extra line breaks when showing only inputs:
+
+```coq
+(* .in *)
+Goal True /\ True.
+  - idtac.
+Abort.
+
+Goal True /\ True.
+Proof.
+  split.
+  - idtac "message". cut True.
+    + tauto. + { tauto. }
+  - { match goal with
+      | _ => idtac
+      end. exact I. }
+Qed.
+```
+
+Showing outputs may still introduce line breaks:
+
+```coq
+Goal True /\ True.
+  - idtac.
+Abort.
+
+Goal True /\ True.
+Proof.
+  split.
+  - idtac "message". cut True.
+    + tauto. + { tauto. }
+  - { match goal with
+      | _ => idtac
+      end. exact I. }
+Qed.
+```
 
 = Newlines
 
 ```coq
-Require Import List. (* .none *)
+Require Import List.
 
 Lemma skipn_app {A}:
   forall (l1 l2: list A) n,
@@ -184,10 +254,11 @@ Lemma skipn_app {A}:
     List.app (skipn n l1) l2.
 Proof.
   induction l1.
-  - destruct n.
+  - destruct n. (* same line *)
     all: cbn.
     + reflexivity.
       Show Proof. (* .messages .unfold *)
+
       Check nat. (* .messages .unfold *)
     + inversion 1.
   - destruct n. cbn.

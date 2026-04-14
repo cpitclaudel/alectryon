@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
 from typing import Any, ClassVar, DefaultDict, Dict, Generic, Iterable, IO, List, \
     Mapping, NamedTuple, NoReturn, Optional, overload, Sequence, \
     TYPE_CHECKING, Tuple, TypeVar, Union

@@ -9,22 +9,22 @@
         {
             "src": "Goal True /\\ True.\n  split.",
             "lang": "coq",
-            "rendered": "io(\"coq\", { sentence(code(\"Goal True /\\\\ True.\"), goals(goal(none, none, code(\"True /\\\\ True\")))); sentence(code(\"split.\"), goals(goal(none, none, code(\"True\")), goal(none, none, code(\"True\")))) })"
+            "rendered": "io(\"coq\", { sentence(code(\"Goal True /\\\\ True.\"), goals(goal(none, none, code(\"True /\\\\ True\")))); sentence(code(\"  split.\"), goals(goal(none, none, code(\"True\")) + goal(none, none, code(\"True\")))) })"
         },
         {
             "src": "  - Check nat.\n    exact I.",
             "lang": "coq",
-            "rendered": "io(\"coq\", { sentence(code(\"-\"), goals(goal(none, none, code(\"True\")))); sentence(code(\"Check nat.\"), messages(message(txt(\"nat\\n     : Set\"))) + goals(goal(none, none, code(\"True\")))); sentence(code(\"exact I.\"), none) })"
+            "rendered": "io(\"coq\", { sentence(code(\"  -\"), goals(goal(none, none, code(\"True\")))); sentence(code(\"Check nat.\"), messages(message(txt(\"nat\\n     : Set\"))) + goals(goal(none, none, code(\"True\")))); sentence(code(\"    exact I.\"), none) })"
         },
         {
             "src": "  - Check nat.\n    exact I.\nQed.",
             "lang": "coq",
-            "rendered": "io(\"coq\", { sentence(code(\"-\"), goals(goal(none, none, code(\"True\")))); sentence(code(\"Check nat.\"), messages(message(txt(\"nat\\n     : Set\"))) + goals(goal(none, none, code(\"True\")))); sentence(code(\"exact I.\"), none); sentence(code(\"Qed.\"), none) })"
+            "rendered": "io(\"coq\", { sentence(code(\"  -\"), goals(goal(none, none, code(\"True\")))); sentence(code(\"Check nat.\"), messages(message(txt(\"nat\\n     : Set\"))) + goals(goal(none, none, code(\"True\")))); sentence(code(\"    exact I.\"), none); sentence(code(\"Qed.\"), none) })"
         },
         {
             "src": "Goal True \\/ False.\n  left. exact I.\nQed.",
             "lang": "coq",
-            "rendered": "io(\"coq\", { sentence(code(\"Goal True \\\\/ False.\"), goals(goal(none, none, code(\"True \\\\/ False\")))); sentence(code(\"left.\"), goals(goal(none, none, code(\"True\")))); sentence(code(\"exact I.\"), none); sentence(code(\"Qed.\"), none) })"
+            "rendered": "io(\"coq\", { sentence(code(\"Goal True \\\\/ False.\"), goals(goal(none, none, code(\"True \\\\/ False\")))); sentence(code(\"  left.\"), goals(goal(none, none, code(\"True\")))); sentence(code(\"exact I.\"), none); sentence(code(\"Qed.\"), none) })"
         },
         {
             "src": "Fail Check \"hello\".",
@@ -34,7 +34,7 @@
         {
             "src": "Goal forall b: bool, b = b.\n  destruct b; [ refine ?[true] | refine ?[false] ].\n  all: reflexivity.\nQed.",
             "lang": "coq",
-            "rendered": "io(\"coq\", { sentence(code(\"Goal forall b: bool, b = b.\"), goals(goal(none, none, code(\"forall b : bool, b = b\")))); sentence(code(\"destruct b; [ refine ?[true] | refine ?[false] ].\"), goals(goal(txt(\"true\"), none, code(\"true = true\")), goal(txt(\"false\"), none, code(\"false = false\")))); sentence(code(\"all: reflexivity.\"), none); sentence(code(\"Qed.\"), none) })"
+            "rendered": "io(\"coq\", { sentence(code(\"Goal forall b: bool, b = b.\"), goals(goal(none, none, code(\"forall b : bool, b = b\")))); sentence(code(\"  destruct b; [ refine ?[true] | refine ?[false] ].\"), goals(goal(txt(\"true\"), none, code(\"true = true\")) + goal(txt(\"false\"), none, code(\"false = false\")))); sentence(code(\"  all: reflexivity.\"), none); sentence(code(\"Qed.\"), none) })"
         },
         {
             "src": "Definition double (n : nat) := n + n.",
@@ -49,7 +49,7 @@
         {
             "src": "Lemma add_0_r : forall n, n + 0 = n.\nProof.\n  induction n.\n  - reflexivity.\n  - simpl. rewrite IHn. reflexivity.\nQed.",
             "lang": "coq",
-            "rendered": "io(\"coq\", { sentence(code(\"Lemma add_0_r : forall n, n + 0 = n.\"), goals(goal(none, none, code(\"forall n : nat, n + 0 = n\")))); sentence(code(\"Proof.\"), goals(goal(none, none, code(\"forall n : nat, n + 0 = n\")))); sentence(code(\"induction n.\"), goals(goal(none, none, code(\"0 + 0 = 0\")), goal(none, hyp(txt(\"n\"), none, code(\"nat\")) + hyp(txt(\"IHn\"), none, code(\"n + 0 = n\")), code(\"S n + 0 = S n\")))); sentence(code(\"-\"), goals(goal(none, none, code(\"0 + 0 = 0\")))); sentence(code(\"reflexivity.\"), none); sentence(code(\"-\"), goals(goal(none, hyp(txt(\"n\"), none, code(\"nat\")) + hyp(txt(\"IHn\"), none, code(\"n + 0 = n\")), code(\"S n + 0 = S n\")))); sentence(code(\"simpl.\"), goals(goal(none, hyp(txt(\"n\"), none, code(\"nat\")) + hyp(txt(\"IHn\"), none, code(\"n + 0 = n\")), code(\"S (n + 0) = S n\")))); sentence(code(\"rewrite IHn.\"), goals(goal(none, hyp(txt(\"n\"), none, code(\"nat\")) + hyp(txt(\"IHn\"), none, code(\"n + 0 = n\")), code(\"S n = S n\")))); sentence(code(\"reflexivity.\"), none); sentence(code(\"Qed.\"), none) })"
+            "rendered": "io(\"coq\", { sentence(code(\"Lemma add_0_r : forall n, n + 0 = n.\"), goals(goal(none, none, code(\"forall n : nat, n + 0 = n\")))); sentence(code(\"Proof.\"), goals(goal(none, none, code(\"forall n : nat, n + 0 = n\")))); sentence(code(\"  induction n.\"), goals(goal(none, none, code(\"0 + 0 = 0\")) + goal(none, hyp(txt(\"n\"), none, code(\"nat\")) + hyp(txt(\"IHn\"), none, code(\"n + 0 = n\")), code(\"S n + 0 = S n\")))); sentence(code(\"  -\"), goals(goal(none, none, code(\"0 + 0 = 0\")))); sentence(code(\"reflexivity.\"), none); sentence(code(\"  -\"), goals(goal(none, hyp(txt(\"n\"), none, code(\"nat\")) + hyp(txt(\"IHn\"), none, code(\"n + 0 = n\")), code(\"S n + 0 = S n\")))); sentence(code(\"simpl.\"), goals(goal(none, hyp(txt(\"n\"), none, code(\"nat\")) + hyp(txt(\"IHn\"), none, code(\"n + 0 = n\")), code(\"S (n + 0) = S n\")))); sentence(code(\"rewrite IHn.\"), goals(goal(none, hyp(txt(\"n\"), none, code(\"nat\")) + hyp(txt(\"IHn\"), none, code(\"n + 0 = n\")), code(\"S n = S n\")))); sentence(code(\"reflexivity.\"), none); sentence(code(\"Qed.\"), none) })"
         },
         {
             "src": "Require Import Arith.\nCheck Nat.add_0_r.",
@@ -82,9 +82,9 @@
             "rendered": "io(\"coq\", { sentence(code(\"Fail Check (1 + true).\"), messages(message(txt(\"The command has indeed failed with message:\\nThe term \\\"true\\\" has type \\\"bool\\\"\\nwhile it is expected to have type \\\"nat\\\".\")))) })"
         },
         {
-            "src": "Definition broken := 1 + true.",
+            "src": "(* .no-in\n   .unfold *)\nGoal True /\\ True.\n  split; exact I.\nQed.",
             "lang": "coq",
-            "rendered": "io(\"coq\", { sentence(code(\"Definition broken := 1 + true.\"), messages(message(txt(\"The term \\\"true\\\" has type \\\"bool\\\"\\nwhile it is expected to have type \\\"nat\\\".\")))) })"
+            "rendered": "io(\"coq\", { sentence(none, goals(goal(none, none, code(\"True /\\\\ True\")))) })"
         }
     ]
 }

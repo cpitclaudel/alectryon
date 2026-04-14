@@ -142,3 +142,13 @@ Check main_defn.
 ```coq
 Fail Check (1 + true).
 ```
+
+== Multi-line block annotation comment
+
+```coq
+(* .no-in
+   .unfold *)
+Goal True /\ True.
+  split; exact I.
+Qed.
+```
