@@ -41,72 +41,67 @@ class ASSETS:
 
 ## Backend
 
-class TypstBackend(Backend[str]):
-    """Render annotated fragments as Typst code expression strings."""
+Node = Optional[Union[str, list]]
+
+class TypstBackend(Backend[Node]):
+    """Render annotated fragments as a JSON S-expression."""
 
     def __init__(self, lang: str):
         super().__init__(highlighter=None)
         self.lang = lang
 
-    NONE = "none"
-
-    TYPST_ESCAPES = str.maketrans(
-        {"\\": "\\\\", '"': '\\"', "\n": "\\n", "\r": "\\r", "\t": "\\t"})
-
-    @classmethod
-    def _typst_string(cls, s: str) -> str:
-        return f'"{s.translate(cls.TYPST_ESCAPES)}"'
-
     def highlight(self, s: str) -> str:
-        return self._typst_string(s)
+        return s
 
-    def gen_names(self, names: Iterable[str]) -> str:
-        return self.gen_txt(", ".join(names))
+    @staticmethod
+    def _plus(xs: list[Node]) -> Node:
+        return ["+", *xs] if xs else None
 
-    def gen_code(self, code: Optional[RichCode]) -> str:
-        return f"code({self._typst_string(code.contents)})" if code is not None else self.NONE
+    def gen_names(self, names: Iterable[str]) -> Node:
+        return ["txt", ", ".join(names)]
 
-    def gen_txt(self, s: Optional[str]) -> str:
-        return f"txt({self._typst_string(s)})" if s is not None else self.NONE
+    def gen_code(self, code: Optional[RichCode]) -> Node:
+        return ["code", code.contents] if code else None
 
-    def gen_message(self, message: RichMessage) -> str:
-        return f"message({self.gen_txt(message.contents)})"
+    def gen_txt(self, s: Optional[str]) -> Node:
+        return ["txt", s] if s is not None else None
 
-    def gen_hyp(self, hyp: RichHypothesis) -> str:
-        names = self.gen_names(hyp.names)
-        return f"hyp({names}, {self.gen_code(hyp.body)}, {self.gen_code(hyp.type)})"
+    def gen_message(self, message: RichMessage) -> Node:
+        return ["message", self.gen_txt(message.contents)]
 
-    def gen_goal(self, goal: RichGoal) -> str:
-        hyps = " + ".join(self.gen_hyp(h) for h in goal.hypotheses) or self.NONE
-        return f"goal({self.gen_txt(goal.name)}, {hyps}, {self.gen_code(goal.conclusion)})"
+    def gen_hyp(self, hyp: RichHypothesis) -> Node:
+        return ["hyp", self.gen_names(hyp.names),
+                self.gen_code(hyp.body), self.gen_code(hyp.type)]
 
-    def gen_output_group(self, fr: Union[Goals, Messages]) -> str:
+    def gen_goal(self, goal: RichGoal) -> Node:
+        hyps = self._plus([self.gen_hyp(h) for h in goal.hypotheses])
+        return ["goal", self.gen_txt(goal.name), hyps, self.gen_code(goal.conclusion)]
+
+    def gen_output_group(self, fr: Union[Goals, Messages]) -> Node:
         if isinstance(fr, Goals):
-            items = " + ".join(self.gen_goal(g) for g in fr.goals)
-            return f"goals({items})"
+            return ["goals", self._plus([self.gen_goal(g) for g in fr.goals])]
         if isinstance(fr, Messages):
-            items = " + ".join(self.gen_message(m) for m in fr.messages)
-            return f"messages({items})"
+            return ["messages", self._plus([self.gen_message(m) for m in fr.messages])]
+        return None
 
-    def gen_sentence(self, s: RichSentence) -> str:
-        output = " + ".join(self.gen_output_group(fr) for fr in s.outputs) or self.NONE
-        return f"sentence({self.gen_code(s.input)}, {output})"
+    def gen_sentence(self, s: RichSentence) -> Node:
+        outputs = self._plus([self.gen_output_group(fr) for fr in s.outputs])
+        return ["sentence", self.gen_code(s.input), outputs]
 
-    def gen_fragment(self, fr) -> str:
+    def gen_fragment(self, fr) -> Node:
         if isinstance(fr, Text):
             return self.gen_code(fr)
         assert isinstance(fr, RichSentence)
         return self.gen_sentence(fr)
 
-    def gen_fragments(self, fragments, ids=(), classes=()) -> str:
+    def gen_fragments(self, fragments, ids=(), classes=()) -> Node:
         from . import transforms
         fragments = transforms.apply_transforms(fragments, [
             transforms.group_whitespace_with_code,
+            transforms.commit_io_annotations,
             transforms.commit_affixes,
-            transforms.commit_io_annotations
         ], delay_errors=False)
-        body = "; ".join(self.gen_fragment(fr) for fr in fragments)
-        return f"io({self._typst_string(self.lang)}, {{ {body} }})"
+        return ["io", self.lang, self._plus([self.gen_fragment(fr) for fr in fragments])]
 
 ## Frontend
 

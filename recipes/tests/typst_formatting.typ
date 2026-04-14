@@ -1,16 +1,20 @@
-/*
-Typst version of tests/latex_formatting.v.  To compile:
-
-    $ alectryon typst_formatting.typ # Typst formatting test; produces ‘typst_formatting.alectryon.json’
-    $ typst compile --root . typst_formatting.typ typst_formatting.pdf # Typst → PDF; produces ‘typst_formatting.pdf’
-*/
-
 #import "/_output/tests/alectryon.typ"
 #show: alectryon.setup.with("/_output/tests/typst_formatting.alectryon.json")
 
 #set page(paper: "a4")
 #set text(size: 10pt)
 #set par(spacing: 8pt)
+
+= Typst formatting tests
+
+This file tests various aspects of the conversion to Typst, including spacing and formatting:
+
+```
+$ alectryon typst_formatting.typ
+  # Typst formatting test; produces ‘typst_formatting.alectryon.json’
+$ typst compile --root . typst_formatting.typ typst_formatting.pdf
+  # Typst → PDF; produces ‘typst_formatting.pdf’
+```
 
 = Space after punctuation
 

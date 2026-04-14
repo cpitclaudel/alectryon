@@ -148,13 +148,26 @@
   }
 })
 
-// Scope passed to eval
-#let render-scope = (
+#let concat(..args) = {
+  args.pos().sum(default: none)
+}
+
+#let nodes = (
   io: io, sentence: sentence,
   goals: goals, goal: goal, hyp: hyp,
   messages: messages, message: message,
-  code: code, txt: txt,
+  code: code, txt: txt, "+": concat,
 )
+
+#let render(node) = {
+  if node == none or type(node) == str {
+    node
+  } else {
+    let fn = nodes.at(node.first())
+    let args = node.slice(1).map(render)
+    fn(..args)
+  }
+}
 
 // Warning box for stale snippets
 #let stale-warning(original) = block(
@@ -194,8 +207,8 @@
       let entry = snippets.at(idx, default: (src: "", rendered: none))
       if entry.src != it.text {
         stale-warning(it)
-      } else if entry.rendered != none { // Skip hidden blocks
-        eval(entry.rendered, mode: "code", scope: render-scope)
+      } else {
+        render(entry.rendered)
       }
     }
 

@@ -21,7 +21,6 @@
 // by that difference aligns the two first baselines.
 #set page(paper: "a4", margin: (x: 1in, y: 1in + 3.16pt))
 
-// `show` doesn't apply to eval-d blocks, so use `set` inside of `show`
 #show raw.where(lang: "coq"): set raw(syntaxes: "/_output/tests/coq.tm-syntax")
 
 #import "/_output/tests/alectryon.typ"
