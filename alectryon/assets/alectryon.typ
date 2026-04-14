@@ -136,8 +136,8 @@
 #let goals = outputs
 #let messages = outputs
 
-#let sentence(input, outputs) = block({
-  block(input)
+#let sentence(input, outputs) = {
+  input
   if outputs != none {
     set text(size: alectryon-output-scale * 1em)
     // LaTeX adds space relative to the bottom of the previous box; Typst uses
@@ -146,7 +146,7 @@
       outputs
     })
   }
-})
+}
 
 #let concat(..args) = {
   args.pos().sum(default: none)
