@@ -36,8 +36,10 @@
 // Render code as a raw element
 #let code(contents) = context {
   let lang = _alectryon-lang.get()
-  // -output avoids re-triggering the `show` rule
-  raw(contents, lang: lang + "-output")
+  // <alectryon-processed> prevents the `show` rule added by `setup` from
+  // triggering recursively.  Per the docs “labels can only be attached to
+  // elements in markup mode, not in code mode”, so we must use [] syntax.
+  [#raw(contents, lang: lang)<alectryon-processed>]
 }
 
 // Top-aligned inline box (\parbox[t])
@@ -177,6 +179,12 @@
   let alectryon-counter = counter("alectryon-block-index")
 
   show raw.where(block: true): it => {
+    // Skip already-processed raw elements
+    if it.at("label", default: none) == <alectryon-processed> {
+      return it
+    }
+
+    // Skip unknown languages
     if it.at("lang", default: none) not in langs {
       return it
     }
