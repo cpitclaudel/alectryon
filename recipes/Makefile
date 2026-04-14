@@ -40,13 +40,23 @@ tests.mk: ../etc/regen_makefile.py $(filter-out %.mk,$(wildcard tests/*.*))
 
 include recipes.mk tests.mk
 
+# TODO
+# _output/mathjax.tex: mathjax.rst | _output/
+# 	$(alectryon) --backend latex $<
+
+#########
+# Typst #
+#########
+
 # Typst PDFs need a corresponding JSON (produced by rules in {recipes,tests}.mk).
 typst_pdfs := $(patsubst %.alectryon.json,%.pdf,$(filter %.alectryon.json,$(targets)))
 $(typst_pdfs): %.pdf: %.alectryon.json
 
-# TODO
-# _output/mathjax.tex: mathjax.rst | _output/
-# 	$(alectryon) --backend latex $<
+_output/tests/coq.tm-syntax:
+	wget -O $@ https://raw.githubusercontent.com/shilangyu/pikevm-systemf/refs/tags/thesis-submission/report/syntaxes/rocq.sublime-syntax
+	sed -i 's/rocq/coq/gi' $@
+
+_output/tests/exact_typst.alectryon.json: _output/tests/coq.tm-syntax
 
 ##########
 # Sphinx #

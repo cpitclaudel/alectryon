@@ -4,6 +4,7 @@
 /_output/**/pygments.sty
 /_output/**/alectryon.sty
 /_output/**/alectryon.typ
+/_output/tests/coq.tm-syntax
 /_output/latex.aux/
 **/sphinx/_build/doctrees
 **/sphinx/_build/html/[._]*

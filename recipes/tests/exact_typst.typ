@@ -7,9 +7,6 @@
       # Typst → PDF; produces ‘exact_typst.pdf’
 */
 
-#import "/_output/tests/alectryon.typ"
-#show: alectryon.setup.with("/_output/tests/exact_typst.alectryon.json")
-
 // Match LaTeX's configuration so PDFs can be compared
 #set par(first-line-indent: 0pt, spacing: 0.7em)
 
@@ -23,6 +20,12 @@
 // cap-height (~6.84pt for Latin Modern Roman at 10pt).  Widening the top margin
 // by that difference aligns the two first baselines.
 #set page(paper: "a4", margin: (x: 1in, y: 1in + 3.16pt))
+
+// `show` doesn't apply to eval-d blocks, so use `set` inside of `show`
+#show raw.where(lang: "coq"): set raw(syntaxes: "/_output/tests/coq.tm-syntax")
+
+#import "/_output/tests/alectryon.typ"
+#show: alectryon.setup.with("/_output/tests/exact_typst.alectryon.json")
 
 A small proof for LaTeX/Typst comparison:
 
