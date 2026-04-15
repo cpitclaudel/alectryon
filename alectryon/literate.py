@@ -933,12 +933,12 @@ class RST(IndentedMarkup):
 
     def __init__(self, lang: LangDef):
         super().__init__(lang)
-        self.header = ".. {}::".format(lang.name)
+        self.header = f".. {lang.name}::"
         self.header_re = re.compile(
-            r"(?P<indent>[ \t]*)([.][.] {}::.*)".format(lang.name))
-        self.directive_re = re.compile(r"""
+            fr"(?P<indent>[ \t]*)([.][.] {lang.name}::.*)")
+        self.directive_re = re.compile(fr"""
            (?P<directive>
-            ^(?P<indent>[ ]*)[.][.][ ]{}::.*
+            ^(?P<indent>[ ]*)[.][.][ ]{lang.name}::.*
              (?P<options>
               (?:\n
                 (?P=indent)[ ][ ][ ] [ \t]*[^ \t].*$)*))
@@ -948,23 +948,23 @@ class RST(IndentedMarkup):
                 (?P=indent)[ ][ ][ ] .*$)*
               \n?)
            (?P<footer>)
-        """.format(lang.name), re.VERBOSE | re.MULTILINE)
+        """, re.VERBOSE | re.MULTILINE)
 
 class MYST(BracketedMarkup):
     name = "md"
 
     def __init__(self, lang: LangDef):
         super().__init__(lang)
-        self.header = "```{{{}}}".format(lang.name)
+        self.header = f"```{{{lang.name}}}"
         self.footer = "```"
         self.footer_re = re.compile(
             "[ \t]*```[ \t]*$", re.MULTILINE)
         self.header_re = re.compile(
-            r"(?P<indent>[ \t]*)(```+{{{}}}.*)".format(lang.name))
-        self.directive_re = re.compile(r"""
+            fr"(?P<indent>[ \t]*)(```+{{{lang.name}}}.*)")
+        self.directive_re = re.compile(fr"""
            (?P<directive>
             ^(?P<indent>[ ]*)
-             (?P<ticks>```){{{}}}.*
+             (?P<ticks>```){{{lang.name}}}.*
              (?P<options>
               \n(?P=indent)---
               (?:\n(?P=indent).*$)*
@@ -974,7 +974,7 @@ class MYST(BracketedMarkup):
                 (?:[ \t]*\n)*
                 (?P=indent).*$)*?) # Minimal match
          \n(?P<footer>(?P=indent)(?P=ticks)\n?)
-        """.format(lang.name), re.VERBOSE | re.MULTILINE)
+        """, re.VERBOSE | re.MULTILINE)
 
 def number_lines(lines: Iterable[StringView], start: int) -> Tuple[int, Deque[Line]]:
     """Number `lines`, starting from `start`."""
