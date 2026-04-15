@@ -412,7 +412,22 @@ To control output in Typst documents, either place annotations on individual sen
    Qed.
    ```
 
-Caveats:
+Rebuilding automatically
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Alectryon has no built-in ``watch`` command, but you can use an external file watcher::
+
+   # Rebuild `paper.typ` any time `paper.alectryon.json` changes
+   typst watch paper.typ
+
+   # Rebuild `paper.alectryon.json` any time `paper.typ` changes
+   ## Linux/sh
+   main=paper.typ; while true; do time alectryon "$main"; inotifywait -qe modify "$main"; done
+   ## macOS/sh
+   main=paper.typ; fswatch -o "$main" | xargs -n1 -I{} time alectryon "$main"
+
+Caveats
+~~~~~~~
 
 - Make sure to use Typst ≥ 0.14.2.
 - Alectryon uses ``typst query --root=$(pwd)`` to retrieve the list of fenced code blocks.  Make sure to run Alectryon from the right directory.
