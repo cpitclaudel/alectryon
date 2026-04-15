@@ -180,10 +180,16 @@ ensure BODY is one undo group."
 (defconst alectryon-text-modes
   '(( rst-mode
       :tag "rst"
+      :lint t
       :suffixes ("_rst[.][^./]+$"))
     ( markdown-mode
       :tag "md"
-      :suffixes ("_md[.][^./]+$"))))
+      :lint t
+      :suffixes ("_md[.][^./]+$"))
+    ( typst-ts-mode
+      :tag "typst"
+      :lint nil ;; No Flycheck support in Typst mode
+      :suffixes ("_typst[.][^./]+$"))))
 
 (defvar-local alectryon-prog-mode 'coq-mode
   "Programming mode to use with Alectryon in this buffer.
@@ -446,12 +452,19 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
 
 (defun alectryon--flycheck-verify-enabled ()
   "Check whether `alectryon-mode' is enabled, as a verification result."
-  (list
-   (flycheck-verification-result-new
-    :label "Checker selection"
-    :message (if alectryon-mode "OK, using `alectryon-mode'."
-               (substitute-command-keys "Use \\[alectryon-mode] to enable."))
-    :face (if alectryon-mode 'success '(bold error)))))
+  (let ((mode-active alectryon-mode)
+        (lint-supported (alectryon--config :lint 'text)))
+    (list
+     (flycheck-verification-result-new
+      :label "Mode selection"
+      :message (if mode-active "OK, using `alectryon-mode'"
+                 (substitute-command-keys "Use \\[alectryon-mode] to enable"))
+      :face (if mode-active 'success '(bold error)))
+     (flycheck-verification-result-new
+      :label "Linting support"
+      :message (if lint-supported "Yes."
+                 (format "Not supported in %s" (alectryon--text-mode-with-fallback)))
+      :face (if lint-supported 'success '(bold error))))))
 
 (flycheck-define-command-checker 'alectryon
   "Flycheck checker for literate code."
@@ -462,7 +475,7 @@ OUTPUT is the result of Flychecking BUFFER with CHECKER."
              "-")
   :standard-input t
   :error-parser #'alectryon--parse-errors
-  :predicate (lambda () alectryon-mode)
+  :predicate (lambda () (and alectryon-mode (alectryon--config :lint 'text)))
   :verify (lambda (_) (alectryon--flycheck-verify-enabled))
   :modes '(coq-mode lean4-mode dafny-mode rst-mode markdown-mode))
 
