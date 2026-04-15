@@ -7,17 +7,17 @@ Version 2.0.0
 
 - Alectryon is now compatible with Rocq 9, Docutils 22, Sphinx 9.1, Pygments 2.19, and Python 3.9+.
 
-- Alectryon now supports the two main Rocq LSP servers: VsRocq and coq-lsp.  VsRocq is the default for Rocq files, replacing SerAPI; it is reasonably well supported. Coq-lsp is experimental.  SerAPI is still supported for Coq versions < 9.  Known limitations are documented in VsRocq issues `#1198`_, `#1199`_, `#1201`_, `#1203`_, `#1204`_, `#1205`_, `#1206`_, `#1209`_, and `#1210`_; help is welcome to fix these issues and improve VsRocq support (for now, Alectryon bundles mitigation for most of them). [ffffc913, 9ff1e752, c28fb384, 81dcd0ac, 830f41e2, 8c4f256f]
+- Alectryon now supports the two main Rocq LSP servers: VsRocq and coq-lsp.  VsRocq is the default for Rocq files, replacing SerAPI; it is reasonably well supported. Coq-lsp is experimental.  SerAPI is still supported for Coq versions < 9.  Known limitations are documented in VsRocq issues `#1198`_, `#1199`_, `#1201`_, `#1203`_, `#1204`_, `#1205`_, `#1206`_, `#1209`_, and `#1210`_; help is welcome to fix these issues and improve VsRocq support (for now, Alectryon bundles mitigation for most of them). [c28fb384, 830f41e2, 8c4f256f, ffffc913, 81dcd0ac, 9ff1e752]
 
 - Settings from ``_RocqProject`` files are now recognized and applied.  This makes it easy to configure dependencies (``-Q …``), warnings (``-arg -w -arg -notation-for-abbreviation``), printing parameters (``-arg -set -arg "'Printing Depth=30'"``, ``-arg -set -arg "'Printing Width=55'"``), etc.
 
 - Alectryon now has experimental support for Dafny, including a literate-programming mode (conversions between Dafny files with ``///`` comments and reST/Markdown documents) and semantic highlighting via the Dafny LSP server. [1f8370e, ca1b0784, 6bdcd555]
 
-- Alectryon now supports literate programming in Markdown in addition to reStructuredText.  Markdown files (``.md``, ``.myst``) containing ``{coq}`` code blocks can be rendered to LaTeX or HTML through Docutils, or converted to Rocq files (``.v``) with ``(*| … |*)`` comments using the ``coq`` backend, and vice versa using the ``coq+md`` frontend.  [e17fe936, 46f037b5, c5253aaa, 85632183, 901247db]
+- Alectryon now supports literate programming in Markdown in addition to reStructuredText.  Markdown files (``.md``, ``.myst``) containing ``{coq}`` code blocks can be rendered to LaTeX or HTML through Docutils, or converted to Rocq files (``.v``) with ``(*| … |*)`` comments using the ``coq`` backend, and vice versa using the ``coq+md`` frontend.  [e17fe936, 85632183, 46f037b5, c5253aaa, 901247db]
 
-- HTML and LaTeX files containing Rocq snippets can now be ingested by Alectryon and rewritten to insert recorded goals and prover outputs, using the new ``html`` and ``latex`` frontends.  This makes it possible to process code blocks embedded in HTML or LaTeX documents without going through Docutils. [cc169410, 49f7ec1a]
+- HTML and LaTeX files containing Rocq snippets can now be ingested by Alectryon and rewritten to insert recorded goals and prover outputs, using the new ``html`` and ``latex`` frontends.  This makes it possible to process code blocks embedded in HTML or LaTeX documents without going through Docutils. [49f7ec1a, cc169410]
 
-- ``alectryon-mode`` now supports Dafny, Lean 4, and markdown-mode buffers. [cf948f95, b7313ae1, 32f0e1e5, bec2575f]
+- ``alectryon-mode`` now supports Dafny, Lean 4, and ``markdown-mode`` buffers. [bec2575f, 32f0e1e5, b7313ae1, cf948f95]
 
 - Exporting to LaTeX now displays hypotheses bodies in addition to hypothesis types. [7eb70b00, 20e30444]
 
@@ -68,7 +68,7 @@ Breaking changes
 
 - Alectryon is now compatible with Python 3.10, Sphinx 6.1.3, Docutils 0.19, and Pygments 2.14 (other reasonably recent versions should still work). [c6db43a, 40ff2af, 578a1db, 39535f4]
 
-- Alectryon now has partial support for Lean 3 and 4.  The ``.lean`` file extension is now associated with Lean 4; Lean 3 files should use ``.lean3``.  [GH-76, GH-64] [601174b, 27ea5b8, 90bd555]
+- Alectryon now has partial support for Lean 3 and 4.  The ``.lean`` file extension is now associated with Lean 4; Lean 3 files should use ``.lean3``.  [GH-76, GH-64] [27ea5b8, 90bd555, 601174b]
 
 Bug fixes
 ---------
