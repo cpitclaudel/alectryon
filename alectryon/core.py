@@ -937,7 +937,8 @@ class DriverDict(UserDict[str, str]): # UserDict needed for proper ``copy`` beha
                 return driver
         return next(iter(all_drivers)) # Return first if none is available (for better error messages)
 
-ALL_MARKUPS = {"md", "rst"}
+DOCUTILS_MARKUPS = {"md", "rst"} # Supported by gen_docutils
+ALL_MARKUPS = {*DOCUTILS_MARKUPS, "typst"}
 ALL_LANGUAGES = DRIVERS_BY_LANGUAGE.keys()
 ALL_DRIVERS = {d for ds in DRIVERS_BY_LANGUAGE.values() for d in ds}
 DEFAULT_DRIVERS = DriverDict()
@@ -957,6 +958,7 @@ assert EXTENSIONS_BY_LANGUAGE.keys() == ALL_LANGUAGES
 EXTENSIONS_BY_MARKUP = {
     "md": (".md", ".myst",),
     "rst": (".rst",),
+    "typst": (".typ",),
 }
 """A map from markup language identifiers to file extensions."""
 assert EXTENSIONS_BY_MARKUP.keys() == ALL_MARKUPS

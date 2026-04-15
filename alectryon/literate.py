@@ -984,6 +984,29 @@ class MYST(BracketedMarkup):
          \n(?P<footer>(?P=indent)(?P=ticks)\n?)
         """, re.VERBOSE | re.MULTILINE)
 
+class TYPST(BracketedMarkup):
+    name = "typst"
+
+    def __init__(self, lang: LangDef):
+        super().__init__(lang)
+        noal = "<noal>"
+        self.header = f"```{lang.name}"
+        self.footer = "```"
+        self.footer_re = re.compile(fr"[ \t]*```(?:[ \t]+{noal})?[ \t]*$", re.MULTILINE)
+        self.header_re = re.compile(fr"(?P<indent>[ \t]*)(```+{lang.name}.*)")
+        self.directive_re = re.compile(fr"""
+           (?P<directive>
+            ^(?P<indent>[ ]*)
+             (?P<ticks>```){lang.name}.*)
+           (?> # Atomic grouping makes <noal> definitive
+             (?P<code>
+                (?:\n
+                  (?:[ \t]*\n)*
+                  (?P=indent).*$)*?) # Minimal match
+           \n(?P<footer>(?P=indent)(?P=ticks)\n?))
+           (?![ \t]*{noal})
+        """, re.VERBOSE | re.MULTILINE)
+
 def number_lines(lines: Iterable[StringView], start: int) -> Tuple[int, Deque[Line]]:
     """Number `lines`, starting from `start`."""
     d = deque(Line(num, [s]) for (num, s) in enumerate(lines, start=start))
@@ -1315,6 +1338,108 @@ def rst2coq(rst):
     """
     return markup2code(RST(COQ), rst)
 
+def coq2typst(code):
+    """Convert from Coq to Typst.
+
+    >>> docprint(coq2typst('''
+    ... (*|
+    ... Example:
+    ... |*)
+    ...
+    ... Goal True.
+    ...
+    ... (*|
+    ... Second example:
+    ... |*)
+    ...
+    ... exact I. Qed.
+    ... '''))
+    Example:
+    {BLANKLINE}
+    ```coq
+    Goal True.
+    ```
+    {BLANKLINE}
+    Second example:
+    {BLANKLINE}
+    ```coq
+    exact I. Qed.
+    ```
+    {BLANKLINE}
+
+    >>> docprint(coq2typst('''
+    ... (*|
+    ... Corner case:
+    ...
+    ... ```coq
+    ... Goal True.
+    ... ``` <noal>
+    ... |*)
+    ...
+    ... exact I. Qed.
+    ... '''))
+    Corner case:
+    {BLANKLINE}
+    ```coq
+    Goal True.
+    ``` <noal>
+    {BLANKLINE}
+    ```coq
+    exact I. Qed.
+    ```
+    {BLANKLINE}
+    """
+    return code2markup(TYPST(COQ), code)
+
+def typst2coq(typ):
+    """Convert from Typst to Coq.
+
+    >>> docprint(typst2coq('''
+    ... Example:
+    ...
+    ... ```coq
+    ... Goal True.
+    ... ```
+    ...
+    ... Second example:
+    ...
+    ... ```coq
+    ... exact I. Qed.
+    ... ```
+    ... '''))
+    (*|
+    Example:
+    |*)
+    {BLANKLINE}
+    Goal True.
+    {BLANKLINE}
+    (*|
+    Second example:
+    |*)
+    {BLANKLINE}
+    exact I. Qed.
+    {BLANKLINE}
+
+    >>> docprint(typst2coq('''
+    ... ```coq
+    ... Check 1 + 1.
+    ... ``` <noal>
+    ...
+    ... ```coq
+    ... exact I. Qed.
+    ... ```
+    ... '''))
+    (*|
+    ```coq
+    Check 1 + 1.
+    ``` <noal>
+    |*)
+    {BLANKLINE}
+    exact I. Qed.
+    {BLANKLINE}
+    """
+    return markup2code(TYPST(COQ), typ)
+
 LEAN3 = BlockLangDef(
     "lean3",
     LeanParser,
@@ -1583,7 +1708,7 @@ def md2dafny(md: str):
     return markup2code(MYST(DAFNY), md)
 
 LANGUAGES = {L.name: L for L in (COQ, DAFNY, LEAN3, LEAN4)}
-MARKUPS = {M.name: M for M in (MYST, RST)}
+MARKUPS = {M.name: M for M in (MYST, RST, TYPST)}
 
 def get_language(lang: str) -> LangDef:
     if lang not in LANGUAGES:

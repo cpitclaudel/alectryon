@@ -723,7 +723,8 @@ def _add_code_pipelines(pipelines, lang, *exts):
          encode_json, dump_json(7),
          write_file(".io.json", strip=()))
     }
-    for markup, mexts in core.EXTENSIONS_BY_MARKUP.items():
+    for markup in core.DOCUTILS_MARKUPS:
+        mexts = core.EXTENSIONS_BY_MARKUP[markup]
         strip = (*exts, *mexts)
         pipelines["{}+{}".format(lang, markup)] = {
             'webpage':
@@ -776,9 +777,9 @@ def _add_special_pipelines(pipelines):
          write_file(".alectryon.json", strip=(".typ",))),
     }
 
-def _add_docutils_pipelines(pipelines, lang, *exts):
-    exts = (*CODE_EXTENSIONS, *exts)
-    pipelines[lang] = {
+def _add_docutils_pipelines(pipelines, markup):
+    exts = (*CODE_EXTENSIONS, *core.EXTENSIONS_BY_MARKUP[markup])
+    pipelines[markup] = {
         'webpage':
         (read_plain, register_docutils, gen_docutils, copy_assets,
          write_file(".html", strip=exts)),
@@ -799,7 +800,7 @@ def _add_transliteration_pipelines(pipelines):
                 (read_plain, markup_to_code, write_file(ext, strip=exts))
             pipelines[lang][markup] = \
                 (read_plain, code_to_markup, write_file(mexts[0], strip=()))
-            pipelines[lang_plus][markup] = \
+            pipelines.setdefault(lang_plus, {})[markup] = \
                 (read_plain, code_to_markup, write_file(ext + mexts[0], strip=exts))
 
 def warn_renamed_json_pipeline(v, ctx):
@@ -818,8 +819,8 @@ def _add_pipelines(pipelines):
     for lang, exts in core.EXTENSIONS_BY_LANGUAGE.items():
         _add_code_pipelines(pipelines, lang, *exts)
     _add_special_pipelines(pipelines)
-    for markup, exts in core.EXTENSIONS_BY_MARKUP.items():
-        _add_docutils_pipelines(pipelines, markup, *exts)
+    for markup in core.DOCUTILS_MARKUPS:
+        _add_docutils_pipelines(pipelines, markup)
     _add_transliteration_pipelines(pipelines)
     _add_compatibility_pipelines(pipelines)
     return pipelines
