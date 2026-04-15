@@ -392,7 +392,16 @@ To use Alectryon from a Typst document (say, ``main.typ``), add the following tw
 
 Then, run ``alectryon main.typ`` from the same directory (and re-run this command any time you change your embedded source code).  This command will read all fenced code blocks in ``main.typ``, run them through the appropriate prover, copy ``alectryon.typ`` (the Alectryon Typst library), and save prover outputs to ``main.alectryon.json`` (making it available to ``alectryon.typ``).
 
+To hide a code block from Alectryon (so that it renders as a normal Typst code block), attach a ``<noal>`` label to it::
+
+   ```coq
+   Check 1 + true. (* Ignored by Alectryon (not sent to the prover) *)
+   ``` <noal>
+
 .. _io-header-comment:
+
+Controlling output
+~~~~~~~~~~~~~~~~~~
 
 To control output in Typst documents, either place annotations on individual sentences, place an annotation comment on its own line at the beginning of a block, with nothing else on the same line.  In the following example, the flags ``.no-in`` and ``.unfold`` apply to the whole block, whereas the flag ``.in`` applies only to ``exact I``::
 

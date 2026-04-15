@@ -200,12 +200,10 @@
   let alectryon-counter = counter("alectryon-block-index")
 
   show raw.where(block: true): it => {
-    // Skip already-processed raw elements
-    if it.at("label", default: none) == <alectryon-processed> {
+    if it.at("label", default: none) in (<alectryon-processed>, <noal>) {
       return it
     }
 
-    // Skip unknown languages
     if it.at("lang", default: none) not in langs {
       return it
     }

@@ -11,6 +11,13 @@ $ alectryon literate_typst.typ # Typst → JSON; produces ‘literate_typst.alec
 $ typst compile --root . literate_typst.typ literate_typst.pdf # Typst → PDF; produces ‘literate_typst.pdf’
 ```
 
+A `<noal>` label opts a block out of Alectryon processing; it renders as a
+plain syntax-highlighted Typst raw (the prover never sees it):
+
+```coq
+Check 1 + 1.
+``` <noal>
+
 ```coq
 Require Import PeanoNat.
 ```
