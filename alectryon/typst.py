@@ -29,11 +29,12 @@ from __future__ import annotations
 import json
 import subprocess
 
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable, Optional, Union
+from typing import List, Optional, Union
 
 from .core import ALL_LANGUAGES, Backend, Goals, Messages, Text, \
-    RichCode, RichGoal, RichHypothesis, RichMessage, RichSentence
+    RichCode, RichFragment, RichGoal, RichHypothesis, RichMessage, RichSentence
 
 class ASSETS:
     PATH: Path = (Path(__file__).parent / "assets").resolve()
@@ -41,14 +42,17 @@ class ASSETS:
 
 ## Backend
 
-Node = Optional[Union[str, list]]
+# LATER: Switch to ``|`` annotations.
+Node = Optional[Union[str, List["Node"]]]
+
+NOAL_LABEL: str = "<noal>"
 
 class TypstBackend(Backend[Node]):
     """Render annotated fragments as a JSON S-expression."""
 
-    def __init__(self, lang: str):
+    def __init__(self, lang: str) -> None:
         super().__init__(highlighter=None)
-        self.lang = lang
+        self.lang: str = lang
 
     def highlight(self, s: str) -> str:
         return s
@@ -60,10 +64,10 @@ class TypstBackend(Backend[Node]):
     def gen_names(self, names: Iterable[str]) -> Node:
         return ["txt", ", ".join(names)]
 
-    def gen_code(self, code: Optional[RichCode]) -> Node:
+    def gen_code(self, code: RichCode | None) -> Node:
         return ["code", code.contents] if code else None
 
-    def gen_txt(self, s: Optional[str]) -> Node:
+    def gen_txt(self, s: str | None) -> Node:
         return ["txt", s] if s is not None else None
 
     def gen_message(self, message: RichMessage) -> Node:
@@ -77,7 +81,7 @@ class TypstBackend(Backend[Node]):
         hyps = self._plus([self.gen_hyp(h) for h in goal.hypotheses])
         return ["goal", self.gen_txt(goal.name), hyps, self.gen_code(goal.conclusion)]
 
-    def gen_output_group(self, fr: Union[Goals, Messages]) -> Node:
+    def gen_output_group(self, fr: Goals | Messages) -> Node:
         if isinstance(fr, Goals):
             return ["goals", self._plus([self.gen_goal(g) for g in fr.goals])]
         if isinstance(fr, Messages):
@@ -88,13 +92,15 @@ class TypstBackend(Backend[Node]):
         outputs = self._plus([self.gen_output_group(fr) for fr in s.outputs])
         return ["sentence", self.gen_code(s.input), outputs]
 
-    def gen_fragment(self, fr) -> Node:
+    def gen_fragment(self, fr: RichFragment) -> Node:
         if isinstance(fr, Text):
             return self.gen_code(fr)
         assert isinstance(fr, RichSentence)
         return self.gen_sentence(fr)
 
-    def gen_fragments(self, fragments, ids=(), classes=()) -> Node:
+    def gen_fragments(self, fragments: Iterable[RichFragment],
+                      ids: tuple[str, ...] = (),
+                      classes: tuple[str, ...] = ()) -> Node:
         from . import transforms
         fragments = transforms.apply_transforms(fragments, [
             transforms.group_whitespace_with_code,
@@ -105,8 +111,8 @@ class TypstBackend(Backend[Node]):
 
 ## Frontend
 
-TYPST_QUERY = 'raw.where(block: true)'
-TYPST_QUERY_CMD = ["typst", "query", "--input", "alectryon-mode=query"]
+TYPST_QUERY: str = 'raw.where(block: true)'
+TYPST_QUERY_CMD: list[str] = ["typst", "query", "--input", "alectryon-mode=query"]
 
 def extract_raw_blocks(root: Path, fpath: Path) -> Iterable[dict[str, str]]:
     """Use ``typst query`` with ``--root=`root``` to extract code blocks from `fpath`."""
@@ -118,5 +124,5 @@ def extract_raw_blocks(root: Path, fpath: Path) -> Iterable[dict[str, str]]:
     except subprocess.CalledProcessError as e:
         raise ValueError(f"Call to ``typst query`` failed on {fpath}:\n{e.stderr}") from e
     for raw in json.loads(result.stdout):
-        if raw.get("lang") in ALL_LANGUAGES and raw.get("label") != "<noal>":
+        if raw.get("lang") in ALL_LANGUAGES and raw.get("label") != NOAL_LABEL:
             yield raw
