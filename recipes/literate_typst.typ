@@ -101,7 +101,25 @@ Proof.
 Qed.
 ```
 
-== Skipping evaluation
+== Tips
+
+=== Controlling output
+
+In addition to per-sentence flags (e.g. `Compute 1 + 1. (* .unfold *)`), Alectryon supports per-block flags: flags that occupy the first line of a block apply to that whole block, not just to its first sentence.  In the following example, all inputs are hidden (except for `Compute 3 + 3.`), and all outputs are unfolded:
+
+```coq
+(* .no-in .unfold *)
+Goal True.
+  idtac "done";
+    exact I.
+Qed.
+
+Print nat.
+Compute 3 + 3. (* .in *)
+Compute andb true false.
+```
+
+=== Skipping evaluation
 
 Use `coq-noexec` instead of `coq` to disable Alectryon processing for a given code block.  For example:
 

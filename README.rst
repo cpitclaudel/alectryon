@@ -403,7 +403,7 @@ To hide a code block from Alectryon (so that it renders as a normal Typst code b
 Controlling output
 ~~~~~~~~~~~~~~~~~~
 
-To control output in Typst documents, either place annotations on individual sentences, place an annotation comment on its own line at the beginning of a block, with nothing else on the same line.  In the following example, the flags ``.no-in`` and ``.unfold`` apply to the whole block, whereas the flag ``.in`` applies only to ``exact I``::
+To control output in Typst documents, either place annotations on individual sentences, or place an annotation comment on its own line at the beginning of a block, with nothing else on the same line.  In the following example, the flags ``.no-in`` and ``.unfold`` apply to the whole block, whereas the flag ``.in`` applies only to ``exact I``::
 
    ```coq
    (* .no-in .unfold *)
