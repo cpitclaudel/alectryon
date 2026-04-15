@@ -886,11 +886,19 @@ class BracketedMarkup(RegexMarkup):
         directive: Deque[Line] = deque()
         footer = [lines.popleft()] if lines and lines[0].match(self.footer_re) else []
 
-        while lines: # Look for header
-            directive.appendleft(lines.pop())
-            if directive[0].match(self.header_re):
+        saved = deque(lines)
+        while lines:
+            line = lines.pop()
+            # Look for a header…
+            if line.match(self.header_re):
+                directive.appendleft(line)
                 strip_deque(lines)
                 break
+            # … but stop if we find a footer first
+            if line.match(self.footer_re):
+                lines, directive = saved, deque()
+                break
+            directive.appendleft(line)
         else:
             lines, directive = directive, deque()
 
