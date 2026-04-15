@@ -580,10 +580,10 @@ def parse_typst(_, fpath, ctx) -> list[TypstCodeSnippet]:
     ctx["document"] = TypstDocument(snippets)
     return snippets
 
-def gen_typst_snippets(annotated, input_language):
+def gen_typst_snippets(annotated):
     """Render each annotated fragment as Typst code."""
     from .typst import TypstBackend
-    return TypstBackend(input_language).gen(annotated)
+    return TypstBackend().gen(annotated)
 
 def serialize_typst_snippets(snippets_by_lang, document: "TypstDocument") -> dict:
     """Build the JSON data consumed by ``alectryon.typ``."""

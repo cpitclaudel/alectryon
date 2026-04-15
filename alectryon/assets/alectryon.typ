@@ -32,7 +32,7 @@
 // Render plain text as a raw element
 #let txt = raw
 
-// Current language, set by io() and read by code()
+// Current language, set by the show rule in `setup` and read by code()
 #let _alectryon-lang = state("alectryon-lang", "coq")
 
 // Render code as a raw element
@@ -74,10 +74,9 @@
 /// Rendering primitives
 
 // Wrap an annotated block (one or more sentences with goals/messages)
-#let io(lang, body) = {
+#let io(body) = {
   v(alectryon-io-vsep)
   block(spacing: alectryon-io-vsep, {
-    _alectryon-lang.update(lang)
     set par(justify: false)
     // Adjust font size of plain text items
     set text(size: raw-correction)
@@ -223,10 +222,11 @@
 
     context {
       let idx = alectryon-counter.get().first()
-      let entry = snippets.at(idx, default: (src: "", rendered: none))
-      if entry.src != it.text {
+      let entry = snippets.at(idx, default: (src: "", lang: "", rendered: none))
+      if entry.src != it.text or entry.lang != lang {
         stale-warning(it)
       } else {
+        _alectryon-lang.update(entry.lang)
         render(entry.rendered)
       }
     }

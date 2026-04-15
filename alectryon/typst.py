@@ -48,9 +48,8 @@ Node = Optional[Union[str, List["Node"]]]
 class TypstBackend(Backend[Node]):
     """Render annotated fragments as a JSON S-expression."""
 
-    def __init__(self, lang: str) -> None:
+    def __init__(self) -> None:
         super().__init__(highlighter=None)
-        self.lang: str = lang
 
     def highlight(self, s: str) -> str:
         return s
@@ -105,7 +104,7 @@ class TypstBackend(Backend[Node]):
             transforms.commit_io_annotations,
             transforms.commit_affixes,
         ], delay_errors=False)
-        return ["io", self.lang, self._plus([self.gen_fragment(fr) for fr in fragments])]
+        return ["io", self._plus([self.gen_fragment(fr) for fr in fragments])]
 
 ## Frontend
 
