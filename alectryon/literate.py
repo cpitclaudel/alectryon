@@ -989,22 +989,22 @@ class TYPST(BracketedMarkup):
 
     def __init__(self, lang: LangDef):
         super().__init__(lang)
-        noal = "<noal>"
+        # Word boundary after {lang.name} rejects ``coq-noexec`` (and any other
+        # ``{lang.name}-…`` variant) while still allowing trailing options.
+        boundary = r"(?![a-zA-Z0-9_-])"
         self.header = f"```{lang.name}"
         self.footer = "```"
-        self.footer_re = re.compile(fr"[ \t]*```(?:[ \t]+{noal})?[ \t]*$", re.MULTILINE)
-        self.header_re = re.compile(fr"(?P<indent>[ \t]*)(```+{lang.name}.*)")
+        self.footer_re = re.compile(r"[ \t]*```[ \t]*$", re.MULTILINE)
+        self.header_re = re.compile(fr"(?P<indent>[ \t]*)(```+{lang.name}{boundary}.*)")
         self.directive_re = re.compile(fr"""
            (?P<directive>
             ^(?P<indent>[ ]*)
-             (?P<ticks>```){lang.name}.*)
-           (?> # Atomic grouping makes <noal> definitive
+             (?P<ticks>```){lang.name}{boundary}.*)
              (?P<code>
                 (?:\n
                   (?:[ \t]*\n)*
                   (?P=indent).*$)*?) # Minimal match
-           \n(?P<footer>(?P=indent)(?P=ticks)\n?))
-           (?![ \t]*{noal})
+           \n(?P<footer>(?P=indent)(?P=ticks)\n?)
         """, re.VERBOSE | re.MULTILINE)
 
 def number_lines(lines: Iterable[StringView], start: int) -> Tuple[int, Deque[Line]]:
@@ -1371,18 +1371,18 @@ def coq2typst(code):
     ... (*|
     ... Corner case:
     ...
-    ... ```coq
+    ... ```coq-noexec
     ... Goal True.
-    ... ``` <noal>
+    ... ```
     ... |*)
     ...
     ... exact I. Qed.
     ... '''))
     Corner case:
     {BLANKLINE}
-    ```coq
+    ```coq-noexec
     Goal True.
-    ``` <noal>
+    ```
     {BLANKLINE}
     ```coq
     exact I. Qed.
@@ -1421,18 +1421,18 @@ def typst2coq(typ):
     {BLANKLINE}
 
     >>> docprint(typst2coq('''
-    ... ```coq
+    ... ```coq-noexec
     ... Check 1 + 1.
-    ... ``` <noal>
+    ... ```
     ...
     ... ```coq
     ... exact I. Qed.
     ... ```
     ... '''))
     (*|
-    ```coq
+    ```coq-noexec
     Check 1 + 1.
-    ``` <noal>
+    ```
     |*)
     {BLANKLINE}
     exact I. Qed.

@@ -199,12 +199,25 @@
   let langs = snippets.map(s => s.lang).dedup()
   let alectryon-counter = counter("alectryon-block-index")
 
+  let noexec-suffix = "-noexec"
+
   show raw.where(block: true): it => {
-    if it.at("label", default: none) in (<alectryon-processed>, <noal>) {
+    if it.at("label", default: none) == <alectryon-processed> {
       return it
     }
 
-    if it.at("lang", default: none) not in langs {
+    let lang = it.at("lang", default: none)
+
+    // Re-emit with the stripped lang so syntect still highlights the block.
+    // The <alectryon-processed> label prevents this show rule from recursing
+    // on the re-emitted block (which would otherwise consume a counter step
+    // and trigger a spurious stale-snippet warning).
+    if type(lang) == str and lang.ends-with(noexec-suffix) {
+      let stripped = lang.slice(0, -noexec-suffix.len())
+      return [#raw(it.text, block: true, lang: stripped)<alectryon-processed>]
+    }
+
+    if lang not in langs {
       return it
     }
 

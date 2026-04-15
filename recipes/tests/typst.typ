@@ -76,13 +76,17 @@ Qed.
   columns: (1fr, 1fr),
   align: top,
   [*Definition*], [*Usage*],
-  [```coq
+    [
+```coq
 Definition double (n : nat) := n + n.
-```],
-  [```coq
+```
+    ],
+    [
+```coq
 Check double.
 Compute double 21.
-```],
+```
+    ],
 )
 
 == Coq in Typst columns
@@ -143,7 +147,16 @@ Check main_defn.
 Fail Check (1 + true).
 ```
 
-== Multi-line block annotation comment
+== `-noexec` suffix
+
+``coq-noexec`` blocks are rendered as ``coq`` blocks, but without invoking Coq:
+
+```coq-noexec
+Definition skipped: nat := 1 + nat.
+Compute skipped + "?".
+```
+
+== Multi-line block annotation comments
 
 ```coq
 (* .no-in

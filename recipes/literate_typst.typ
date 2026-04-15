@@ -11,13 +11,6 @@ $ alectryon literate_typst.typ # Typst → JSON; produces ‘literate_typst.alec
 $ typst compile --root . literate_typst.typ literate_typst.pdf # Typst → PDF; produces ‘literate_typst.pdf’
 ```
 
-A `<noal>` label opts a block out of Alectryon processing; it renders as a
-plain syntax-highlighted Typst raw (the prover never sees it):
-
-```coq
-Check 1 + 1.
-``` <noal>
-
 ```coq
 Require Import PeanoNat.
 ```
@@ -106,4 +99,12 @@ Proof.
     + constructor; apply even_Even_fp; assumption.
     + inversion 1; apply even_Even_fp; assumption.
 Qed.
+```
+
+== Skipping evaluation
+
+Use `coq-noexec` instead of `coq` to disable Alectryon processing for a given code block.  For example:
+
+```coq-noexec
+Check 1 + 1. (* Highlighted, but not executed *)
 ```

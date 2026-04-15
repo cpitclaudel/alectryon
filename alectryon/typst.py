@@ -45,8 +45,6 @@ class ASSETS:
 # LATER: Switch to ``|`` annotations.
 Node = Optional[Union[str, List["Node"]]]
 
-NOAL_LABEL: str = "<noal>"
-
 class TypstBackend(Backend[Node]):
     """Render annotated fragments as a JSON S-expression."""
 
@@ -124,5 +122,6 @@ def extract_raw_blocks(root: Path, fpath: Path) -> Iterable[dict[str, str]]:
     except subprocess.CalledProcessError as e:
         raise ValueError(f"Call to ``typst query`` failed on {fpath}:\n{e.stderr}") from e
     for raw in json.loads(result.stdout):
-        if raw.get("lang") in ALL_LANGUAGES and raw.get("label") != NOAL_LABEL:
+        # ``<lang>-noexec`` is naturally excluded (not in ``ALL_LANGUAGES``).
+        if raw.get("lang") in ALL_LANGUAGES:
             yield raw

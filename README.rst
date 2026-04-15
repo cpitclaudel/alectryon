@@ -392,11 +392,11 @@ To use Alectryon from a Typst document (say, ``main.typ``), add the following tw
 
 Then, run ``alectryon main.typ`` from the same directory (and re-run this command any time you change your embedded source code).  This command will read all fenced code blocks in ``main.typ``, run them through the appropriate prover, copy ``alectryon.typ`` (the Alectryon Typst library), and save prover outputs to ``main.alectryon.json`` (making it available to ``alectryon.typ``).
 
-To hide a code block from Alectryon (so that it renders as a normal Typst code block), attach a ``<noal>`` label to it::
+To hide a code block from Alectryon (so that it renders as a normal Typst code block), suffix the name of the language with ``-noexec`` (e.g. ``coq-noexec``, ``lean4-noexec``)::
 
-   ```coq
+   ```coq-noexec
    Check 1 + true. (* Ignored by Alectryon (not sent to the prover) *)
-   ``` <noal>
+   ```
 
 .. _io-header-comment:
 
