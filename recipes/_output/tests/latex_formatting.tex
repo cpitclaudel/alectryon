@@ -11,7 +11,7 @@
 % Keep Docutils defaults
 \usepackage{mathptmx} % Times
 \usepackage[scaled=.90]{helvet}
-\usepackage{courier}
+\renewcommand{\ttdefault}{lmtt}
 % Add geometry
 \usepackage{geometry}
 
@@ -79,6 +79,8 @@ $ DOCUTILSCONFIG=tests/geometry.docutils.conf \textbackslash{}
 \end{quote}
 
 \setlength{\parskip}{8pt}
+\pagestyle{empty}
+\thispagestyle{empty}
 
 
 \section{Space after punctuation%
@@ -1050,43 +1052,6 @@ Some text.
     \PY{c}{(*~Some~code~*)}
   \end{\al{txt}}
 \end{alectryon}
-
-Some text.
-
-\begin{DUclass}{code}
-\begin{quote}
-\begin{alltt}
-Some code
-\end{alltt}
-\end{quote}
-\end{DUclass}
-
-%___________________________________________________________________________
-\DUtransition
-
-\begin{DUclass}{compound}
-Some text in compound.
-
-Some text in compound.  Spacing used to be wrong; see \url{https://sourceforge.net/p/docutils/patches/183/}.
-\begin{alectryon}
-  \begin{\al{txt}}
-    \PY{c}{(*~Some~code~in~compound~*)}
-  \end{\al{txt}}
-\end{alectryon}
-\begin{alectryon}
-  \begin{\al{txt}}
-    \PY{c}{(*~Some~code~in~compound~*)}
-  \end{\al{txt}}
-\end{alectryon}
-Some text in compound.
-\begin{DUclass}{code}
-\begin{quote}
-\begin{alltt}
-Some code in compound
-\end{alltt}
-\end{quote}
-\end{DUclass}
-\end{DUclass}
 
 
 \section{Line breaks in input-only fragments%
@@ -2425,5 +2390,47 @@ Showing outputs may still introduce line breaks:
     \PY{c}{~~~\PYZca{}~3~*)}
   \end{\al{txt}}
 \end{alectryon}
+
+
+\section{Compound directive%
+  \label{compound-directive}%
+}
+
+Some text.
+
+\begin{DUclass}{code}
+\begin{quote}
+\begin{alltt}
+Some code
+\end{alltt}
+\end{quote}
+\end{DUclass}
+
+%___________________________________________________________________________
+\DUtransition
+
+\begin{DUclass}{compound}
+Some text in compound.
+
+Some text in compound.  Spacing used to be wrong; see \url{https://sourceforge.net/p/docutils/patches/183/}.
+\begin{alectryon}
+  \begin{\al{txt}}
+    \PY{c}{(*~Some~code~in~compound~*)}
+  \end{\al{txt}}
+\end{alectryon}
+\begin{alectryon}
+  \begin{\al{txt}}
+    \PY{c}{(*~Some~code~in~compound~*)}
+  \end{\al{txt}}
+\end{alectryon}
+Some text in compound.
+\begin{DUclass}{code}
+\begin{quote}
+\begin{alltt}
+Some code in compound
+\end{alltt}
+\end{quote}
+\end{DUclass}
+\end{DUclass}
 
 \end{document}

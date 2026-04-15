@@ -29,6 +29,9 @@
 // Typst hardcodes `size: 0.8em` on `raw` elements
 #let raw-correction = 1em / 0.8
 
+// Math unit from LaTeX
+#let mu = 1em / 18
+
 // Render plain text as a raw element
 #let txt = raw
 
@@ -91,7 +94,7 @@
 #let _hyp-bt(op, term) = {
   if term != none {
     top-box({
-      h(math.thin.amount) + op + h(math.thin.amount)
+      h(3 * mu) + op + h(4 * mu)
       top-box(term)
     })
   }

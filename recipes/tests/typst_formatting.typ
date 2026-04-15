@@ -1,9 +1,10 @@
 #import "/_output/tests/alectryon.typ"
 #show: alectryon.setup.with("/_output/tests/typst_formatting.alectryon.json")
 
-#set page(paper: "a4")
+#set page(paper: "a4", margin: (x: 89pt, y: 85pt))
 #set text(size: 10pt)
 #set par(spacing: 8pt)
+#show raw: set text(font: "Latin Modern Mono")
 
 = Typst formatting tests
 
@@ -42,6 +43,8 @@ End Space.
 ```
 
 #pagebreak()
+
+#set page(margin: 1cm)
 
 = Hypothesis wrapping
 
@@ -120,6 +123,8 @@ Goal True. (* .none *)
   exact I. (* .none *)
 Qed. (* .none *)
 ```
+
+#set page(margin: (x: 89pt, y: 85pt))
 
 = More hypotheses
 
@@ -275,4 +280,30 @@ Proof.
       end.
       assumption.
 Qed.
+```
+
+```coq
+(* Some spacing tests: *)
+(* ^ 0 lines *)
+
+(* ^ 1 *)
+
+
+(* ^ 2 *)
+
+
+
+(* ^ 3 *)
+
+(* ---
+   ^ 0
+
+   ^ 1
+
+
+   ^ 2
+
+
+
+   ^ 3 *)
 ```

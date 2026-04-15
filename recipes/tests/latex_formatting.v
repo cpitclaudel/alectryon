@@ -12,6 +12,8 @@ This file tests various aspects of the conversion to LaTeX, including spacing an
 .. raw:: latex
 
    \setlength{\parskip}{8pt}
+   \pagestyle{empty}
+   \thispagestyle{empty}
 
 Space after punctuation
 =======================
@@ -216,34 +218,6 @@ Some text.
 (* Some code *)
 
 (*|
-Some text.
-
-.. code::
-
-   Some code
-
------
-
-.. compound::
-
-   Some text in compound.
-
-   Some text in compound.  Spacing used to be wrong; see `<https://sourceforge.net/p/docutils/patches/183/>`__.
-|*)
-
-(* Some code in compound *)
-
-(*||*)
-
-(* Some code in compound *)
-
-(*|
-   Some text in compound.
-
-   .. code::
-
-      Some code in compound
-
 Line breaks in input-only fragments
 ===================================
 
@@ -339,3 +313,36 @@ Qed.
 
 
    ^ 3 *)
+
+(*|
+Compound directive
+==================
+
+Some text.
+
+.. code::
+
+   Some code
+
+-----
+
+.. compound::
+
+   Some text in compound.
+
+   Some text in compound.  Spacing used to be wrong; see `<https://sourceforge.net/p/docutils/patches/183/>`__.
+|*)
+
+(* Some code in compound *)
+
+(*||*)
+
+(* Some code in compound *)
+
+(*|
+   Some text in compound.
+
+   .. code::
+
+      Some code in compound
+|*)
