@@ -47,9 +47,9 @@
 // Top-aligned inline box (\parbox[t])
 // https://github.com/typst/typst/issues/493
 #let top-box(body) = context {
-  let total = measure(body)
-  let ascender = measure(text(top-edge: "ascender", bottom-edge: "baseline", txt("X"))).height
-  box(baseline: total.height - ascender, body)
+  let total = measure(body).height
+  let single-line = measure(code("X")).height
+  box(baseline: total - single-line, body)
 }
 
 // https://github.com/typst/typst/issues/5741
