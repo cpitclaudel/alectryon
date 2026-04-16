@@ -20,7 +20,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Optional, Tuple, TypeVar
 
 import re
 import textwrap
@@ -33,6 +33,9 @@ from . import markers
 from .core import RichFragment, Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
     Goals, Messages, RichSentence, ALL_LANGUAGES
+
+if TYPE_CHECKING:
+    from typing_extensions import TypeGuard
 
 PathAnnot = namedtuple("PathAnnot", "raw path key val must_match")
 
@@ -628,7 +631,7 @@ def group_hypotheses(fragments):
 COQ_FAIL_RE = re.compile(r"^Fail\s+")
 COQ_FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
 
-def is_coq_fail(fr): # LATER(3.10): -> TypeGuard[RichSentence]:
+def is_coq_fail(fr) -> "TypeGuard[RichSentence]":
     return bool(isinstance(fr, RichSentence) and fr.annots.fails
                 and COQ_FAIL_RE.match(fr.input.contents))
 

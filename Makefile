@@ -78,7 +78,7 @@ lint-changes: $(dependencies)
 	etc/lint_changes.py CHANGES.rst
 
 lint: $(dependencies)
-	vermin --target=3.9- --exclude typing.Self --eval-annotations --violations alectryon
+	vermin --target=3.9- --eval-annotations --violations alectryon
 	pylint alectryon
 	mypy alectryon/
 	pyright --project .

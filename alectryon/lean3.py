@@ -254,7 +254,7 @@ class Lean3(REPLDriver):
         if not segments:
             return
 
-        fr_beg, fr_end, fr = segments.popleft()
+        fr_beg, fr_end, fr = segments.popleft().astuple()
 
         while messages:
             beg, end, msg = messages[0]
@@ -273,11 +273,11 @@ class Lean3(REPLDriver):
                 messages.popleft()
             else: # msg starts past fr; move to next fragment
                 yield fr
-                fr_beg, fr_end, fr = segments.popleft()
+                fr_beg, fr_end, fr = segments.popleft().astuple()
 
         yield fr
-        for _, _, fr in segments:
-            yield fr
+        for pfr in segments:
+            yield pfr.e
 
     def _annotate_doc(self):
         _, messages = self._query("sync", content=self.document.str)

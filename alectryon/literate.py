@@ -1080,7 +1080,7 @@ def code2markup(md: MarkupDef, code: str) -> str:
     """Translate a fragment of `code` in `lang` to markup `md`."""
     return join_lines(code2markup_lines(md, code))
 
-def code2markup_marked(md: MarkupDef, code: str, point: Optional[int], marker: Optional[str]):
+def code2markup_marked(md: MarkupDef, code: str, point: Optional[int], marker: Optional[str]) -> str:
     code, point = _expand_indents(code, point)
     return join_lines(mark_point(_code2markup_lines(md, code), point, marker, code))
 
@@ -1181,20 +1181,20 @@ def _expand_indents(txt: str, point: Optional[int]=None, tabsize: int=8):
     point = len(__expand_indents(txt[:point], tabsize)) if point is not None else None
     return expanded, point
 
-def _markup2code_lines(md: MarkupDef, txt: str):
+def _markup2code_lines(md: MarkupDef, txt: str) -> Iterable[Line]:
     parsed = list(markup_parse(md, txt))
     blocks = blocks_of_parsed_blocks(md, parsed)
     blocks = dedent_code(md, blocks)
     return gen_code(md, blocks)
 
-def markup2code_lines(md: MarkupDef, txt: str):
+def markup2code_lines(md: MarkupDef, txt: str) -> Iterable[Line]:
     return _markup2code_lines(md, _expand_indents(txt)[0])
 
-def markup2code(md: MarkupDef, txt: str):
+def markup2code(md: MarkupDef, txt: str) -> str:
     """Translate a fragment of a text document `txt` to code in `lang`."""
     return join_lines(markup2code_lines(md, txt))
 
-def markup2code_marked(md: MarkupDef, txt: str, point: Optional[int], marker: Optional[str]):
+def markup2code_marked(md: MarkupDef, txt: str, point: Optional[int], marker: Optional[str]) -> str:
     txt, point = _expand_indents(txt, point)
     return join_lines(mark_point(_markup2code_lines(md, txt), point, marker, txt))
 

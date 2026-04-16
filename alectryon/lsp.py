@@ -35,7 +35,7 @@ from .core import Document, DriverInfo, EncodedDocument, Fragment, JSON, Observe
     PopenDriver, Positioned, Range, Text, debug as core_debug, must
 
 if TYPE_CHECKING:
-    from typing import Self
+    from typing_extensions import Self
 
 class LSPServerMessage:
     """Base class for all LSP messages"""

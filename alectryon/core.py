@@ -20,12 +20,12 @@
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, DefaultDict, Dict, Iterable, IO, List, \
+from typing import Any, ClassVar, DefaultDict, Dict, Generic, Iterable, IO, List, \
     NamedTuple, NoReturn, Optional, overload, Tuple, TypeVar, Union
 
 from collections import UserDict, deque, namedtuple, defaultdict
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import cached_property
 from importlib import import_module
 from pathlib import Path
@@ -350,12 +350,15 @@ class View(bytes):
         super().__init__()
         self.s = s
 
-# TPositioned = TypeVar("TPositioned", covariant=True)
-# https://github.com/microsoft/pyright/issues/2203
-class Positioned(NamedTuple): #, Generic[TPositioned]):
+TPositioned = TypeVar("TPositioned", covariant=True)
+@dataclass(frozen=True)
+class Positioned(Generic[TPositioned]):
     beg: int
     end: int
-    e: Any # TPositioned
+    e: TPositioned # type: ignore (covariance OK since frozen)
+
+    def astuple(self):
+        return self.beg, self.end, self.e
 
 TItem = TypeVar("TItem", bound=Union[Sentence, Text, str])
 
@@ -522,7 +525,7 @@ class Document:
                 yield fragments.popleft().e
             if fragments and fragments[0].beg < cutoff < fragments[0].end:
                 before, after = cls.split_fragment(fragments[0].e, cutoff - fragments[0].beg)
-                fragments[0] = fragments[0]._replace(beg=cutoff, e=after)
+                fragments[0] = replace(fragments[0], beg=cutoff, e=after)
                 yield before
         for fr in fragments:
             yield fr.e
@@ -540,7 +543,7 @@ class Document:
             if frs and frs[0].beg < chunk.end < frs[0].end:
                 cutoff = chunk.end - frs[0].beg
                 before, after = cls.split_fragment(frs[0].e, cutoff)
-                frs[0] = frs[0]._replace(beg=chunk.end, e=after)
+                frs[0] = replace(frs[0], beg=chunk.end, e=after)
                 chunk_frs.append(before)
             assert chunk.e == chunk.e[0:0].join(c.contents for c in chunk_frs)
             yield chunk_frs
@@ -747,7 +750,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
 
     def run_cli(self, cwd=None, more_args=(), input=None, capture_output=True):
         driver = self.resolve_driver()
-        cmd = [*driver, *self.CLI_ARGS, *self.user_args, *more_args]
+        cmd: list[_Path] = [*driver, *self.CLI_ARGS, *self.user_args, *more_args]
         self._debug_start(cmd)
         p = subprocess.run(cmd, cwd=cwd, input=input,
                            stderr=subprocess.PIPE,

@@ -5,6 +5,7 @@ docutils==0.22.4
 myst_parser==5.0.0
 sphinx==9.1.0
 alabaster==1.0.0
+typing_extensions
 vermin
 mypy
 pylint
