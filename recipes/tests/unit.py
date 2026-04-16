@@ -325,6 +325,14 @@ class literate(unittest.TestCase):
         for p in split_lines(sv):
             self.assertIs(p.s, source)
 
+    def tab_indents(self):
+        """Indentation tabs get properly expanded (issue #89)."""
+        from alectryon.literate import markup2code, get_markup
+        md = get_markup("rst", "coq")
+        rst = ".. coq::\n\n   Goal True.\n   Proof.\n\tauto.\n   Qed.\n"
+        self.assertEqual(markup2code(md, rst),
+                         "Goal True.\nProof.\n     auto.\nQed.\n")
+
     def wrap_literate_blank_line(self):
         from alectryon.literate import get_language, EmptyLine
         for l in get_language("dafny").wrap_literate([EmptyLine()]):
