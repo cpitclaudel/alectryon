@@ -60,15 +60,15 @@ To work around this issue we use a writer-dependent transform on the docutils
 side, and a doctree-resolved event on the Sphinx side.
 """
 
-from collections.abc import MutableMapping
 from types import FunctionType, MethodType
 from typing import Any, ClassVar, DefaultDict, Dict, Iterable, \
-    List, NamedTuple, Tuple, Type, Union
+    List, Tuple, Type, Union
 
 import re
 from pathlib import Path
 from copy import deepcopy
 from collections import namedtuple, defaultdict
+from collections.abc import MutableMapping
 from importlib import import_module
 
 import docutils

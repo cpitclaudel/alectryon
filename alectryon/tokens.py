@@ -20,7 +20,6 @@
 
 from typing import Any, ClassVar, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union
 
-import bisect
 from dataclasses import dataclass, field
 import warnings
 

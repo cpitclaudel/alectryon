@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Dict, Iterator, Iterable, List, Tuple, Union
+from typing import Any, Dict, Iterator, List, Tuple, Union
 
 from collections import namedtuple
 import sys

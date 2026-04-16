@@ -20,7 +20,7 @@
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, Dict, Optional, Tuple, List, Union, NamedTuple, TYPE_CHECKING
+from typing import Any, ClassVar, Dict, Iterable, Optional, Tuple, List, Union, NamedTuple, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from bs4 import BeautifulSoup, ResultSet

@@ -26,9 +26,11 @@ import re
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
-from os import path, makedirs, unlink, fspath
+from os import path, makedirs, unlink
+from pathlib import Path
 
 from . import core, tokens
+from .core import _Path
 
 COMMENTS_RE = re.compile(r"^\s*//.*$", re.MULTILINE)
 def uncomment(s):
@@ -351,13 +353,13 @@ class FileCacheSet(BaseCacheSet):
         "xz": ("lzma", ".xz"),
     }
 
-    def __init__(self, cache_root: str, doc_path: str, cache_compression):
-        self.cache_root = path.realpath(fspath(cache_root))
+    def __init__(self, cache_root: _Path, doc_path: _Path, cache_compression):
+        self.cache_root = path.realpath(Path(cache_root))
         self.wanted_compression = cache_compression or "none"
         if self.wanted_compression not in self.KNOWN_COMPRESSIONS:
             raise ValueError("Unsupported cache compression: {}".format(cache_compression))
 
-        doc_path = path.realpath(fspath(doc_path))
+        doc_path = path.realpath(Path(doc_path))
         doc_root = path.commonpath((self.cache_root, doc_path))
         self.cache_rel_file = path.relpath(doc_path, doc_root) + ".cache"
         self.cache_file = path.join(cache_root, self.cache_rel_file)

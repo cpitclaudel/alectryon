@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-from collections.abc import MutableMapping
 from typing import Any, ClassVar, DefaultDict, Dict, Iterable, IO, List, \
     NamedTuple, NoReturn, Optional, overload, Tuple, TypeVar, Union
 
@@ -39,6 +38,7 @@ import subprocess
 import sys
 import textwrap
 
+_Path = Union[str, os.PathLike]
 _FILE = Union[None, int, IO[Any]]
 JSON = Dict[str, Any]
 
@@ -147,7 +147,7 @@ def nullctx():
     yield
 
 @contextmanager
-def cwd_mgr(wd: Union[str, os.PathLike]):
+def cwd_mgr(wd: _Path):
     old_cwd = os.getcwd()
     os.chdir(wd)
     try:
@@ -202,12 +202,12 @@ class Asset(str):
     def __new__(cls, fname, gen=None):
         return super().__new__(cls, fname)
 
-    def __init__(self, fname, gen=lambda _: ""):
+    def __init__(self, _fname, gen=lambda _: ""):
         super().__init__()
         self.gen = gen
 
 class Position(NamedTuple):
-    fpath: Union[str, Path]
+    fpath: _Path
     line: int # 1-based
     col: Optional[int] # 0-based
 
@@ -233,7 +233,7 @@ class Position(NamedTuple):
         return f"({header})" if self.col is not None and wrap else header
 
     @classmethod
-    def of_lsp(cls, fpath: Union[str, Path], js: dict[str, Any]):
+    def of_lsp(cls, fpath: _Path, js: dict[str, Any]):
         return Position(fpath, js["line"] + 1, js["character"])
 
     def to_lsp(self):
@@ -302,7 +302,7 @@ class Range(NamedTuple):
         return f"{beg.fpath or '<unknown>'}:{pos}:"
 
     @classmethod
-    def of_lsp(cls, fpath: Union[str, Path], js: dict[str, Any]):
+    def of_lsp(cls, fpath: _Path, js: dict[str, Any]):
         return cls(Position.of_lsp(fpath, js["start"]),
                    Position.of_lsp(fpath, js["end"]))
 
@@ -356,6 +356,8 @@ class Positioned(NamedTuple): #, Generic[TPositioned]):
     beg: int
     end: int
     e: Any # TPositioned
+
+TItem = TypeVar("TItem", bound=Union[Sentence, Text, str])
 
 class Document:
     """A base class to handle conversions to and from a list of chunks.
@@ -422,17 +424,17 @@ class Document:
         return self.bol_offsets[line - 1] + col
 
     @overload
-    def offset2pos(self, fpath: str | Path, offset: int) -> Position: ...
+    def offset2pos(self, fpath: _Path, offset: int) -> Position: ...
     @overload
-    def offset2pos(self, fpath: str | Path, offset: None) -> None: ...
+    def offset2pos(self, fpath: _Path, offset: None) -> None: ...
 
-    def offset2pos(self, fpath: Union[str, Path], offset: int | None) -> Position | None:
+    def offset2pos(self, fpath: _Path, offset: int | None) -> Position | None:
         return Position(fpath, *self.offset2lc(offset)) if offset is not None else None
 
     def pos2offset(self, pos: Position) -> int:
         return self.lc2offset(pos.line, pos.col or 0)
 
-    def offsets2range(self, fpath: Union[str, Path], beg: int, end: int | None) -> Range:
+    def offsets2range(self, fpath: _Path, beg: int, end: int | None) -> Range:
         return Range(self.offset2pos(fpath, beg), self.offset2pos(fpath, end))
 
     def range2offsets(self, range: Range) -> Tuple[int, int]:
@@ -672,7 +674,7 @@ class Driver():
     ID: ClassVar[str]
     LANGUAGE: ClassVar[str | None]
 
-    def __init__(self, args: Tuple[str, ...]=(), fpath: str="-"):
+    def __init__(self, args: Tuple[str, ...]=(), fpath: _Path="-"):
         assert fpath != ''
         self.observer: Observer = StderrObserver()
         self.fpath: Path = Path(fpath)
@@ -705,8 +707,8 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
     NAME: ClassVar[str]
     AUTOSELECT: ClassVar[bool]
 
-    CLI_ARGS: ClassVar[Tuple[str | Path, ...]] = ()
-    VERSION_ARGS: ClassVar[Tuple[str | Path, ...]] = ("--version",)
+    CLI_ARGS: ClassVar[Tuple[_Path, ...]] = ()
+    VERSION_ARGS: ClassVar[Tuple[_Path, ...]] = ("--version",)
 
     CLI_ENCODING: ClassVar[str | None] = "utf-8"
 
@@ -733,7 +735,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
             cls.driver_not_found(path)
         return resolved
 
-    def resolve_driver(self) -> list[str | Path]:
+    def resolve_driver(self) -> list[_Path]:
         return [self._which(self.binpath or self.BIN)]
 
     @staticmethod
@@ -899,7 +901,7 @@ class DriverConfig:
     driver_args: dict[str, tuple[str, ...]]
     used: bool = False
 
-    def init_driver(self, fpath: str) -> Driver:
+    def init_driver(self, fpath: _Path) -> Driver:
         self.used = True
         name = self.drivers[self.lang]
         args = self.driver_args.get(name, ())

@@ -20,7 +20,7 @@
 
 from __future__ import annotations
 
-from typing import IO, Any, ClassVar, Generic, Iterable, Optional, Type, TypeVar, overload
+from typing import IO, TYPE_CHECKING, Any, ClassVar, Generic, Iterable, Optional, Type, TypeVar, overload
 
 import json
 import os
@@ -33,6 +33,9 @@ from . import __version__
 from .transforms import coalesce_text
 from .core import Document, DriverInfo, EncodedDocument, Fragment, JSON, Observer, \
     PopenDriver, Positioned, Range, Text, debug as core_debug, must
+
+if TYPE_CHECKING:
+    from typing import Self
 
 class LSPServerMessage:
     """Base class for all LSP messages"""
@@ -93,7 +96,6 @@ class LSPClientMessage:
     def send(self):
         raise NotImplementedError
 
-Self = TypeVar("Self", bound="LSPClientQuery")
 class LSPClientQuery(LSPClientMessage):
     """Base class for LSP requests and notifications."""
     METHOD: ClassVar[str]
@@ -121,7 +123,7 @@ class LSPClientQuery(LSPClientMessage):
             "params": self.params
         }
 
-    def send(self: Self) -> Self:
+    def send(self: "Self") -> "Self":
         return self.client.send_and_process(self)
 
     @property
@@ -197,18 +199,17 @@ class LSPServerNotifications:
 
 @dataclass
 class LSPServerResponse(LSPServerMessage):
-    def __init__(self, idx: int, result: JSON):
-        self.idx = idx
-        self.result = result
+    idx: int
+    result: JSON
 
     @classmethod
     def from_json(cls, data: JSON) -> "Self":
         return cls(data["id"], data.get("result", {}))
 
+@dataclass
 class LSPClientResponse(LSPClientMessage):
-    def __init__(self, idx: int, result: JSON):
-        self.idx = idx
-        self.result = result
+    idx: int
+    result: JSON
 
     def json(self) -> JSON:
         """Convert response to JSON for sending"""
@@ -217,6 +218,9 @@ class LSPClientResponse(LSPClientMessage):
             "id": self.idx,
             "result": self.result
         }
+
+    def send(self):
+        self.client.send_message(self)
 
 class LSPServerException(Exception):
     def __init__(self, message: str, code: int):
