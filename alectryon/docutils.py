@@ -62,7 +62,7 @@ side, and a doctree-resolved event on the Sphinx side.
 
 from types import FunctionType, MethodType
 from typing import Any, ClassVar, DefaultDict, Dict, Iterable, \
-    List, Tuple, Type, Union
+    List, Optional, Tuple, Type, Union
 
 import re
 from pathlib import Path
@@ -88,9 +88,12 @@ from docutils.writers import html4css1, html5_polyglot, latex2e, xetex
 
 from . import core, transforms, html, latex, markers
 from .myst import Parser as MySTParser
-from .core import Gensym, Position, PosStr
+from .core import Gensym, Position, PosStr, Range, _Path
 from .pygments import make_highlighter, added_tokens, validate_style, \
     get_lexer, resolve_token, replace_builtin_lexers
+
+# LATER(3.11): Remove
+_ = (Range, _Path) # Silence “unused” warnings for imports needed by typeguard
 
 # reST extensions
 # ===============
@@ -779,9 +782,9 @@ class ProverDirective(AlectryonDirective):
     def header(self):
         return "`{}`".format(self.block_text.partition('\n')[0])
 
-    def _root_is_document(self, source: str):
+    def _root_is_document(self, source: Optional[str]):
         doc = self.state_machine.document
-        return source == doc.get('source', "") and not alectryon_state(doc).root_is_code
+        return doc.get('source', "") == source and not alectryon_state(doc).root_is_code
 
     def _measure_absolute_indentation(self):
         """Compute the indentation of this directive in the source.

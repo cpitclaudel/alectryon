@@ -18,7 +18,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, ClassVar, Dict, Iterable, Iterator, List, NamedTuple, Optional, Tuple, Union
+from typing import Any, ClassVar, Dict, Iterable, Iterator, List, NamedTuple, Optional, TYPE_CHECKING, Tuple, Union
 
 from dataclasses import dataclass, field
 import warnings
@@ -26,7 +26,10 @@ import warnings
 from .core import Document, JSON, must
 from .lsp import LSPClient, LSPClientInitializeRequest, LSPClientRequest, LSPDriver, LSPServerConfig
 
-Bounds = "slice[int, int, None]" # LATER: : TypeAlias
+if TYPE_CHECKING:
+    Bounds = slice[int, int, None]
+else:
+    Bounds = slice # ``slice`` not yet runtime-subscriptable
 
 LSPTokenMap = dict[tuple[str, ...], str]
 

@@ -83,9 +83,9 @@ class PlainSerializer:
 
     TokenStr roundtrip:
     >>> from .tokens import TokenizedStr, Token, Tokens
-    >>> toks = [Token(slice(0, 5), (("keyword",),))]
+    >>> toks = [Token(slice(0, 5), ("keyword",))]
     >>> ts = TokenizedStr("hello", Tokens(toks, slice(0, 1), slice(0, 5)),
-    ...                   {(("keyword",),): "Keyword"})
+    ...                   {("keyword",): "Keyword"})
     >>> memo = CacheState()
     >>> enc = PlainSerializer.encode({"s": ts}, memo)
     >>> dec = PlainSerializer.decode(enc, CacheState(memo.persistent))

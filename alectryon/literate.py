@@ -140,8 +140,8 @@ class Line:
 
     def __len__(self):
         """Compute the number of characters in `self`.
-        >>> len(Line(0, ["a", "bc", "def"]))
-        6
+        >>> len(Line.of_parts([StringView("abc", 0, 1), StringView("123", 1, 3)]))
+        3
         """
         return sum(len(p) for p in self.parts)
 

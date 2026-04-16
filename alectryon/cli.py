@@ -248,7 +248,7 @@ def _docutils_cmdline(description, frontend, backend, dialect):
                             **DOCUTILS_FUTURE_WARNINGS_SETTINGS_OVERRIDES},
         description="{} {}".format(description, default_description))
 
-def inherit_io_annots(snippets: list[CodeSnippet]):
+def inherit_io_annots(snippets: Iterable[CodeSnippet]):
     from .transforms import inherit_io_annots as inherit_annots
     for snippet in snippets:
         if annots := snippet.io_annots:
@@ -256,7 +256,7 @@ def inherit_io_annots(snippets: list[CodeSnippet]):
             snippet = snippet._replace(contents=fragments)
         yield snippet
 
-def remove_hidden_snippets(snippets: list[CodeSnippet]):
+def remove_hidden_snippets(snippets: Iterable[CodeSnippet]):
     from .transforms import all_hidden
     for snippet in snippets:
         if snippet.annots and all_hidden(snippet.contents, snippet.io_annots):
@@ -564,7 +564,7 @@ def write_file(ext, strip):
                      output_directory, strip_re=strip_re)
 
 def on_snippets(*pipeline):
-    def _dispatch(snippets: list[CodeSnippet], ctx):
+    def _dispatch(snippets: Iterable[CodeSnippet], ctx):
         snippets = list(snippets)
         items = (snippet.contents for snippet in snippets)
         return CodeSnippet._update(snippets, run_pipeline(pipeline, items, ctx))

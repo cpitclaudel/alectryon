@@ -479,7 +479,6 @@ class Document:
         if pos < len(self):
             yield Text(self[pos:])
 
-    TItem = TypeVar("TItem", bound=Union[Sentence, Text, str])
     @classmethod
     def with_boundaries(cls, items: Iterable[TItem]) -> Iterable[Positioned[TItem]]:
         end = 0

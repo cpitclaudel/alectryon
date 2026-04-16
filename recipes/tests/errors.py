@@ -153,7 +153,8 @@ class literate(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         from alectryon.literate import StringView, Line
-        self.ln = Line(num=12, parts = ["    ", "line"])
+        src = StringView("    line")
+        self.ln = Line(num=12, parts=[src[:4], src[4:]])
         self.sa, self.sx = StringView("aaabbbccc"), StringView("xyz")
 
     def test_errors(self):
