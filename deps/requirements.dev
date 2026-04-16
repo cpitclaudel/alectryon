@@ -9,4 +9,5 @@ vermin
 mypy
 pylint
 pyright
+typeguard
 types-docutils
