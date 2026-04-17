@@ -21,7 +21,8 @@
 from __future__ import annotations
 
 from typing import Any, ClassVar, DefaultDict, Dict, Generic, Iterable, IO, List, \
-    NamedTuple, NoReturn, Optional, overload, TYPE_CHECKING, Tuple, TypeVar, Union
+    Mapping, NamedTuple, NoReturn, Optional, overload, Sequence, \
+    TYPE_CHECKING, Tuple, TypeVar, Union
 
 from collections import UserDict, deque, namedtuple, defaultdict
 from contextlib import contextmanager
@@ -974,14 +975,14 @@ def resolve_driver(input_language: str, driver_name: str) -> type[Driver]:
 @dataclass
 class DriverConfig:
     lang: str
-    drivers: dict[str, str]
-    driver_args: dict[str, tuple[str, ...]]
+    drivers: Mapping[str, str]
+    driver_args: Mapping[str, Sequence[str]]
     used: bool = False
 
     def init_driver(self, fpath: _Path) -> Driver:
         self.used = True
         name = self.drivers[self.lang]
-        args = self.driver_args.get(name, ())
+        args = tuple(self.driver_args.get(name, ()))
         driver_cls = resolve_driver(self.lang, name)
         assert driver_cls.LANGUAGE in (self.lang, None)
         assert name == driver_cls.ID

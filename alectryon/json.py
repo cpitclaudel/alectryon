@@ -323,7 +323,7 @@ class Cache:
 class BaseCacheSet:
     def __enter__(self):
         raise NotImplementedError()
-    def __exit__(self, *_exn):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         raise NotImplementedError()
     def __getitem__(self, lang):
         raise NotImplementedError()
@@ -335,7 +335,7 @@ class TrivialCacheSet(BaseCacheSet):
     def __enter__(self):
         return self
 
-    def __exit__(self, *_exn):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         return False
 
     def __getitem__(self, lang):
@@ -372,7 +372,7 @@ class FileCacheSet(BaseCacheSet):
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, *_rest):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None:
             self._write()
         return False
