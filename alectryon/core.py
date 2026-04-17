@@ -355,7 +355,7 @@ TPositioned = TypeVar("TPositioned", covariant=True)
 class Positioned(Generic[TPositioned]):
     beg: int
     end: int
-    e: TPositioned # type: ignore (covariance OK since frozen)
+    e: TPositioned # type: ignore[misc] # OK since frozen
 
     def astuple(self):
         return self.beg, self.end, self.e
