@@ -82,6 +82,7 @@ lint: $(dependencies)
 	pylint alectryon
 	mypy alectryon/
 	pyright --project .
+	pyrefly check alectryon/
 
 coverage: $(dependencies)
 	+$(make) -C recipes coverage

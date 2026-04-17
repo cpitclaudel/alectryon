@@ -9,6 +9,7 @@ typing_extensions
 vermin
 mypy
 pylint
+pyrefly
 pyright
 typeguard
 types-docutils
