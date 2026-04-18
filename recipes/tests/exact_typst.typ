@@ -28,7 +28,7 @@
 
 A small proof for LaTeX/Typst comparison:
 
-```coq
+```{coq}
 Goal True /\ True.
 Proof.
   split.

@@ -27,13 +27,14 @@ and generates Typst code from annotated fragments (backend).
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 
 from collections.abc import Iterable
 from pathlib import Path
 from typing import List, Optional, Union
 
-from .core import ALL_LANGUAGES, Backend, Goals, Messages, Text, \
+from .core import Backend, Goals, Messages, Text, \
     RichCode, RichFragment, RichGoal, RichHypothesis, RichMessage, RichSentence
 
 class ASSETS:
@@ -111,16 +112,25 @@ class TypstBackend(Backend[Node]):
 TYPST_QUERY: str = 'raw.where(block: true)'
 TYPST_QUERY_CMD: list[str] = ["typst", "query", "--input", "alectryon-mode=query"]
 
-def extract_raw_blocks(root: Path, fpath: Path) -> Iterable[dict[str, str]]:
-    """Use ``typst query`` with ``--root=`root``` to extract code blocks from `fpath`."""
+def _run_typst_query(root: Path, fpath: Path) -> list[dict[str, str | None]]:
     try:
         result = subprocess.run([*TYPST_QUERY_CMD, "--root", root, fpath, TYPST_QUERY],
                                 capture_output=True, check=True, text=True, cwd=root)
+        return json.loads(result.stdout)
     except FileNotFoundError as e:
         raise FileNotFoundError("Typst binary not found.") from e
     except subprocess.CalledProcessError as e:
         raise ValueError(f"Call to ``typst query`` failed on {fpath}:\n{e.stderr}") from e
-    for raw in json.loads(result.stdout):
-        # ``<lang>-noexec`` is naturally excluded (not in ``ALL_LANGUAGES``).
-        if raw.get("lang") in ALL_LANGUAGES:
-            yield raw
+
+# ``fence-re`` in ``assets/alectryon.typ``.
+FENCE_RE = re.compile(r"^[{]([a-z0-9]+)[}]$")
+
+def extract_raw_blocks(root: Path, fpath: Path) -> Iterable[dict[str, str]]:
+    """Use ``typst query`` with ``--root=`root``` to extract code blocks from `fpath`."""
+    for raw in _run_typst_query(root, fpath):
+        lang, text = raw.get("lang"), raw.get("text") or ""
+        if lang is None: # Typst <= 0.14.2 doesn't parse {coq}
+            # LATER: Discard this branch
+            lang, _, text = text.partition("\n")
+        if m := FENCE_RE.fullmatch(lang):
+            yield {"lang": m.group(1), "text": text}

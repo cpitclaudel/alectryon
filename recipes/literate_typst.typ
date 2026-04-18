@@ -11,13 +11,13 @@ $ alectryon literate_typst.typ # Typst → JSON; produces ‘literate_typst.alec
 $ typst compile --root . literate_typst.typ literate_typst.pdf # Typst → PDF; produces ‘literate_typst.pdf’
 ```
 
-```coq
+```{coq}
 Require Import PeanoNat.
 ```
 
 Here's an _inductive specification_ of evenness:
 
-```coq
+```{coq}
 Inductive Even : nat -> Prop :=
 | EvenO : Even O
 | EvenS : forall n, Even n -> Even (S (S n)).
@@ -25,7 +25,7 @@ Inductive Even : nat -> Prop :=
 
 ... and a corresponding decision procedure:
 
-```coq
+```{coq}
 Fixpoint even (n: nat): bool :=
   match n with
   | 0 => true
@@ -38,7 +38,7 @@ Arguments even : simpl nomatch.
 
 Can we prove it correct?
 
-```coq
+```{coq}
 Lemma even_Even :
   forall n, even n = true <-> Even n.
 Proof.
@@ -51,7 +51,7 @@ Proof.
 
 The induction hypothesis doesn't apply --- maybe we need to destruct `n`?
 
-```coq
+```{coq}
     destruct n.
     + split; inversion 1.
     +
@@ -59,7 +59,7 @@ The induction hypothesis doesn't apply --- maybe we need to destruct `n`?
 
 Stuck again!
 
-```coq
+```{coq}
 Abort.
 ```
 
@@ -68,7 +68,7 @@ Abort.
 The usual approach is to strengthen the spec to work around the weakness
 of the inductive principle.
 
-```coq
+```{coq}
 Lemma even_Even :
   forall n, (even n = true <-> Even n) /\
        (even (S n) = true <-> Even (S n)).
@@ -88,7 +88,7 @@ Qed.
 
 But writing a fixpoint is much nicer:
 
-```coq
+```{coq}
 Fixpoint even_Even_fp (n: nat):
   even n = true <-> Even n.
 Proof.
@@ -107,7 +107,7 @@ Qed.
 
 In addition to per-sentence flags (e.g. `Compute 1 + 1. (* .unfold *)`), Alectryon supports per-block flags: flags that occupy the first line of a block apply to that whole block, not just to its first sentence.  In the following example, all inputs are hidden (except for `Compute 3 + 3.`), and all outputs are unfolded:
 
-```coq
+```{coq}
 (* .no-in .unfold *)
 Goal True.
   idtac "done";
@@ -121,8 +121,8 @@ Compute andb true false.
 
 === Skipping evaluation
 
-Use `coq-noexec` instead of `coq` to disable Alectryon processing for a given code block.  For example:
+Use `coq` instead of `{coq}` to disable Alectryon processing for a given code block.  For example:
 
-```coq-noexec
+```coq
 Check 1 + 1. (* Highlighted, but not executed *)
 ```

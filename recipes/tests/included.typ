@@ -1,5 +1,5 @@
 == Included snippet
 
-```coq
+```{coq}
 Check nat.
 ```

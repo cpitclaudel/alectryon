@@ -15,7 +15,7 @@
 
 == Syntax highlighting
 
-```coq
+```{coq}
 Definition a : nat :=
   let '(x, y) := (1, 2) in
   let ' (z, t) := (x, y) in
@@ -29,17 +29,17 @@ Print a.
 
 Two identical `Check nat.` blocks at different proof points:
 
-```coq
+```{coq}
 Goal True /\ True.
   split.
 ```
 
-```coq
+```{coq}
   - Check nat.
     exact I.
 ```
 
-```coq
+```{coq}
   - Check nat.
     exact I.
 Qed.
@@ -49,7 +49,7 @@ Qed.
 
 Backslash in notation:
 
-```coq
+```{coq}
 Goal True \/ False.
   left. exact I.
 Qed.
@@ -57,13 +57,13 @@ Qed.
 
 Quotes in output:
 
-```coq
+```{coq}
 Fail Check "hello".
 ```
 
 == Goal names
 
-```coq
+```{coq}
 Goal forall b: bool, b = b.
   destruct b; [ refine ?[true] | refine ?[false] ].
   all: reflexivity.
@@ -77,12 +77,12 @@ Qed.
   align: top,
   [*Definition*], [*Usage*],
     [
-```coq
+```{coq}
 Definition double (n : nat) := n + n.
 ```
     ],
     [
-```coq
+```{coq}
 Check double.
 Compute double 21.
 ```
@@ -94,7 +94,7 @@ Compute double 21.
 #columns(2)[
   A simple proof:
 
-  ```coq
+  ```{coq}
   Lemma add_0_r : forall n, n + 0 = n.
   Proof.
     induction n.
@@ -107,7 +107,7 @@ Compute double 21.
 
   Using it:
 
-  ```coq
+  ```{coq}
   Require Import Arith.
   Check Nat.add_0_r.
   ```
@@ -117,7 +117,7 @@ Compute double 21.
 
 Coq's `Nat.add_comm` proves that $n + m = m + n$:
 
-```coq
+```{coq}
 Require Import Arith.
 Check Nat.add_comm.
 ```
@@ -129,7 +129,7 @@ in source order.
 
 Before the include:
 
-```coq
+```{coq}
 Definition main_defn := 42.
 ```
 
@@ -137,28 +137,28 @@ Definition main_defn := 42.
 
 After the include:
 
-```coq
+```{coq}
 Check main_defn.
 ```
 
 == Failed commands
 
-```coq
+```{coq}
 Fail Check (1 + true).
 ```
 
-== `-noexec` suffix
+== Plain `coq` blocks
 
-``coq-noexec`` blocks are rendered as ``coq`` blocks, but without invoking Coq:
+Plain ``coq`` blocks (no ``{}``) are rendered without invoking Coq:
 
-```coq-noexec
+```coq
 Definition skipped: nat := 1 + nat.
 Compute skipped + "?".
 ```
 
 == Multi-line block annotation comments
 
-```coq
+```{coq}
 (* .no-in
    .unfold *)
 Goal True /\ True.

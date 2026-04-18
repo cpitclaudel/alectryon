@@ -202,21 +202,21 @@
     :code "(*|\nHello\n|*)\n\nLemma foo : True.\n"
     :rst "Hello\n\n.. coq::\n\n   Lemma foo : True.\n"
     :md  "Hello\n\n```{coq}\nLemma foo : True.\n```\n"
-    :typst "Hello\n\n```coq\nLemma foo : True.\n```\n"
+    :typst "Hello\n\n```{coq}\nLemma foo : True.\n```\n"
     :round-trip "(*|\nHello\n|*)\n\nLemma foo : True. Proof. auto. Qed.\n")
    (alectryon-test--lang
     :tag "lean4" :mode 'lean4-mode
     :code "/-|\nHello\n|-/\n\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n"
     :rst  "Hello\n\n.. lean4::\n\n   theorem foo : ∀ n : Nat, n = n := fun _ → rfl\n"
     :md   "Hello\n\n```{lean4}\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n```\n"
-    :typst "Hello\n\n```lean4\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n```\n"
+    :typst "Hello\n\n```{lean4}\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n```\n"
     :round-trip "/-|\nHello\n|-/\n\ndef x : Nat := 5\n")
    (alectryon-test--lang
     :tag "dafny" :mode 'dafny-mode
     :code "/// Hello\n\nmethod Foo() {}\n"
     :rst  "Hello\n\n.. dafny::\n\n   method Foo() {}\n"
     :md   "Hello\n\n```{dafny}\nmethod Foo() {}\n```\n"
-    :typst "Hello\n\n```dafny\nmethod Foo() {}\n```\n"
+    :typst "Hello\n\n```{dafny}\nmethod Foo() {}\n```\n"
     :round-trip "/// Hello\n\nmethod Foo() {}\n"))
   "Test data for each supported language.")
 

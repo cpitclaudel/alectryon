@@ -19,7 +19,7 @@ $ typst compile --root . typst_formatting.typ typst_formatting.pdf
 
 = Space after punctuation
 
-```coq
+```{coq}
 (* .in *)
 Module Space.
   Infix "?" := plus (at level 10).
@@ -48,7 +48,7 @@ End Space.
 
 = Hypothesis wrapping
 
-```coq
+```{coq}
 (* .none *)
 Definition type {A} (a: A) := a.
 Definition body {A} (a: A) := a.
@@ -100,7 +100,7 @@ Ltac p_4F_2F n v :=
      TYPE TYPE TYPE TYPE TYPE TYPE TYPE v)).
 ```
 
-```coq
+```{coq}
 (* .no-in .unfold *)
 Goal True. (* .none *)
   p_223_33 ffffffff0 NAT0; p_223_33 ffffffff1 NAT1;
@@ -128,7 +128,7 @@ Qed. (* .none *)
 
 = More hypotheses
 
-```coq
+```{coq}
 From Coq Require List.
 Import List.ListNotations.
 Open Scope list_scope.
@@ -156,13 +156,13 @@ End Long.
 Compute (map [11; 22; 33] (fun n a _ => (n, a * a))).
 ```
 
-```coq
+```{coq}
 Definition t := True.
 Definition ign {A} (_: A) := Prop.
 ```
 
 #text(size: 0.9em)[
-```coq
+```{coq}
 Goal forall
     (a: ign (t -> t -> t -> t -> t -> t -> t))
     (aaa: ign (t -> t -> t -> t -> t -> t))
@@ -190,13 +190,13 @@ Proof. auto. Qed.
 
 Some text.
 
-```coq
+```{coq}
 (* Some code *)
 ```
 
 Some text.
 
-```coq
+```{coq}
 (* Some code *)
 ```
 
@@ -204,11 +204,11 @@ Some text.
 
 Some text.
 
-```coq
+```{coq}
 (* Some code *)
 ```
 
-```coq
+```{coq}
 (* Some code *)
 ```
 
@@ -216,7 +216,7 @@ Some text.
 
 There should be no extra line breaks when showing only inputs:
 
-```coq
+```{coq}
 (* .in *)
 Goal True /\ True.
   - idtac.
@@ -235,7 +235,7 @@ Qed.
 
 Showing outputs may still introduce line breaks:
 
-```coq
+```{coq}
 Goal True /\ True.
   - idtac.
 Abort.
@@ -253,7 +253,7 @@ Qed.
 
 = Newlines
 
-```coq
+```{coq}
 Require Import List.
 
 Lemma skipn_app {A}:
@@ -282,7 +282,7 @@ Proof.
 Qed.
 ```
 
-```coq
+```{coq}
 (* Some spacing tests: *)
 (* ^ 0 lines *)
 

@@ -984,26 +984,20 @@ class MYST(BracketedMarkup):
          \n(?P<footer>(?P=indent)(?P=ticks)\n?)
         """, re.VERBOSE | re.MULTILINE)
 
-class TYPST(BracketedMarkup):
+class TYPST(MYST): # Same syntax as MyST
     name = "typst"
 
     def __init__(self, lang: LangDef):
         super().__init__(lang)
-        # Word boundary after {lang.name} rejects ``coq-noexec`` (and any other
-        # ``{lang.name}-…`` variant) while still allowing trailing options.
-        boundary = r"(?![a-zA-Z0-9_-])"
-        self.header = f"```{lang.name}"
-        self.footer = "```"
-        self.footer_re = re.compile(r"[ \t]*```[ \t]*$", re.MULTILINE)
-        self.header_re = re.compile(fr"(?P<indent>[ \t]*)(```+{lang.name}{boundary}.*)")
+        # No --- option headers in Typst, so override the directive regexp
         self.directive_re = re.compile(fr"""
            (?P<directive>
-            ^(?P<indent>[ ]*)
-             (?P<ticks>```){lang.name}{boundary}.*)
-             (?P<code>
-                (?:\n
-                  (?:[ \t]*\n)*
-                  (?P=indent).*$)*?) # Minimal match
+              ^(?P<indent>[ ]*)
+               (?P<ticks>```){{{lang.name}}}.*)
+           (?P<code>
+              (?:\n
+                (?:[ \t]*\n)*
+                (?P=indent).*$)*?) # Minimal match
            \n(?P<footer>(?P=indent)(?P=ticks)\n?)
         """, re.VERBOSE | re.MULTILINE)
 
@@ -1356,13 +1350,13 @@ def coq2typst(code):
     ... '''))
     Example:
     {BLANKLINE}
-    ```coq
+    ```{coq}
     Goal True.
     ```
     {BLANKLINE}
     Second example:
     {BLANKLINE}
-    ```coq
+    ```{coq}
     exact I. Qed.
     ```
     {BLANKLINE}
@@ -1371,7 +1365,7 @@ def coq2typst(code):
     ... (*|
     ... Corner case:
     ...
-    ... ```coq-noexec
+    ... ```coq
     ... Goal True.
     ... ```
     ... |*)
@@ -1380,11 +1374,11 @@ def coq2typst(code):
     ... '''))
     Corner case:
     {BLANKLINE}
-    ```coq-noexec
+    ```coq
     Goal True.
     ```
     {BLANKLINE}
-    ```coq
+    ```{coq}
     exact I. Qed.
     ```
     {BLANKLINE}
@@ -1397,13 +1391,13 @@ def typst2coq(typ):
     >>> docprint(typst2coq('''
     ... Example:
     ...
-    ... ```coq
+    ... ```{coq}
     ... Goal True.
     ... ```
     ...
     ... Second example:
     ...
-    ... ```coq
+    ... ```{coq}
     ... exact I. Qed.
     ... ```
     ... '''))
@@ -1421,16 +1415,16 @@ def typst2coq(typ):
     {BLANKLINE}
 
     >>> docprint(typst2coq('''
-    ... ```coq-noexec
+    ... ```coq
     ... Check 1 + 1.
     ... ```
     ...
-    ... ```coq
+    ... ```{coq}
     ... exact I. Qed.
     ... ```
     ... '''))
     (*|
-    ```coq-noexec
+    ```coq
     Check 1 + 1.
     ```
     |*)

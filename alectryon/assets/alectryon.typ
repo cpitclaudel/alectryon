@@ -32,19 +32,14 @@
 // Math unit from LaTeX
 #let mu = 1em / 18
 
-// Render plain text as a raw element
 #let txt = raw
 
 // Current language, set by the show rule in `setup` and read by code()
 #let _alectryon-lang = state("alectryon-lang", "coq")
 
-// Render code as a raw element
 #let code(contents) = context {
   let lang = _alectryon-lang.get()
-  // <alectryon-processed> prevents the `show` rule added by `setup` from
-  // triggering recursively.  Per the docs “labels can only be attached to
-  // elements in markup mode, not in code mode”, so we must use [] syntax.
-  [#raw(contents, lang: lang)<alectryon-processed>]
+  raw(contents, lang: lang)
 }
 
 // Top-aligned inline box (\parbox[t])
@@ -181,6 +176,27 @@
 
 /// Main entry point
 
+#let first-line-re = regex("^(.*?)(?:\n|\\z)")
+#let fence-re = regex("^[{]([a-z0-9]+)[}]$")
+
+// Typst <= 0.14.2 doesn't recognize {coq}, so we look for a {...} language tag
+// at the beginning of the body if the real language tag is missing.
+#let read-lang-tag(it) = {
+  let lang = it.at("lang", default: none)
+  let text = it.text
+
+  if lang == none {
+    // LATER: Discard this branch
+    let line0 = text.match(first-line-re)
+    if line0 == none { return (none, none) }
+    (lang, text) = (line0.captures.at(0), text.slice(line0.end))
+  }
+
+  let fence = lang.match(fence-re)
+  if fence == none { return (none, none) }
+  (fence.captures.at(0), text)
+}
+
 #let setup(json-path, body) = {
   if sys.inputs.at("alectryon-mode", default: none) == "query" {
     // Skip processing when running in query mode
@@ -198,35 +214,15 @@
   }
 
   let snippets = data.at("snippets", default: ())
-  let langs = snippets.map(s => s.lang).dedup()
   let alectryon-counter = counter("alectryon-block-index")
 
-  let noexec-suffix = "-noexec"
-
   show raw.where(block: true): it => {
-    if it.at("label", default: none) == <alectryon-processed> {
-      return it
-    }
-
-    let lang = it.at("lang", default: none)
-
-    // Re-emit with the stripped lang so syntect still highlights the block.
-    // The <alectryon-processed> label prevents this show rule from recursing
-    // on the re-emitted block (which would otherwise consume a counter step
-    // and trigger a spurious stale-snippet warning).
-    if type(lang) == str and lang.ends-with(noexec-suffix) {
-      let stripped = lang.slice(0, -noexec-suffix.len())
-      return [#raw(it.text, block: true, lang: stripped)<alectryon-processed>]
-    }
-
-    if lang not in langs {
-      return it
-    }
-
+    let (lang, text) = read-lang-tag(it)
+    if lang == none { return it }
     context {
       let idx = alectryon-counter.get().first()
       let entry = snippets.at(idx, default: (src: "", lang: "", rendered: none))
-      if entry.src != it.text or entry.lang != lang {
+      if entry.src != text or entry.lang != lang {
         stale-warning(it)
       } else {
         _alectryon-lang.update(entry.lang)
