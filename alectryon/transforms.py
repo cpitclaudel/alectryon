@@ -317,13 +317,11 @@ def _find_marked(sentence: RichSentence, path) -> Iterable[Enriched]:
         return
 
     if "msg" in path:
-        for m in markers.find_contents(list(fragment_messages(sentence)), path["msg"]):
-            yield m
+        yield from markers.find_contents(list(fragment_messages(sentence)), path["msg"])
     elif "g" in path:
         for g in markers.find_goals(list(fragment_goals(sentence)), path["g"]):
             if "h" in path:
-                for h in markers.find_hyps(g.hypotheses, path["h"]):
-                    yield h
+                yield from markers.find_hyps(g.hypotheses, path["h"])
             elif "ccl" in path:
                 yield must(g.conclusion)
             else:
