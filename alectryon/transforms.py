@@ -20,7 +20,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 import re
 import textwrap
@@ -32,7 +32,7 @@ from collections.abc import Iterable
 from . import markers
 from .core import RichFragment, Sentence, Text, Names, Enriched, \
     RichHypothesis, RichGoal, RichMessage, RichCode, \
-    Goals, Messages, RichSentence, ALL_LANGUAGES
+    Goals, Messages, RichSentence, must, ALL_LANGUAGES
 
 if TYPE_CHECKING:
     from typing_extensions import TypeGuard
@@ -310,8 +310,8 @@ def _read_io_comments(fragments, lang):
 def read_io_comments(lang):
     return lambda fragments: _read_io_comments(fragments, lang=lang)
 
-def _find_marked(sentence, path):
-    assert isinstance(sentence, RichSentence)
+def _find_marked(sentence: RichSentence, path) -> Iterable[Enriched]:
+    assert sentence.input
 
     if "s" in path and not path["s"].match(sentence.input.contents):
         return
@@ -325,7 +325,7 @@ def _find_marked(sentence, path):
                 for h in markers.find_hyps(g.hypotheses, path["h"]):
                     yield h
             elif "ccl" in path:
-                yield g.conclusion
+                yield must(g.conclusion)
             else:
                 yield g
     elif "in" in path:
@@ -333,19 +333,18 @@ def _find_marked(sentence, path):
     else:
         yield sentence
 
-def _find_hidden_by_annots(sentence):
+def _find_hidden_by_annots(sentence: RichSentence) -> Iterable[Enriched]:
     annots = sentence.annots
     if not annots["in"]:
-        yield sentence.input
+        yield must(sentence.input)
     if not annots["hyps"]:
         for g in fragment_goals(sentence):
             yield from g.hypotheses
     if not annots["ccls"]:
         for g in fragment_goals(sentence):
-            yield g.conclusion
+            yield must(g.conclusion)
     if not annots["messages"]:
-        for m in fragment_messages(sentence):
-            yield m
+        yield from fragment_messages(sentence)
 
 def process_io_annots(fragments):
     """Convert IO annotations to pre-object properties."""
@@ -379,10 +378,10 @@ def process_io_annots(fragments):
 def _enabled(o):
     return o.props.get("enabled", True)
 
-def _commit_enabled(objs):
+def _commit_enabled(objs) -> None:
     objs[:] = [o for o in objs if _enabled(o)]
 
-def all_hidden(fragments, annots):
+def all_hidden(fragments, annots) -> bool:
     """Check whether all `fragments` are hidden.
     ``RichSentence`` objects are hidden if their ``"enabled"` flag is set to
     false; ``Text`` objects are hidden if the default `annots` say so.
@@ -394,7 +393,7 @@ def all_hidden(fragments, annots):
             return False
     return True
 
-def _output_objects(o):
+def _output_objects(o: Goals | Messages) -> List[RichGoal] | List[RichMessage]:
     if isinstance(o, Goals):
         return o.goals
     if isinstance(o, Messages):
@@ -465,24 +464,19 @@ def _all_sub_objects(obj):
 def strip_ids_and_props(obj, props):
     for so in _all_sub_objects(obj):
         if isinstance(so, Enriched):
-            so.ids.clear() # type: ignore
+            so.ids.clear()
             for p in props:
-                so.props.pop(p, None) # type: ignore
+                so.props.pop(p, None)
     return obj
 
 LEADING_BLANKS_RE = re.compile(r'\A([ \t]*(?:\n|\Z))?(.*?)([ \t]*)\Z',
                                flags=re.DOTALL)
 
-T = TypeVar("T")
-def _assert(t: Optional[T]) -> T:
-    assert t
-    return t
-
 def isolate_blanks(txt) -> Tuple[int, int]:
     """Split `txt` into blanks and an optional newline, text, and blanks.
     Returns the positions of the two splits.
     """
-    return _assert(LEADING_BLANKS_RE.match(txt)).span(2)
+    return must(LEADING_BLANKS_RE.match(txt)).span(2)
 
 def group_whitespace_with_code(fragments):
     r"""Attach spaces to neighboring sentences.
@@ -587,33 +581,29 @@ def attach_comments_to_code(lang_name):
         return _attach_comments_to_code(LANGUAGES[lang_name], *args, **kwargs)
     return attach_comments_to_code_wrapper
 
-def fragment_goal_sets(fr):
+def fragment_goal_sets(fr: RichFragment) -> Iterable[List[RichGoal]]:
     if isinstance(fr, RichSentence):
         yield from (gs.goals for gs in fr.outputs if isinstance(gs, Goals))
-    if isinstance(fr, Sentence):
-        yield fr.goals
 
-def fragment_goals(fr):
+def fragment_goals(fr: RichFragment) -> Iterable[RichGoal]:
     for gs in fragment_goal_sets(fr):
         yield from gs
 
-def fragment_message_sets(fr):
+def fragment_message_sets(fr: RichFragment) -> Iterable[List[RichMessage]]:
     if isinstance(fr, RichSentence):
         yield from (ms.messages for ms in fr.outputs if isinstance(ms, Messages))
-    if isinstance(fr, Sentence):
-        yield fr.messages
 
-def fragment_messages(fr):
+def fragment_messages(fr: RichFragment) -> Iterable[RichMessage]:
     for ms in fragment_message_sets(fr):
         yield from ms
 
 def group_hypotheses(fragments):
-    """Merge consecutive hypotheses with the same name.
+    """Merge consecutive hypotheses with the same name, *in place*.
 
     >>> from .core import Sentence as S, Goal as G, Hypothesis as H
-    >>> group_hypotheses([S("", [], [G("", "", [H([n], None, 'nat') for n in 'abc'])])])
-    ... # doctest: +ELLIPSIS
-    [...hypotheses=[Hypothesis(names=['a', 'b', 'c'], body=None, type='nat')]...]
+    >>> frs = enrich_sentences([S("", [], [G("", "", [H([n], None, 'nat') for n in 'abc'])])])
+    >>> list(group_hypotheses(frs)) # doctest: +ELLIPSIS
+    [...hypotheses=[RichHypothesis(names=['a', 'b', 'c'], body=None, type=RichCode(contents='nat'...)...)]...]
     """
     for fr in fragments:
         for g in fragment_goals(fr):
@@ -626,48 +616,30 @@ def group_hypotheses(fragments):
                 else:
                     hyps.append(hyp)
             g.hypotheses[:] = hyps
-    return fragments
+        yield fr
 
 COQ_FAIL_RE = re.compile(r"^Fail\s+")
 COQ_FAIL_MSG_RE = re.compile(r"^The command has indeed failed with message:\s+")
 
-def is_coq_fail(fr) -> "TypeGuard[RichSentence]":
-    return bool(isinstance(fr, RichSentence) and fr.annots.fails
-                and COQ_FAIL_RE.match(fr.input.contents))
+def is_coq_fail(fr: RichSentence) -> bool:
+    return bool(fr.annots.fails) and bool(COQ_FAIL_RE.match(must(fr.input).contents))
 
 def strip_coq_failures(fragments: Iterable[RichFragment]) -> Iterable[RichFragment]:
     for fr in fragments:
-        if is_coq_fail(fr):
+        if isinstance(fr, RichSentence) and is_coq_fail(fr):
             for msgs in fragment_message_sets(fr):
                 for idx, r in enumerate(msgs):
                     msgs[idx] = r._replace(contents=COQ_FAIL_MSG_RE.sub("", r.contents))
-            fr = _replace_contents(fr, COQ_FAIL_RE.sub("", fr.input.contents))
-        yield fr
-
-def strip_numeric_goal_names(fragments: Iterable[RichFragment]) -> Iterable[RichFragment]:
-    r"""Remove goal names if they are just a number, as in VsRocq.
-
-    >>> from .core import Sentence as S, Goal as G
-    >>> frs = list(enrich_sentences([S("", [], [G(3, "True", [])])]))
-    >>> frs # doctest: +ELLIPSIS
-    [...goals=[...name=3...]...]
-    >>> list(strip_numeric_goal_names(frs)) # doctest: +ELLIPSIS
-    [...goals=[...name=None...]...]
-    """
-    for fr in fragments:
-        if isinstance(fr, RichSentence):
-            for goals in fragment_goal_sets(fr):
-                for idx, g in enumerate(goals):
-                    if isinstance(g.name, int):
-                        goals[idx] = g._replace(name=None)
+            fr = _replace_contents(fr, COQ_FAIL_RE.sub("", must(fr.input).contents))
         yield fr
 
 def dedent(fragments):
     r"""Dedent messages.
 
     >>> from .core import Sentence as S, Message as M
-    >>> list(dedent([S("", [M("  1\n    : nat")], [])])) # doctest: +ELLIPSIS
-    [...messages=[Message(contents='1\n  : nat')]...]
+    >>> frs = enrich_sentences([S("", [M("  1\n    : nat")], [])])
+    >>> list(dedent(frs)) # doctest: +ELLIPSIS
+    [...messages=[RichMessage(contents='1\n  : nat'...)]...]
     """
     for fr in fragments:
         for msgs in fragment_message_sets(fr):
@@ -927,7 +899,6 @@ DEFAULT_TRANSFORMS = {
         read_io_comments("coq"),
         process_io_annots,
         strip_coq_failures,
-        strip_numeric_goal_names,
         dedent,
     ],
     "dafny": [

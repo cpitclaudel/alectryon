@@ -21,11 +21,11 @@
 from __future__ import annotations
 
 from typing import Any, ClassVar, DefaultDict, Dict, Generic, Iterable, IO, List, \
-    NamedTuple, NoReturn, Optional, overload, Tuple, TypeVar, Union
+    NamedTuple, NoReturn, Optional, overload, TYPE_CHECKING, Tuple, TypeVar, Union
 
 from collections import UserDict, deque, namedtuple, defaultdict
 from contextlib import contextmanager
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, fields, replace
 from functools import cached_property
 from importlib import import_module
 from pathlib import Path
@@ -37,6 +37,10 @@ import re
 import subprocess
 import sys
 import textwrap
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+    from .transforms import IOAnnots
 
 _Path = Union[str, os.PathLike]
 _FILE = Union[None, int, IO[Any]]
@@ -80,46 +84,117 @@ class DriverInfo(namedtuple("DriverInfo", "name version")):
     def fmt(self, include_version_info=True):
         return "{} v{}".format(self.name, self.version) if include_version_info else self.name
 
-Hypothesis = namedtuple("Hypothesis", "names body type")
-Goal = namedtuple("Goal", "name conclusion hypotheses")
-Message = namedtuple("Message", "contents")
-Sentence = namedtuple("Sentence", "contents messages goals")
-Text = namedtuple("Text", "contents")
+@dataclass(frozen=True)
+class NT: # NamedTuple functions for dataclasses
+    def _replace(self, **changes: Any) -> "Self":
+        return replace(self, **changes)
+
+    def _asdict(self) -> Dict[str, Any]:
+        return {f.name: getattr(self, f.name) for f in fields(self)}
+
+## Plain data produced by a prover
+
+@dataclass(frozen=True)
+class Hypothesis(NT):
+    names: List[str]
+    body: Optional[str]
+    type: str
+
+@dataclass(frozen=True)
+class Goal(NT):
+    name: Optional[str]
+    conclusion: str
+    hypotheses: List[Hypothesis]
+
+@dataclass(frozen=True)
+class Message(NT):
+    contents: str
+
+@dataclass(frozen=True)
+class Sentence(NT):
+    contents: str
+    messages: List[Message]
+    goals: List[Goal]
+
+@dataclass(frozen=True)
+class Text(NT):
+    contents: str
+
+@dataclass(frozen=True)
+class Code(NT):
+    contents: str
+
 Fragment = Union[Text, Sentence]
 
-class Enriched():
-    def __new__(cls, *args, **kwargs):
-        if len(args) < len(getattr(super(), "_fields", ())):
-            # Don't repeat fields given by position (it breaks pickle & deepcopy)
-            kwargs = {"props": {}, **kwargs}
-        return super().__new__(cls, *args, **kwargs)
-    @property
-    def ids(self):
-        return getattr(self, "props", {}).setdefault("ids", [])
-    @property
-    def markers(self):
-        return getattr(self, "props", {}).setdefault("markers", [])
-
-def _enrich(nt) -> type[Enriched]:
-    # LATER: Use dataclass + multiple inheritance; change `ids` and `markers` to
-    # mutable `id` and `marker` fields.
-    name = "Rich" + nt.__name__
-    fields = nt._fields + ("props",)
-    # Using ``type`` this way ensures compatibility with pickling
-    return type(name, (Enriched, namedtuple(name, fields)),
-                {"__slots__": ()})
-
-Goals = namedtuple("Goals", "goals")
-Messages = namedtuple("Messages", "messages")
+## Annotated data internal to Alectryon
 
 class Names(list):
     pass
-RichHypothesis = _enrich(Hypothesis)
-RichGoal = _enrich(Goal)
-RichMessage = _enrich(Message)
-RichCode = _enrich(namedtuple("Code", "contents"))
-RichSentence = _enrich(namedtuple("Sentence", "input outputs annots prefixes suffixes"))
+
+@dataclass(frozen=True)
+class Enriched(NT):
+    props: Dict[str, Any] = field(default_factory=dict)
+    """Metadata about this object."""
+
+    @property
+    def ids(self) -> List[Any]: # str or docutils.Id
+        return self.props.setdefault("ids", [])
+
+    @property
+    def markers(self) -> List[str]:
+        return self.props.setdefault("markers", [])
+
+@dataclass(frozen=True)
+class RichCode(Enriched, Code):
+    pass
+
+@dataclass(frozen=True)
+class RichMessage(Enriched, Message):
+    pass
+
+@dataclass(frozen=True)
+class _RichHypothesis(NT):
+    names: Names
+    body: Optional[RichCode]
+    type: RichCode
+
+@dataclass(frozen=True)
+class RichHypothesis(Enriched, _RichHypothesis):
+    pass
+
+@dataclass(frozen=True)
+class _RichGoal(NT):
+    name: Optional[str]
+    conclusion: Optional[RichCode]
+    hypotheses: List[RichHypothesis]
+
+@dataclass(frozen=True)
+class RichGoal(Enriched, _RichGoal):
+    pass
+
+@dataclass(frozen=True)
+class Messages(NT):
+    messages: List[RichMessage]
+
+@dataclass(frozen=True)
+class Goals(NT):
+    goals: List[RichGoal]
+
+@dataclass(frozen=True)
+class _RichSentence(NT):
+    input: Optional[RichCode]
+    outputs: List[Union[Messages, Goals]]
+    annots: "IOAnnots"
+    prefixes: List[str] = field(default_factory=list)
+    suffixes: List[str] = field(default_factory=list)
+
+@dataclass(frozen=True)
+class RichSentence(Enriched, _RichSentence):
+    pass
+
 RichFragment = Union[Text, RichSentence]
+
+## Core
 
 def b16(i):
     return hex(i)[len("0x"):]

@@ -1,4 +1,6 @@
-[[Sentence(contents='Check 1.', messages=[Message(contents='1\n     : nat')], goals=[])]]
+[[Sentence(contents='Check 1.',
+           messages=[Message(contents='1\n     : nat')],
+           goals=[])]]
 ================================================================================
 [[{"_type": "sentence", "contents": "Goal True /\\ True.", "messages": [], "goals": [{"_type": "goal", "name": null, "conclusion": "True /\\ True", "hypotheses": []}]}, {"_type": "text", "contents": " "}, {"_type": "sentence", "contents": "split.", "messages": [], "goals": [{"_type": "goal", "name": null, "conclusion": "True", "hypotheses": []}, {"_type": "goal", "name": null, "conclusion": "True", "hypotheses": []}]}, {"_type": "text", "contents": " "}], [{"_type": "sentence", "contents": "all: eauto.", "messages": [], "goals": []}]]
 ================================================================================

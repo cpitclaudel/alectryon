@@ -24,7 +24,8 @@ def redirected_std():
 
 class core(unittest.TestCase):
     def test_backend_gen(self):
-        from alectryon.core import Backend, Text, RichGoal, RichSentence
+        from alectryon.core import Backend, Text, RichCode, RichGoal, RichSentence
+        from alectryon.transforms import IOAnnots
 
         class PrintingBackend(Backend): # pylint: disable=abstract-method
             def __init__(self, *args):
@@ -38,9 +39,9 @@ class core(unittest.TestCase):
         backend = PrintingBackend(None)
         backend._gen_any(Text("txt"))
         self.assertEqual(backend.out, "fr!")
-        backend._gen_any(RichGoal("nm", "goal", []))
+        backend._gen_any(RichGoal("nm", RichCode("goal"), []))
         self.assertEqual(backend.out, "goal!")
-        backend._gen_any(RichSentence("i", "o", None, [], []))
+        backend._gen_any(RichSentence(RichCode("i"), [], IOAnnots(), [], []))
         self.assertEqual(backend.out, "fr!")
 
 class json(unittest.TestCase):

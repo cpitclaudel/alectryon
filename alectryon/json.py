@@ -112,8 +112,8 @@ class PlainSerializer:
             d: Dict[str, Any] = {"_type": type_name} # Put _type first
             if hasattr(obj, "js_encode"):
                 obj.js_encode(PlainSerializer, d, *memo.specialize(type_name))
-            elif hasattr(obj, "_fields"):
-                for k, v in zip(obj._fields, obj):
+            elif hasattr(obj, "_asdict"):
+                for k, v in obj._asdict().items():
                     d[k] = PlainSerializer.encode(v, memo)
             return d
         assert obj is None or isinstance(obj, (int, str))
@@ -163,7 +163,7 @@ class DeduplicatingSerializer:
                 key = pickle.dumps(obj)
                 if key in obj_table:
                     return {"*": obj_table[key]}
-                d = {"&": type_name, "_": [encode(v) for v in obj]}
+                d = {"&": type_name, "_": [encode(v) for v in obj._asdict().values()]}
                 obj_table[key] = len(obj_table)
                 return d
             assert obj is None or isinstance(obj, (int, str))
@@ -217,7 +217,7 @@ class FullyDeduplicatingSerializer:
                 return {k: encode(v) for k, v in sorted(obj.items())}
             type_name = ALIASES_OF_TYPE.get(type(obj).__name__)
             if type_name:
-                return {"&": type_name, "_": [encode(v) for v in obj]}
+                return {"&": type_name, "_": [encode(v) for v in obj._asdict().values()]}
             assert obj is None or isinstance(obj, (int, str))
             return obj
         return encode(obj)

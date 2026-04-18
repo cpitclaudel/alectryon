@@ -149,8 +149,10 @@ class VsRocqOutput:
 
     @staticmethod
     def parse_goal(gv: JSON):
-        return Goal(gv.get("name"), gv["goal"],
-                    [VsRocqOutput.parse_hyp(hv) for hv in gv["hypotheses"]])
+        name = gv.get("name")
+        name = name if isinstance(name, str) else None # Discard numeric goal IDs
+        hyps = [VsRocqOutput.parse_hyp(hv) for hv in gv["hypotheses"]]
+        return Goal(name, gv["goal"], hyps)
 
     @staticmethod
     def parse_proof_view(pv: JSON):
