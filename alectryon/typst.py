@@ -59,14 +59,14 @@ class TypstBackend(Backend[Node]):
     def _plus(xs: list[Node]) -> Node:
         return ["+", *xs] if xs else None
 
-    def gen_names(self, names: Iterable[str]) -> Node:
-        return ["txt", ", ".join(names)]
-
     def gen_code(self, code: RichCode | None) -> Node:
         return ["code", code.contents] if code else None
 
     def gen_txt(self, s: str | None) -> Node:
         return ["txt", s] if s is not None else None
+
+    def gen_names(self, names: Iterable[str]) -> Node:
+        return self.gen_txt(", ".join(names))
 
     def gen_message(self, message: RichMessage) -> Node:
         return ["message", self.gen_txt(message.contents)]
@@ -82,9 +82,8 @@ class TypstBackend(Backend[Node]):
     def gen_output_group(self, fr: Goals | Messages) -> Node:
         if isinstance(fr, Goals):
             return ["goals", self._plus([self.gen_goal(g) for g in fr.goals])]
-        if isinstance(fr, Messages):
-            return ["messages", self._plus([self.gen_message(m) for m in fr.messages])]
-        return None
+        assert isinstance(fr, Messages)
+        return ["messages", self._plus([self.gen_message(m) for m in fr.messages])]
 
     def gen_sentence(self, s: RichSentence) -> Node:
         outputs = self._plus([self.gen_output_group(fr) for fr in s.outputs])
@@ -92,7 +91,7 @@ class TypstBackend(Backend[Node]):
 
     def gen_fragment(self, fr: RichFragment) -> Node:
         if isinstance(fr, Text):
-            return self.gen_code(fr)
+            return self.gen_txt(fr.contents)
         assert isinstance(fr, RichSentence)
         return self.gen_sentence(fr)
 
