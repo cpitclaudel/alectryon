@@ -389,7 +389,7 @@ To allow forward- and back-references, counters are not reset from one block to 
   \label{defining-custom-counter-styles}%
 }
 
-Custom counter styles can be defined like using the \texttt{.. role::} directive and the \texttt{:counter-style:} option:
+Custom counter styles can be defined using the \texttt{.. role::} directive and the \texttt{:counter-style:} option:
 
 Here is how it looks:
 
@@ -598,7 +598,7 @@ Objects located using the marker-placement mini-language can be tagged with arbi
 \end{alectryon}
 \end{quote}
 
-These properties can then be used within custom transforms.  Out of the box, Alectryon only recognizes the \texttt{{[}lang{]}} annotation; if it is found, the corresponding code is highlighted using the Pygments lexer for that language.
+These properties can then be used within custom transforms.  Out of the box, Alectryon only recognizes the \texttt{{[}lang{]}} annotation; if it is found, the corresponding code is highlighted using the lexer for that language.
 
 \begin{quote}
 \begin{alectryon}
@@ -773,7 +773,7 @@ There, too, you may want to define aliases:
 \end{alectryon}
 \end{quote}
 
-Finally, you may choose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by \texttt{Extraction}:
+Finally, you may choose a different lexer to highlight a quote.  For example, here is a piece of Scheme code produced by \texttt{Extraction}:
 
 \begin{quote}
 \begin{alectryon}

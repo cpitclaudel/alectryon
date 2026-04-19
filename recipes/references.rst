@@ -60,7 +60,7 @@ To allow forward- and back-references, counters are not reset from one block to 
 Defining custom counter styles
 ------------------------------
 
-Custom counter styles can be defined like using the ``.. role::`` directive and the ``:counter-style:`` option:
+Custom counter styles can be defined using the ``.. role::`` directive and the ``:counter-style:`` option:
 
 .. role:: aref(mref)
    :counter-style: lower-greek
@@ -100,7 +100,7 @@ Objects located using the marker-placement mini-language can be tagged with arbi
 
        Check nat. (* .in[foo]=bar *)
 
-These properties can then be used within custom transforms.  Out of the box, Alectryon only recognizes the ``[lang]`` annotation; if it is found, the corresponding code is highlighted using the Pygments lexer for that language.
+These properties can then be used within custom transforms.  Out of the box, Alectryon only recognizes the ``[lang]`` annotation; if it is found, the corresponding code is highlighted using the lexer for that language.
 
     .. coq::
 
@@ -160,7 +160,7 @@ There, too, you may want to define aliases:
     .. mq:pr:: .h{Permutation l l'}
     .. mq:pr:: .h{Permutation l' l''}
 
-Finally, you may choose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by ``Extraction``:
+Finally, you may choose a different lexer to highlight a quote.  For example, here is a piece of Scheme code produced by ``Extraction``:
 
     .. coq:: none
        :name: scheme

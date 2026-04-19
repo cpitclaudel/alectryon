@@ -98,9 +98,6 @@ class core(unittest.TestCase):
     def test_errors(self):
         from alectryon.core import Backend, resolve_driver
 
-        with self.assertRaisesRegex(TypeError, r"\AUnexpected object type"):
-            Backend(None)._gen_any(object())
-
         with self.assertRaisesRegex(ValueError, r"\AUnknown language"):
             resolve_driver("\0", "\0")
 

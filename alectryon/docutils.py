@@ -61,8 +61,8 @@ side, and a doctree-resolved event on the Sphinx side.
 """
 
 from types import FunctionType, MethodType
-from typing import Any, ClassVar, DefaultDict, Dict, Iterable, \
-    List, Optional, Tuple, Type, Union
+from typing import Any, Callable, ClassVar, DefaultDict, Dict, Iterable, \
+    List, Mapping, Optional, Tuple, Type, TypeVar, Union
 
 import re
 from pathlib import Path
@@ -514,6 +514,9 @@ class RefCounter:
         num = self.counters[style] = self.counters[style] + 1
         return style.fmt(num)
 
+MrefPath = Dict[str, Any]
+_IO = TypeVar("_IO")
+
 class AlectryonMrefTransform(OneTimeTransform):
     """Convert Alectryon input/output pairs into HTML or LaTeX.
 
@@ -533,22 +536,28 @@ class AlectryonMrefTransform(OneTimeTransform):
             raise ValueError("Target is null")
 
     @staticmethod
-    def _find_mref_io(path, ios, last_io):
-        io_name = path["io"]
-        io_normalized_name = io_name and nodes.fully_normalize_name(io_name)
-        io = ios.get(io_normalized_name) if io_normalized_name else last_io
-        if io is None:
-            if io_normalized_name:
-                raise ValueError(
-                    f"Reference to unknown .io block {io_normalized_name}. " +
-                    (f"Use one of: {', '.join(sorted(ios))}." if ios else ""))
-            raise ValueError("Not sure which code block this refers to; "
-                             "add ``.io#…`` to disambiguate.")
+    def _find_io(path: MrefPath, ios: Mapping[str, _IO],
+                 last_io: Optional[_IO],
+                 normalize: Callable[[str], str] = str) -> _IO:
+        """Resolve ``path['io']`` in `ios` (falling back to `last_io`)."""
+        if (name := path["io"]) is None:
+            if last_io is None:
+                raise ValueError("Not sure which code block this refers to; "
+                                 "add ``.io#…`` to disambiguate.")
+            return last_io
+        if (io := ios.get(normalize(name))) is None:
+            raise ValueError(
+                f"Reference to unknown .io block {name!r}. " +
+                (f"Use one of: {', '.join(sorted(ios))}." if ios else ""))
         return io
 
     @classmethod
-    def _find_mref_target(cls, path, io):
-        fragments = io.details["fragments"]
+    def _find_mref_io(cls, path, ios, last_io):
+        return cls._find_io(path, ios, last_io, normalize=nodes.fully_normalize_name)
+
+    @staticmethod
+    def _find_target_in_fragments(path: MrefPath, fragments: Iterable[core.RichFragment]):
+        """Navigate `fragments` along `path` and return the target object."""
         # LATER: Add a way to name sentences to make them easier to select
         sentences = (fr for fr in fragments if isinstance(fr, core.RichSentence))
         sentence = markers.find_one("sentence", markers.find_sentences, sentences, path["s"])
@@ -582,6 +591,10 @@ class AlectryonMrefTransform(OneTimeTransform):
             return goal
 
         return sentence
+
+    @classmethod
+    def _find_mref_target(cls, path, io):
+        return cls._find_target_in_fragments(path, io.details["fragments"])
 
     def format_one_ref(self, target, node):
         if not target.ids:
@@ -1052,9 +1065,11 @@ DEFAULT_COUNTER_STYLE = CounterStyle.of_str(COUNTER_STYLES['decimal'])
 
 MREF_KINDS = ['ref', 'quote']
 
-def _parse_mref_target(kind, target, prefix):
+def _parse_mref_target(kind: str, target: str, prefix: Union[str, MrefPath, None]) -> MrefPath:
     if not target:
         raise ValueError("Empty target in marker reference.")
+    if isinstance(prefix, str):
+        prefix = markers.parse_path(prefix) if prefix else {}
     if target[0] in "#." or kind == "quote":
         path = markers.parse_path(target)
     else:
@@ -1115,10 +1130,15 @@ def marker_ref_role(role, rawtext, text, lineno, inliner,
     except ValueError as e:
         return _role_error(inliner, rawtext, str(e), lineno)
 
+def _counter_style(style: str | None):
+    if style is None:
+        return DEFAULT_COUNTER_STYLE
+    if " " not in style:
+        style = COUNTER_STYLES[directives.choice(style, list(COUNTER_STYLES))]
+    return CounterStyle.of_str(style)
+
 def _opt_mref_counter_style(arg):
-    if " " not in arg:
-        arg = COUNTER_STYLES[directives.choice(arg, list(COUNTER_STYLES))]
-    return CounterStyle.of_str(arg)
+    return _counter_style(arg)
 
 def _opt_mref_prefix(prefix):
     try:

@@ -65,7 +65,7 @@ In the first case (<a class="reference internal alectryon-mref" href="#reference
 </blockquote>
 <div class="section" id="defining-custom-counter-styles">
 <h2>Defining custom counter styles</h2>
-<p>Custom counter styles can be defined like using the <tt class="docutils literal">.. role::</tt> directive and the <tt class="docutils literal"><span class="pre">:counter-style:</span></tt> option:</p>
+<p>Custom counter styles can be defined using the <tt class="docutils literal">.. role::</tt> directive and the <tt class="docutils literal"><span class="pre">:counter-style:</span></tt> option:</p>
 <p>Here is how it looks:</p>
 <blockquote>
 <p>The following commands print information about an identifier <a class="reference internal alectryon-mref aref" href="#references-rst-io-cp-s-about-0">α</a>, print its definition <a class="reference internal alectryon-mref aref" href="#references-rst-io-cp-s-print-0">β</a>, and compute the type of a term <a class="reference internal alectryon-mref aref" href="#references-rst-io-cp-s-check-0">γ</a> or its reduction <a class="reference internal alectryon-mref aref" href="#references-rst-io-cp-s-compute-0">δ</a>.</p>
@@ -113,7 +113,7 @@ library Corelib.Init.Nat, line <span class="mi">47</span>, characters <span clas
 <blockquote>
 <pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="references-rst-chk13" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chk13"><span class="kn">Check</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message">nat
      : <span class="kt">Set</span></blockquote></div></div></small></span></pre></blockquote>
-<p>These properties can then be used within custom transforms.  Out of the box, Alectryon only recognizes the <tt class="docutils literal">[lang]</tt> annotation; if it is found, the corresponding code is highlighted using the Pygments lexer for that language.</p>
+<p>These properties can then be used within custom transforms.  Out of the box, Alectryon only recognizes the <tt class="docutils literal">[lang]</tt> annotation; if it is found, the corresponding code is highlighted using the lexer for that language.</p>
 <blockquote>
 <pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><span class="alectryon-input"><span class="kn">Extraction Language Haskell</span>.</span><span class="alectryon-wsp">
 </span></span><span class="alectryon-sentence"><input checked="checked" class="alectryon-toggle" id="references-rst-chk14" style="display: none" type="checkbox"><label class="alectryon-input" for="references-rst-chk14"><span class="kn">Extraction</span> Nat.add.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="nf">add</span><span class="w"> </span><span class="ow">::</span><span class="w"> </span><span class="kt">Nat</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Nat</span><span class="w"> </span><span class="ow">-&gt;</span><span class="w"> </span><span class="kt">Nat</span>
@@ -179,7 +179,7 @@ The two permutation hypotheses are <samp class="alectryon-inline highlight mq-pr
 <p>There, too, you may want to define aliases:</p>
 <blockquote>
 <pre class="alectryon-block highlight mq-pr lang-rocq"><!-- Generator: Alectryon --><span><var>H</var><span class="hyp-type"><b>: </b><span>Permutation l l&#39;</span></span></span></pre><pre class="alectryon-block highlight mq-pr lang-rocq"><!-- Generator: Alectryon --><span><var>H0</var><span class="hyp-type"><b>: </b><span>Permutation l&#39; l&#39;&#39;</span></span></span></pre></blockquote>
-<p>Finally, you may choose a different Pygments lexer to highlight a quote.  For example, here is a piece of Scheme code produced by <tt class="docutils literal">Extraction</tt>:</p>
+<p>Finally, you may choose a different lexer to highlight a quote.  For example, here is a piece of Scheme code produced by <tt class="docutils literal">Extraction</tt>:</p>
 <blockquote>
 <pre class="alectryon-block highlight lang-rocq"><!-- Generator: Alectryon --><span class="p">(</span><span class="k">define</span><span class="w"> </span><span class="nv">add</span><span class="w"> </span><span class="p">(</span><span class="nf">lambdas</span><span class="w"> </span><span class="p">(</span><span class="nf">n</span><span class="w"> </span><span class="nv">m</span><span class="p">)</span>
 <span class="w">  </span><span class="p">(</span><span class="k">match</span><span class="w"> </span><span class="nv">n</span>

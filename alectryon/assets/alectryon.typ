@@ -35,10 +35,33 @@
 #let txt = raw
 
 // Current language, set by the show rule in `setup` and read by code()
-#let _alectryon-lang = state("alectryon-lang", "coq")
+#let _lang = state("alectryon-lang", "coq")
+
+// kind → list of entries (indexed by call position)
+#let _marker-info = state("alectryon-marker-info", ("mrefs": (), "mquotes": ()))
+
+#let mref-marker(marker) = {
+  h(0.5em, weak: true)
+  box(stroke: 0.4pt, inset: 1pt,
+      text(size: 0.8em, weight: "bold", marker))
+}
+
+#let mref-markers(markers) = {
+  for m in markers { mref-marker(m) }
+}
+
+#let with-ids(contents, ..ids) = {
+  contents
+  for id in ids.pos() [#metadata(none)#label(id)]
+}
+
+#let with-markers(contents, ..markers) = {
+  contents
+  mref-markers(markers.pos())
+}
 
 #let code(contents) = context {
-  let lang = _alectryon-lang.get()
+  let lang = _lang.get()
   raw(contents, lang: lang)
 }
 
@@ -106,7 +129,7 @@
   )
 }
 
-#let _goal-separator(name) = {
+#let _goal-separator(name, markers) = {
   v(alectryon-rule-skip)
   block(spacing: alectryon-rule-skip, {
     grid(
@@ -114,18 +137,22 @@
       column-gutter: 0em,
       align: horizon,
       line(length: 100%, stroke: 0.4pt + alectryon-goal-line-color),
-      if name != none { text(size: 0.75em, txt(" ") + name) }
+      {
+        if name != none { text(size: 0.75em, txt(" ") + name) }
+        // For goals, markers appear next to the rule
+        mref-markers(markers)
+      }
     )
   })
   v(alectryon-rule-skip)
 }
 
-#let goal(name, hyps, concl) = {
+#let goal(name, hyps, concl, ..markers) = {
   output({
     if hyps != none {
       context par(leading: par.leading + alectryon-hyp-v, hyps)
     }
-    _goal-separator(name)
+    _goal-separator(name, markers.pos())
     concl
   })
 }
@@ -156,6 +183,7 @@
   goals: goals, goal: goal, hyp: hyp,
   messages: messages, message: message,
   code: code, txt: txt, "+": concat,
+  id: with-ids, marker: with-markers,
 )
 
 #let render(node) = {
@@ -197,6 +225,64 @@
   (fence.captures.at(0), text)
 }
 
+/// Marker references, quotes, and assertions
+
+#let _is-query-mode = {
+  sys.inputs.at("alectryon-mode", default: none) == "query"
+}
+
+// Counters used to step through JSON data
+#let _mref-counter = counter("alectryon-mref-idx")
+#let _mquote-counter = counter("alectryon-mquote-idx")
+#let _block-counter = counter("alectryon-block-index")
+
+#let _resolve-marker(kind, fn, counter, path, ..values) = {
+  if _is-query-mode {
+    [#metadata((path: path, ..values.named()))#label("alectryon-" + kind)]
+    return
+  }
+  if fn == none { return }
+
+  context {
+    let idx = counter.get().first()
+    let entry = _marker-info.get().at(kind).at(idx, default: none)
+    if entry == none or entry.path != path { // Stale Alectryon data
+      text(fill: alectryon-stale-warning-color, [?#raw(path)?])
+    } else {
+      fn(entry)
+    }
+  }
+  counter.step()
+}
+
+#let _mref(entry) = {
+  link(label(entry.id), entry.marker)
+}
+
+// Link to `path` (a value in the marker positioning mini-language)
+#let mref(path, title: none, prefix: none, counter-style: none) = {
+  _resolve-marker("mrefs", _mref, _mref-counter,
+    path, title: title, prefix: prefix, counter-style: counter-style
+  )
+}
+
+#let _mquote(entry, language: none, block: false) = {
+  let lang = if language != none { language } else { entry.lang }
+  _lang.update(lang)
+  if block { render(entry.rendered) } else { box(render(entry.rendered)) }
+}
+
+#let mquote(path, prefix: none, language: none, block: false) = {
+  _resolve-marker("mquotes", _mquote.with(language: language, block: block),
+    _mquote-counter,
+    path, prefix: prefix
+  )
+}
+
+#let massert(path, prefix: none) = {
+  _resolve-marker("masserts", none, none, path, prefix: prefix)
+}
+
 #let setup(json-path, body) = {
   if sys.inputs.at("alectryon-mode", default: none) == "query" {
     // Skip processing when running in query mode
@@ -207,30 +293,30 @@
     return body
   }
 
-  let data = json(json-path)
-  if data.at("version") != alectryon-json-version {
+  let js = json(json-path)
+  if js.at("version") != alectryon-json-version {
     panic([`alectryon.typ` version #str(alectryon-json-version) does not match
-      #json-path version #repr(data.at("version")); re-run `alectryon`.])
+      #json-path version #repr(js.at("version")); re-run `alectryon`.])
   }
 
-  let snippets = data.at("snippets", default: ())
-  let alectryon-counter = counter("alectryon-block-index")
+  _marker-info.update(js.at("marker-info"))
+  let snippets = js.at("snippets")
 
   show raw.where(block: true): it => {
     let (lang, text) = read-lang-tag(it)
     if lang == none { return it }
     context {
-      let idx = alectryon-counter.get().first()
+      let idx = _block-counter.get().first()
       let entry = snippets.at(idx, default: (src: "", lang: "", rendered: none))
       if entry.src != text or entry.lang != lang {
         stale-warning(it)
       } else {
-        _alectryon-lang.update(entry.lang)
+        _lang.update(entry.lang)
         render(entry.rendered)
       }
     }
 
-    alectryon-counter.step()
+    _block-counter.step()
   }
 
   body

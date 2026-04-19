@@ -105,7 +105,7 @@ tests/errors.rst:130: (ERROR/3) In `.. coq::`:
    No match found for `.g#1` in `Check nat.`
    No match found for `.msg{*}` in `Abort.`
 tests/errors.rst:77: (ERROR/3) In :mref:`.s(Goal True)`: Not sure which code block this refers to; add ``.io#…`` to disambiguate.
-tests/errors.rst:87: (ERROR/3) In :mref:`.io#nope.s(123)`: Reference to unknown .io block nope.
+tests/errors.rst:87: (ERROR/3) In :mref:`.io#nope.s(123)`: Reference to unknown .io block 'nope'.
 tests/errors.rst:88: (ERROR/3) In :mref:`.s(Goal).g#25`: No goal matches '25'.
 tests/errors.rst:89: (ERROR/3) In :mref:`.s(pose proof).h#n.body`: Target is null
 tests/errors.rst:94: (ERROR/3) In assertion `.g{*not found*}`: No goal matches '*not found*'.

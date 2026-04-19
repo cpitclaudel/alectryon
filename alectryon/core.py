@@ -194,6 +194,7 @@ class RichSentence(Enriched, _RichSentence):
     pass
 
 RichFragment = Union[Text, RichSentence]
+Part = Union[RichSentence, Names, str]
 
 ## Core
 
@@ -234,45 +235,45 @@ def cwd_mgr(wd: _Path):
 TOut = TypeVar("TOut")
 
 class Backend(Generic[TOut]):
-    def __init__(self, highlighter):
+    def __init__(self, highlighter: Optional["Highlighter"]) -> None:
         self.highlighter = highlighter
 
-    def gen_fragment(self, fr) -> TOut: raise NotImplementedError()
-    def gen_hyp(self, hyp) -> TOut: raise NotImplementedError()
-    def gen_goal(self, goal) -> TOut: raise NotImplementedError()
-    def gen_message(self, message) -> TOut: raise NotImplementedError()
-    def highlight(self, s) -> TOut: raise NotImplementedError()
-    def gen_names(self, names) -> TOut: raise NotImplementedError()
-    def gen_code(self, code) -> TOut: raise NotImplementedError()
-    def gen_txt(self, s) -> TOut: raise NotImplementedError()
+    def gen_fragment(self, fr: RichFragment) -> TOut: raise NotImplementedError()
+    def gen_hyp(self, hyp: RichHypothesis) -> TOut: raise NotImplementedError()
+    def gen_goal(self, goal: RichGoal) -> TOut: raise NotImplementedError()
+    def gen_message(self, message: RichMessage) -> TOut: raise NotImplementedError()
+    def highlight(self, s: str) -> TOut: raise NotImplementedError()
+    def gen_names(self, names: Iterable[str]) -> TOut: raise NotImplementedError()
+    def gen_code(self, code: Optional[RichCode]) -> TOut: raise NotImplementedError()
+    def gen_txt(self, s: Optional[str]) -> TOut: raise NotImplementedError()
 
-    def highlight_enriched(self, obj):
+    def highlight_enriched(self, obj: RichCode) -> TOut:
+        assert self.highlighter
         lang = obj.props.get("lang")
         with self.highlighter.override(lang=lang) if lang else nullctx():
             return self.highlight(obj.contents)
 
-    def _gen_any(self, obj):
+    def _gen_any(self, obj: Part) -> TOut:
         if isinstance(obj, (Text, RichSentence)):
-            self.gen_fragment(obj)
-        elif isinstance(obj, RichHypothesis):
-            self.gen_hyp(obj)
-        elif isinstance(obj, RichGoal):
-            self.gen_goal(obj)
-        elif isinstance(obj, RichMessage):
-            self.gen_message(obj)
-        elif isinstance(obj, RichCode):
-            self.gen_code(obj)
-        elif isinstance(obj, Names):
-            self.gen_names(obj)
-        elif isinstance(obj, str):
-            self.gen_txt(obj)
-        else:
-            raise TypeError("Unexpected object type: {}".format(type(obj)))
+            return self.gen_fragment(obj)
+        if isinstance(obj, RichHypothesis):
+            return self.gen_hyp(obj)
+        if isinstance(obj, RichGoal):
+            return self.gen_goal(obj)
+        if isinstance(obj, RichMessage):
+            return self.gen_message(obj)
+        if isinstance(obj, RichCode):
+            return self.gen_code(obj)
+        if isinstance(obj, Names):
+            return self.gen_names(obj)
+        if isinstance(obj, str):
+            return self.gen_txt(obj)
 
-    def gen_fragments(self, fragments, ids=(), classes=()) -> TOut:
+    def gen_fragments(self, fragments: Iterable[RichFragment],
+                      ids: Tuple[str, ...] = (), classes: Tuple[str, ...] = ()) -> TOut:
         raise NotImplementedError
 
-    def gen(self, annotated) -> Iterable[Optional[TOut]]:
+    def gen(self, annotated: Iterable[Optional[Iterable[RichFragment]]]) -> Iterable[Optional[TOut]]:
         for fragments in annotated:
             yield self.gen_fragments(fragments) if fragments is not None else None
 

@@ -1,5 +1,9 @@
 {
     "version": 1,
+    "marker-info": {
+        "mrefs": [],
+        "mquotes": []
+    },
     "snippets": [
         {
             "src": "Require Import PeanoNat.",
@@ -14,7 +18,7 @@
         {
             "src": "Fixpoint even (n: nat): bool :=\n  match n with\n  | 0 => true\n  | 1 => false\n  | S (S n) => even n\n  end.\n\nArguments even : simpl nomatch.",
             "lang": "coq",
-            "rendered": ["io", ["+", ["sentence", ["code", "Fixpoint even (n: nat): bool :=\n  match n with\n  | 0 => true\n  | 1 => false\n  | S (S n) => even n\n  end.\n"], null], ["code", "\n"], ["sentence", ["code", "Arguments even : simpl nomatch."], null]]]
+            "rendered": ["io", ["+", ["sentence", ["code", "Fixpoint even (n: nat): bool :=\n  match n with\n  | 0 => true\n  | 1 => false\n  | S (S n) => even n\n  end.\n"], null], ["txt", "\n"], ["sentence", ["code", "Arguments even : simpl nomatch."], null]]]
         },
         {
             "src": "Lemma even_Even :\n  forall n, even n = true <-> Even n.\nProof.\n  induction n.\n  all: cbn.\n  - split.\n    all: constructor.\n  - Fail apply IHn.",
@@ -44,7 +48,7 @@
         {
             "src": "(* .no-in .unfold *)\nGoal True.\n  idtac \"done\";\n    exact I.\nQed.\n\nPrint nat.\nCompute 3 + 3. (* .in *)\nCompute andb true false.",
             "lang": "coq",
-            "rendered": ["io", ["+", ["sentence", null, ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", null, ["+", ["messages", ["+", ["message", ["txt", "done"]]]]]], ["code", "\n"], ["sentence", null, ["+", ["messages", ["+", ["message", ["txt", "Inductive nat : Set :=  O : nat | S : nat -> nat.\n\nArguments S _%_nat_scope"]]]]]], ["sentence", ["code", "Compute 3 + 3."], ["+", ["messages", ["+", ["message", ["txt", "= 6\n: nat"]]]]]], ["sentence", null, ["+", ["messages", ["+", ["message", ["txt", "= false\n: bool"]]]]]]]]
+            "rendered": ["io", ["+", ["sentence", null, ["+", ["goals", ["+", ["goal", null, null, ["code", "True"]]]]]], ["sentence", null, ["+", ["messages", ["+", ["message", ["txt", "done"]]]]]], ["txt", "\n"], ["sentence", null, ["+", ["messages", ["+", ["message", ["txt", "Inductive nat : Set :=  O : nat | S : nat -> nat.\n\nArguments S _%_nat_scope"]]]]]], ["sentence", ["code", "Compute 3 + 3."], ["+", ["messages", ["+", ["message", ["txt", "= 6\n: nat"]]]]]], ["sentence", null, ["+", ["messages", ["+", ["message", ["txt", "= false\n: bool"]]]]]]]]
         }
     ]
 }

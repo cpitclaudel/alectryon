@@ -1,5 +1,9 @@
 {
     "version": 1,
+    "marker-info": {
+        "mrefs": [],
+        "mquotes": []
+    },
     "snippets": [
         {
             "src": "Definition a : nat :=\n  let '(x, y) := (1, 2) in\n  let ' (z, t) := (x, y) in\n  let 'tt := tt in\n  let fix f (x: nat) {struct x} : nat := x in\n  (fun ' (f, x, y) => f (x + y)) (f, t, y).\nPrint a.",

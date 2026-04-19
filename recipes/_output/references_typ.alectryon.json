@@ -1,0 +1,113 @@
+{
+    "version": 1,
+    "marker-info": {
+        "mrefs": [
+            {"path": "Fixpoint plus_comm", "id": "references-typ-typ-fixpoint-plus-comm-0", "marker": "1"},
+            {"path": "destruct n", "id": "references-typ-typ-destruct-n-0", "marker": "\u25c9"},
+            {"path": ".s(destruct n).g#1", "id": "references-typ-typ-s-destruct-n-g-1-0", "marker": "2"},
+            {"path": ".s(destruct n).g#1.h#n", "id": "references-typ-typ-s-destruct-n-g-1-h-n-0", "marker": "3"},
+            {"path": ".s(destruct n).g#1.h(n = 0)", "id": "references-typ-typ-s-destruct-n-g-1-h-n-0-0", "marker": "4"},
+            {"path": ".s(destruct n).ccl", "id": "references-typ-typ-s-destruct-n-ccl-0", "marker": "5"},
+            {"path": ".s(destruct n).g(S n0)", "id": "references-typ-typ-s-destruct-n-g-s-n0-0", "marker": "6"},
+            {"path": ".s(destruct n).g{*S n0*}.h(n = S)", "id": "references-typ-typ-s-destruct-n-g-s-n0-h-n-s-0", "marker": "7"},
+            {"path": ".s(destruct n).g{*S n0*}.ccl", "id": "references-typ-typ-s-destruct-n-g-s-n0-ccl-0", "marker": "8"},
+            {"path": ".s(destruct n).g#1.h#plus_comm", "id": "references-typ-typ-s-destruct-n-g-1-h-plus-comm-0", "marker": "9"},
+            {"path": ".s(destruct n).h#plus_comm", "id": "references-typ-typ-s-destruct-n-g-1-h-plus-comm-0", "marker": "9"},
+            {"path": ".s(destruct n).h(forall)", "id": "references-typ-typ-s-destruct-n-g-1-h-plus-comm-0", "marker": "9"},
+            {"path": ".s(destruct n).h{forall*}", "id": "references-typ-typ-s-destruct-n-g-1-h-plus-comm-0", "marker": "9"},
+            {"path": ".io#setup.s(Base case)", "id": "references-typ-typ-io-setup-s-base-case-0", "marker": "10"},
+            {"path": "Induction", "id": "references-typ-typ-induction-0", "marker": "11"},
+            {"path": ".io#setup.s(Fixpoint).in", "id": "references-typ-typ-fixpoint-plus-comm-0", "marker": "1"},
+            {"path": ".io#cp.s(About)", "id": "references-typ-typ-io-cp-s-about-0", "marker": "\u03b1"},
+            {"path": ".io#cp.s(Print)", "id": "references-typ-typ-io-cp-s-print-0", "marker": "\u03b2"},
+            {"path": ".io#cp.s(Check)", "id": "references-typ-typ-io-cp-s-check-0", "marker": "\u03b3"},
+            {"path": ".io#cp.s(Compute)", "id": "references-typ-typ-io-cp-s-compute-0", "marker": "\u03b4"},
+            {"path": ".io#cp.s(simpl)", "id": "references-typ-typ-io-cp-s-simpl-0", "marker": "i"},
+            {"path": ".io#cp.s(cbn)", "id": "references-typ-typ-io-cp-s-cbn-0", "marker": "ro"},
+            {"path": ".io#cp.s(cbv)", "id": "references-typ-typ-io-cp-s-cbv-0", "marker": "ha"},
+            {"path": ".io#cp.s(lazy)", "id": "references-typ-typ-io-cp-s-lazy-0", "marker": "ni"},
+            {"path": ".io#cp.s(vm_compute)", "id": "references-typ-typ-io-cp-s-vm-compute-0", "marker": "ho"},
+            {"path": ".io#cp.s(pattern)", "id": "references-typ-typ-io-cp-s-pattern-0", "marker": "he"},
+            {"path": ".io#setup.s(destruct n).g#1.h(n = 0)", "id": "references-typ-typ-s-destruct-n-g-1-h-n-0-0", "marker": "4"},
+            {"path": ".io#setup.s(destruct n).g#2.h(n = S)", "id": "references-typ-typ-s-destruct-n-g-s-n0-h-n-s-0", "marker": "7"},
+            {"path": ".io#pr.s(induction 1)", "id": "references-typ-typ-io-pr-s-induction-1-0", "marker": "12"},
+            {"path": ".io#pr.s(induction 1).g#4.h#l", "id": "references-typ-typ-io-pr-s-induction-1-g-4-h-l-0", "marker": "13"}
+        ],
+        "mquotes": [
+            {"path": ".io#setup.s(destruct n).g#1.h(n = 0)", "rendered": ["hyp", ["txt", "Heq"], null, ["code", "n = 0"]], "lang": "coq"},
+            {"path": ".io#setup.s(destruct n).g#2.h(n = S)", "rendered": ["hyp", ["txt", "Heq"], null, ["code", "n = S n0"]], "lang": "coq"},
+            {"path": ".io#pr.s(induction 1).g#2.name", "rendered": ["txt", "gg"], "lang": "coq"},
+            {"path": ".io#pr.s(induction 1).g#4.h#IH*1.type", "rendered": ["code", "List.In a l -> List.In a l'"], "lang": "coq"},
+            {"path": ".io#pr.s(induction 1).g#4.h#IH*2.type", "rendered": ["code", "List.In a l' -> List.In a l''"], "lang": "coq"},
+            {"path": ".io#pr.s(induction 1).g#4.h{Permutation l l'}.name", "rendered": ["txt", "H"], "lang": "coq"},
+            {"path": ".io#pr.s(induction 1).g#4.h{Permutation l' l''}.name", "rendered": ["txt", "H0"], "lang": "coq"},
+            {"path": ".g#1.h(n = 0)", "rendered": ["hyp", ["txt", "Heq"], null, ["code", "n = 0"]], "lang": "coq"},
+            {"path": ".g#2.h(n = S)", "rendered": ["hyp", ["txt", "Heq"], null, ["code", "n = S n0"]], "lang": "coq"},
+            {"path": ".g#2.name", "rendered": ["txt", "gg"], "lang": "coq"},
+            {"path": ".h#IH*1.type", "rendered": ["code", "List.In a l -> List.In a l'"], "lang": "coq"},
+            {"path": ".h#IH*2.type", "rendered": ["code", "List.In a l' -> List.In a l''"], "lang": "coq"},
+            {"path": ".h{Permutation l l'}.name", "rendered": ["txt", "H"], "lang": "coq"},
+            {"path": ".h{Permutation l' l''}.name", "rendered": ["txt", "H0"], "lang": "coq"},
+            {"path": ".s(Record).in", "rendered": ["code", "Record P {A B: Type} :=\n  { p_first: A;\n    p_second: B }."], "lang": "coq"},
+            {"path": ".s(Goal).in", "rendered": ["code", "Goal forall {A B} (p: @P A B),\n  let a_first := p.(p_first) in\n  let b_second := p.(p_second) in\n  {| p_first := a_first;\n     p_second := b_second |} = p."], "lang": "coq"},
+            {"path": ".io#pr.s(Check).msg(nat)", "rendered": ["message", ["txt", "let t := nat in forall n : t, n >= 0\n     : Prop"]], "lang": "coq"},
+            {"path": ".s(Goal).in", "rendered": ["code", "Goal forall {A B} (p: @P A B),\n  let a_first := p.(p_first) in\n  let b_second := p.(p_second) in\n  {| p_first := a_first;\n     p_second := b_second |} = p."], "lang": "coq"},
+            {"path": ".io#pr.s(Check).msg(nat)", "rendered": ["message", ["txt", "let t := nat in forall n : t, n >= 0\n     : Prop"]], "lang": "coq"},
+            {"path": ".h{Permutation l l'}", "rendered": ["hyp", ["txt", "H"], null, ["code", "Permutation l l'"]], "lang": "coq"},
+            {"path": ".h{Permutation l' l''}", "rendered": ["hyp", ["txt", "H0"], null, ["code", "Permutation l' l''"]], "lang": "coq"},
+            {"path": ".io#scheme.s(Extraction Nat.add).msg(add)", "rendered": ["message", ["txt", "(define add (lambdas (n m)\n  (match n\n     ((O) m)\n     ((S p) `(S ,(@ add p m))))))\n\n"]], "lang": "coq"}
+        ]
+    },
+    "snippets": [
+        {
+            "src": "Fixpoint plus_comm (n m: nat) {struct n} : n + m = m + n.\nProof.\n  destruct n eqn:Heq. (* .unfold *)\n  - (* Base case *)\n    rewrite <- plus_n_O; reflexivity.",
+            "lang": "coq",
+            "rendered": ["io", ["+", ["id", ["marker", ["sentence", ["code", "Fixpoint plus_comm (n m: nat) {struct n} : n + m = m + n."], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "plus_comm"], null, ["code", "forall n m : nat, n + m = m + n"]], ["hyp", ["txt", "n, m"], null, ["code", "nat"]]], ["code", "n + m = m + n"]]]]]], "1"], "references-typ-typ-fixpoint-plus-comm-0"], ["sentence", ["code", "Proof."], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "plus_comm"], null, ["code", "forall n m : nat, n + m = m + n"]], ["hyp", ["txt", "n, m"], null, ["code", "nat"]]], ["code", "n + m = m + n"]]]]]], ["id", ["marker", ["sentence", ["code", "  destruct n eqn:Heq."], ["+", ["goals", ["+", ["id", ["goal", null, ["+", ["id", ["marker", ["hyp", ["txt", "plus_comm"], null, ["code", "forall n m : nat, n + m = m + n"]], "9"], "references-typ-typ-s-destruct-n-g-1-h-plus-comm-0"], ["id", ["marker", ["hyp", ["txt", "n, m"], null, ["code", "nat"]], "3"], "references-typ-typ-s-destruct-n-g-1-h-n-0"], ["id", ["marker", ["hyp", ["txt", "Heq"], null, ["code", "n = 0"]], "4"], "references-typ-typ-s-destruct-n-g-1-h-n-0-0"]], ["id", ["marker", ["code", "0 + m = m + 0"], "5"], "references-typ-typ-s-destruct-n-ccl-0"], "2"], "references-typ-typ-s-destruct-n-g-1-0"], ["id", ["goal", null, ["+", ["hyp", ["txt", "plus_comm"], null, ["code", "forall n m : nat, n + m = m + n"]], ["hyp", ["txt", "n, m, n0"], null, ["code", "nat"]], ["id", ["marker", ["hyp", ["txt", "Heq"], null, ["code", "n = S n0"]], "7"], "references-typ-typ-s-destruct-n-g-s-n0-h-n-s-0"]], ["id", ["marker", ["code", "S n0 + m = m + S n0"], "8"], "references-typ-typ-s-destruct-n-g-s-n0-ccl-0"], "6"], "references-typ-typ-s-destruct-n-g-s-n0-0"]]]]], "\u25c9"], "references-typ-typ-destruct-n-0"], ["id", ["marker", ["sentence", ["code", "  - (* Base case *)"], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "plus_comm"], null, ["code", "forall n m : nat, n + m = m + n"]], ["hyp", ["txt", "n, m"], null, ["code", "nat"]], ["hyp", ["txt", "Heq"], null, ["code", "n = 0"]]], ["code", "0 + m = m + 0"]]]]]], "10"], "references-typ-typ-io-setup-s-base-case-0"], ["sentence", ["code", "    rewrite <- plus_n_O; reflexivity."], null]]]
+        },
+        {
+            "src": "  - (* Induction *)\n    simpl.\n    rewrite (plus_comm n0).\n    rewrite plus_n_Sm.\n    reflexivity.\nQed.",
+            "lang": "coq",
+            "rendered": ["io", ["+", ["id", ["marker", ["sentence", ["code", "  - (* Induction *)"], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "plus_comm"], null, ["code", "forall n m : nat, n + m = m + n"]], ["hyp", ["txt", "n, m, n0"], null, ["code", "nat"]], ["hyp", ["txt", "Heq"], null, ["code", "n = S n0"]]], ["code", "S n0 + m = m + S n0"]]]]]], "11"], "references-typ-typ-induction-0"], ["sentence", ["code", "    simpl."], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "plus_comm"], null, ["code", "forall n m : nat, n + m = m + n"]], ["hyp", ["txt", "n, m, n0"], null, ["code", "nat"]], ["hyp", ["txt", "Heq"], null, ["code", "n = S n0"]]], ["code", "S (n0 + m) = m + S n0"]]]]]], ["sentence", ["code", "    rewrite (plus_comm n0)."], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "plus_comm"], null, ["code", "forall n m : nat, n + m = m + n"]], ["hyp", ["txt", "n, m, n0"], null, ["code", "nat"]], ["hyp", ["txt", "Heq"], null, ["code", "n = S n0"]]], ["code", "S (m + n0) = m + S n0"]]]]]], ["sentence", ["code", "    rewrite plus_n_Sm."], ["+", ["goals", ["+", ["goal", null, ["+", ["hyp", ["txt", "plus_comm"], null, ["code", "forall n m : nat, n + m = m + n"]], ["hyp", ["txt", "n, m, n0"], null, ["code", "nat"]], ["hyp", ["txt", "Heq"], null, ["code", "n = S n0"]]], ["code", "m + S n0 = m + S n0"]]]]]], ["sentence", ["code", "    reflexivity.\n"], null], ["sentence", ["code", "Qed."], null]]]
+        },
+        {
+            "src": "About Nat.add.\nPrint Nat.add.\nCheck Nat.add 2 3.\nCompute Nat.add 2 3.\n\nEval simpl in Nat.add 2 3.\nEval cbn in Nat.add 2 3.\nEval cbv in Nat.add 2 3.\nEval lazy in Nat.add 2 3.\nEval vm_compute in Nat.add 2 3.\nEval pattern 2 in Nat.add 2 3.",
+            "lang": "coq",
+            "rendered": ["io", ["+", ["id", ["marker", ["sentence", ["code", "About Nat.add."], ["+", ["messages", ["+", ["message", ["txt", "Nat.add : nat -> nat -> nat\n\nNat.add is not universe polymorphic\nArguments Nat.add (n m)%_nat_scope\nNat.add is transparent\nExpands to: Constant Corelib.Init.Nat.add\nDeclared in\nlibrary Corelib.Init.Nat, line 47, characters 9-12"]]]]]], "\u03b1"], "references-typ-typ-io-cp-s-about-0"], ["id", ["marker", ["sentence", ["code", "Print Nat.add."], ["+", ["messages", ["+", ["message", ["txt", "Nat.add =\nfix add (n m : nat) {struct n} : nat :=\n  match n with\n  | 0 => m\n  | S p => S (add p m)\n  end\n     : nat -> nat -> nat\n\nArguments Nat.add (n m)%_nat_scope"]]]]]], "\u03b2"], "references-typ-typ-io-cp-s-print-0"], ["id", ["marker", ["sentence", ["code", "Check Nat.add 2 3."], ["+", ["messages", ["+", ["message", ["txt", "2 + 3\n     : nat"]]]]]], "\u03b3"], "references-typ-typ-io-cp-s-check-0"], ["id", ["marker", ["sentence", ["code", "Compute Nat.add 2 3."], ["+", ["messages", ["+", ["message", ["txt", "= 5\n: nat"]]]]]], "\u03b4"], "references-typ-typ-io-cp-s-compute-0"], ["txt", "\n"], ["id", ["marker", ["sentence", ["code", "Eval simpl in Nat.add 2 3."], ["+", ["messages", ["+", ["message", ["txt", "= 5\n: nat"]]]]]], "i"], "references-typ-typ-io-cp-s-simpl-0"], ["id", ["marker", ["sentence", ["code", "Eval cbn in Nat.add 2 3."], ["+", ["messages", ["+", ["message", ["txt", "= 5\n: nat"]]]]]], "ro"], "references-typ-typ-io-cp-s-cbn-0"], ["id", ["marker", ["sentence", ["code", "Eval cbv in Nat.add 2 3."], ["+", ["messages", ["+", ["message", ["txt", "= 5\n: nat"]]]]]], "ha"], "references-typ-typ-io-cp-s-cbv-0"], ["id", ["marker", ["sentence", ["code", "Eval lazy in Nat.add 2 3."], ["+", ["messages", ["+", ["message", ["txt", "= 5\n: nat"]]]]]], "ni"], "references-typ-typ-io-cp-s-lazy-0"], ["id", ["marker", ["sentence", ["code", "Eval vm_compute in Nat.add 2 3."], ["+", ["messages", ["+", ["message", ["txt", "= 5\n: nat"]]]]]], "ho"], "references-typ-typ-io-cp-s-vm-compute-0"], ["id", ["marker", ["sentence", ["code", "Eval pattern 2 in Nat.add 2 3."], ["+", ["messages", ["+", ["message", ["txt", "= (fun n : nat => n + S n) 2\n: nat"]]]]]], "he"], "references-typ-typ-io-cp-s-pattern-0"]]]
+        },
+        {
+            "src": "Check nat. (* .in[foo]=bar *)",
+            "lang": "coq",
+            "rendered": ["io", ["+", ["sentence", ["code", "Check nat."], ["+", ["messages", ["+", ["message", ["txt", "nat\n     : Set"]]]]]]]]
+        },
+        {
+            "src": "Require Import Extraction. (* .none *)\nExtraction Language Haskell.\nExtraction Nat.add. (* .unfold .msg[lang]=haskell *)",
+            "lang": "coq",
+            "rendered": ["io", ["+", ["sentence", ["code", "Extraction Language Haskell.\n"], null], ["sentence", ["code", "Extraction Nat.add."], ["+", ["messages", ["+", ["message", ["txt", "add :: Nat -> Nat -> Nat\nadd n m =\n  case n of {\n   O -> m;\n   S p -> S (add p m)}\n\n"]]]]]]]]
+        },
+        {
+            "src": "Record P {A B: Type} :=\n  { p_first: A;\n    p_second: B }.\nGoal forall {A B} (p: @P A B),\n  let a_first := p.(p_first) in\n  let b_second := p.(p_second) in\n  {| p_first := a_first;\n     p_second := b_second |} = p.\nProof. destruct p; reflexivity. Qed.",
+            "lang": "coq",
+            "rendered": ["io", ["+", ["sentence", ["code", "Record P {A B: Type} :=\n  { p_first: A;\n    p_second: B }.\n"], null], ["sentence", ["code", "Goal forall {A B} (p: @P A B),\n  let a_first := p.(p_first) in\n  let b_second := p.(p_second) in\n  {| p_first := a_first;\n     p_second := b_second |} = p."], ["+", ["goals", ["+", ["goal", null, null, ["code", "forall (A B : Type) (p : P),\nlet a_first := p_first p in\nlet b_second := p_second p in\n{| p_first := a_first; p_second := b_second |} = p"]]]]]], ["sentence", ["code", "Proof."], ["+", ["goals", ["+", ["goal", null, null, ["code", "forall (A B : Type) (p : P),\nlet a_first := p_first p in\nlet b_second := p_second p in\n{| p_first := a_first; p_second := b_second |} = p"]]]]]], ["sentence", ["code", "destruct p; reflexivity. "], null], ["sentence", ["code", "Qed."], null]]]
+        },
+        {
+            "src": "(* .none *)\nExtraction Language Scheme.\nExtraction Nat.add.",
+            "lang": "coq",
+            "rendered": null
+        },
+        {
+            "src": "(* -.h#l* -.h#[aA] -.s(Check let).msg(let) -.s{Proof.} *)\nRequire Import Coq.Sorting.Permutation. (* .none *)\nCheck let t := nat in forall n: t, n >= 0. (* .unfold *)\nTheorem Permutation_In {A} (l l' : list A) (a: A) :\n  Permutation l l' -> List.In a l -> List.In a l'. (* .unfold *)\nProof.\n  induction 1; intros * Hin; [ | refine ?[gg] | .. ].\n    (* .unfold -.g#* .g#2 .g#4 .g#4.h{list A} *)\n  all: simpl in *; tauto.\nQed.",
+            "lang": "coq",
+            "rendered": ["io", ["+", ["sentence", ["code", "Check let t := nat in forall n: t, n >= 0.\n"], null], ["sentence", ["code", "Theorem Permutation_In {A} (l l' : list A) (a: A) :\n  Permutation l l' -> List.In a l -> List.In a l'."], ["+", ["goals", ["+", ["goal", null, null, ["code", "Permutation l l' -> List.In a l -> List.In a l'"]]]]]], ["id", ["marker", ["sentence", ["code", "  induction 1; intros * Hin; [ | refine ?[gg] | .. ]."], ["+", ["goals", ["+", ["goal", ["txt", "gg"], ["+", ["hyp", ["txt", "H"], null, ["code", "Permutation l l'"]], ["hyp", ["txt", "IHPermutation"], null, ["code", "List.In a l -> List.In a l'"]], ["hyp", ["txt", "Hin"], null, ["code", "List.In a (x :: l)"]]], ["code", "List.In a (x :: l')"]], ["goal", null, ["+", ["id", ["marker", ["hyp", ["txt", "l, l', l''"], null, ["code", "list A"]], "13"], "references-typ-typ-io-pr-s-induction-1-g-4-h-l-0"], ["hyp", ["txt", "H"], null, ["code", "Permutation l l'"]], ["hyp", ["txt", "H0"], null, ["code", "Permutation l' l''"]], ["hyp", ["txt", "IHPermutation1"], null, ["code", "List.In a l -> List.In a l'"]], ["hyp", ["txt", "IHPermutation2"], null, ["code", "List.In a l' -> List.In a l''"]], ["hyp", ["txt", "Hin"], null, ["code", "List.In a l"]]], ["code", "List.In a l''"]]]]]], "12"], "references-typ-typ-io-pr-s-induction-1-0"], ["txt", "\n"], ["sentence", ["code", "  all: simpl in *; tauto.\n"], null], ["sentence", ["code", "Qed."], null]]]
+        },
+        {
+            "src": "Print plus.",
+            "lang": "coq",
+            "rendered": ["io", ["+", ["sentence", ["code", "Print plus."], ["+", ["messages", ["+", ["message", ["txt", "Notation plus := Nat.add\n\nNat.add =\nfix add (n m : nat) {struct n} : nat :=\n  match n with\n  | 0 => m\n  | S p => S (add p m)\n  end\n     : nat -> nat -> nat\n\nArguments Nat.add (n m)%_nat_scope"]]]]]]]]
+        },
+        {
+            "src": "Print Nat.add.",
+            "lang": "coq",
+            "rendered": ["io", ["+", ["sentence", ["code", "Print Nat.add."], ["+", ["messages", ["+", ["message", ["txt", "Nat.add =\nfix add (n m : nat) {struct n} : nat :=\n  match n with\n  | 0 => m\n  | S p => S (add p m)\n  end\n     : nat -> nat -> nat\n\nArguments Nat.add (n m)%_nat_scope"]]]]]]]]
+        }
+    ]
+}

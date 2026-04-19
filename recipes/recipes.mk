@@ -242,5 +242,14 @@ _output/references.lua.tex: references.rst
 	DOCUTILSCONFIG=references.docutils.conf $(alectryon) $< -o $@ --latex-dialect lualatex
 recipes_targets += _output/references.lua.tex
 
+# Typst → JSON
+_output/references_typ.alectryon.json: references_typ.typ
+	$(alectryon) $<
+recipes_targets += _output/references_typ.alectryon.json
+# Typst → PDF
+_output/references_typ.pdf: references_typ.typ | _output/
+	typst compile --root . $< $@
+recipes_targets += _output/references_typ.pdf
+
 $(recipes_targets): out_dir := _output
 targets += $(recipes_targets)
