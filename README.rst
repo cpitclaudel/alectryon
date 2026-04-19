@@ -36,11 +36,8 @@ Support for Rocq ≥ 9 uses the VsRocq server.  For versions < 9, use the ``coq-
 Usage
 =====
 
-As a standalone program
------------------------
-
 Recipes
-~~~~~~~
+-------
 
 Try these recipes in the ``recipes`` directory of this repository (for each task I listed two commands: a short one and a longer one making everything explicit):
 
@@ -98,6 +95,12 @@ Annotate snippets (``\begin{alectryon}{coq}{unfold}``) within a TeX/LaTeX docume
       alectryon coq.tex
       alectryon --frontend tex --backend latex coq.tex -o coq.annotated.tex
 
+Annotate fenced blocks (``\`\`\`coq``) within a Typst document (see `<recipes/literate_typst.typ>`__); make sure to add ``#import "/alectryon.typ"`` and ``#show: alectryon.setup.with("/{your_document}.alectryon.json")`` at the beginning of your document:
+   .. code::
+
+      alectryon paper.typ && typst compile paper.typ
+      alectryon --frontend typst --backend snippets-typst paper.typ -o paper.alectryon.json
+
 Record goals and responses for fragments contained in a JSON source file:
    .. code::
 
@@ -111,7 +114,7 @@ Record goals and responses and format them as HTML for fragments contained in a 
       alectryon --frontend coq.json --backend snippets-html fragments.json -o fragments.v.snippets.html
 
 Command-line interface
-~~~~~~~~~~~~~~~~~~~~~~
+----------------------
 
 .. code::
 
@@ -164,8 +167,8 @@ Use ``alectryon --help`` for full command line details.
 
 - The exit code produced by Alectryon indicates whether the conversion succeeded: ``0`` for success, ``1`` for a generic error, and ``10`` + the level of the most severe Docutils error if using a Docutils-based pipeline (hence ``10`` is debug, ``11`` is info, ``12`` is warning, ``13`` is error, and ``14`` is severe error).  Docutils errors at levels below `exit_status_level <https://docutils.sourceforge.io/docs/user/config.html#exit-status-level>`__ (default: 3) do not affect the exit code, so level ``10``, ``11``, and ``12`` are not used by default.
 
-As a library
-------------
+Programmatic interface
+----------------------
 
 Use ``alectryon.vsrocq.annotate(chunks: list[str])``, which returns an object with the same structure as the JSON above, but using objects instead of records with a ``_type`` field:
 
@@ -193,68 +196,14 @@ Use ``alectryon.vsrocq.annotate(chunks: list[str])``, which returns an object wi
 
 The results of ``annotate`` can be fed to ``alectryon.html.HtmlGenerator(highlighter).gen()`` to generate HTML (with CSS classes defined in ``alectryon.css``).  Pass ``highlighter=alectryon.pygments.highlight_html`` to use Pygments, or any other function from strings to ``dominate`` tags to use a custom syntax highlighter.
 
-See `<recipes/api.py>`__ and `<recipes/api.rst>`__ for examples of using Alectryon as a library.
+See `<recipes/api.py>`__ and `<recipes/api.rst>`__ for examples of using Alectryon as a library.  See `defining custom drivers <custom-drivers_>`__ below for advanced uses.
 
-As a docutils or Sphinx module
-------------------------------
+.. _controlling-output:
 
-With blogs (Pelican, Nikola, Hugo, etc.)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Controlling output in literate documents
+----------------------------------------
 
-Include the following code in your configuration file to setup Alectryon's ``docutils`` extensions:
-
-.. code-block:: python
-
-    import alectryon.docutils
-    alectryon.docutils.setup()
-
-This snippet registers a ``.. coq::`` directive, which feeds its contents to Alectryon and displays the resulting responses and goals interleaved with the input and a ``:coq:`` role for highlighting inline Coq code.  It also replaces the default Pygments highlighter for Coq with Alectryon's improved one, and sets `:coq:` as the default role.  See |help(docutils)|_ for more information.
-
-To ensure that Coq blocks render properly, you'll need to tell your blogging platform to include ``alectryon.css``.  Using a git submodule or vendoring a copy of Alectryon is an easy way to ensure that this stylesheet is accessible to your blogging software.  Alternatively, you can use ``alectryon.cli.copy_assets``.  Assets are stored in ``alectryon.html.ASSETS.PATH``; their names are in ``alectryon.html.ASSETS.CSS`` and ``alectryon.html.ASSETS.JS``.
-
-By default, Alectryon's docutils module will raise warnings for lines over 72 characters.  You can change the threshold or silence the warnings by adjusting ``alectryon.docutils.LONG_LINE_THRESHOLD``.  With `Pelican <https://github.com/getpelican/pelican>`_, use the following snippet to make warnings non-fatal:
-
-.. code-block:: python
-
-   DOCUTILS_SETTINGS = {
-       'halt_level': 3, # Error
-       'warning_stream': None # stderr
-   }
-
-.. |help(docutils)| replace:: ``help(alectryon.docutils)``
-.. _help(docutils): alectryon/docutils.py
-
-I test regularly with Pelican; other systems will likely need minimal adjustments.
-
-With Sphinx
-~~~~~~~~~~~
-
-For Sphinx, add the following to your ``conf.py`` file:
-
-.. code-block:: python
-
-   extensions = ["alectryon.sphinx"]
-
-If left unset in your config file, the default role (the one you get with single backticks) will be set to ``:coq:``.  To get syntax highlighting for inline snippets, create a ``docutils.conf`` file with the `following contents <https://stackoverflow.com/questions/21591107/sphinx-inline-code-highlight>`_ along your ``conf.py`` file (see `below <docutils.conf_>`_ for details)::
-
-   [restructuredtext parser]
-   syntax_highlight = short
-
-Setting options
-~~~~~~~~~~~~~~~
-
-Various settings are exposed as global constants in the docutils module:
-
-- ``alectryon.docutils.LONG_LINE_THRESHOLD`` (same as ``--long-line-threshold``)
-- ``alectryon.docutils.CACHE_DIRECTORY`` (same as ``--cache-directory``)
-- ``alectryon.docutils.CACHE_COMPRESSION`` (same as ``--cache-compression``)
-- ``alectryon.docutils.HTML_MINIFICATION`` (same as ``--html-minification``)
-- ``alectryon.docutils.AlectryonTransform.DRIVER_ARGS`` (same as ``--sertop-arg`` / ``--rocq-arg``)
-
-Controlling output
-~~~~~~~~~~~~~~~~~~
-
-The ``.. coq::`` directive takes a list of space-separated flags to control the way its contents are displayed:
+The ``.. coq::`` directive (``\`\`\`{coq}`` in Markdown) takes a list of space-separated flags to control the way its contents are displayed:
 
 - One option controls whether output is folded (``fold``) or unfolded (``unfold``).  When output is folded, users can reveal the output corresponding to each input line selectively.
 
@@ -286,6 +235,8 @@ These annotations can also be added to individual Coq sentences (⚠ *sentences*
       Goal True. (* .unfold *)                   ← Goal unfolded
         Fail exact 1. (* .in .messages .fails *) ← Goal omitted
         Fail fail. (* .messages .fails *)        ← Error message shown, input hidden
+
+In Typst documents, an annotation comment appearing alone on the first line of a code block applies to `the full block <io-header-comment_>`__.
 
 More precise inclusion/exclusion is possible using the `marker-placement mini-language <marker-language_>`__ described below.  For example:
 
@@ -404,106 +355,144 @@ Finally, you can attach arbitrary ``key``-``value`` to subparts of a goal matche
 
 **This feature is experimental**; the syntax might change.
 
-Extra roles and directives
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Integration with other documentation systems
+============================================
 
-For convenience, Alectryon includes a few extra roles and directives:
+With plain HTML and LaTeX documents
+-----------------------------------
 
-Markers and marker references
-*****************************
+Alectryon can be invoked on plain HTML or LaTeX documents (either handwritten or generated by another tool).  In that case, it consumes the document and rewrites it, replacing each marked code block with a recording of the proof.
 
-The ``:mref:`` role (short for “marker reference”) can be used to point the reader to a sentence, a goal, or a hypothesis.  The argument is a search pattern written in the `marker-placement mini-language <marker-language_>`__; Alectryon locates the corresponding object in the input sent to the prover or in the prover's output, inserts a marker at that point, and replaces the reference with a link to that marker.
+For LaTeX, add ``\usepackage{alectryon}`` and ``\usepackage{pygments}`` to your
+preamble, then wrap each code snippet in an ``alectryon`` environment, passing the language as the first argument and a space-separated list of `output-control flags <controlling-output_>`__ as the second argument:
 
-For example, the ``[γ]`` marker in the example above could be inserted using :literal:`:mref:\`.s(Induction).h#IHm\`` or :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m)\``.
+.. code-block:: latex
 
-By default markers refer to the most recent ``.. coq::`` block, but other blocks can be targeted by name by prepending ``.io#name`` to the argument of ``:mref:``.
+   \begin{alectryon}{coq}{unfold no-goals}
+   Check nat.
+   \end{alectryon}
 
-Markers can be customized by setting the ``:counter-style:`` option on a custom role derived from ``:mref:``; for example, to use Devanagari numerals:
+For HTML, wrap each snippet in ``<pre class="alectryon">``, and use the ``data-lang`` attribute to indicate the language and ``data-io`` to select the flags:
 
-.. code-block:: rst
+.. code-block:: html
 
-   .. role:: dref(mref)
-      :counter-style: ० १ २ ३ ४ ५ ६ ७ ८ ९
+   <pre class="alectryon" data-lang="coq" data-io="unfold no-goals">
+   Check nat.
+   </pre>
 
-More details and examples are given in `<recipes/references.rst>`__.
+See `<recipes/literate_LaTeX.tex>`__ and `<recipes/literate_HTML.html>`__ for examples.
 
-**This feature is experimental**: the syntax might change.
+With Typst
+----------
 
-Quoted references to goal fragments
-***********************************
+To use Alectryon from a Typst document (say, ``main.typ``), add the following two lines at the top of your file::
 
-The ``:mquote:`` role is similar to ``:mref:``, but it inserts a copy of the target instead of a link to it.  Targets may only be hypotheses, goal conclusions, or goal or hypothesis names.
+   #import "/alectryon.typ"
+   #show: alectryon.setup.with("/main.alectryon.json")
 
-For example, using :literal:`:mquote:\`.s(Induction).h#IHm.type\`` in the example above would print the type of ``IHm``, ``∀ n: ℕ, m + n = n + m`` whereas :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m).name\`` would produce only the name of the corresponding hypothesis, ``IHm``.
+Then, annotate code blocks within your file that you want executed and recorded with a ``\`\`\`{<lang>}`` fence (Alectryon ignores blocks fenced with regular  ``\`\`\`<lang>`` markers).  For example:
 
-An ``.. mquote:`` directive is also available.  It places the quoted elements in a block and preserves indentation and newlines, unlike the ``:mquote:`` role (whose output appears inline).
+.. code:: markdown
 
-More details and examples are given in `<recipes/references.rst>`__.
+   ```{coq}
+   Print nat. (* `{coq}`: output recorded and displayed *)
+   ```
 
-Output assertions
-*****************
+   ```coq
+   Check 1 + true. (* Plain `coq` without `{}`: not sent to the prover *)
+   ```
 
-Sometimes it is desirable to check that the prover produced the right output, without displaying that output to the user.  In these cases, Alectryon's marker-placement mini-language can serve as a poor lad's unit test.  The ``massert`` directive takes one argument (a path prefix), and checks that each line of its body is a valid reference to part of a previous goal.
+Then, run ``alectryon main.typ`` from the same directory (and re-run this command any time you change your embedded source code).  This command will read all ``{…}`` code blocks in ``main.typ``, run them through the appropriate prover, copy ``alectryon.typ`` (the Alectryon Typst library), and save prover outputs to ``main.alectryon.json`` (making it available to ``alectryon.typ``).
 
-More details and examples are given in `<recipes/references.rst>`__.
+.. _io-header-comment:
 
-Links to Coq identifiers
-************************
+Controlling output
+~~~~~~~~~~~~~~~~~~
 
-``:coqid:`` can be used to link to the documentation or definition of a Coq identifier in an external file.  Some examples:
+To control output in Typst documents, either place annotations on individual sentences, or place an annotation comment on its own line at the beginning of a block, with nothing else on the same line.  In the following example, the flags ``.no-in`` and ``.unfold`` apply to the whole block, whereas the flag ``.in`` applies only to ``exact I``::
 
-- :literal:`:coqid:\`Coq.Init.Nat.even\`` → `Coq.Init.Nat.even <https://coq.inria.fr/library/Coq.Init.Nat.html#even>`__
-- :literal:`:coqid:\`Coq.Init.Nat#even\`` → `even <https://coq.inria.fr/library/Coq.Init.Nat.html#even>`__
-- :literal:`:coqid:\`a predicate <Coq.Init.Nat.even>\`` → `a predicate <https://coq.inria.fr/library/Coq.Init.Nat.html#even>`__
-- :literal:`:coqid:\`Coq.Arith.PeanoNat#\`` → `Coq.Arith.PeanoNat <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#>`__
-- :literal:`:coqid:\`a library <Coq.Arith.PeanoNat#>\`` → `a library <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#>`__
-- :literal:`:coqid:\`Coq.Arith.PeanoNat#Nat.Even\`` → `Nat.Even <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#Nat.Even>`__
-- :literal:`:coqid:\`a predicate <Coq.Arith.PeanoNat#Nat.Even>\`` → `a predicate <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#Nat.Even>`__
+   ```coq
+   (* .no-in .unfold *)
+   Goal True.
+     exact I. (* .in *)
+   Qed.
+   ```
 
-By default, ``:coqid:`` only knows how to handle names from Coq's standard library (that is, names starting with ``Coq.``, which get translated to links pointing to https://coq.inria.fr/library/).  To link to other libraries, you can add entries to ``alectryon.docutils.COQ_IDENT_DB_URLS``, a list of tuples containing a prefix and a templated URL.  The URL can refer to ``$modpath``, the part before the last ``#`` or ``.`` in the fully qualified name, and ``$ident``, the part after the last ``#`` or ``.``.  Here is an example::
+Rebuilding automatically
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-   ("My.Lib", "https://your-url.com/$modpath.html#$ident")
+Alectryon has no built-in ``watch`` command, but you can use an external file watcher::
 
-Alternatively, you can inherit from ``:coqid:`` to define new roles.  The following defines a new ``:mylib:`` role, which assumes that its target is part of ``My.Lib``::
+   # Rebuild `paper.typ` any time `paper.alectryon.json` changes
+   typst watch paper.typ
 
-   .. role:: mylib(coqid)
-      :url: https://your-url.com/My.Lib.$modpath.html#$ident
+   # Rebuild `paper.alectryon.json` any time `paper.typ` changes
+   ## Linux/sh
+   main=paper.typ; while true; do time alectryon "$main"; inotifywait -qe modify "$main"; done
+   ## macOS/sh
+   main=paper.typ; fswatch -o "$main" | xargs -n1 -I{} time alectryon "$main"
 
-Caching
+Caveats
 ~~~~~~~
 
-The ``alectryon.json`` module has facilities to cache the prover's output.  Caching has multiple benefits:
+- Make sure to use Typst ≥ 0.14.2.
+- Alectryon uses ``typst query --root=$(pwd)`` to retrieve the list of fenced code blocks.  Make sure to run Alectryon from the right directory.
 
-1. Recompiling documents with unchanged code is much faster, since Coq snippets do not have to be re-evaluated.
-2. Deploying a website or recompiling a book does not require setting up a complete Coq development environment.
-3. Changes in output can be inspected by comparing cache files.  Caches contain just as much information as needed to recreate input/output listings, so they can be checked-in into source control, making it easy to assess whether a Coq update meaningfully affects a document (it's easy to miss breakage or subtle changes in output otherwise, as when using the copy-paste approach or even Alectryon without caching).
+With Docutils-based systems (Pelican, Nikola, Hugo, etc.)
+---------------------------------------------------------
 
-To enable caching on the command line, chose a directory and pass it to ``--cache-directory``.  Alectryon will record inputs and outputs in individual JSON files (one ``.cache`` file per source file) in subdirectories of that folder.  You may pass the directory containing your source files if you'd like to store caches alongside inputs.
-
-From Python, set ``alectryon.docutils.CACHE_DIRECTORY`` to enable caching.  For example, to store cache files alongside sources in Pelican, use the following code::
-
-   import alectryon.docutils
-   alectryon.docutils.CACHE_DIRECTORY = "content"
-
-See `<recipes/caching.v>`__ for an example.
-
-With a custom driver
---------------------
-
-For advanced usage, or to customize Alectryon's command-line interface, you can use a custom driver.  Create a new Python file, and add the following to it:
+Include the following code in your configuration file to setup Alectryon's ``docutils`` extensions:
 
 .. code-block:: python
 
-   from alectryon import cli
-   … Any extension code here
-   cli.main()
+    import alectryon.docutils
+    alectryon.docutils.setup()
 
-Extensions might include, registering additional docutils directives or roles with ``docutils.directives.register_directive`` and ``docutils.roles.register_canonical_role``, adding custom syntax highlighting for project-specific tokens using ``alectryon.pygments.add_tokens``, or even tweaking the operation of the Coq lexer in ``alectryon.pygments_lexer``, or monkey-patching parts of Alectryon's ``docutils`` module.
+This snippet registers a ``.. coq::`` directive, which feeds its contents to Alectryon and displays the resulting responses and goals interleaved with the input and a ``:coq:`` role for highlighting inline Coq code.  It also replaces the default Pygments highlighter for Coq with Alectryon's improved one, and sets `:coq:` as the default role.  See |help(docutils)|_ for more information.
 
-See `<recipes/alectryon_custom_driver.py>`__ for a concrete example.
+To ensure that Coq blocks render properly, you'll need to tell your blogging platform to include ``alectryon.css``.  Using a git submodule or vendoring a copy of Alectryon is an easy way to ensure that this stylesheet is accessible to your blogging software.  Alternatively, you can use ``alectryon.cli.copy_assets``.  Assets are stored in ``alectryon.html.ASSETS.PATH``; their names are in ``alectryon.html.ASSETS.CSS`` and ``alectryon.html.ASSETS.JS``.
 
-Other proof assistants
-======================
+By default, Alectryon's docutils module will raise warnings for lines over 72 characters.  You can change the threshold or silence the warnings by adjusting ``alectryon.docutils.LONG_LINE_THRESHOLD``.  With `Pelican <https://github.com/getpelican/pelican>`_, use the following snippet to make warnings non-fatal:
+
+.. code-block:: python
+
+   DOCUTILS_SETTINGS = {
+       'halt_level': 3, # Error
+       'warning_stream': None # stderr
+   }
+
+.. |help(docutils)| replace:: ``help(alectryon.docutils)``
+.. _help(docutils): alectryon/docutils.py
+
+I test regularly with Pelican; other systems will likely need minimal adjustments.
+
+With Sphinx
+~~~~~~~~~~~
+
+For Sphinx, add the following to your ``conf.py`` file:
+
+.. code-block:: python
+
+   extensions = ["alectryon.sphinx"]
+
+If left unset in your config file, the default role (the one you get with single backticks) will be set to ``:coq:``.  To get syntax highlighting for inline snippets, create a ``docutils.conf`` file with the `following contents <https://stackoverflow.com/questions/21591107/sphinx-inline-code-highlight>`_ along your ``conf.py`` file (see `below <docutils.conf_>`_ for details)::
+
+   [restructuredtext parser]
+   syntax_highlight = short
+
+Setting options
+~~~~~~~~~~~~~~~
+
+Various settings are exposed as global constants in the docutils module:
+
+- ``alectryon.docutils.LONG_LINE_THRESHOLD`` (same as ``--long-line-threshold``)
+- ``alectryon.docutils.CACHE_DIRECTORY`` (same as ``--cache-directory``)
+- ``alectryon.docutils.CACHE_COMPRESSION`` (same as ``--cache-compression``)
+- ``alectryon.docutils.HTML_MINIFICATION`` (same as ``--html-minification``)
+- ``alectryon.docutils.AlectryonTransform.DRIVER_ARGS`` (same as ``--sertop-arg`` / ``--rocq-arg``)
+
+Integration with other proof assistants
+=======================================
 
 .. _lean4:
 
@@ -583,8 +572,91 @@ Polyglot documents
 
 reStructuredText and Markdown documents compiled with Alectryon may combine all supported languages.  Code from each language is executed separately.  See `<recipes/polyglot.rst>`__ for an example.
 
+Extra roles and directives
+==========================
+
+For convenience, Alectryon includes a few extra roles and directives:
+
+Markers and marker references
+-----------------------------
+
+The ``:mref:`` role (short for “marker reference”) can be used to point the reader to a sentence, a goal, or a hypothesis.  The argument is a search pattern written in the `marker-placement mini-language <marker-language_>`__; Alectryon locates the corresponding object in the input sent to the prover or in the prover's output, inserts a marker at that point, and replaces the reference with a link to that marker.
+
+For example, the ``[γ]`` marker in the example above could be inserted using :literal:`:mref:\`.s(Induction).h#IHm\`` or :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m)\``.
+
+By default markers refer to the most recent ``.. coq::`` block, but other blocks can be targeted by name by prepending ``.io#name`` to the argument of ``:mref:``.
+
+Markers can be customized by setting the ``:counter-style:`` option on a custom role derived from ``:mref:``; for example, to use Devanagari numerals:
+
+.. code-block:: rst
+
+   .. role:: dref(mref)
+      :counter-style: ० १ २ ३ ४ ५ ६ ७ ८ ९
+
+More details and examples are given in `<recipes/references.rst>`__.
+
+**This feature is experimental**: the syntax might change.
+
+Quoted references to goal fragments
+-----------------------------------
+
+The ``:mquote:`` role is similar to ``:mref:``, but it inserts a copy of the target instead of a link to it.  Targets may only be hypotheses, goal conclusions, or goal or hypothesis names.
+
+For example, using :literal:`:mquote:\`.s(Induction).h#IHm.type\`` in the example above would print the type of ``IHm``, ``∀ n: ℕ, m + n = n + m`` whereas :literal:`:mref:\`.s(Induction).g#1.h(m + n = n + m).name\`` would produce only the name of the corresponding hypothesis, ``IHm``.
+
+An ``.. mquote:`` directive is also available.  It places the quoted elements in a block and preserves indentation and newlines, unlike the ``:mquote:`` role (whose output appears inline).
+
+More details and examples are given in `<recipes/references.rst>`__.
+
+Output assertions
+-----------------
+
+Sometimes it is desirable to check that the prover produced the right output, without displaying that output to the user.  In these cases, Alectryon's marker-placement mini-language can serve as a poor lad's unit test.  The ``massert`` directive takes one argument (a path prefix), and checks that each line of its body is a valid reference to part of a previous goal.
+
+More details and examples are given in `<recipes/references.rst>`__.
+
+Links to Coq identifiers
+------------------------
+
+``:coqid:`` can be used to link to the documentation or definition of a Coq identifier in an external file.  Some examples:
+
+- :literal:`:coqid:\`Coq.Init.Nat.even\`` → `Coq.Init.Nat.even <https://coq.inria.fr/library/Coq.Init.Nat.html#even>`__
+- :literal:`:coqid:\`Coq.Init.Nat#even\`` → `even <https://coq.inria.fr/library/Coq.Init.Nat.html#even>`__
+- :literal:`:coqid:\`a predicate <Coq.Init.Nat.even>\`` → `a predicate <https://coq.inria.fr/library/Coq.Init.Nat.html#even>`__
+- :literal:`:coqid:\`Coq.Arith.PeanoNat#\`` → `Coq.Arith.PeanoNat <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#>`__
+- :literal:`:coqid:\`a library <Coq.Arith.PeanoNat#>\`` → `a library <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#>`__
+- :literal:`:coqid:\`Coq.Arith.PeanoNat#Nat.Even\`` → `Nat.Even <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#Nat.Even>`__
+- :literal:`:coqid:\`a predicate <Coq.Arith.PeanoNat#Nat.Even>\`` → `a predicate <https://coq.inria.fr/library/Coq.Arith.PeanoNat.html#Nat.Even>`__
+
+By default, ``:coqid:`` only knows how to handle names from Coq's standard library (that is, names starting with ``Coq.``, which get translated to links pointing to https://coq.inria.fr/library/).  To link to other libraries, you can add entries to ``alectryon.docutils.COQ_IDENT_DB_URLS``, a list of tuples containing a prefix and a templated URL.  The URL can refer to ``$modpath``, the part before the last ``#`` or ``.`` in the fully qualified name, and ``$ident``, the part after the last ``#`` or ``.``.  Here is an example::
+
+   ("My.Lib", "https://your-url.com/$modpath.html#$ident")
+
+Alternatively, you can inherit from ``:coqid:`` to define new roles.  The following defines a new ``:mylib:`` role, which assumes that its target is part of ``My.Lib``::
+
+   .. role:: mylib(coqid)
+      :url: https://your-url.com/My.Lib.$modpath.html#$ident
+
 Tips
 ====
+
+Caching
+-------
+
+The ``alectryon.json`` module has facilities to cache the prover's output.  Caching has multiple benefits:
+
+1. Recompiling documents with unchanged code is much faster, since Coq snippets do not have to be re-evaluated.
+2. Deploying a website or recompiling a book does not require setting up a complete Coq development environment.
+3. Changes in output can be inspected by comparing cache files.  Caches contain just as much information as needed to recreate input/output listings, so they can be checked-in into source control, making it easy to assess whether a Coq update meaningfully affects a document (it's easy to miss breakage or subtle changes in output otherwise, as when using the copy-paste approach or even Alectryon without caching).
+
+To enable caching on the command line, chose a directory and pass it to ``--cache-directory``.  Alectryon will record inputs and outputs in individual JSON files (one ``.cache`` file per source file) in subdirectories of that folder.  You may pass the directory containing your source files if you'd like to store caches alongside inputs.
+
+From Python, set ``alectryon.docutils.CACHE_DIRECTORY`` to enable caching.  For example, to store cache files alongside sources in Pelican, use the following code::
+
+   import alectryon.docutils
+   alectryon.docutils.CACHE_DIRECTORY = "content"
+
+See `<recipes/caching.v>`__ for an example.
 
 Prettification
 --------------
@@ -655,6 +727,23 @@ You can set Docutils settings for your single-page reST or Coq+reST documents us
      \setmonofont[Scale=MatchLowercase]{Fira Code}
 
 You can also use the `DOCUTILSCONFIG` `environment variable <https://docutils.sourceforge.io/docs/user/config.html#configuration-files>`__ to force alectryon to use a specific configuration file.
+
+.. _custom-drivers:
+
+Defining custom drivers
+-----------------------
+
+For advanced usage, or to customize Alectryon's command-line interface, you can use a custom driver.  Create a new Python file, and add the following to it:
+
+.. code-block:: python
+
+   from alectryon import cli
+   … Any extension code here
+   cli.main()
+
+Extensions might include, registering additional docutils directives or roles with ``docutils.directives.register_directive`` and ``docutils.roles.register_canonical_role``, adding custom syntax highlighting for project-specific tokens using ``alectryon.pygments.add_tokens``, or even tweaking the operation of the Coq lexer in ``alectryon.pygments_lexer``, or monkey-patching parts of Alectryon's ``docutils`` module.
+
+See `<recipes/alectryon_custom_driver.py>`__ for a concrete example.
 
 .. _minification:
 
@@ -799,7 +888,7 @@ Alectryon can be extended to support new languages.  Here is a rough blueprint o
           process_io_annots,
       ],
 
-5. Add an entry to ``transforms._IO_COMMENT_RE`` to tell Alectryon how to identify IO annotations::
+5. Add an entry to ``transforms._IO_COMMENT_RE`` to tell Alectryon how to identify `output-control annotations <controlling-output_>`__::
 
       "foo": r"[ \t]*[/][*]{}[*][/]",
 

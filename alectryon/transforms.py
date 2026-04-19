@@ -520,6 +520,28 @@ def group_whitespace_with_code(fragments):
             grouped[idx] = Text(txt[beg:end]) if end > beg else None
     return [g for g in grouped if g is not None]
 
+def commit_affixes(fragments):
+    r"""Move prefixes and suffixes into ``.input``.
+
+    This is useful for backends (like Typst) that can preserve all whitespace.
+
+    >>> from .core import Sentence as S, Text as T
+    >>> grouped = group_whitespace_with_code([T(" \n 1 "), S("S", [], []), T(" \n 2 ")])
+    >>> list(commit_affixes(grouped)) # doctest: +ELLIPSIS
+    [Text(contents=' \n 1'),
+     RichSentence(input=RichCode(contents=' S'...), ...prefixes=[], suffixes=[]...),
+     Text(contents=' 2 ')]
+    """
+    for fr in fragments:
+        if isinstance(fr, RichSentence):
+            prefix = "".join(fr.prefixes)
+            suffix = "".join(fr.suffixes) if not fr.outputs else ""
+            if fr.input is not None:
+                contents = prefix + fr.input.contents + suffix
+                fr = _replace_contents(fr, contents)
+            fr = fr._replace(prefixes=[], suffixes=[])
+        yield fr
+
 COQ_BULLET = re.compile(r"\A\s*[-+*]+\s*\Z")
 def is_coq_bullet(fr):
     return COQ_BULLET.match(fr.input.contents)

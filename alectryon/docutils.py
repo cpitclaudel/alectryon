@@ -1318,7 +1318,7 @@ BASE_PARSER_BY_MARKUP: Dict[str, PARSER_TYPES] = {
     "rst": RSTLiterateParser,
     "md": MySTLiterateParser,
 }
-assert BASE_PARSER_BY_MARKUP.keys() == core.ALL_MARKUPS
+assert BASE_PARSER_BY_MARKUP.keys() <= core.ALL_MARKUPS
 
 def make_LiterateParser(lang: str, markup: str) -> PARSER_TYPES:
     name = "{}{}LiterateParser".format(lang.capitalize(), markup.capitalize())
@@ -1540,7 +1540,7 @@ Pipeline = namedtuple("Pipeline", "reader parser translator writer")
 CUSTOM_PARSERS = {
     "{}+{}".format(lang, markup): make_LiterateParser(lang, markup)
     for lang in core.ALL_LANGUAGES
-    for markup in core.ALL_MARKUPS
+    for markup in BASE_PARSER_BY_MARKUP
 }
 
 PARSERS: Dict[str, Union[Tuple[str, str], Type[docutils.parsers.Parser]]] = {

@@ -1,0 +1,33 @@
+\iffalse
+  LaTeX half of a LaTeX/Typst comparison; paired with exact_typst.typ.
+
+  $ alectryon exact_latex.tex --backend latex
+      # LaTeX → annotated LaTeX; produces ‘exact_latex.annotated.tex’
+\fi
+
+\documentclass[a4paper,10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\setlength{\parindent}{0pt}
+\usepackage{alectryon}
+\usepackage{pygments}
+
+\begin{document}
+A small proof for LaTeX/Typst comparison:
+
+\begin{alectryon}{coq}{}
+Goal True /\ True.
+Proof.
+  split.
+  idtac "test".
+  -
+      exact I.
+
+  - exact I.
+
+
+Qed.
+\end{alectryon}
+
+End of test.
+\end{document}

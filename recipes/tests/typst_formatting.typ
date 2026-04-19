@@ -1,26 +1,26 @@
-(*|
-========================
- LaTeX formatting tests
-========================
+#import "/_output/tests/alectryon.typ"
+#show: alectryon.setup.with("/_output/tests/typst_formatting.alectryon.json")
 
-This file tests various aspects of the conversion to LaTeX, including spacing and formatting::
+#set page(paper: "a4", margin: (x: 89pt, y: 85pt))
+#set text(size: 10pt)
+#set par(spacing: 8pt)
+#show raw: set text(font: "Latin Modern Mono")
 
-   $ DOCUTILSCONFIG=tests/geometry.docutils.conf \
-       alectryon latex_formatting.v --backend latex
-     # Coq+reST → LaTeX; produces ‘latex_formatting.tex’
+= Typst formatting tests
 
-.. raw:: latex
+This file tests various aspects of the conversion to Typst, including spacing and formatting:
 
-   \setlength{\parskip}{8pt}
-   \pagestyle{empty}
-   \thispagestyle{empty}
+```
+$ alectryon typst_formatting.typ
+  # Typst formatting test; produces ‘typst_formatting.alectryon.json’
+$ typst compile --root . typst_formatting.typ typst_formatting.pdf
+  # Typst → PDF; produces ‘typst_formatting.pdf’
+```
 
-Space after punctuation
-=======================
+= Space after punctuation
 
-.. coq:: in
-|*)
-
+```{coq}
+(* .in *)
 Module Space.
   Infix "?" := plus (at level 10).
   Infix ":" := plus (at level 10).
@@ -40,19 +40,16 @@ Module Space.
     exact I.
   Qed.
 End Space.
+```
 
-(*|
-.. role:: ltx(raw)
-   :format: latex
+#pagebreak()
 
-:ltx:`\newgeometry{top=1cm,left=1cm,right=1cm}`
+#set page(margin: 1cm)
 
-Hypothesis wrapping
-===================
+= Hypothesis wrapping
 
-.. coq:: none
-|*)
-
+```{coq}
+(* .none *)
 Definition type {A} (a: A) := a.
 Definition body {A} (a: A) := a.
 Definition br {A B} (f: A -> B) (a: A) := f a.
@@ -101,11 +98,10 @@ Ltac p_4F_2F n v :=
    (BRK_ type
     (TYPE TYPE TYPE TYPE TYPE TYPE TYPE TYPE
      TYPE TYPE TYPE TYPE TYPE TYPE TYPE v)).
+```
 
-(*|
-.. coq:: no-in unfold
-|*)
-
+```{coq}
+(* .no-in .unfold *)
 Goal True. (* .none *)
   p_223_33 ffffffff0 NAT0; p_223_33 ffffffff1 NAT1;
     p_223_33 ffffffff2 NAT0; p_223_53 ffffffff3 NAT1;
@@ -126,13 +122,13 @@ Goal True. (* .none *)
          end. (* .no-in *)
   exact I. (* .none *)
 Qed. (* .none *)
+```
 
-(*|
-:ltx:`\restoregeometry`
+#set page(margin: (x: 89pt, y: 85pt))
 
-More hypotheses
-===============
-|*)
+= More hypotheses
+
+```{coq}
 From Coq Require List.
 Import List.ListNotations.
 Open Scope list_scope.
@@ -158,15 +154,15 @@ Section Long.
 End Long.
 
 Compute (map [11; 22; 33] (fun n a _ => (n, a * a))).
+```
 
-
+```{coq}
 Definition t := True.
 Definition ign {A} (_: A) := Prop.
+```
 
-(*|
-:ltx:`\begin{small}`
-|*)
-
+#text(size: 0.9em)[
+```{coq}
 Goal forall
     (a: ign (t -> t -> t -> t -> t -> t -> t))
     (aaa: ign (t -> t -> t -> t -> t -> t))
@@ -187,45 +183,41 @@ Goal forall
     aaaaaaaaaaaaaaaaaaaaa -> aaaaaaaaaaaaaaaaaaaaaaa ->
     aaaaaaaaaaaaaaaaaaaaaaaaa -> True.
 Proof. auto. Qed.
+```
+]
 
-(*|
-:ltx:`\end{small}`
-
-Paragraph-code spacing
-======================
+= Paragraph-code spacing
 
 Some text.
-|*)
 
+```{coq}
 (* Some code *)
+```
 
-(*|
 Some text.
-|*)
 
+```{coq}
 (* Some code *)
+```
 
-(*|
 Some text.
 
 Some text.
-|*)
 
+```{coq}
 (* Some code *)
+```
 
-(*||*)
-
+```{coq}
 (* Some code *)
+```
 
-(*|
-Line breaks in input-only fragments
-===================================
+= Line breaks in input-only fragments
 
 There should be no extra line breaks when showing only inputs:
 
-.. coq:: in
-|*)
-
+```{coq}
+(* .in *)
 Goal True /\ True.
   - idtac.
 Abort.
@@ -239,11 +231,11 @@ Proof.
       | _ => idtac
       end. exact I. }
 Qed.
+```
 
-(*|
 Showing outputs may still introduce line breaks:
-|*)
 
+```{coq}
 Goal True /\ True.
   - idtac.
 Abort.
@@ -257,12 +249,11 @@ Proof.
       | _ => idtac
       end. exact I. }
 Qed.
+```
 
-(*|
-Newlines
-========
-|*)
+= Newlines
 
+```{coq}
 Require Import List.
 
 Lemma skipn_app {A}:
@@ -289,7 +280,9 @@ Proof.
       end.
       assumption.
 Qed.
+```
 
+```{coq}
 (* Some spacing tests: *)
 (* ^ 0 lines *)
 
@@ -313,36 +306,4 @@ Qed.
 
 
    ^ 3 *)
-
-(*|
-Compound directive
-==================
-
-Some text.
-
-.. code::
-
-   Some code
-
------
-
-.. compound::
-
-   Some text in compound.
-
-   Some text in compound.  Spacing used to be wrong; see `<https://sourceforge.net/p/docutils/patches/183/>`__.
-|*)
-
-(* Some code in compound *)
-
-(*||*)
-
-(* Some code in compound *)
-
-(*|
-   Some text in compound.
-
-   .. code::
-
-      Some code in compound
-|*)
+```

@@ -50,12 +50,14 @@
 ;;;; Text mode selection
 
 (ert-deftest alectryon-test-guess-text-mode ()
-  "Filename suffix detection for _rst and _md."
+  "Filename suffix detection for _rst, _md, and _typst."
   (with-temp-buffer
     (let ((buffer-file-name "/tmp/foo_rst.abc"))
       (should (eq 'rst-mode (alectryon--guess-text-mode))))
     (let ((buffer-file-name "/tmp/foo_md.xyz"))
       (should (eq 'markdown-mode (alectryon--guess-text-mode))))
+    (let ((buffer-file-name "/tmp/foo_typst.abc"))
+      (should (eq 'typst-ts-mode (alectryon--guess-text-mode))))
     (let ((buffer-file-name "/tmp/foo.uvw"))
       (should-not (alectryon--guess-text-mode)))))
 
@@ -191,7 +193,7 @@
 
 (cl-defstruct (alectryon-test--lang (:constructor alectryon-test--lang))
   "Per-language test data: matched conversion triplet plus round-trip input."
-  tag mode code rst md round-trip)
+  tag mode code rst md typst round-trip)
 
 (defconst alectryon-test--lang-data
   (list
@@ -200,24 +202,27 @@
     :code "(*|\nHello\n|*)\n\nLemma foo : True.\n"
     :rst "Hello\n\n.. coq::\n\n   Lemma foo : True.\n"
     :md  "Hello\n\n```{coq}\nLemma foo : True.\n```\n"
+    :typst "Hello\n\n```{coq}\nLemma foo : True.\n```\n"
     :round-trip "(*|\nHello\n|*)\n\nLemma foo : True. Proof. auto. Qed.\n")
    (alectryon-test--lang
     :tag "lean4" :mode 'lean4-mode
     :code "/-|\nHello\n|-/\n\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n"
     :rst  "Hello\n\n.. lean4::\n\n   theorem foo : ∀ n : Nat, n = n := fun _ → rfl\n"
     :md   "Hello\n\n```{lean4}\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n```\n"
+    :typst "Hello\n\n```{lean4}\ntheorem foo : ∀ n : Nat, n = n := fun _ → rfl\n```\n"
     :round-trip "/-|\nHello\n|-/\n\ndef x : Nat := 5\n")
    (alectryon-test--lang
     :tag "dafny" :mode 'dafny-mode
     :code "/// Hello\n\nmethod Foo() {}\n"
     :rst  "Hello\n\n.. dafny::\n\n   method Foo() {}\n"
     :md   "Hello\n\n```{dafny}\nmethod Foo() {}\n```\n"
+    :typst "Hello\n\n```{dafny}\nmethod Foo() {}\n```\n"
     :round-trip "/// Hello\n\nmethod Foo() {}\n"))
   "Test data for each supported language.")
 
 (defmacro alectryon-test--deftest (name docstring &rest body)
   "Define an ERT test NAME that runs BODY in a temp buffer for each language.
-BODY can use `.tag', `.mode', `.code', `.rst', `.md', `.round-trip'."
+BODY can use `.tag', `.mode', `.code', `.rst', `.md', `.typst', `.round-trip'."
   (declare (indent 2) (doc-string 2))
   `(ert-deftest ,name ()
      ,docstring
@@ -228,28 +233,30 @@ BODY can use `.tag', `.mode', `.code', `.rst', `.md', `.round-trip'."
              (.code       (alectryon-test--lang-code .lang))
              (.rst        (alectryon-test--lang-rst .lang))
              (.md         (alectryon-test--lang-md .lang))
+             (.typst      (alectryon-test--lang-typst .lang))
              (.round-trip (alectryon-test--lang-round-trip .lang)))
          (with-temp-buffer
            ,@body)))))
 
 (alectryon-test--deftest alectryon-test-convert-to-markup
-  "Code converts to exact expected RST and Markdown output."
-  (should (equal .rst (alectryon-test--convert .code (concat .tag "+rst") "rst")))
-  (should (equal .md  (alectryon-test--convert .code (concat .tag "+md") "md"))))
+  "Code converts to exact expected RST, Markdown, and Typst output."
+  (should (equal .rst   (alectryon-test--convert .code (concat .tag "+rst")   "rst")))
+  (should (equal .md    (alectryon-test--convert .code (concat .tag "+md")    "md")))
+  (should (equal .typst (alectryon-test--convert .code (concat .tag "+typst") "typst"))))
 
 (alectryon-test--deftest alectryon-test-convert-markup-to-code
-  "RST and Markdown convert to exact expected code output."
-  (should (equal .code (alectryon-test--convert .rst "rst" (concat .tag "+rst"))))
-  (should (equal .code (alectryon-test--convert .md "md" (concat .tag "+md")))))
+  "RST, Markdown, and Typst convert to exact expected code output."
+  (should (equal .code (alectryon-test--convert .rst   "rst"   (concat .tag "+rst"))))
+  (should (equal .code (alectryon-test--convert .md    "md"    (concat .tag "+md"))))
+  (should (equal .code (alectryon-test--convert .typst "typst" (concat .tag "+typst")))))
 
 (alectryon-test--deftest alectryon-test-convert-round-trips
-  "Code -> markup -> code round-trips are identity for both RST and Markdown."
-  (should (equal .round-trip (alectryon-test--convert
-                              (alectryon-test--convert .round-trip (concat .tag "+rst") "rst")
-                              "rst" (concat .tag "+rst"))))
-  (should (equal .round-trip (alectryon-test--convert
-                              (alectryon-test--convert .round-trip (concat .tag "+md") "md")
-                              "md" (concat .tag "+md")))))
+  "Code -> markup -> code round-trips are identity for RST, Markdown, and Typst."
+  (dolist (markup '("rst" "md" "typst"))
+    (let ((lang-plus (concat .tag "+" markup)))
+      (should (equal .round-trip (alectryon-test--convert
+                                  (alectryon-test--convert .round-trip lang-plus markup)
+                                  markup lang-plus))))))
 
 (ert-deftest alectryon-test-convert-edge-cases ()
   "Conversion handles empty, code-only, and prose-only inputs."

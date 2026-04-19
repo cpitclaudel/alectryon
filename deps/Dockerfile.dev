@@ -8,6 +8,12 @@ ARG OPAM_SWITCH
 ARG OCAML_VERSION
 ARG ROCQ_VERSION
 ARG EASYCRYPT_VERSION
+ARG DAFNY_VERSION
+ARG LEAN3_VERSION
+ARG ELAN_VERSION
+ARG LEAN4_VERSION
+
+ARG TYPST_VERSION
 
 ## APT
 
@@ -51,7 +57,7 @@ WORKDIR /home/docker
 ## Dafny
 
 RUN <<EOF
-  curl -sSfL https://github.com/dafny-lang/dafny/releases/download/v4.11.0/dafny-4.11.0-x64-ubuntu-22.04.zip -o /tmp/dafny.zip
+  curl -sSfL https://github.com/dafny-lang/dafny/releases/download/v${DAFNY_VERSION}/dafny-${DAFNY_VERSION}-x64-ubuntu-22.04.zip -o /tmp/dafny.zip
   unzip -q /tmp/dafny.zip -d /home/docker
   rm /tmp/dafny.zip
 EOF
@@ -68,7 +74,7 @@ EOF
 ## Lean 3
 
 RUN <<EOF
-  curl -sSfL https://github.com/leanprover-community/lean/releases/download/v3.51.1/lean-3.51.1-linux.tar.gz -o /tmp/lean3.tar.gz
+  curl -sSfL https://github.com/leanprover-community/lean/releases/download/v${LEAN3_VERSION}/lean-${LEAN3_VERSION}-linux.tar.gz -o /tmp/lean3.tar.gz
   tar xzf /tmp/lean3.tar.gz -C /home/docker/
   rm /tmp/lean3.tar.gz
 EOF
@@ -76,9 +82,17 @@ EOF
 ## Lean 4 (via elan)
 
 RUN <<EOF
-  curl -sSfL https://raw.githubusercontent.com/leanprover/elan/v4.2.1/elan-init.sh \
-    | sh -s -- -y --no-modify-path --default-toolchain leanprover/lean4:v4.28.0
+  curl -sSfL https://raw.githubusercontent.com/leanprover/elan/v${ELAN_VERSION}/elan-init.sh \
+    | sh -s -- -y --no-modify-path --default-toolchain leanprover/lean4:v${LEAN4_VERSION}
   /home/docker/.elan/bin/lean --version
+EOF
+
+## Typst
+
+RUN <<EOF
+  curl -sSfL https://github.com/typst/typst/releases/download/v${TYPST_VERSION}/typst-x86_64-unknown-linux-musl.tar.xz -o /tmp/typst.tar.xz
+  tar xJf /tmp/typst.tar.xz -C /home/docker/
+  rm /tmp/typst.tar.xz
 EOF
 
 ## Symlinks
@@ -86,7 +100,8 @@ EOF
 RUN <<EOF
   mkdir -p /home/docker/.local/bin/
   ln -s /home/docker/dafny/dafny /home/docker/.local/bin/dafny
-  ln -s /home/docker/lean-3.51.1-linux/bin/lean /home/docker/.local/bin/lean3
+  ln -s /home/docker/lean-${LEAN3_VERSION}-linux/bin/lean /home/docker/.local/bin/lean3
+  ln -s /home/docker/typst-x86_64-unknown-linux-musl/typst /home/docker/.local/bin/typst
 EOF
 
 ## Path

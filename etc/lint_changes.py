@@ -34,8 +34,12 @@ def sub1(m):
                     return next(SINGLE_HASH.finditer(line)).group()
     return sha
 
+def commit_date(sha):
+    return shell(f'git show -s --format=%ct:%at "{sha}"')
+
 def subn(m):
-    return SINGLE_HASH.sub(sub1, m.group())
+    hashes = [sub1(h) for h in SINGLE_HASH.finditer(m.group())]
+    return f"[{', '.join(sorted(hashes, key=commit_date))}]"
 
 def main():
     # changes = 0

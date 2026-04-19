@@ -1,0 +1,198 @@
+\iffalse
+  LaTeX half of a LaTeX/Typst comparison; paired with exact_typst.typ.
+
+  $ alectryon exact_latex.tex --backend latex
+      # LaTeX → annotated LaTeX; produces ‘exact_latex.annotated.tex’
+\fi
+
+\documentclass[a4paper,10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\setlength{\parindent}{0pt}
+\usepackage{alectryon}
+\usepackage{pygments}
+
+\begin{document}
+A small proof for LaTeX/Typst comparison:
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Goal}~\PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}\PY{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Proof}\PY{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k+kt}{True}~\PY{o}{/\PYZbs{}}~\PY{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{n+nb}{split}\PY{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}\end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
+              \PY{k+kt}{True}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{k+kp}{idtac}~\PY{l+s+s2}{\PYZdq{}test\PYZdq{}}\PY{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{n}{test}
+        \end{\al{message}}
+      \end{\al{messages}}
+      \Al{sep}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+        \Al{sep}
+        \begin{\al{extragoals}}
+          \begin{\al{goal}}
+            \begin{\al{hyps}}\end{\al{hyps}}
+            \Al{sep}
+            \Al{infrule}{}
+            \Al{sep}
+            \begin{\al{conclusion}}
+              \PY{k+kt}{True}
+            \end{\al{conclusion}}
+          \end{\al{goal}}
+        \end{\al{extragoals}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{o}{\PYZhy{}}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~~~~~\PY{n+nb+bp}{exact}~\PY{n}{I}\PY{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    \Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      ~~\PY{o}{\PYZhy{}}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{goals}}
+        \begin{\al{goal}}
+          \begin{\al{hyps}}\end{\al{hyps}}
+          \Al{sep}
+          \Al{infrule}{}
+          \Al{sep}
+          \begin{\al{conclusion}}
+            \PY{k+kt}{True}
+          \end{\al{conclusion}}
+        \end{\al{goal}}
+      \end{\al{goals}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{n+nb+bp}{exact}~\PY{n}{I}\PY{o}{.}\Al{nl}
+    \end{\al{input}}
+  \end{\al{sentence}}
+  \Al{sep}
+  \begin{\al{txt}}
+    \Al{nl}
+    \Al{nl}
+  \end{\al{txt}}
+  \Al{sep}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Qed}\PY{o}{.}
+    \end{\al{input}}
+  \end{\al{sentence}}
+\end{alectryon}
+
+End of test.
+\end{document}

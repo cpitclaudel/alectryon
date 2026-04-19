@@ -231,18 +231,20 @@ def cwd_mgr(wd: _Path):
     finally:
         os.chdir(old_cwd)
 
-class Backend:
+TOut = TypeVar("TOut")
+
+class Backend(Generic[TOut]):
     def __init__(self, highlighter):
         self.highlighter = highlighter
 
-    def gen_fragment(self, fr): raise NotImplementedError()
-    def gen_hyp(self, hyp): raise NotImplementedError()
-    def gen_goal(self, goal): raise NotImplementedError()
-    def gen_message(self, message): raise NotImplementedError()
-    def highlight(self, s): raise NotImplementedError()
-    def gen_names(self, names): raise NotImplementedError()
-    def gen_code(self, code): raise NotImplementedError()
-    def gen_txt(self, s): raise NotImplementedError()
+    def gen_fragment(self, fr) -> TOut: raise NotImplementedError()
+    def gen_hyp(self, hyp) -> TOut: raise NotImplementedError()
+    def gen_goal(self, goal) -> TOut: raise NotImplementedError()
+    def gen_message(self, message) -> TOut: raise NotImplementedError()
+    def highlight(self, s) -> TOut: raise NotImplementedError()
+    def gen_names(self, names) -> TOut: raise NotImplementedError()
+    def gen_code(self, code) -> TOut: raise NotImplementedError()
+    def gen_txt(self, s) -> TOut: raise NotImplementedError()
 
     def highlight_enriched(self, obj):
         lang = obj.props.get("lang")
@@ -267,10 +269,10 @@ class Backend:
         else:
             raise TypeError("Unexpected object type: {}".format(type(obj)))
 
-    def gen_fragments(self, fragments, ids=(), classes=()):
+    def gen_fragments(self, fragments, ids=(), classes=()) -> TOut:
         raise NotImplementedError
 
-    def gen(self, annotated):
+    def gen(self, annotated) -> Iterable[Optional[TOut]]:
         for fragments in annotated:
             yield self.gen_fragments(fragments) if fragments is not None else None
 
@@ -935,7 +937,8 @@ class DriverDict(UserDict[str, str]): # UserDict needed for proper ``copy`` beha
                 return driver
         return next(iter(all_drivers)) # Return first if none is available (for better error messages)
 
-ALL_MARKUPS = {"md", "rst"}
+DOCUTILS_MARKUPS = {"md", "rst"} # Supported by gen_docutils
+ALL_MARKUPS = {*DOCUTILS_MARKUPS, "typst"}
 ALL_LANGUAGES = DRIVERS_BY_LANGUAGE.keys()
 ALL_DRIVERS = {d for ds in DRIVERS_BY_LANGUAGE.values() for d in ds}
 DEFAULT_DRIVERS = DriverDict()
@@ -955,6 +958,7 @@ assert EXTENSIONS_BY_LANGUAGE.keys() == ALL_LANGUAGES
 EXTENSIONS_BY_MARKUP = {
     "md": (".md", ".myst",),
     "rst": (".rst",),
+    "typst": (".typ",),
 }
 """A map from markup language identifiers to file extensions."""
 assert EXTENSIONS_BY_MARKUP.keys() == ALL_MARKUPS

@@ -3,6 +3,11 @@ export OCAML_VERSION ?= 5.4.0
 export ROCQ_VERSION ?= 9.1.0
 export ROCQ_VERSIONS ?= $(ROCQ_VERSION)
 export EASYCRYPT_VERSION ?= r2026.03
+export DAFNY_VERSION ?= 4.11.0
+export LEAN3_VERSION ?= 3.51.1
+export ELAN_VERSION ?= 4.2.1
+export LEAN4_VERSION ?= 4.28.0
+export TYPST_VERSION ?= 0.14.2
 
 PYTHON ?= python3
 PYTHON_VENV ?= deps/.venv.$(shell hostname)
@@ -58,7 +63,7 @@ $(PYTHON_VENV):
 	$(PYTHON) -m venv $(PYTHON_VENV)
 
 init: $(PYTHON_VENV)
-	pip install -r deps/requirements.dev
+	python -m pip install -r deps/requirements.dev
 
 git-init:
 	git config --local include.path ../etc/gitconfig
@@ -80,18 +85,12 @@ lint-changes: $(dependencies)
 lint: $(dependencies)
 	vermin --target=3.9- --eval-annotations --violations alectryon
 	pylint alectryon
-	mypy alectryon/
+	mypy --install-types alectryon/
 	pyright --project .
 	pyrefly check alectryon/
 
 coverage: $(dependencies)
 	+$(make) -C recipes coverage
-
-develop: $(dependencies)
-	(which opam || { echo "OPAM not found; please install it"; exit 1; })
-	pip install mypy coverage[toml]
-	python -m mypy --install-types alectryon/
-	pip install -e .[full]
 
 _opam:
 	deps/opam.sh $(OCAML_VERSION) \
@@ -110,4 +109,8 @@ docker-build%: deps/Dockerfile%
 		--build-arg OPAM_SWITCH --build-arg OCAML_VERSION \
 		--build-arg ROCQ_VERSION --build-arg ROCQ_VERSIONS \
 		--build-arg EASYCRYPT_VERSION \
+		--build-arg DAFNY_VERSION \
+		--build-arg LEAN3_VERSION \
+		--build-arg ELAN_VERSION  --build-arg LEAN4_VERSION \
+		--build-arg TYPST_VERSION \
 		.

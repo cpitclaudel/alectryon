@@ -185,6 +185,15 @@ _output/literate_reST.min.stdin.v: literate_reST.rst | _output/
 	cd ..; $(PYTHON) -m alectryon.literate --from rst --to coq - < recipes/$< > recipes/$@
 recipes_targets += _output/literate_reST.min.stdin.v
 
+# Typst → JSON
+_output/literate_typst.alectryon.json: literate_typst.typ
+	$(alectryon) $<
+recipes_targets += _output/literate_typst.alectryon.json
+# Typst → PDF
+_output/literate_typst.pdf: literate_typst.typ | _output/
+	typst compile --root . $< $@
+recipes_targets += _output/literate_typst.pdf
+
 # reST → HTML
 _output/mathjax.html: mathjax.rst
 	$(alectryon) $<
