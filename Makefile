@@ -84,18 +84,12 @@ lint-changes: $(dependencies)
 lint: $(dependencies)
 	vermin --target=3.9- --eval-annotations --violations alectryon
 	pylint alectryon
-	mypy alectryon/
+	mypy --install-types alectryon/
 	pyright --project .
 	pyrefly check alectryon/
 
 coverage: $(dependencies)
 	+$(make) -C recipes coverage
-
-develop: $(dependencies)
-	(which opam || { echo "OPAM not found; please install it"; exit 1; })
-	pip install mypy coverage[toml]
-	python -m mypy --install-types alectryon/
-	pip install -e .[full]
 
 _opam:
 	deps/opam.sh $(OCAML_VERSION) \
