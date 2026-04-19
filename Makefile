@@ -62,7 +62,7 @@ $(PYTHON_VENV):
 	$(PYTHON) -m venv $(PYTHON_VENV)
 
 init: $(PYTHON_VENV)
-	pip install -r deps/requirements.dev
+	python -m pip install -r deps/requirements.dev
 
 git-init:
 	git config --local include.path ../etc/gitconfig
