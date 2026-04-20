@@ -172,9 +172,11 @@ def register_docutils(v, ctx):
 
     return v
 
+DOCUTILS_BODY_PART = {"webpage": "html_body", "latex": "body"}
+
 def _gen_docutils(source, fpath,
                   Parser, Reader, Writer,
-                  settings_overrides):
+                  part, settings_overrides):
     from docutils.core import publish_programmatically
     from docutils.io import StringInput, StringOutput
 
@@ -185,7 +187,7 @@ def _gen_docutils(source, fpath,
     # ``_destination``.  This isn't trivial to fix because the name of the
     # output is determined by the argument to ``write_file``.  Maybe we should
     # call a function ``set_output_filename`` early in each pipeline instead?
-    text, pub = publish_programmatically(
+    _, pub = publish_programmatically(
         source_class=StringInput, destination_class=StringOutput,
         source=source.encode("utf-8"), destination=None,
         source_path=fpath, destination_path=None,
@@ -200,7 +202,9 @@ def _gen_docutils(source, fpath,
 
     max_level = pub.document.reporter.max_level
     exit_code = max_level + 10 if max_level >= pub.settings.exit_status_level else 0
-    return text.decode("utf-8"), pub, exit_code
+    output = pub.writer.parts[part or "whole"]
+
+    return output, pub, exit_code
 
 def _record_assets(assets, path, names):
     for name in names:
@@ -210,7 +214,7 @@ class DocutilsException(Exception):
     pass
 
 def gen_docutils(src, frontend, backend, fpath, dialect,
-                 docutils_settings_overrides, assets, exit_code):
+                 docutils_settings_overrides, assets, body_only, exit_code):
     from .docutils import get_pipeline, alectryon_state
     from docutils.utils import SystemMessage
 
@@ -219,6 +223,7 @@ def gen_docutils(src, frontend, backend, fpath, dialect,
         text, pub, exit_code.val = \
             _gen_docutils(src, fpath,
                           pipeline.parser, pipeline.reader, pipeline.writer,
+                          DOCUTILS_BODY_PART[backend] if body_only else None,
                           docutils_settings_overrides)
     except SystemMessage as e:
         MSG = ("Exiting early due to a level-{} Docutils message.\n"
@@ -417,7 +422,7 @@ def _get_banner(fpath, driver_configs, include_vernums):
 
 def dump_html_standalone(snippets, fname, webpage_style,
                          html_minification, include_banner,
-                         assets, html_classes, ctx) -> str:
+                         assets, html_classes, body_only, ctx) -> str:
     from dominate import tags, document
     from dominate.util import raw
     from .html import wrap_classes, HTML4_VIEWPORT
@@ -438,7 +443,8 @@ def dump_html_standalone(snippets, fname, webpage_style,
     for snippet in snippets:
         root.add(snippet)
 
-    return doc.render(pretty=False)
+    output = root if body_only else doc
+    return output.render(pretty=False)
 
 class ParsedHTMLDocument:
     """A parsed HTML document."""
@@ -902,8 +908,7 @@ def post_process_arguments(parser, args):
         try:
             args.point = int(args.point)
         except ValueError:
-            MSG = "argument --mark-point: Expecting a number, not {!r}"
-            parser.error(MSG.format(args.point))
+            parser.error(f"argument --mark-point: Expecting a number, not {args.point!r}")
 
         # LATER: if args.marker.isspace():
         #     MSG = "argument --mark-point: Marker must not be whitespace ({!r})"
@@ -911,6 +916,15 @@ def post_process_arguments(parser, args):
 
     args.pipelines = [(fpath, *resolve_pipeline(fpath, args))
                       for fpath in args.input]
+
+    if args.body_only:
+        def err(component, fpath):
+            parser.error(f"{component} (for input {fpath!r}) does not support --body-only.")
+        for (fpath, frontend, backend, _) in args.pipelines:
+            if frontend in ("latex", "html", "coqdoc"):
+                err(f"Frontend {frontend!r}", fpath)
+            if backend not in DOCUTILS_BODY_PART:
+                err(f"Backend {backend!r}", fpath)
 
     return args
 
@@ -987,10 +1001,15 @@ and produce reStructuredText, HTML, LaTeX, or JSON output.""",
                      dest="include_banner", default=True,
                      help=NO_HEADER_HELP)
 
-    NO_VERSION_NUMBERS = "Omit version numbers in meta tags and headers."
+    NO_VERSION_HELP = "Omit version numbers in meta tags and headers."
     out.add_argument("--no-version-numbers", action='store_false',
                      dest="include_vernums", default=True,
-                     help=NO_VERSION_NUMBERS)
+                     help=NO_VERSION_HELP)
+
+    BODY_ONLY_HELP = "Omit the preamble/head of the generated document."
+    out.add_argument("--body-only", action='store_true',
+                     dest="body_only", default=False,
+                     help=BODY_ONLY_HELP)
 
     cache_out = parser.add_argument_group("Cache configuration")
 

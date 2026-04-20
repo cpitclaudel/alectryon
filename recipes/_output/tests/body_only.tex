@@ -1,0 +1,31 @@
+
+To compile:
+
+\begin{quote}
+\begin{alltt}
+alectryon -{}-body-only body_only.rst -o body_only.html
+    # reST → HTML; produces ‘body_only.html’
+alectryon -{}-body-only -{}-backend latex body_only.rst -o body_only.tex
+    # reST → LaTeX; produces ‘body_only.tex’
+\end{alltt}
+\end{quote}
+
+\texttt{-{}-body-only} keeps only the document’s body (no \texttt{<html>}/\texttt{<head>} for HTML, no preamble or \texttt{\textbackslash{}begin\{document\}} for LaTeX):
+
+\begin{alectryon}
+  \begin{\al{sentence}}
+    \begin{\al{input}}
+      \PY{k+kn}{Print}~\PY{n}{nat}\PY{o}{.}
+    \end{\al{input}}
+    \Al{sep}
+    \begin{\al{output}}
+      \begin{\al{messages}}
+        \begin{\al{message}}
+          \PY{k+kn}{Inductive}~\PY{n+nf}{nat}~\PY{o}{:}~\PY{k+kt}{Set}~\PY{o}{:=}~~\PY{n}{O}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{|}~\PY{n}{S}~\PY{o}{:}~\PY{n}{nat}~\PY{o}{\PYZhy{}\PYZgt{}}~\PY{n}{nat}\PY{o}{.}\Al{nl}
+          \Al{nl}
+          \PY{k+kn}{Arguments}~\PY{n}{S}~\PY{n}{\PYZus{}}\PY{o}{\PYZpc{}}\PY{n}{\PYZus{}nat\PYZus{}scope}
+        \end{\al{message}}
+      \end{\al{messages}}
+    \end{\al{output}}
+  \end{\al{sentence}}
+\end{alectryon}

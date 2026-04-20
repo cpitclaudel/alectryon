@@ -1,0 +1,14 @@
+<div class="alectryon-root alectryon-centered"><div class="alectryon-banner">Built with <a href="https://github.com/cpitclaudel/alectryon/">Alectryon</a>, running vsrocq-language-server. Bubbles (<span class="alectryon-bubble"></span>) indicate interactive fragments: hover for details, tap to reveal contents. Use <kbd>Ctrl+↑</kbd> <kbd>Ctrl+↓</kbd> to navigate, <kbd>Ctrl+🖱️</kbd> to focus. On Mac, use <kbd>⌘</kbd> instead of <kbd>Ctrl</kbd>.</div><div class="document" id="body-only-output">
+<h1 class="title">Body-only output</h1>
+<p>To compile:</p>
+<pre class="literal-block">
+alectryon --body-only body_only.rst -o body_only.html
+    # reST → HTML; produces ‘body_only.html’
+alectryon --body-only --backend latex body_only.rst -o body_only.tex
+    # reST → LaTeX; produces ‘body_only.tex’
+</pre>
+<p><tt class="docutils literal"><span class="pre">--body-only</span></tt> keeps only the document’s body (no <tt class="docutils literal">&lt;html&gt;</tt>/<tt class="docutils literal">&lt;head&gt;</tt> for HTML, no preamble or <tt class="docutils literal">\begin{document}</tt> for LaTeX):</p>
+<pre class="alectryon-io highlight lang-rocq"><!-- Generator: Alectryon --><span class="alectryon-sentence"><input class="alectryon-toggle" id="body-only-rst-chk0" style="display: none" type="checkbox"><label class="alectryon-input" for="body-only-rst-chk0"><span class="kn">Print</span> nat.</label><small class="alectryon-output"><div><div class="alectryon-messages"><blockquote class="alectryon-message"><span class="kn">Inductive</span> <span class="nf">nat</span> : <span class="kt">Set</span> :=  O : nat | S : nat -&gt; nat.
+
+<span class="kn">Arguments</span> S _%_nat_scope</blockquote></div></div></small></span></pre></div>
+</div>

@@ -218,6 +218,10 @@ recipes_targets += _output/plain-lean4.lean.html
 _output/plain.v.html: plain.v
 	$(alectryon) --frontend coq $<
 recipes_targets += _output/plain.v.html
+# Coq → HTML
+_output/plain.v.body.html: plain.v
+	$(alectryon) --frontend coq --body-only $< -o $@
+recipes_targets += _output/plain.v.body.html
 
 # reST+… → HTML
 _output/polyglot.html: polyglot.rst

@@ -2,6 +2,11 @@
  Major changes
 ===============
 
+Unreleased
+============
+
+- A new `--body-only` CLI flag restricts the output to the body of the generated document (no <html> nor <head> for HTML, no preamble nor \begin{document} for LaTeX), allowing outputs to be embedded in other documents. [cd41edd]
+
 Version 2.0.0
 =============
 
