@@ -129,19 +129,23 @@
   )
 }
 
+// https://github.com/typst/typst/issues/8162
+#let smash(contents) = context {
+  let h = measure(contents).height
+  box(height: 0pt, clip: false, box(height: h, contents))
+}
+
 #let _goal-separator(name, markers) = {
   v(alectryon-rule-skip)
   block(spacing: alectryon-rule-skip, {
     grid(
-      columns: (1fr, auto),
-      column-gutter: 0em,
+      columns: (1fr, auto, auto),
+      column-gutter: 0pt,
       align: horizon,
       line(length: 100%, stroke: 0.4pt + alectryon-goal-line-color),
-      { // LATER: https://github.com/typst/typst/issues/8162
-        if name != none { text(size: 0.75em, txt(" ") + name) }
-        // For goals, markers appear next to the rule
-        mref-markers(markers)
-      }
+      if name != none { text(size: 0.75em, txt(" ") + name) },
+      // For goals, markers appear next to the rule
+      if markers != () { smash(mref-markers(markers)) }
     )
   })
   v(alectryon-rule-skip)
