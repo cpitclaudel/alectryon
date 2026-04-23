@@ -189,7 +189,7 @@ class HtmlGenerator(Backend):
     def gen_input(self, fr, toggle):
         cls = "alectryon-input" + (" alectryon-failed" if fr.annots.fails else "")
         with self.gen_clickable(toggle, cls, self.highlight_enriched(fr.input)):
-            self.gen_mrefs(fr)
+            self.gen_mrefs(fr) # Render sentence markers and IDs on input
             self.gen_mrefs(fr.input)
 
     def gen_message(self, message):

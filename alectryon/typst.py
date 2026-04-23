@@ -75,7 +75,11 @@ class TypstBackend(Backend[Node]):
     @staticmethod
     def _decorate(node: Node, ids: Iterable[Any] = (),
                   markers: Iterable[str] = ()) -> Node:
-        """Wrap `node` in ``marker``/``id`` nodes."""
+        """Wrap `node` in ``marker``/``id`` nodes.
+
+        Most nodes use this decorator, except goals (which render markers
+        themselves on their the separator) and sentences (next to the input).
+        """
         if markers := list(markers):
             node = ["marker", node, *markers]
         if ids := [str(i) for i in ids]:
@@ -104,12 +108,10 @@ class TypstBackend(Backend[Node]):
                 self.gen_code(hyp.body), self.gen_code(hyp.type)]
 
     def gen_goal(self, goal: RichGoal) -> Node:
-        # Goal markers render inline on the separator (variadic trailing args);
-        # ids flow through the outer ``id`` wrapper.
-        hyps = self._plus(self.gen_hyp(h) for h in goal.hypotheses)
+        hyps: Node = self._plus(self.gen_hyp(h) for h in goal.hypotheses)
         node: Node = ["goal", self.gen_txt(goal.name), hyps,
                       self.gen_code(goal.conclusion), *goal.markers]
-        return TypstBackend._decorate(node, ids=goal.ids)
+        return self._decorate(node, ids=goal.ids)
 
     def gen_output_group(self, fr: Goals | Messages) -> Node:
         if isinstance(fr, Goals):
@@ -117,10 +119,10 @@ class TypstBackend(Backend[Node]):
         assert isinstance(fr, Messages)
         return ["messages", self._plus(self.gen_message(m) for m in fr.messages)]
 
-    @_decorated
     def gen_sentence(self, s: RichSentence) -> Node:
         outputs = self._plus(self.gen_output_group(fr) for fr in s.outputs)
-        return ["sentence", self.gen_code(s.input), outputs]
+        node = ["sentence", self.gen_code(s.input), outputs, *s.markers]
+        return self._decorate(node, ids=s.ids)
 
     def gen_fragment(self, fr: RichFragment) -> Node:
         if isinstance(fr, Text):

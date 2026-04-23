@@ -247,7 +247,7 @@ class LatexGenerator(Backend):
             # break before output blocks; otherwise we'd have to handle
             # sentences that end the line differently from sentences in the
             # middle of a line.
-            self.gen_mrefs(fr)
+            self.gen_mrefs(fr) # Render sentence markers and IDs on input
             if not fr.outputs:
                 self.gen_whitespace(fr.suffixes)
 

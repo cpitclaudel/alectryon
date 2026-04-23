@@ -162,8 +162,8 @@
 #let goals = outputs
 #let messages = outputs
 
-#let sentence(input, outputs) = {
-  input
+#let sentence(input, outputs, ..markers) = {
+  input + mref-markers(markers.pos())
   if outputs != none {
     set text(size: alectryon-output-scale * 1em)
     // LaTeX adds space relative to the bottom of the previous box; Typst uses
