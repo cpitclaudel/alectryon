@@ -23,7 +23,6 @@
 #let alectryon-hyp-h = 2em / alectryon-output-scale
 #let alectryon-hyp-v = 0.6em / alectryon-output-scale
 #let alectryon-hyp-indent = 0.3em / alectryon-output-scale
-#let alectryon-marker-sep = 0.35em
 #let alectryon-marker-stroke = 0.4pt
 
 /// Utilities
@@ -43,8 +42,7 @@
 #let _marker-info = state("alectryon-marker-info", ("mrefs": (), "mquotes": ()))
 
 #let mref-marker(marker) = {
-  h(alectryon-marker-sep)
-  box(
+  sym.space.nobreak + box( // https://github.com/typst/typst/issues/4629
     stroke: alectryon-marker-stroke,
     inset: alectryon-marker-stroke / 2 + 0.1em,
     baseline: alectryon-marker-stroke / 2 + 0.1em,

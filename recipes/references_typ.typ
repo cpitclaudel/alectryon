@@ -1,6 +1,8 @@
 #import "/_output/alectryon.typ": setup, mref, mquote, massert
 #show: setup.with("/_output/references_typ.alectryon.json")
 
+#show raw: set text(font: "Fira Code")
+
 = Using the marker-placement mini-language
 
 To compile:
