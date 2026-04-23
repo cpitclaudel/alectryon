@@ -401,9 +401,8 @@ def _output_objects(o: Goals | Messages) -> List[RichGoal] | List[RichMessage]:
 def commit_io_annotations(fragments):
     """Use I/O annotations to filter `fragments`.
 
-    Hidden outputs of each `RichSentence` in `fragments` are discarded.
-    Sentences with hidden inputs are set to ``input=None``.  If
-    `discard_folded` is ``True``, folded outputs are also discarded.
+    Hidden outputs of each ``RichSentence`` in `fragments` are discarded.
+    Sentences with hidden inputs are set to ``input=None``.
     """
     for fr in fragments:
         if isinstance(fr, RichSentence):

@@ -802,7 +802,7 @@ class ProverDirective(AlectryonDirective):
     def _measure_absolute_indentation(self):
         """Compute the indentation of this directive in the source.
 
-        Docutils dedents `input_lines` before passing them to directives, so a
+        Docutils dedents ``input_lines`` before passing them to directives, so a
         ``.. coq::`` block looks the same at the top level or within a ``.. note::``.
         Walk up the state machine stack to find the header line with its
         original indentation.
@@ -1651,7 +1651,7 @@ def register():
         roles.register_canonical_role(role.name, role)
 
 def set_default_role(lang="coq"):
-    """Set the default role (the one used with single backticks) to :``lang``:."""
+    """Set the default role (the one used with single backticks) to :`lang`:."""
     if lang not in CODE_ROLES:
         raise ValueError("Unsupported language: {}".format(lang))
     roles.DEFAULT_INTERPRETED_ROLE = CODE_ROLES[lang].name # type: ignore

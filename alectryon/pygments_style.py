@@ -40,7 +40,7 @@ Scarlet Red:#ef2929     #cc0000     #a40000
 Aluminium:  #eeeeec     #d3d7cf     #babdb6
             #888a85     #555753     #2e3436
 
-Not all of the above colors are used.  Unlike the original `tango` theme for
+Not all of the above colors are used.  Unlike the original ``tango`` theme for
 Pygments, this theme attempts to assign different styles to most tokens.
 """
 

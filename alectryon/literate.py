@@ -226,7 +226,7 @@ def strip_deque(lines: Deque[Line]) -> Deque[Line]:
 def _source_parts(lines: Iterable[Line], source: str):
     """Yield ``(line, part_index, part)`` from lines.
 
-    Only yield parts that are views into ``source``, skipping synthetic parts
+    Only yield parts that are views into `source`, skipping synthetic parts
     (e.g. comment delimiters).
     """
     for l in lines:
@@ -339,7 +339,7 @@ class Parser:
         self.doc = doc
 
     def partition(self) -> Iterable[Classified]:
-        """Partition `self.doc` into runs of ``Code`` and ``Comment`` objects."""
+        """Partition ``self.doc`` into runs of ``Code`` and ``Comment`` objects."""
         raise NotImplementedError
 
 class BlockParser(Parser):
@@ -356,7 +356,7 @@ class BlockParser(Parser):
         raise NotImplementedError()
 
     def partition(self) -> List[Classified]:
-        """Partition `self.doc` into runs of ``Code`` and ``Comment`` objects."""
+        """Partition ``self.doc`` into runs of ``Code`` and ``Comment`` objects."""
         scanners = {state: regexp_opt(tokens, self.TOKEN_REGEXPS)
                     for (state, tokens) in self.TRANSITIONS.items()}
         while True:
@@ -499,7 +499,7 @@ class CoqParser(BlockParser):
     }
 
     def step(self, state: State, start: int, tok: Token, mstart: int):
-        """Partition `doc` into runs of ``Code`` and ``Comment`` objects.
+        """Partition ``self.doc`` into runs of ``Code`` and ``Comment`` objects.
 
         Example:
         >>> CoqParser("Code (* comment *) code").partition()
@@ -593,7 +593,7 @@ class LeanParser(BlockParser):
     }
 
     def step(self, state: State, start: int, tok: Token, mstart: int):
-        r"""Partition `doc` into runs of ``Code`` and ``Comment`` objects.
+        r"""Partition ``self.doc`` into runs of ``Code`` and ``Comment`` objects.
 
         Example:
         >>> LeanParser("Code /- comment -/ code").partition()
@@ -1068,9 +1068,9 @@ def gen_markup(md: MarkupDef, blocks: Iterable[Block]) -> Iterable[Line]:
 
 def _partition_literate(code, spans, literate_matcher):
     """Fold non-literate ``Comment`` spans into ``Code`` ones.
-    ``literate_matcher`` should return ``True`` for literate comments and
-    ``False`` for regular ones.  ``spans`` should be the result of partitioning
-    ``code``."""
+    `literate_matcher` should return ``True`` for literate comments and
+    ``False`` for regular ones.  `spans` should be the result of partitioning
+    `code`."""
     code = StringView(code, 0, len(code))
     code_acc = code[0:0]
     for span in spans:
@@ -1102,7 +1102,7 @@ def code2markup_lines(md: MarkupDef, code: str) -> Iterable[Line]:
     return _code2markup_lines(md, _expand_indents(code)[0])
 
 def code2markup(md: MarkupDef, code: str) -> str:
-    """Translate a fragment of `code` in `lang` to markup `md`."""
+    """Translate a fragment of `code` in ``md.lang`` to markup `md`."""
     return join_lines(code2markup_lines(md, code))
 
 def code2markup_marked(md: MarkupDef, code: str, point: Optional[int], marker: Optional[str]) -> str:
@@ -1216,7 +1216,7 @@ def markup2code_lines(md: MarkupDef, txt: str) -> Iterable[Line]:
     return _markup2code_lines(md, _expand_indents(txt)[0])
 
 def markup2code(md: MarkupDef, txt: str) -> str:
-    """Translate a fragment of a text document `txt` to code in `lang`."""
+    """Translate a fragment of a text document `txt` to code in ``md.lang``."""
     return join_lines(markup2code_lines(md, txt))
 
 def markup2code_marked(md: MarkupDef, txt: str, point: Optional[int], marker: Optional[str]) -> str:

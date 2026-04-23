@@ -137,7 +137,7 @@ class PlainSerializer:
         return js
 
 class DeduplicatingSerializer:
-    """Like `PlainSerializer`, but deduplicate references to objects in `TYPES`.
+    """Like ``PlainSerializer``, but deduplicate references to objects in ``TYPES``.
     Specifically, deduplication works by replacing repeated objects with a
     special dictionary ``{"*": N}``, where ``N`` is an index into the list of
     all objects encoded up to that point.
@@ -189,7 +189,7 @@ class DeduplicatingSerializer:
         return decode(js)
 
 class FullyDeduplicatingSerializer:
-    """Like `DeduplicatingSerializer`, but also deduplicate basic types.
+    """Like ``DeduplicatingSerializer``, but also deduplicate basic types.
 
     >>> from .core import Text as T
     >>> obj = {'a': [[1, T('A')], [1, T('A')], {'c': 3}], 'b': {'c': 3}}

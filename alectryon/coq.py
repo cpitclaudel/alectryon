@@ -100,7 +100,7 @@ class CoqIdents:
     def topfile_of_fpath(cls, fpath: Path, default="Top", exts=COQ_EXTS, strip=STRIP) -> str:
         """Normalize `fpath` into a valid Coq file name.
 
-        Extensions found in `exts` are preserved, and `exts[0]` is appended if
+        Extensions found in `exts` are preserved, and ``exts[0]`` is appended if
         none is found.  Extensions found in `strip` are removed.  If `fpath` is
         ``-`` or empty, `default` is used instead.
         """

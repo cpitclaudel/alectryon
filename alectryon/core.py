@@ -41,6 +41,7 @@ import textwrap
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+    from .pygments import Highlighter
     from .transforms import IOAnnots
 
 _Path = Union[str, os.PathLike]
@@ -807,7 +808,7 @@ class CLIDriver(Driver): # pylint: disable=abstract-method
 
     @classmethod
     def driver_not_found(cls, binpath) -> NoReturn:
-        """Raise an error to indicate that ``binpath`` cannot be found."""
+        """Raise an error to indicate that `binpath` cannot be found."""
         raise ValueError("{} binary not found (bin={!r}).".format(cls.NAME, binpath))
 
     @classmethod

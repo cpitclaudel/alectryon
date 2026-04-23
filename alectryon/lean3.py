@@ -306,7 +306,7 @@ class Lean3(REPLDriver):
         return p.stdout + "\n" + p.stderr
 
     def annotate(self, chunks: list[str]) -> List[List[Fragment]]:
-        """Annotate multiple ``chunks`` of Lean 3 code."""
+        """Annotate multiple `chunks` of Lean 3 code."""
         self.document = TextDocument(chunks, "\n")
         try:
             return self._annotate()

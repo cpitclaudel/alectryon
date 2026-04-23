@@ -108,7 +108,7 @@ class VsRocqReadyMonitor(ExponentialBackoff):
     """Wait until the document is parsed.
 
     We need this to get answers to StepForward queries; waiting on
-    `DocumentState` doesn't work because it succeeds with empty contents if the
+    ``DocumentState`` doesn't work because it succeeds with empty contents if the
     document isn't parsed yet.
     """
     PARSING_NOT_FINISHED: ClassVar[int] = -32802
