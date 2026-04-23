@@ -137,7 +137,7 @@
       column-gutter: 0em,
       align: horizon,
       line(length: 100%, stroke: 0.4pt + alectryon-goal-line-color),
-      {
+      { // LATER: https://github.com/typst/typst/issues/8162
         if name != none { text(size: 0.75em, txt(" ") + name) }
         // For goals, markers appear next to the rule
         mref-markers(markers)
